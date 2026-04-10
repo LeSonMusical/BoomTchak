@@ -153,6 +153,30 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .play-thumb-r{background:#C8961A}
 @keyframes thumbflash{0%{filter:brightness(1)}50%{filter:brightness(2.2) saturate(1.5)}100%{filter:brightness(1)}}
 
+/* ─── MODE TX ─── */
+.btn-tx-save{padding:3px 9px;font-size:11px;font-weight:600;background:#D85A30;color:#fff;border:1px solid #993C1D;border-radius:5px;cursor:pointer;display:none}
+body.mode-tx .btn-tx-save{display:inline-flex;align-items:center;gap:4px}
+.btn-tx-export{padding:3px 7px;font-size:11px;font-weight:500;background:#fff;color:#555;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;display:none}
+body.mode-tx .btn-tx-export{display:inline-block}
+body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
+/* Steps éditables en mode TX */
+body.mode-tx .step{cursor:pointer}
+body.mode-tx .step:not(.on):hover{background:var(--cl);border-color:var(--cc)}
+body.mode-tx .step.on:hover{filter:brightness(.85)}
+body:not(.mode-tx) .step{cursor:default}
+
+/* ─── DIALOG PARTAGE PATTERN ─── */
+.ptk-dialog{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
+.ptk-dialog.hidden{display:none}
+.ptk-dialog-box{background:#fff;border-radius:12px;padding:18px 20px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.22)}
+.ptk-dlg-title{font-size:13px;font-weight:700;color:#1a1a18;margin-bottom:8px}
+.ptk-dlg-msg{font-size:11px;color:#555;margin-bottom:14px;line-height:1.6}
+.ptk-dlg-btns{display:flex;flex-direction:column;gap:6px}
+.ptk-dlg-btn{padding:9px 12px;border-radius:6px;border:1px solid #d0cec7;font-size:11px;font-weight:600;cursor:pointer;text-align:left;background:#fff;color:#1a1a18}
+.ptk-dlg-btn:hover{filter:brightness(.95)}
+.ptk-dlg-btn-primary{background:#D85A30;color:#fff;border-color:#D85A30}
+.ptk-dlg-btn-cancel{background:transparent;color:#999;border-color:transparent;text-align:center;font-weight:400}
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:599px){
   .layer-menu{width:88px}
@@ -173,6 +197,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
     <span class="app-version">v2.0</span>
   </div>
   <div class="top-bar-right">
+    <button class="btn-tx-save" id="btn-tx-save">💾 Sauvegarder</button>
+    <button class="btn-tx-export" id="btn-tx-export">⬇ JSON</button>
     <button class="btn-top" id="btn-tempo">Tempo</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
@@ -217,6 +243,19 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
   <div class="play-btns">
     <button class="play-thumb play-thumb-l" id="play-thumb-l">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main droite</span></button>
+  </div>
+</div>
+
+<!-- Dialog partage de pattern (TX) -->
+<div class="ptk-dialog hidden" id="ptk-dialog">
+  <div class="ptk-dialog-box">
+    <div class="ptk-dlg-title">Pattern partagé entre plusieurs grooves</div>
+    <div class="ptk-dlg-msg" id="ptk-dlg-msg"></div>
+    <div class="ptk-dlg-btns">
+      <button class="ptk-dlg-btn ptk-dlg-btn-primary" id="ptk-dlg-all">Modifier partout</button>
+      <button class="ptk-dlg-btn" id="ptk-dlg-new">Créer un nouveau pattern</button>
+      <button class="ptk-dlg-btn ptk-dlg-btn-cancel" id="ptk-dlg-cancel">Annuler</button>
+    </div>
   </div>
 </div>
 
@@ -407,6 +446,9 @@ const PTK_DEFAULT = {
      ]},
   ],
 };
+
+// Marquer les patterns du dictionnaire comme source 'default'
+PTK_DEFAULT.patterns.forEach(p=>{if(!p.source)p.source='default';});
 
 // Données courantes du cours (clonées depuis PTK_DEFAULT, modifiables en TX)
 let packCours = null;
@@ -638,6 +680,7 @@ const LAYERS=[
 // ── États runtime audio ───────────────────────────────────────────────────
 let state=LAYERS.map(()=>({
   pattern:['.'],
+  patternId:null,
   stepPos:0, nextStepTime:0, startTime:0,
   muted:false, halfOn:false, doubleOn:false,
   pendingHalf:false, pendingDouble:false, pendingClear:false,
@@ -785,6 +828,7 @@ function togglePlay(){
 
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
 let currentGrooveId = null;
+let currentMode = new URLSearchParams(location.search).get('mode')==='tx'?'tx':'sx';
 let sonsOuvert = false;
 let layersOuverts = true;
 let encycloOuvert = false;
@@ -801,6 +845,7 @@ function applyGroove(grooveId){
     let seq=pat.sequence.split('');
     if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
     state[li].pattern=seq;
+    state[li].patternId=gl.patternId;
     state[li].stepPos=0;
     state[li].muted=gl.mute||false;
     state[li].halfOn=gl.halfOn||false;
@@ -987,7 +1032,13 @@ function buildLayers(){
     sel.addEventListener('change',()=>{
       const pat=getPattern(sel.value);if(!pat)return;
       state[li].pattern=pat.sequence.split('');
+      state[li].patternId=pat.id;
       state[li].stepPos=0;state[li].wrapped=false;
+      if(currentMode==='tx'){
+        const groove=getGroove(currentGrooveId);
+        if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
+        saveToStorage();
+      }
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
@@ -1028,15 +1079,59 @@ function buildStepsDOM(li,wrap){
     }
     const s=document.createElement('div');
     s.className='step'+(p==='X'?' on':p==='x'?' on':'');
-    s.addEventListener('click',()=>{
-      // Bascule X → . → X
-      state[li].pattern[si]=state[li].pattern[si]==='X'?'.':'X';
-      s.className='step'+(state[li].pattern[si]==='X'?' on':'');
-      if(state[li].stepPos===si)s.classList.add('cur');
-    });
+    s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
   state[li].wrapped=wrap;
+}
+
+function onStepClick(li,si,el){
+  const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
+  const canEdit=currentMode==='tx'||(srcPat&&srcPat.source==='user');
+  if(!canEdit)return;
+
+  const newVal=state[li].pattern[si]==='X'?'.':'X';
+
+  if(!srcPat){
+    state[li].pattern[si]=newVal;
+    el.className='step'+(newVal==='X'?' on':'');
+    if(state[li].stepPos===si)el.classList.add('cur');
+    return;
+  }
+
+  const usedIn=packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
+
+  const applyToggle=(targetPat)=>{
+    state[li].pattern[si]=newVal;
+    el.className='step'+(newVal==='X'?' on':'');
+    if(state[li].stepPos===si)el.classList.add('cur');
+    targetPat.sequence=state[li].pattern.join('');
+    saveToStorage();
+  };
+
+  if(usedIn.length>1){
+    showPatternShareDialog(srcPat.nom,usedIn.map(g=>g.nom),(choice)=>{
+      if(choice==='cancel')return;
+      if(choice==='all'){
+        applyToggle(srcPat);
+      } else {
+        // Créer un pattern utilisateur avec le step déjà basculé
+        const tmp=[...state[li].pattern];tmp[si]=newVal;
+        const newPat=createUserPattern(tmp,srcPat);
+        const groove=getGroove(currentGrooveId);
+        if(groove&&groove.layers[li])groove.layers[li].patternId=newPat.id;
+        state[li].patternId=newPat.id;
+        state[li].pattern[si]=newVal;
+        el.className='step'+(newVal==='X'?' on':'');
+        if(state[li].stepPos===si)el.classList.add('cur');
+        const sel=document.getElementById('sel-'+LAYERS[li].id);
+        if(sel){buildPatternSelect(sel);sel.value=newPat.id;}
+        saveToStorage();
+      }
+    });
+  } else {
+    applyToggle(srcPat);
+  }
 }
 
 function checkWrap(li){
@@ -1275,6 +1370,61 @@ function updateSpmDisplay(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MODULE TX — Mode enseignant (édition, sauvegarde)
+// ═══════════════════════════════════════════════════════════════════════════
+
+let dialogCallback=null;
+
+function setMode(mode){
+  currentMode=mode;
+  document.body.classList.toggle('mode-tx',mode==='tx');
+  document.getElementById('btn-sx-tx').textContent=mode.toUpperCase();
+  buildLayers();
+}
+
+function saveToStorage(){
+  try{localStorage.setItem('ptk_content_v2',JSON.stringify(packCours));}catch(e){}
+}
+
+function exportJSON(){
+  const titre=packCours.meta.titre||'poumtchak_cours';
+  const blob=new Blob([JSON.stringify(packCours,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=titre.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showPatternShareDialog(patNom,grooveNames,cb){
+  dialogCallback=cb;
+  document.getElementById('ptk-dlg-msg').innerHTML=
+    'Le pattern <strong>'+patNom+'</strong> est utilisé dans '+grooveNames.length+
+    ' groove'+(grooveNames.length>1?'s':'')+' :<br>'+
+    grooveNames.map(n=>'&bull; '+n).join('<br>')+
+    '<br><br>Que voulez-vous faire ?';
+  document.getElementById('ptk-dialog').classList.remove('hidden');
+}
+
+function createUserPattern(seq,sourcePat){
+  const id='user_'+Date.now();
+  const newPat={
+    id,
+    nom:(sourcePat?sourcePat.nom:'Pattern')+' (modifié)',
+    sequence:seq.join(''),
+    pas:seq.length,
+    unite_temps:sourcePat?sourcePat.unite_temps:'1/8',
+    pas_par_mesure:sourcePat?sourcePat.pas_par_mesure:8,
+    source:'user',
+  };
+  packCours.patterns.push(newPat);
+  let grp=packCours.groupes_patterns.find(g=>g.id==='user');
+  if(!grp){grp={id:'user',label:'Mes patterns',ids:[]};packCours.groupes_patterns.push(grp);}
+  grp.ids.push(id);
+  return newPat;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INIT — Bootstrap au chargement
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1355,6 +1505,40 @@ function attachEvents(){
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
 
+  // ── Mode TX ──
+  document.getElementById('btn-sx-tx').addEventListener('click',()=>{
+    setMode(currentMode==='tx'?'sx':'tx');
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.code==='Tab'){e.preventDefault();setMode(currentMode==='tx'?'sx':'tx');}
+  });
+
+  // ── Sauvegarde TX ──
+  document.getElementById('btn-tx-save').addEventListener('click',()=>{
+    saveToStorage();
+    const btn=document.getElementById('btn-tx-save');
+    btn.textContent='✓ Sauvegardé';
+    setTimeout(()=>{btn.innerHTML='💾 Sauvegarder';},1500);
+  });
+  document.getElementById('btn-tx-export').addEventListener('click',exportJSON);
+
+  // ── Dialog partage pattern ──
+  document.getElementById('ptk-dlg-all').addEventListener('click',()=>{
+    document.getElementById('ptk-dialog').classList.add('hidden');
+    if(dialogCallback)dialogCallback('all');
+    dialogCallback=null;
+  });
+  document.getElementById('ptk-dlg-new').addEventListener('click',()=>{
+    document.getElementById('ptk-dialog').classList.add('hidden');
+    if(dialogCallback)dialogCallback('new');
+    dialogCallback=null;
+  });
+  document.getElementById('ptk-dlg-cancel').addEventListener('click',()=>{
+    document.getElementById('ptk-dialog').classList.add('hidden');
+    if(dialogCallback)dialogCallback('cancel');
+    dialogCallback=null;
+  });
+
   // ── Raccourci clavier ──
   document.addEventListener('keydown',e=>{
     if(e.code==='Space'&&e.target===document.body){e.preventDefault();togglePlay();}
@@ -1363,6 +1547,12 @@ function attachEvents(){
 
 function start(){
   loadFromStorage();
+
+  // Appliquer le mode initial (URL param ou défaut SX)
+  if(currentMode==='tx'){
+    document.body.classList.add('mode-tx');
+    document.getElementById('btn-sx-tx').textContent='TX';
+  }
 
   // Groove aléatoire au démarrage
   const grooves=packCours.grooves;
@@ -1376,6 +1566,7 @@ function start(){
     let seq=pat.sequence.split('');
     if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
     state[li].pattern=seq;
+    state[li].patternId=gl.patternId;
     state[li].muted=gl.mute||false;
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
