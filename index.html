@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PoumTchak</title>
+<style>
+/* ─── RESET ─── */
+*{box-sizing:border-box;margin:0;padding:0}
+*{user-select:none;-webkit-user-select:none}
+.encyclo-chapo,.encyclo-bval{user-select:text;-webkit-user-select:text}
+input,textarea{user-select:text;-webkit-user-select:text}
+
+/* ─── LAYOUT GLOBAL ─── */
+body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;width:100%}
+.frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:.5rem .85rem}
+
+/* ─── TOP BAR ─── */
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;justify-content:space-between;padding:6px 12px;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.top-bar-left{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.top-bar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.app-name{font-size:14px;font-weight:700;letter-spacing:.06em;color:#1a1a18}
+.app-version{font-size:9px;color:#aaa;font-weight:400;margin-left:3px}
+.btn-sx-tx{font-size:9px;padding:2px 6px;background:#ffeedd;border:1px solid #D85A30;border-radius:3px;color:#993C1D;font-weight:600;cursor:pointer}
+.btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
+.btn-top:hover{background:#e8e5e0}
+.btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
+.btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
+.btn-view:hover{background:#e8e5e0}
+.btn-about{padding:1px 7px;font-size:11px;font-weight:700;background:#fff;border:1px solid #c0bdb7;border-radius:50%;color:#888;cursor:pointer;line-height:1.5}
+.btn-about:hover{background:#e8e5e0}
+
+/* ─── PANEL TEMPO ─── */
+.panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .22s ease,padding .22s ease;max-height:0;padding:0 .85rem}
+.panel2.open{max-height:130px;padding:.5rem .85rem}
+.t-slider{width:100%;accent-color:#888}
+.t-spm-display{font-size:11px;color:#999;cursor:pointer;text-align:right;min-width:52px}
+.t-spm-display:hover{color:#555}
+.t-equiv{font-size:11px;font-weight:500;color:#1a1a18;white-space:nowrap}
+.btn-sm-tempo{padding:3px 8px;cursor:pointer;font-size:11px;background:#fff;border:1px solid #b0aea7;border-radius:5px;color:#666}
+.btn-sm-tempo:hover{background:#f0ede8}
+.btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
+
+/* ─── BARRES DE SECTION ─── */
+.section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
+.section-bar select{font-size:10px;flex:1;min-width:0;padding:1px 3px;border-radius:4px;background:#fff;color:#1a1a18;cursor:pointer}
+.section-bar-lbl{font-size:10px;font-weight:600;flex-shrink:0;letter-spacing:.03em}
+.btn-sec-ico{cursor:pointer;font-size:13px;background:none;border:none;padding:1px 3px;line-height:1;opacity:.6;flex-shrink:0}
+.btn-sec-ico:hover{opacity:1}
+.btn-info-ico{padding:1px 5px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid #c0bdb7;border-radius:4px;color:#666;flex-shrink:0;line-height:1.4}
+.btn-info-ico:hover{background:#e8e5e0}
+.btn-info-ico.active{background:#d0cec7;border-color:#888;color:#1a1a18}
+.btn-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#bbb;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
+.btn-volet:hover,.btn-volet.open{color:#555}
+/* barre groove : dorée */
+.groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
+.groove-bar .section-bar-lbl{color:#8B6914}
+.groove-bar select{border:1px solid #d4b86a}
+.btn-volet-groove{color:#C8961A !important}
+.btn-volet-groove:hover,.btn-volet-groove.open{color:#8B6914 !important}
+/* barre band : bleue */
+.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
+.band-bar.visible{display:flex}
+.band-bar .section-bar-lbl{color:#2d5f80}
+.band-bar select{border:1px solid #8ab4d0}
+.band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
+.band-content.open{max-height:700px}
+/* barre encyclo : grise */
+.encyclo-bar{background:#f5f4f0;border-left:3px solid #888;cursor:pointer}
+.encyclo-bar .section-bar-lbl{color:#444}
+.encyclo-content{overflow:hidden;transition:max-height .35s ease;max-height:0}
+.encyclo-content.open{max-height:3000px}
+
+/* ─── LAYERS ─── */
+#layers-wrap{display:flex;align-items:flex-start;gap:0}
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.layer{display:flex;flex-direction:row;align-items:stretch;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
+.layer-menu{width:100px;flex-shrink:0;padding:4px 5px;background:var(--cl);border-right:1px solid var(--cs);display:flex;flex-direction:column;gap:3px}
+.layer-menu-top{display:flex;align-items:center;gap:4px}
+.layer-lbl{font-size:10px;font-weight:600;color:var(--cb);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.layer-select{font-size:9px;width:100%;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
+.btn-mute-sq{width:26px;height:26px;flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--cc);padding:0;line-height:1;color:#fff;transition:background .15s}
+.btn-mute-sq:hover{filter:brightness(.9)}
+.btn-mute-sq.muted{background:#c8c5c0}
+.layer-steps-outer{flex:1;min-width:0;padding:4px 5px 4px 6px}
+.layer-steps{display:flex;flex-wrap:wrap;gap:2px}
+.step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s}
+.step.on{background:var(--cc);border-color:var(--cb)}
+.step.cur{box-shadow:0 0 0 2px var(--cb);border-color:var(--cb)}
+.step.on.cur{background:var(--cb)}
+.layer.muted-layer .step.on{background:var(--cs)}
+.hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
+
+/* ─── COULEURS PAR COUCHE ─── */
+.c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55}
+.c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055}
+.c-noise{--cc:#1D9E75;--cb:#0F6E56;--cl:#1D9E750D;--cs:#1D9E7555}
+.c-thumb-l{--cc:#7B5EA7;--cb:#5A3F85;--cl:#7B5EA70D;--cs:#7B5EA755}
+.c-thumb-r{--cc:#C8961A;--cb:#8B6914;--cl:#C8961A0D;--cs:#C8961A55}
+
+/* ─── SONS (BAND) ─── */
+.sound-layer{border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:var(--cl);margin-bottom:3px}
+.sound-header{display:flex;align-items:center;gap:6px;padding:5px 8px;cursor:pointer}
+.sound-header:hover{filter:brightness(.97)}
+.sound-lbl{font-size:10px;font-weight:600;color:var(--cb);white-space:nowrap;flex-shrink:0}
+.sound-arrow{font-size:13px;color:var(--cb);opacity:.7;transition:transform .15s;flex-shrink:0}
+.sound-arrow.open{transform:rotate(90deg)}
+.vol-h-wrap{flex:1;display:flex;align-items:center;gap:3px;min-width:0}
+.vol-h-lbl{font-size:8px;color:var(--cb);opacity:.6;flex-shrink:0}
+.vol-h-track{flex:1;height:4px;background:var(--cs);border-radius:2px;position:relative;cursor:pointer;min-width:30px}
+.vol-h-fill{position:absolute;left:0;top:0;height:100%;background:var(--cc);border-radius:2px;pointer-events:none}
+.vol-h-thumb{position:absolute;top:50%;width:12px;height:12px;background:var(--cc);border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:none}
+.sound-ctrls{border-top:1px solid var(--cs)}
+.sound-ctrls.hidden{display:none}
+.sound-ctrls-inner{display:flex;flex-direction:column;gap:2px;padding:4px 8px 5px}
+.sl-row{display:flex;align-items:center;gap:4px}
+.sl-row label{font-size:9px;color:#888;width:36px;flex-shrink:0}
+.sl-row input[type=range]{flex:1;padding:0;accent-color:var(--cc)}
+.sound-sep{height:1px;background:#d0cec7;margin:4px 0}
+
+/* ─── ENCYCLOPÉDIE ─── */
+.encyclo-wrap{padding:6px 0 4px}
+.encyclo-chapo{font-size:12px;line-height:1.65;color:#2a2a28;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e8e6e2}
+.encyclo-bullets{list-style:none;display:flex;flex-direction:column;gap:8px}
+.encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
+.encyclo-bkey{font-weight:500;color:#1a1a18}
+.encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
+.encyclo-vide{font-size:11px;color:#aaa;font-style:italic}
+
+/* ─── BOTTOM BAR ─── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #d0cec7;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.bottom-left{flex:1;display:flex;align-items:center;justify-content:center}
+.bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
+.bottom-right{flex:1;display:flex;align-items:center;justify-content:center}
+.btn-play-main{height:44px;padding:0 28px;font-size:22px;font-weight:700;border:2px solid #F5C518;border-radius:10px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s}
+.btn-play-main:hover{background:#fffbe8}
+.btn-play-main.active{background:#F5C518;border-color:#d4a800}
+.btn-jouer-wrap{height:52px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #1D9E75;border-radius:10px;color:#1D9E75;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.btn-jouer-wrap:hover{background:#ddfff4}
+.btn-jouer-wrap.active{background:#1D9E75;color:#fff}
+.hand{font-size:22px;line-height:1}
+
+/* ─── VOLET JOUER ─── */
+.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;padding:14px 12px 18px;display:none}
+.play-drawer.open{display:block}
+.play-drawer-close{position:absolute;top:8px;right:10px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:none;border:none;color:#888;cursor:pointer}
+.play-drawer-close:hover{color:#fff;background:#333}
+.play-btns{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:4px}
+.play-thumb{flex:1;max-width:46%;height:80px;border-radius:40px;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#fff;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.play-thumb:active{filter:brightness(1.3)}
+.play-thumb.flash{animation:thumbflash .18s ease-out}
+.play-thumb-l{background:#7B5EA7}
+.play-thumb-r{background:#C8961A}
+@keyframes thumbflash{0%{filter:brightness(1)}50%{filter:brightness(2.2) saturate(1.5)}100%{filter:brightness(1)}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:599px){
+  .layer-menu{width:88px}
+  .step{width:20px;height:20px}
+}
+@media(min-width:600px){
+  #layers-wrap{flex-direction:row}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
+    <span class="app-name">PoumTchak</span>
+    <span class="app-version">v2.0</span>
+  </div>
+  <div class="top-bar-right">
+    <button class="btn-top" id="btn-tempo">Tempo</button>
+    <button class="btn-top" id="btn-sons">Sons</button>
+    <button class="btn-view" id="btn-view" title="Vue">⊞</button>
+    <button class="btn-about" id="btn-about">?</button>
+  </div>
+</div>
+
+<!-- ZONE CENTRALE -->
+<div class="frame">
+  <!-- Panel tempo (glisse sous la top bar) -->
+  <div class="panel2" id="panel-tempo">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">TEMPO</div>
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <input type="range" class="t-slider" id="bpm" min="30" max="400" value="200" step="1" style="flex:1">
+        <span class="t-spm-display" id="bpm-val">200 spm</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="btn-sm-tempo" id="btn-global-half">/2</button>
+        <span class="t-equiv" id="bpm-equiv"></span>
+        <button class="btn-sm-tempo" id="btn-global-double">×2</button>
+      </div>
+    </div>
+  </div>
+  <!-- Section Band (Sons) -->
+  <div id="section-band"></div>
+  <div class="band-content" id="band-content">
+    <div style="padding:.4rem .6rem .5rem"><div id="sounds"></div></div>
+  </div>
+  <!-- Section Groove -->
+  <div id="section-groove"></div>
+  <!-- Layers (3 couches rythmiques) -->
+  <div id="layers-wrap"><div id="layers"></div></div>
+  <div class="hdivider"></div>
+  <!-- Section Encyclopédie -->
+  <div id="section-encyclo"></div>
+</div>
+
+<!-- Volet Jouer -->
+<div class="play-drawer" id="play-drawer">
+  <button class="play-drawer-close" id="play-drawer-close">✕</button>
+  <div class="play-btns">
+    <button class="play-thumb play-thumb-l" id="play-thumb-l">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main gauche</span></button>
+    <button class="play-thumb play-thumb-r" id="play-thumb-r">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main droite</span></button>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <div class="bottom-left"></div>
+  <div class="bottom-center">
+    <button class="btn-play-main" id="btn-play">▶</button>
+  </div>
+  <div class="bottom-right">
+    <button class="btn-jouer-wrap" id="btn-jouer">
+      <span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE DATA — Source de vérité unique (jamais le DOM)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Contenu encyclopédique — immutable, données éditoriales de référence
+const ENCYCLO = {
+  fl4:{
+    chapo:"Le \"Four on the Floor\" est le rythme fondateur des musiques de danse électronique — une frappe sur chaque temps binaire (les temps 2 et 4 d'une mesure à 4/4, soit toutes les croches paires sur 8 pas). Sa régularité absolue ancre physiquement l'auditeur et synchronise les corps en masse. Il est indissociable de son complémentaire exact, l'Off Beat, qui frappe exactement là où lui se tait — ensemble ils forment le métronome binaire du dancefloor.",
+    bullets:[["Origine","Disco américain, années 70 — DJ Frankie Knuckles, Larry Levan à New York et Chicago ; popularisé en Europe par la scène house puis techno des années 80-90."],["Écriture","X.X.X.X.\nFrappe sur chaque temps binaire (croches 1,3,5,7)\n4 frappes sur 8 pas"],["Utilisation","Techno, house, EDM, disco ; base universelle des musiques de dancefloor depuis 50 ans."],["Sensation","Ancrage total, prévisibilité rassurante, énergie par accumulation et non par tension."],["Relations","Complémentaire exact de l'Off Beat (2,4) : là où l'un frappe, l'autre se tait — les superposer produit le Pulse (4:4) continu."]]
+  },
+  offbeat:{
+    chapo:"L'Off Beat est le complémentaire exact du Four on the Floor — il frappe précisément sur les contretemps, là où son partenaire se tait. Ensemble ils forment le métronome binaire fondamental du dancefloor disco et électronique. L'Off Beat seul crée cette sensation de suspension et de rebond caractéristique du groove de danse — le corps anticipe la frappe suivante en s'appuyant sur l'absence.",
+    bullets:[["Origine","Disco américain, années 70 — même héritage que le Four on the Floor ; le skank reggae et le upstroke funk sont des ancêtres directs."],["Écriture",".X.X.X.X\nFrappe sur chaque contretemps (croches 2,4,6,8)\n4 frappes sur 8 pas — complémentaire exact du Four on the Floor"],["Logique","Four on the Floor + Off Beat = Pulse (4:4) — deux rythmes opposés dont l'union forme la pulsation continue."],["Sensation","Suspension, rebond, légèreté — le groove est porté par l'anticipation plutôt que par l'appui."],["Utilisation","Guitare rythmique funk et disco (le \"chicken scratch\") ; piano ou orgue en house ; hi-hat ouvert en techno ; clap ou snare en pop."]]
+  },
+  tres:{
+    chapo:"Le Tresillo est probablement le pattern rythmique le plus répandu dans les musiques populaires mondiales — trois frappes sur 8 pas, distribution euclidienne maximale. On le retrouve dans quasiment toutes les musiques issues de la diaspora africaine aux Amériques et au-delà, souvent sans qu'il soit nommé. Sa simplicité apparente cache une tension rythmique réelle avec la pulsation binaire.",
+    bullets:[["Origine","Terme cubain, mais le pattern est pan-africain et pan-américain ; présent dans les Caraïbes, le Brésil, la Nouvelle-Orléans."],["Écriture","X..X..X.\nIntervalles : 3-3-2\nE(3,8) — distribution euclidienne maximale sur 8 pas"],["Logique","Le 1er coup lance le rythme ; le 2e coup (\"bombo\", au pas 4) crée l'élan ; le 3e coup (\"ponche\", au pas 7) résout — c'est l'asymétrie finale (intervalle 2 au lieu de 3) qui génère la tension caractéristique."],["Utilisation","Blues, jazz, cumbia, son cubain ; la main gauche du piano de Hound Dog d'Elvis ; de nombreuses lignes de basse hip-hop."],["Relations","Sous-composant de Son 3:2 (les 3 premières frappes) ; présent dans Cinquillo, Habanera et Rumba par déformation ou extension."]]
+  },
+  cinq:{
+    chapo:"Le Cinquillo est l'un des rythmes fondateurs de la musique afro-cubaine, né de l'extension et de la densification du Tresillo. Cinq frappes sur 8 pas, il remplit l'espace laissé libre par son ancêtre en intercalant deux frappes supplémentaires. Présent dans la contradanza du XIXe siècle, il a traversé le danzón, le mambo et le cha-cha-chá, devenant un composant-clé de la généalogie rythmique cubaine.",
+    bullets:[["Origine","Cuba, XIXe siècle ; contradanza afro-cubaine, ancêtre direct du danzón et du mambo."],["Écriture","X.XX.XX.\nIntervalles : 2-1-2-1-2\n5 frappes sur 8 pas"],["Logique","C'est le Tresillo avec des coups ajoutés juste avant le bombo (pas 3) et le ponche (pas 6) — même squelette, densité presque doublée."],["Sensation","Plus nerveux et syncopé que le Tresillo, sentiment d'urgence et de rebond continu."],["Relations","Extension directe du Tresillo ; intermédiaire entre Tresillo (3 frappes) et Pulse (5 frappes continues sur 8)."]]
+  },
+  hab:{
+    chapo:"La Habanera est un rythme né à La Havane au début du XIXe siècle, issu du contradanse européen métissé de rythmes africains. Elle a voyagé vers l'Espagne et l'Amérique latine avec une facilité remarquable, devenant l'un des premiers rythmes de la diaspora afro-cubaine à pénétrer la musique savante européenne.",
+    bullets:[["Origine","La Havane, début XIXe ; importée en Espagne où elle influence le flamenco et la zarzuela ; Bizet l'utilise dans Carmen (1875)."],["Écriture","X..XX.X.\nIntervalles : 3-1-2-2\nTresillo + contretemps au pas 4"],["Sensation","Balancement asymétrique, légèreté malgré la syncope, caractère dansé et élégant."],["Utilisation","Tango argentin (qui en descend directement), bolero cubain, blues américain (Hey Bo Diddley) ; Carmen de Bizet (1875) popularise la Habanera en Europe savante."],["Anecdote","Bo Diddley a construit toute sa carrière sur ce pattern — appelé \"Bo Diddley beat\" en Amérique du Nord, sans que personne ne sache toujours qu'il vient de La Havane."]]
+  },
+  afoxe:{
+    chapo:"L'Afoxê (ou Ijexá) est un rythme afro-brésilien de Salvador de Bahia, issu de la tradition yoruba-nagô du candomblé. Distinct de la Samba, il appartient à une famille rythmique plus proche des racines africaines — les mêmes qui ont engendré le Bembé à Cuba. Sa douceur hypnotique contraste avec la puissance explosive de la Samba.",
+    bullets:[["Origine","Salvador de Bahia (Brésil) ; tradition yoruba-nagô du candomblé ; l'Afoxê Filhos de Gandhi (fondé en 1949) est le groupe le plus célèbre."],["Écriture","X..X.X..\nIntervalles : 3-2-3\n3 frappes sur 8 pas"],["Sensation","Douceur hypnotique, balancement lent et profond, sentiment de procession."],["Utilisation","Carnaval de Salvador, candomblé ; Gilberto Gil et Caetano Veloso l'ont popularisé internationalement dans les années 70-80."],["Relations","Même nombre de frappes que le Tresillo (3 sur 8) mais distribution différente (3-2-3 vs 3-3-2) — comparer les deux révèle comment un même nombre de frappes peut produire des caractères radicalement différents."]]
+  },
+  reggae:{
+    chapo:"La Clave Reggae est le pattern fondateur de la rythmique jamaïcaine — deux frappes sur 8 pas, placées sur le contretemps du 3e temps et son \"et\". Sa caractéristique la plus frappante est l'absence totale de frappe sur les 4 premiers pas — ce silence initial est précisément ce qui crée la sensation de \"retard\" caractéristique du reggae, ce groove pesant et suspendu qui a influencé la quasi-totalité de la musique populaire mondiale.",
+    bullets:[["Origine","Jamaïque — racine profonde dans le mento, musique folk jamaïcaine du XIXe siècle. Le skank et l'appui profond sur le 3e temps sans frapper le 1er sont les signatures sonores du reggae."],["Écriture","....X.X.\nIntervalles : 4-2-2\n2 frappes sur 8 pas — vide des 4 premiers pas constitutif"],["Logique","Grosse caisse sur le 3e temps (pas 5) et son contretemps (pas 7) — inversion complète du 4 on the floor."],["Sensation","Pesanteur, suspension, sentiment d'être \"derrière\" la pulsation — le groove le plus \"late\" du dictionnaire."],["Utilisation","Reggae roots, dub — Bob Marley, Lee Scratch Perry, King Tubby ; absorbé par le hip-hop, le trip-hop (Massive Attack, Portishead)."]]
+  },
+  son32:{
+    chapo:"Le Son clave est le squelette rythmique de toute la musique afro-cubaine — né de la rencontre entre rythmes bantous et guitare espagnole dans l'Oriente cubain au XIXe siècle. Joué aux claves, deux bâtons de bois dur, il structure une famille musicale entière qui a rayonné mondialement. Son asymétrie fondamentale — 5 frappes inégalement réparties sur 16 pas — est précisément ce qui génère le groove syncopé caractéristique de la salsa.",
+    bullets:[["Origine","Cuba, XIXe siècle, confluence yoruba/bantou et espagnole ; \"clave\" désigne à la fois l'instrument et la fonction structurelle (\"clé\" en espagnol)."],["Écriture","X..X..X...X.X...\nIntervalles : 3-3-4-2-4\nE(5,16)"],["Logique","La partie \"3\" (3 frappes) crée l'élan, la partie \"2\" (2 frappes) pose la résolution — l'asymétrie génère une tension permanente avec la pulsation."],["Sensation","Groove tiré en avant, sentiment d'incomplétude qui appelle la résolution, quasi-impossible de rester immobile."],["Anecdote","Dans la tradition cubaine, \"jouer contre la clave\" est la faute musicale suprême — un orchestre entier peut s'arrêter pour corriger."]]
+  },
+  son:{
+    chapo:"Le Son 2:3 est la rotation du Son clave 3:2 — les mêmes 5 frappes décalées de 8 pas, ce qui inverse la logique élan/résolution. Ce n'est pas un rythme séparé mais une position différente du même pattern dans le cycle. Dans la pratique cubaine, les deux formes coexistent et dialoguent au sein d'un même morceau.",
+    bullets:[["Écriture","..X.X...X..X..X.\nRotation du Son 3:2 (décalage 8 pas)\nRésolution en premier"],["Sensation","Plus posé que le 3:2, sentiment d'être \"derrière le temps\", légère flottaison."],["Usage","Certains instruments jouent en 2:3 pendant que d'autres tiennent le 3:2 — c'est cette superposition qui crée la richesse de la clave."],["Relations","Même pattern que Son 3:2, décalage de 8 pas — comprendre les deux ensemble est essentiel pour saisir la logique de la clave."]]
+  },
+  rum32:{
+    chapo:"La Rumba clave est la cousine \"africaine\" du Son — plus proche des racines yoruba et bantou, moins métissée avec l'harmonie européenne. Elle diffère du Son par le déplacement d'une seule frappe (la 3e, avancée d'un pas), ce qui la fait sonner plus \"derrière le temps\" et plus funky. C'est le rythme de la rumba cubaine traditionnelle (yambu, guaguancó, columbia).",
+    bullets:[["Origine","Cuba, communautés afro-cubaines du XIXe siècle ; la rumba est une forme populaire urbaine, pas un rythme de cérémonie."],["Écriture","X..X...X..X.X...\nIntervalles : 3-4-3-2-4\n3e frappe du Son 3:2 avancée d'un pas"],["Sensation","Plus \"derrière le temps\" que le Son, groove plus lourd, sentiment de retenue puis de lâcher."],["Relations","Variante du Son 3:2 par déplacement d'une seule frappe — même nombre de pas, même nombre de frappes, caractère sensiblement différent."]]
+  },
+  shiko:{
+    chapo:"Le Shiko est un des rythmes fondamentaux de l'Afrique de l'Ouest, issu des peuples Ewe du Ghana et du Togo. Sa structure euclidienne — 5 frappes sur 16 pas — le place dans la même famille mathématique que le Son cubain, mais son caractère est radicalement différent : plus circulaire, moins tendu, plus hypnotique.",
+    bullets:[["Origine","Ewe (Ghana/Togo) ; joué aux tambours dans les cérémonies communautaires."],["Écriture","X...X.X...X.X...\nIntervalles : 4-2-4-2-4\nE(5,16)"],["Logique","Alternance régulière 4-2 créant un balancement en deux temps inégaux — plus régulier que la clave, moins de tension élan/résolution."],["Sensation","Groove circulaire et hypnotique, sensation de rotation continue, moins \"tiré en avant\" que la clave."],["Relations","Même E(5,16) que Son 3:2, Bossa Nova et Gahu — trois façons différentes de placer 5 frappes sur 16 pas."]]
+  },
+  souk:{
+    chapo:"Le Soukous est le rythme de la rumba congolaise, né à Kinshasa et Brazzaville dans les années 40-60 de la fusion entre la rumba cubaine importée par des disques, les rythmes bantous et la guitare électrique. Il est l'exemple parfait d'un aller-retour culturel : la rumba afro-cubaine revient en Afrique centrale et y génère une nouvelle forme musicale autonome.",
+    bullets:[["Origine","Congo-Kinshasa et Congo-Brazzaville, années 50-60 ; Franco Luambo et l'OK Jazz, Tabu Ley Rochereau ; \"soukous\" vient du français \"secouer\"."],["Écriture","X..X..X...XX....\nVariante du Son 3:2\nCondensation des deux dernières frappes"],["Sensation","Groove léger et dansant, en avant du temps, accroche immédiate."],["Relations","Retour du rythme bantou en Afrique via Cuba — un des exemples les plus frappants de \"boucle culturelle\" dans l'histoire de la musique populaire."]]
+  },
+  bossa:{
+    chapo:"La Bossa Nova est née à Rio de Janeiro en 1958 de la rencontre entre la samba brésilienne, le cool jazz américain et une nouvelle génération de musiciens cariocas. João Gilberto, en tapant ce pattern à la guitare tout en chantant et jouant les accords, a créé une texture entièrement nouvelle.",
+    bullets:[["Origine","Rio de Janeiro, 1958 ; João Gilberto, Tom Jobim, Vinicius de Moraes — Chega de Saudade est le premier enregistrement."],["Écriture","X..X..X...X..X..\nIntervalles : 3-3-4-3-3\nE(5,16) — seule forme quasi-symétrique de la famille"],["Singularité","Seul rythme de la famille E(5,16) avec une quasi-symétrie. La sensation de flottaison vient du fait que tous les coups sauf le premier tombent en contretemps."],["Sensation","Légèreté, swing sans lourdeur, sentiment de suspension perpétuelle — le temps semble glisser plutôt que marcher."],["Relations","Même E(5,16) que Son 3:2, Shiko, Gahu — famille commune, caractère radicalement différent."]]
+  },
+  gahu:{
+    chapo:"Le Gahu est un rythme de danse des Ewe du Ghana, apparu dans les années 40 et intégrant des influences extérieures. C'est l'un des rythmes africains les plus étudiés par les ethnomusicologues occidentaux, notamment par John Miller Chernoff dans African Rhythm and African Sensibility (1979).",
+    bullets:[["Origine","Ewe du Ghana, milieu XXe siècle ; danse communautaire mixte."],["Écriture","X..X..X...X...X.\nIntervalles : 3-3-4-4-2\nE(5,16) — vide central caractéristique"],["Logique","Le grand intervalle central de 4+4 crée un \"vide\" inhabituel au milieu du pattern — c'est lui qui donne au Gahu son caractère suspendu."],["Sensation","Groove aéré, suspension au milieu du cycle, résolution rapide en fin de pattern."],["Relations","Troisième membre de la famille E(5,16) avec Son 3:2 et Shiko ; le vide central le distingue nettement des deux autres."]]
+  },
+  samba:{
+    chapo:"La Samba est le rythme national brésilien, né à Rio de Janeiro au début du XXe siècle dans les communautés afro-brésiliennes. Sa structure sur 16 pas est plus dense que la Bossa Nova qui en dérive, avec 7 frappes créant un enchevêtrement caractéristique.",
+    bullets:[["Origine","Rio de Janeiro, début XXe siècle ; communautés bahianaises installées dans les favelas ; institutionnalisé par le Carnaval."],["Écriture","X..X.X.X..X.X.X.\nIntervalles : 3-2-2-3-2-2-2\nE(7,16) — structure quasi-palindromique"],["Logique","Ce dialogue constant entre temps et contretemps crée une tension permanente qui appelle le corps à se mouvoir."],["Sensation","Énergie explosive et en avant du temps. Le groove est physiquement irrésistible."],["Relations","Même densité que Bembé (7 frappes) mais sur 16 pas — sensation très différente, moins oppressante."]]
+  },
+  fume:{
+    chapo:"Le Fume-fume est un des rythmes fondateurs de la musique Ewe du Ghana, utilisé comme rythme-référence (\"bell pattern\") dans les cérémonies collectives. Sur base 12, il répartit 6 frappes en deux groupes asymétriques. C'est l'un des rythmes les plus analysés dans l'ethnomusicologie africaine.",
+    bullets:[["Origine","Ewe (Ghana/Togo) ; joué à la cloche (gankogui) pour organiser les autres instruments de l'ensemble."],["Écriture","X.X.X..X.X..\nIntervalles : 2-2-3-2-3\nE(6,12)"],["Singularité","Peut être entendu en 3 (deux groupes de 6) ou en 2 (trois groupes de 4) — rythme \"ambigu\" jouant sur la frontière binaire/ternaire."],["Sensation","Oscillation, ambiguïté métrique, sensation de \"toupie\" pouvant basculer d'un côté ou de l'autre."],["Relations","Complémentaire exact de Bembé — les 6 pas de l'un sont les 6 silences de l'autre."]]
+  },
+  cascara:{
+    chapo:"La Cáscara 3:2 (\"coquille\" en espagnol) est le pattern rythmique joué sur la coque métallique des timbales dans la salsa et la musique afro-cubaine. Dense, continue, asymétrique, elle est à la salsa ce que le charley est au jazz : l'horloge interne qui fait swinguer le tout.",
+    bullets:[["Origine","Cuba, ensembles de salsa et de son des années 40-60 ; jouée sur les timbales par le timbalero."],["Écriture","X.XX.X.XX.X.XX.X\nIntervalles : 2-1-2-2-1-2-2-1-2-1\n10 frappes sur 16 pas"],["Logique","Elle contient toutes les frappes de la clave Son 3:2 plus des frappes supplémentaires — la clave enrichie d'un contrechant constant."],["Sensation","Dense et régulière en surface, elle crée un tapis rythmique continu sur lequel les autres instruments brodent."],["Utilisation","Timbales en salsa (sections verses, piano solos) ; Tito Puente, Willie Colón."]]
+  },
+  tumbao:{
+    chapo:"Le Tumbao est le pattern de piano (ou tres) fondamental de la musique cubaine — ce que les Nord-Américains appellent montuno. Né dans le son montuno avec Arsenio Rodríguez, il est devenu le langage universel du piano en salsa, mambo et timba.",
+    bullets:[["Origine","Cuba, son montuno, années 30-40 ; Arsenio Rodríguez introduit le piano dans le conjunto cubain."],["Écriture","X.XX.X.X.X.X.X.X\nPattern de piano (guajeo/montuno)\nPresque tous les coups sont en contretemps"],["Logique","Le pianiste joue des accords syncopés en arpèges, anticipant la pulsation. Le pattern s'organise strictement par rapport à la clave."],["Sensation","Tapis harmonique hypnotique, propulsion, sentiment que les accords \"flottent\" au-dessus du tempo."],["Relations","Distinct du tumbao de basse (pattern de contrebasse) avec lequel il s'interloque — les deux ensemble définissent le groove afro-cubain."]]
+  },
+  solea:{
+    chapo:"La Soleá est la mère du flamenco — le palo (style) le plus fondamental, celui par lequel commence traditionnellement l'apprentissage de la guitare flamenca. Son compás (rythme) de 12 temps avec des accents sur les temps 3, 6, 8, 10 et 12 est une structure unique au monde, à la frontière du binaire et du ternaire.",
+    bullets:[["Origine","Andalousie (Espagne), probablement Séville et Cadix, XVIIIe-XIXe siècle ; transmission orale dans les communautés gitanes."],["Écriture","..X..X.X.X.X\nAccents sur les temps 3-6-8-10-12\n5 frappes sur 12 pas — structure 3+3+2+2+2"],["Logique","Le compás commence sur un silence (temps 1 muet, caractéristique du flamenco) — arc dramatique tension/résolution en un seul cycle."],["Singularité","L'amalgame binaire/ternaire (6/8 + 3/4) crée une ambiguïté métrique qui est précisément la source de l'expressivité flamenco."],["Sensation","Gravité, lenteur intérieure, dignité — la Soleá est le temple du duende flamenco ; elle ne se précipite jamais."]]
+  },
+  bembe:{
+    chapo:"Le Bembé est un rythme de cérémonie yoruba, joué dans la Santería cubaine pour l'invocation des Orishas. C'est le rythme euclidien le plus dense du dictionnaire sur base 12 — 7 frappes sur 12 pas, laissant à peine de l'espace. Cette densité quasi-continue produit une tension hypnotique sans repos qui explique son usage rituel.",
+    bullets:[["Origine","Yoruba (Nigeria/Bénin), transplanté à Cuba avec la traite ; \"Bembé\" désigne aussi la cérémonie elle-même."],["Utilisation","Rituels de Santería (Cuba) ; jazz modal : Miles Davis Kind of Blue (1959), Coltrane Africa/Brass (1961) ; Steve Reich, Drumming (1971)."],["Écriture","X.X.XX.X.X.X\nIntervalles : 2-2-1-2-2-2\nE(7,12) — maximum euclidien sur base 12"],["Singularité","Un seul intervalle d'1 pas (entre frappes 5 et 6) — micro-accentuation caractéristique, comme un trébuchement contrôlé."],["Sensation","Urgence hypnotique, absence de respiration, état de transe — la densité est fonctionnelle, pas décorative."]]
+  }
+};
+
+// Données par défaut du cours (source de vérité)
+const PTK_DEFAULT = {
+  meta:{titre:'', auteur:'', version:'2.0', date:''},
+  familles:[
+    {id:'fam_base',      nom:'Référentiel',  description:'Patterns de base et pulsations'},
+    {id:'fam_euclidien', nom:'Euclidien',    description:'Distributions euclidiennes maximales'},
+    {id:'fam_afrocubain',nom:'Afro-cubain',  description:'Rythmes de Cuba et des Caraïbes'},
+    {id:'fam_africain',  nom:'Africain',     description:"Rythmes d'Afrique de l'Ouest"},
+  ],
+  // Groupes pour les select de couches (ordre d'affichage dans les menus)
+  groupes_patterns:[
+    {label:'Référentiels', ids:['silence','pulse1','bin2','ter3','fl4','offbeat','pulse4','sync4']},
+    {label:'8 pas',        ids:['tres','cinq','hab','afoxe','reggae']},
+    {label:'16 pas — E(5,16)', ids:['son32','son','rum32','bossa','gahu','shiko']},
+    {label:'16 pas — autres',  ids:['souk','samba','cascara','tumbao']},
+    {label:'12 pas',       ids:['fume','bembe','solea']},
+  ],
+  patterns:[
+    {id:'pulse1', nom:'Pulse',                   sequence:'X',                pas:1,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'bin2',   nom:'Bin (1:2)',               sequence:'X.',               pas:2,  unite_temps:'1/4', pas_par_mesure:2},
+    {id:'ter3',   nom:'Ter (1:3)',               sequence:'X..',              pas:3,  unite_temps:'1/4', pas_par_mesure:3},
+    {id:'fl4',    nom:'Four on the Floor (2,4)', sequence:'X.X.X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'fl4'},
+    {id:'offbeat',nom:'Off Beat (2,4)',          sequence:'.X.X.X.X',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'offbeat'},
+    {id:'pulse4', nom:'Pulse (4:4)',             sequence:'XXXX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'sync4',  nom:'Double Up (2:4)',         sequence:'..XX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'silence',nom:'Silence',                sequence:'....',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'tres',   nom:'Tresillo',               sequence:'X..X..X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'tres'},
+    {id:'cinq',   nom:'Cinquillo',              sequence:'X.XX.XX.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'cinq'},
+    {id:'hab',    nom:'Habanera',               sequence:'X..XX.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'hab'},
+    {id:'afoxe',  nom:'Afoxê / Bolero',        sequence:'X..X.X..',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'afoxe'},
+    {id:'reggae', nom:'Clave Reggae',           sequence:'....X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'reggae'},
+    {id:'son32',  nom:'Son 3:2',               sequence:'X..X..X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son32'},
+    {id:'son',    nom:'Son (2:3)',             sequence:'..X.X...X..X..X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son'},
+    {id:'rum32',  nom:'Rumba 3:2',            sequence:'X..X...X..X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'rum32'},
+    {id:'shiko',  nom:'Shiko',               sequence:'X...X.X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'shiko'},
+    {id:'bossa',  nom:'Bossa Nova',           sequence:'X..X..X...X..X..',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'bossa'},
+    {id:'gahu',   nom:'Gahu',                sequence:'X..X..X...X...X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'gahu'},
+    {id:'souk',   nom:'Soukous',             sequence:'X..X..X...XX....',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'souk'},
+    {id:'samba',  nom:'Samba',               sequence:'X..X.X.X..X.X.X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'samba'},
+    {id:'cascara',nom:'Cascara 3:2',          sequence:'X.XX.X.XX.X.XX.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'cascara'},
+    {id:'tumbao', nom:'Tumbao',              sequence:'X.XX.X.X.X.X.X.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'tumbao'},
+    {id:'fume',   nom:'Fume-fume',           sequence:'X.X.X..X.X..',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'fume'},
+    {id:'bembe',  nom:'Bembé',             sequence:'X.X.XX.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'bembe'},
+    {id:'solea',  nom:'Soleá',            sequence:'..X..X.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'solea'},
+  ],
+  grooves:[
+    // vitesse_mult: multiplicateur de vitesse global (1=normal, 2=double)
+    // halfOn/doubleOn par layer : vitesse relative de la couche (simplifié Phase 1, futur: unite_temps)
+    {id:'salsa32',   nom:'Salsa 3:2',  band_defaut:'perc',   tempo:{min:80,max:360,defaut:200}, vitesse_mult:2,
+     encyclo_ref:'son32',
+     layers:[
+       {id:'grave', patternId:'tres',    mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'aigu',  patternId:'son32',   mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'noise', patternId:'cascara', mute:false, shift:0, halfOn:false, doubleOn:false},
+     ]},
+    {id:'bossanova', nom:'Bossa Nova', band_defaut:'minimal',tempo:{min:60,max:200,defaut:160}, vitesse_mult:1,
+     encyclo_ref:'bossa',
+     layers:[
+       {id:'grave', patternId:'sync4',  mute:false, shift:1, halfOn:false, doubleOn:false},
+       {id:'aigu',  patternId:'bossa',  mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
+     ]},
+    {id:'techno',    nom:'Techno',     band_defaut:'electro',tempo:{min:80,max:400,defaut:260}, vitesse_mult:1,
+     encyclo_ref:'fl4',
+     layers:[
+       {id:'grave', patternId:'fl4',    mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'aigu',  patternId:'tres',   mute:true,  shift:0, halfOn:false, doubleOn:true},
+       {id:'noise', patternId:'offbeat',mute:false, shift:0, halfOn:false, doubleOn:false},
+     ]},
+    {id:'reggae',    nom:'Reggae',     band_defaut:'rock',   tempo:{min:60,max:220,defaut:200}, vitesse_mult:1,
+     encyclo_ref:'reggae',
+     layers:[
+       {id:'grave', patternId:'reggae', mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
+       {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
+     ]},
+    {id:'dancehall', nom:'Dancehall',  band_defaut:'perc',   tempo:{min:80,max:320,defaut:200}, vitesse_mult:2,
+     encyclo_ref:'tres',
+     layers:[
+       {id:'grave', patternId:'tres',   mute:false, shift:0, halfOn:false, doubleOn:false},
+       {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
+       {id:'noise', patternId:'hab',    mute:false, shift:0, halfOn:false, doubleOn:false},
+     ]},
+  ],
+};
+
+// Données courantes du cours (clonées depuis PTK_DEFAULT, modifiables en TX)
+let packCours = null;
+
+// Raccourcis DATA
+function getPattern(id){return packCours.patterns.find(p=>p.id===id);}
+function getGroove(id){return packCours.grooves.find(g=>g.id===id);}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE AUDIO — Moteur scheduler + synthèse (copié depuis v1.6, stable)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Primitives de synthèse ────────────────────────────────────────────────
+function lerp(a,b,t){return a+(b-a)*Math.max(0,Math.min(1,t));}
+
+function sineDrop(a,t,f0,f1,dur,vol,punch){
+  const o=a.createOscillator(),g=a.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(f0,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1,8),t+dur);
+  const pk=punch?vol*1.4:vol;
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(pk,t+0.004);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02);
+}
+
+function noiseClick(a,t,dur,vol){
+  const len=Math.ceil(a.sampleRate*Math.max(dur,0.005));
+  const buf=a.createBuffer(1,len,a.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,6);
+  const src=a.createBufferSource(),g=a.createGain();
+  src.buffer=buf;g.gain.value=vol;src.connect(g);g.connect(a.destination);src.start(t);
+}
+
+function noiseFiltered(a,t,dur,freq,vol,filterType){
+  const len=Math.ceil(a.sampleRate*(dur+.01));
+  const buf=a.createBuffer(1,len,a.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+  const src=a.createBufferSource();src.buffer=buf;
+  const filt=a.createBiquadFilter();filt.type=filterType||'highpass';
+  filt.frequency.value=freq;filt.Q.value=0.8;
+  const g=a.createGain();
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  src.connect(filt);filt.connect(g);g.connect(a.destination);src.start(t);
+}
+
+function toneEnv(a,t,freq,dur,vol,type,atk){
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type||'sine';o.frequency.value=freq;
+  const at=atk||0.003;
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol,t+at);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02);
+}
+
+function snareSound(a,t,freq,dur,vol,noiseMix){
+  toneEnv(a,t,freq,dur*0.4,vol*(1-noiseMix),'triangle',0.002);
+  noiseFiltered(a,t,dur,freq*2,vol*noiseMix,'bandpass');
+}
+
+function claveSound(a,t,freq,dur,vol){
+  const o=a.createOscillator(),g=a.createGain();
+  o.type='square';o.frequency.value=freq;
+  const filt=a.createBiquadFilter();filt.type='highpass';filt.frequency.value=freq*0.8;filt.Q.value=2;
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(filt);filt.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.01);
+}
+
+function rimshotSound(a,t,freq,vol){
+  noiseFiltered(a,t,0.04,freq*3,vol*0.7,'highpass');
+  noiseClick(a,t,0.006,vol);
+}
+
+function bellSound(a,t,freq,dur,vol){
+  const ratios=[1,2.756,5.404,8.933,13.35];
+  const amps=[1,0.6,0.4,0.25,0.15];
+  ratios.forEach((r,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=freq*r;
+    const v=vol*amps[i],d=dur*Math.pow(0.55,i);
+    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(v,t+0.005);
+    g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.02);
+  });
+}
+
+function triangleSound(a,t,freq,dur,vol){
+  const o=a.createOscillator(),g=a.createGain();
+  o.type='sine';o.frequency.value=freq;
+  const o2=a.createOscillator(),g2=a.createGain();
+  o2.type='sine';o2.frequency.value=freq*3.01;g2.gain.value=vol*0.015;
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol*0.7,t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g);o2.connect(g2);g.connect(a.destination);g2.connect(a.destination);
+  o.start(t);o2.start(t);o.stop(t+dur+.02);o2.stop(t+dur+.02);
+}
+
+function strumSound(a,t,freq,dur,vol){
+  [0,0.025,0.05].forEach((delay,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sawtooth';o.frequency.value=freq*[1,1.003,0.998][i];
+    const filt=a.createBiquadFilter();filt.type='lowpass';
+    filt.frequency.setValueAtTime(freq*6,t+delay);
+    filt.frequency.exponentialRampToValueAtTime(freq*1.5,t+delay+dur);
+    filt.Q.value=1.2;
+    g.gain.setValueAtTime(0.001,t+delay);g.gain.linearRampToValueAtTime(vol*0.5,t+delay+0.005);
+    g.gain.exponentialRampToValueAtTime(0.001,t+delay+dur);
+    o.connect(filt);filt.connect(g);g.connect(a.destination);
+    o.start(t+delay);o.stop(t+delay+dur+.02);
+  });
+}
+
+function congaSound(a,t,f0,dur,vol,isBass){
+  const f1=f0*(isBass?0.35:0.45);
+  sineDrop(a,t,f0,f1,dur,vol,false);
+  if(isBass){
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=f0*0.5;
+    g.gain.setValueAtTime(vol*0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur*0.6);
+    o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur*0.6+.01);
+  }
+  noiseClick(a,t,0.008,vol*0.5);
+}
+
+function bongoSound(a,t,freq,dur,vol){
+  sineDrop(a,t,freq*1.4,freq*0.7,dur,vol*0.8,false);
+  const o=a.createOscillator(),g=a.createGain();
+  o.type='sine';o.frequency.setValueAtTime(freq*2.8,t);
+  o.frequency.exponentialRampToValueAtTime(freq*1.4,t+dur*0.5);
+  g.gain.setValueAtTime(vol*0.4,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur*0.5);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur*0.5+.01);
+  noiseClick(a,t,0.006,vol*0.4);
+}
+
+// ── Plages de pitch par son ───────────────────────────────────────────────
+const PITCH_RANGES={
+  kick:[40,160],gros_caisse:[36,146],tambour:[41,165],tom_bas:[55,220],
+  snare:[138,554],caisse_claire:[131,523],clave:[880,3520],triangle_inst:[523,2093],
+  hihat_f:[3000,12000],hihat_o:[2000,8000],shaker:[1500,6000],charleston:[2500,10000],
+  conga_b:[55,220],bongo:[110,330],bell:[440,1760],triangle_p:[880,3520],
+  strum:[110,440],rimshot:[200,800],clap:[300,1200],
+};
+function getPitchRange(id){return PITCH_RANGES[id]||[100,2000];}
+function pitchToNorm(hz,id){const[lo,hi]=getPitchRange(id);return Math.max(0,Math.min(1,Math.log(Math.max(hz,lo)/lo)/Math.log(hi/lo)));}
+function normToPitch(n,id){const[lo,hi]=getPitchRange(id);return lo*Math.pow(hi/lo,Math.max(0,Math.min(1,n)));}
+
+// ── Banque de sons ────────────────────────────────────────────────────────
+const SOUND_DEFS={
+  kick:{label:'Kick',cat:'low',
+    play(a,t,p){sineDrop(a,t,p.pitch*2.2,p.pitch*0.15,lerp(.04,.30,p.env),p.vol,true);noiseClick(a,t,.006,p.vol*0.3);}},
+  gros_caisse:{label:'Grosse caisse',cat:'low',
+    play(a,t,p){sineDrop(a,t,p.pitch*2.8,p.pitch*0.12,lerp(.05,.35,p.env),p.vol,true);noiseClick(a,t,.01,p.vol*0.2);}},
+  tambour:{label:'Tambour grave',cat:'low',
+    play(a,t,p){sineDrop(a,t,p.pitch*1.5,p.pitch*0.5,lerp(.1,.5,p.env),p.vol*0.8,false);noiseFiltered(a,t,lerp(.06,.25,p.env),p.pitch*4,p.vol*0.4,'bandpass');}},
+  tom_bas:{label:'Tom grave',cat:'low',
+    play(a,t,p){sineDrop(a,t,p.pitch*1.8,p.pitch*0.6,lerp(.08,.4,p.env),p.vol,false);noiseClick(a,t,.008,p.vol*0.25);}},
+  snare:{label:'Snare',cat:'high',
+    play(a,t,p){snareSound(a,t,p.pitch,lerp(.05,.22,p.env),p.vol,0.65);}},
+  clave:{label:'Clave',cat:'high',
+    play(a,t,p){claveSound(a,t,p.pitch,lerp(.012,.055,p.env),p.vol);}},
+  caisse_claire:{label:'Caisse claire',cat:'high',
+    play(a,t,p){snareSound(a,t,p.pitch,lerp(.06,.25,p.env),p.vol,0.5);}},
+  triangle_inst:{label:'Triangle',cat:'high',
+    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.3,1.8,p.env),p.vol);}},
+  hihat_f:{label:'Hi-hat fermé',cat:'noise',
+    play(a,t,p){noiseFiltered(a,t,lerp(.012,.07,p.env),p.pitch,p.vol,'highpass');}},
+  hihat_o:{label:'Hi-hat ouvert',cat:'noise',
+    play(a,t,p){noiseFiltered(a,t,lerp(.1,.55,p.env),p.pitch,p.vol,'highpass');}},
+  shaker:{label:'Shaker',cat:'noise',
+    play(a,t,p){noiseFiltered(a,t,lerp(.025,.1,p.env),p.pitch,p.vol*0.7,'bandpass');noiseFiltered(a,t,lerp(.015,.06,p.env),p.pitch*1.5,p.vol*0.4,'bandpass');}},
+  charleston:{label:'Charleston',cat:'noise',
+    play(a,t,p){noiseFiltered(a,t,lerp(.018,.09,p.env),p.pitch,p.vol,'highpass');}},
+  conga_b:{label:'Conga basse',cat:'thumb',
+    play(a,t,p){congaSound(a,t,p.pitch,lerp(.08,.32,p.env),p.vol,true);}},
+  bongo:{label:'Bongo',cat:'thumb',
+    play(a,t,p){bongoSound(a,t,p.pitch,lerp(.05,.2,p.env),p.vol);}},
+  bell:{label:'Bell',cat:'thumb',
+    play(a,t,p){bellSound(a,t,p.pitch,lerp(.4,2.5,p.env),p.vol);}},
+  triangle_p:{label:'Triangle',cat:'thumb',
+    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.5,3.0,p.env),p.vol);}},
+  strum:{label:'Strum',cat:'thumb',
+    play(a,t,p){strumSound(a,t,p.pitch,lerp(.06,.35,p.env),p.vol);}},
+  rimshot:{label:'Rimshot',cat:'thumb',
+    play(a,t,p){rimshotSound(a,t,p.pitch,p.vol);}},
+  clap:{label:'Clap',cat:'thumb',
+    play(a,t,p){
+      snareSound(a,t,p.pitch,lerp(.03,.14,p.env),p.vol,0.82);
+      const a2=getAC();if(a2)setTimeout(()=>snareSound(a2,a2.currentTime+0.012,p.pitch*1.05,lerp(.025,.1,p.env),p.vol*0.55,0.82),0);
+    }},
+};
+
+// ── Styles de band (presets sons) ─────────────────────────────────────────
+const BAND_STYLES=[
+  {id:'electro',  label:'Électro',
+    low:'kick',       lowPitch:80,
+    high:'snare',     highPitch:220,
+    noise:'hihat_f',  noisePitch:6000,
+    thumbL:'bell',    thumbLPitch:698,
+    thumbR:'clap',    thumbRPitch:600},
+  {id:'perc',     label:'Percussions',
+    low:'tambour',    lowPitch:82,
+    high:'clave',     highPitch:1760,
+    noise:'shaker',   noisePitch:3000,
+    thumbL:'conga_b', thumbLPitch:110,
+    thumbR:'bongo',   thumbRPitch:220},
+  {id:'rock',     label:'Rock',
+    low:'gros_caisse',lowPitch:65,
+    high:'caisse_claire',highPitch:220,
+    noise:'charleston',noisePitch:5000,
+    thumbL:'tom_bas', thumbLPitch:110,
+    thumbR:'rimshot', thumbRPitch:440},
+  {id:'minimal',  label:'Minimaliste',
+    low:'tom_bas',    lowPitch:110,
+    high:'clave',     highPitch:1760,
+    noise:'charleston',noisePitch:5000,
+    thumbL:'triangle_p',thumbLPitch:880,
+    thumbR:'triangle_p',thumbRPitch:1532},
+];
+
+// ── Couches rythmiques (positions fixes) ──────────────────────────────────
+const LAYERS=[
+  {id:'low',  label:'Grave', cls:'c-low'},
+  {id:'high', label:'Aigu',  cls:'c-high'},
+  {id:'noise',label:'Noise', cls:'c-noise'},
+];
+
+// ── États runtime audio ───────────────────────────────────────────────────
+let state=LAYERS.map(()=>({
+  pattern:['.'],
+  stepPos:0, nextStepTime:0, startTime:0,
+  muted:false, halfOn:false, doubleOn:false,
+  pendingHalf:false, pendingDouble:false, pendingClear:false,
+  wrapped:false,
+}));
+
+function defaultSoundState(soundId,pitchDef){return{soundId,pitch:pitchDef,env:0.3,vol:0.5};}
+let soundState=[
+  defaultSoundState('kick',80),
+  defaultSoundState('snare',300),
+  defaultSoundState('hihat_f',6000),
+];
+let soundStateThumb=[
+  defaultSoundState('conga_b',150),
+  defaultSoundState('clap',800),
+];
+const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
+
+let playing=false, ac=null, latencyMs=0;
+let globalSpeedMult=1, pendingGlobalMult=1;
+let schedTimerID=null, visualRafID=null;
+const STEP_W=22;
+const LOOKAHEAD=0.1;
+const SCHED_MS=25;
+
+function getAC(){
+  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}
+  return ac;
+}
+
+function getBeatSec(li){
+  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
+  return(60/spm)/mult;
+}
+
+function scheduler(){
+  if(!playing)return;
+  const now=getAC().currentTime;
+  LAYERS.forEach((layer,li)=>{
+    while(state[li].nextStepTime<now+LOOKAHEAD){
+      const si=state[li].stepPos;
+      if(si===0){
+        if(li===0&&pendingGlobalMult!==globalSpeedMult){
+          const now2=getAC().currentTime,oldM=globalSpeedMult;
+          globalSpeedMult=pendingGlobalMult;
+          LAYERS.forEach((_,lj)=>{
+            const rem=state[lj].nextStepTime-now2;
+            if(rem>0)state[lj].nextStepTime=now2+rem*(oldM/globalSpeedMult);
+          });
+          updateGlobalSpeedBtns();
+        }
+        if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
+        if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
+        if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
+      }
+      // Phase 1 : seul 'X' (fort) déclenche le son — 'x' (faible) prévu pour une itération future
+      if(state[li].pattern[si]==='X'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime);
+      state[li].nextStepTime+=getBeatSec(li);
+      state[li].stepPos=(si+1)%state[li].pattern.length;
+    }
+  });
+  schedTimerID=setTimeout(scheduler,SCHED_MS);
+}
+
+function visualLoop(){
+  if(!playing)return;
+  const now=getAC().currentTime;
+  LAYERS.forEach((layer,li)=>{
+    const beatSec=getBeatSec(li);
+    const elapsed=now-state[li].startTime;
+    const si=Math.floor(elapsed/beatSec)%state[li].pattern.length;
+    const div=document.getElementById('steps-'+layer.id);if(!div)return;
+    div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
+  });
+  visualRafID=requestAnimationFrame(visualLoop);
+}
+
+function rotate(arr,n){const l=arr.length;if(!l)return arr;const k=((n%l)+l)%l;return[...arr.slice(k),...arr.slice(0,k)];}
+function halfAt(len){if(len<=4)return null;return Math.ceil(len/2);}
+
+// ── Son ───────────────────────────────────────────────────────────────────
+function playSound(ss,atTime){
+  const a=getAC();if(!a)return;
+  const lat=latencyMs/1000;
+  const t=Math.max(a.currentTime,atTime+lat);
+  const def=SOUND_DEFS[ss.soundId];if(!def)return;
+  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol});
+}
+function scheduleNote(li,atTime){playSound(soundState[li],atTime);}
+function playConga(isRight){
+  const a=getAC();if(!a)return;
+  playSound(soundStateThumb[isRight?1:0],a.currentTime);
+}
+function applyBandStyle(styleId){
+  const s=BAND_STYLES.find(b=>b.id===styleId);if(!s)return;
+  soundState[0]={soundId:s.low,  pitch:s.lowPitch,   env:.3,vol:soundState[0].vol};
+  soundState[1]={soundId:s.high, pitch:s.highPitch,  env:.3,vol:soundState[1].vol};
+  soundState[2]={soundId:s.noise,pitch:s.noisePitch, env:.3,vol:soundState[2].vol};
+  soundStateThumb[0]={soundId:s.thumbL,pitch:s.thumbLPitch,env:.3,vol:soundStateThumb[0].vol};
+  soundStateThumb[1]={soundId:s.thumbR,pitch:s.thumbRPitch,env:.3,vol:soundStateThumb[1].vol};
+}
+
+// ── Playback ──────────────────────────────────────────────────────────────
+function startPlay(){
+  playing=true;
+  const a=getAC();
+  const now=a.currentTime;
+  LAYERS.forEach((_,li)=>{
+    state[li].stepPos=0;
+    state[li].nextStepTime=now;
+    state[li].startTime=now;
+  });
+  scheduler();
+  visualRafID=requestAnimationFrame(visualLoop);
+}
+
+function stopPlay(){
+  playing=false;
+  clearTimeout(schedTimerID);
+  cancelAnimationFrame(visualRafID);
+  LAYERS.forEach(l=>{
+    const d=document.getElementById('steps-'+l.id);
+    if(d)d.querySelectorAll('.step').forEach(s=>s.classList.remove('cur'));
+  });
+}
+
+function togglePlay(){
+  if(!playing){
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}
+    ac.resume(); // iOS 18 : resume() synchrone dans le handler de clic
+    document.getElementById('btn-play').textContent='■';
+    document.getElementById('btn-play').classList.add('active');
+    startPlay();
+  } else {
+    stopPlay();
+    document.getElementById('btn-play').textContent='▶';
+    document.getElementById('btn-play').classList.remove('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE RENDER — DOM piloté par DATA, jamais l'inverse
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── État UI (runtime, non persisté) ──────────────────────────────────────
+let currentGrooveId = null;
+let sonsOuvert = false;
+let layersOuverts = true;
+let encycloOuvert = false;
+let currentEncycloId = null;
+
+// ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
+function applyGroove(grooveId){
+  const groove=getGroove(grooveId);if(!groove)return;
+  currentGrooveId=grooveId;
+
+  LAYERS.forEach((layer,li)=>{
+    const gl=groove.layers[li];if(!gl)return;
+    const pat=getPattern(gl.patternId);if(!pat)return;
+    let seq=pat.sequence.split('');
+    if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
+    state[li].pattern=seq;
+    state[li].stepPos=0;
+    state[li].muted=gl.mute||false;
+    state[li].halfOn=gl.halfOn||false;
+    state[li].doubleOn=gl.doubleOn||false;
+    state[li].pendingHalf=false;
+    state[li].pendingDouble=false;
+    state[li].pendingClear=false;
+    state[li].wrapped=false;
+  });
+
+  // Appliquer le band
+  applyBandStyle(groove.band_defaut);
+
+  // Appliquer le multiplicateur de vitesse global
+  const newMult=groove.vitesse_mult||1;
+  globalSpeedMult=newMult;
+  pendingGlobalMult=newMult;
+  updateGlobalSpeedBtns();
+
+  // Resync si en lecture
+  if(playing){
+    clearTimeout(schedTimerID);
+    const now=getAC().currentTime;
+    LAYERS.forEach((_,li)=>{
+      state[li].stepPos=0;
+      state[li].nextStepTime=now;
+      state[li].startTime=now;
+    });
+    scheduler();
+  }
+
+  // Reconstruire le DOM des couches et sons
+  buildLayers();
+  buildSoundPanel();
+  updateGrooveSelect();
+  updateSpmDisplay();
+}
+
+// ── Rebuild complet ───────────────────────────────────────────────────────
+function render(){
+  buildBandSection();
+  buildGrooveSection();
+  buildLayers();
+  buildEncycloSection();
+  buildSoundPanel();
+}
+
+// ── Section Band ──────────────────────────────────────────────────────────
+function buildBandSection(){
+  const cont=document.getElementById('section-band');
+  if(!cont)return;
+  cont.innerHTML='';
+
+  const bar=document.createElement('div');
+  bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
+
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
+  bar.appendChild(lbl);
+
+  // Select style de band
+  const sel=document.createElement('select');
+  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #8ab4d0;border-radius:4px;background:#fff;color:#1a1a18';
+  BAND_STYLES.forEach(bs=>{
+    const o=document.createElement('option');o.value=bs.id;o.textContent=bs.label;sel.appendChild(o);
+  });
+  // Sélectionner le band du groove courant
+  const groove=getGroove(currentGrooveId);
+  if(groove)sel.value=groove.band_defaut;
+  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();});
+  bar.appendChild(sel);
+
+  const btnVolet=document.createElement('button');
+  btnVolet.className='btn-volet'+(sonsOuvert?' open':'');
+  btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+  btnVolet.addEventListener('click',()=>{
+    sonsOuvert=!sonsOuvert;
+    const bc=document.getElementById('band-content');
+    if(bc)bc.classList.toggle('open',sonsOuvert);
+    btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+    btnVolet.classList.toggle('open',sonsOuvert);
+  });
+  bar.appendChild(btnVolet);
+  cont.appendChild(bar);
+
+  // Initialiser l'état du contenu
+  const bc=document.getElementById('band-content');
+  if(bc)bc.classList.toggle('open',sonsOuvert);
+}
+
+// ── Section Groove ────────────────────────────────────────────────────────
+function buildGrooveSection(){
+  const cont=document.getElementById('section-groove');
+  if(!cont)return;
+  cont.innerHTML='';
+
+  const bar=document.createElement('div');
+  bar.className='section-bar groove-bar';
+
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
+  bar.appendChild(lbl);
+
+  const sel=document.createElement('select');
+  sel.id='groove-select';
+  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:150px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
+  packCours.grooves.forEach(g=>{
+    const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);
+  });
+  if(currentGrooveId)sel.value=currentGrooveId;
+  sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
+  bar.appendChild(sel);
+
+  // Bouton i (lien encyclopédie)
+  const btnI=document.createElement('button');
+  btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
+  const groove=getGroove(currentGrooveId);
+  const hasE=!!(groove&&groove.encyclo_ref&&ENCYCLO[groove.encyclo_ref]);
+  btnI.style.opacity=hasE?'1':'.3';
+  btnI.style.cursor=hasE?'pointer':'default';
+  btnI.addEventListener('click',()=>{
+    const g=getGroove(currentGrooveId);
+    if(!g||!g.encyclo_ref||!ENCYCLO[g.encyclo_ref])return;
+    showEncycloEntry(g.encyclo_ref);
+    if(!encycloOuvert)toggleEncyclo(true);
+  });
+  bar.appendChild(btnI);
+
+  const btnVolet=document.createElement('button');
+  btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
+  btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
+  btnVolet.addEventListener('click',()=>{
+    layersOuverts=!layersOuverts;
+    const lw=document.getElementById('layers-wrap');
+    const hd=document.querySelector('.hdivider');
+    if(lw)lw.style.display=layersOuverts?'':'none';
+    if(hd)hd.style.display=layersOuverts?'':'none';
+    btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
+    btnVolet.classList.toggle('open',layersOuverts);
+  });
+  bar.appendChild(btnVolet);
+  cont.appendChild(bar);
+}
+
+// ── Couches rythmiques ────────────────────────────────────────────────────
+const layerObservers=[];
+function buildLayers(){
+  layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
+  const cont=document.getElementById('layers');if(!cont)return;
+  cont.innerHTML='';
+
+  LAYERS.forEach((layer,li)=>{
+    const layerDiv=document.createElement('div');
+    layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
+
+    // Colonne gauche : menu
+    const menu=document.createElement('div');menu.className='layer-menu';
+
+    const menuTop=document.createElement('div');menuTop.className='layer-menu-top';
+
+    const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
+    menuTop.appendChild(lbl);
+
+    // Bouton mute
+    const btnMute=document.createElement('button');
+    btnMute.className='btn-mute-sq'+(state[li].muted?' muted':'');
+    btnMute.textContent=state[li].muted?'○':'●';
+    btnMute.title=state[li].muted?'Activer':'Muet';
+    btnMute.addEventListener('click',()=>{
+      state[li].muted=!state[li].muted;
+      btnMute.classList.toggle('muted',state[li].muted);
+      btnMute.textContent=state[li].muted?'○':'●';
+      layerDiv.classList.toggle('muted-layer',state[li].muted);
+    });
+    menuTop.appendChild(btnMute);
+    menu.appendChild(menuTop);
+
+    // Select pattern
+    const sel=document.createElement('select');
+    sel.className='layer-select';
+    sel.id='sel-'+layer.id;
+    buildPatternSelect(sel);
+    // Sélectionner le pattern courant
+    const curPat=findPatternBySeq(state[li].pattern);
+    if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});
+    sel.addEventListener('change',()=>{
+      const pat=getPattern(sel.value);if(!pat)return;
+      state[li].pattern=pat.sequence.split('');
+      state[li].stepPos=0;state[li].wrapped=false;
+      buildStepsDOM(li,false);
+      setTimeout(()=>checkWrap(li),0);
+    });
+    menu.appendChild(sel);
+
+    layerDiv.appendChild(menu);
+
+    // Colonne droite : steps
+    const stepsOuter=document.createElement('div');stepsOuter.className='layer-steps-outer';
+    const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
+    stepsOuter.appendChild(stepsDiv);
+    layerDiv.appendChild(stepsOuter);
+
+    cont.appendChild(layerDiv);
+
+    // Construire les steps
+    buildStepsDOM(li,false);
+    setTimeout(()=>checkWrap(li),0);
+    attachLayerObserver(li);
+  });
+}
+
+function findPatternBySeq(arr){
+  const seq=arr.join('');
+  return packCours.patterns.find(p=>p.sequence===seq);
+}
+
+function buildStepsDOM(li,wrap){
+  const div=document.getElementById('steps-'+LAYERS[li].id);if(!div)return;
+  div.innerHTML='';
+  const pat=state[li].pattern;
+  const ha=wrap?halfAt(pat.length):null;
+  pat.forEach((p,si)=>{
+    if(ha&&si===ha){
+      const br=document.createElement('div');
+      br.style.cssText='width:100%;height:0;flex-basis:100%;flex-shrink:0';
+      div.appendChild(br);
+    }
+    const s=document.createElement('div');
+    s.className='step'+(p==='X'?' on':p==='x'?' on':'');
+    s.addEventListener('click',()=>{
+      // Bascule X → . → X
+      state[li].pattern[si]=state[li].pattern[si]==='X'?'.':'X';
+      s.className='step'+(state[li].pattern[si]==='X'?' on':'');
+      if(state[li].stepPos===si)s.classList.add('cur');
+    });
+    div.appendChild(s);
+  });
+  state[li].wrapped=wrap;
+}
+
+function checkWrap(li){
+  const outer=document.getElementById('steps-'+LAYERS[li].id);if(!outer)return;
+  const avail=outer.parentElement.clientWidth-8;
+  const needed=state[li].pattern.length*STEP_W;
+  const shouldWrap=needed>avail;
+  if(shouldWrap!==state[li].wrapped)buildStepsDOM(li,shouldWrap);
+}
+
+function attachLayerObserver(li){
+  const outer=document.getElementById('steps-'+LAYERS[li].id);if(!outer)return;
+  const obs=new ResizeObserver(()=>checkWrap(li));
+  obs.observe(outer.parentElement);layerObservers.push(obs);
+}
+
+// ── Select pattern (menu déroulant couche) ─────────────────────────────────
+function buildPatternSelect(sel){
+  sel.innerHTML='';
+  packCours.groupes_patterns.forEach(group=>{
+    const og=document.createElement('optgroup');og.label=group.label;
+    group.ids.forEach(id=>{
+      const pat=getPattern(id);if(!pat)return;
+      const o=document.createElement('option');o.value=pat.id;o.textContent=pat.nom;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+
+// ── Panneau sons ──────────────────────────────────────────────────────────
+function buildSoundPanel(){
+  const cont=document.getElementById('sounds');if(!cont)return;
+  cont.innerHTML='';
+  const grooveKeys=['low','high','noise'];
+  soundState.forEach((ss,li)=>{
+    cont.appendChild(buildSoundRow(LAYERS[li].label,LAYERS[li].cls,LAYERS[li].id.replace('low','low').replace('high','high').replace('noise','noise'),ss,grooveKeys[li]));
+  });
+  const sep=document.createElement('div');sep.className='sound-sep';cont.appendChild(sep);
+  const thumbLabels=['Main gauche','Main droite'];
+  const thumbCls=['c-thumb-l','c-thumb-r'];
+  soundStateThumb.forEach((ss,ti)=>{
+    cont.appendChild(buildSoundRow(thumbLabels[ti],thumbCls[ti],'thumb',ss,ti===0?'tl':'tr'));
+  });
+}
+
+function buildSoundRow(label,cls,cat,ss,openKey){
+  const row=document.createElement('div');row.className='sound-layer '+cls;
+
+  const header=document.createElement('div');header.className='sound-header';
+  const arrow=document.createElement('span');arrow.className='sound-arrow';arrow.textContent='▶';
+  const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
+
+  // Select instrument
+  const instrSel=document.createElement('select');
+  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);max-width:85px;flex-shrink:1;flex:1';
+  Object.entries(SOUND_DEFS)
+    .filter(([,d])=>cat==='thumb'?d.cat==='thumb':d.cat===cat.replace('low','low').replace('high','high').replace('noise','noise'))
+    .forEach(([id,d])=>{
+      const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
+    });
+  instrSel.value=ss.soundId;
+  instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
+  instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
+
+  const headerL=document.createElement('div');
+  headerL.style.cssText='display:flex;align-items:center;gap:5px;flex:1;min-width:0';
+  headerL.appendChild(arrow);headerL.appendChild(lbl);headerL.appendChild(instrSel);
+
+  // Slider volume horizontal
+  const volWrap=document.createElement('div');volWrap.className='vol-h-wrap';
+  const volLbl=document.createElement('span');volLbl.className='vol-h-lbl';volLbl.textContent='vol';
+  const volTrack=document.createElement('div');volTrack.className='vol-h-track';
+  const volFill=document.createElement('div');volFill.className='vol-h-fill';
+  const volThumb=document.createElement('div');volThumb.className='vol-h-thumb';
+  volTrack.appendChild(volFill);volTrack.appendChild(volThumb);
+  volWrap.appendChild(volLbl);volWrap.appendChild(volTrack);
+
+  header.appendChild(headerL);header.appendChild(volWrap);
+
+  // Contenu collapsible
+  const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
+  const inner=document.createElement('div');inner.className='sound-ctrls-inner';
+  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
+  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
+  ctrls.appendChild(inner);
+
+  // Sync volume visuel
+  function updateVol(v){
+    const pct=Math.max(0,Math.min(1,v))*100;
+    volFill.style.width=pct+'%';volThumb.style.left=pct+'%';
+  }
+  updateVol(ss.vol);
+  setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);});
+  volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
+
+  // Toggle volet
+  const isOpen=soundPanelOpen[openKey];
+  if(!isOpen)ctrls.classList.add('hidden');else arrow.classList.add('open');
+  header.addEventListener('click',()=>{
+    const nowHidden=ctrls.classList.toggle('hidden');
+    arrow.classList.toggle('open',!nowHidden);
+    soundPanelOpen[openKey]=!nowHidden;
+  });
+
+  row.appendChild(header);row.appendChild(ctrls);return row;
+}
+
+function mkSlider(lbl,cb,initVal){
+  const row=document.createElement('div');row.className='sl-row';
+  const lb=document.createElement('label');lb.textContent=lbl;
+  const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=1000;sl.step=1;
+  sl.value=Math.round((initVal||0)*1000);sl.style.flex='1';
+  sl.addEventListener('input',()=>cb(parseInt(sl.value)/1000));
+  row.appendChild(lb);row.appendChild(sl);return row;
+}
+
+function setupHDrag(track,onVal){
+  function calc(e){const r=track.getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));}
+  function move(e){onVal(calc(e));}
+  track.addEventListener('pointerdown',e=>{
+    e.preventDefault();track.setPointerCapture(e.pointerId);
+    onVal(calc(e));
+    track.addEventListener('pointermove',move);
+    track.addEventListener('pointerup',()=>track.removeEventListener('pointermove',move),{once:true});
+  });
+}
+
+// ── Section Encyclopédie ──────────────────────────────────────────────────
+function buildEncycloSection(){
+  const cont=document.getElementById('section-encyclo');if(!cont)return;
+  cont.innerHTML='';
+
+  // Barre header (cliquable pour toggle)
+  const bar=document.createElement('div');bar.className='section-bar encyclo-bar';
+
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='À propos de';
+  bar.appendChild(lbl);
+
+  // Select entrée
+  const sel=document.createElement('select');
+  sel.id='encyclo-select';
+  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:180px;padding:1px 3px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;color:#1a1a18';
+  const optVide=document.createElement('option');optVide.value='';optVide.textContent='— Choisir —';sel.appendChild(optVide);
+  packCours.patterns.filter(p=>p.encyclo_ref&&ENCYCLO[p.encyclo_ref]).forEach(p=>{
+    const o=document.createElement('option');o.value=p.encyclo_ref;o.textContent=p.nom;sel.appendChild(o);
+  });
+  if(currentEncycloId)sel.value=currentEncycloId;
+  sel.addEventListener('change',()=>{
+    if(sel.value){
+      showEncycloEntry(sel.value);
+      if(!encycloOuvert)toggleEncyclo(true);
+    }
+  });
+  sel.addEventListener('pointerdown',e=>e.stopPropagation());
+  bar.appendChild(sel);
+
+  const btnVolet=document.createElement('button');
+  btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
+  btnVolet.textContent=encycloOuvert?'Lire ▼':'Lire ▶';
+  btnVolet.addEventListener('click',e=>{e.stopPropagation();toggleEncyclo(!encycloOuvert);btnVolet.textContent=encycloOuvert?'Lire ▼':'Lire ▶';btnVolet.classList.toggle('open',encycloOuvert);});
+  bar.appendChild(btnVolet);
+
+  bar.addEventListener('click',e=>{
+    if(e.target===bar||e.target===lbl){
+      toggleEncyclo(!encycloOuvert);
+      btnVolet.textContent=encycloOuvert?'Lire ▼':'Lire ▶';
+      btnVolet.classList.toggle('open',encycloOuvert);
+    }
+  });
+  cont.appendChild(bar);
+
+  // Contenu collapsible
+  const content=document.createElement('div');
+  content.className='encyclo-content'+(encycloOuvert?' open':'');
+  content.id='encyclo-content';
+  const wrap=document.createElement('div');wrap.className='encyclo-wrap';
+  const body=document.createElement('div');body.id='encyclo-body';
+  wrap.appendChild(body);content.appendChild(wrap);
+  cont.appendChild(content);
+
+  if(currentEncycloId)renderEncyclo(currentEncycloId);
+}
+
+function toggleEncyclo(open){
+  encycloOuvert=open;
+  const content=document.getElementById('encyclo-content');
+  if(content)content.classList.toggle('open',open);
+}
+
+function showEncycloEntry(key){
+  currentEncycloId=key;
+  const sel=document.getElementById('encyclo-select');
+  if(sel&&[...sel.options].some(o=>o.value===key))sel.value=key;
+  renderEncyclo(key);
+}
+
+function renderEncyclo(key){
+  const body=document.getElementById('encyclo-body');if(!body)return;
+  body.innerHTML='';
+  const entry=ENCYCLO[key];
+  if(!entry){
+    const p=document.createElement('p');p.className='encyclo-vide';p.textContent='Aucune entrée disponible.';
+    body.appendChild(p);return;
+  }
+  const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
+  body.appendChild(chapo);
+  const ul=document.createElement('ul');ul.className='encyclo-bullets';
+  entry.bullets.forEach(([key,val])=>{
+    const li=document.createElement('li');
+    const k=document.createElement('span');k.className='encyclo-bkey';k.textContent=key;
+    const v=document.createElement('span');v.className='encyclo-bval';v.textContent=val;
+    li.appendChild(k);li.appendChild(v);ul.appendChild(li);
+  });
+  body.appendChild(ul);
+}
+
+// ── Mises à jour partielles (sans rebuild complet) ─────────────────────────
+function updateGrooveSelect(){
+  const sel=document.getElementById('groove-select');
+  if(sel&&currentGrooveId)sel.value=currentGrooveId;
+}
+
+function updateGlobalSpeedBtns(){
+  const bh=document.getElementById('btn-global-half');
+  const bd=document.getElementById('btn-global-double');
+  if(bh)bh.classList.toggle('active',globalSpeedMult===0.5);
+  if(bd)bd.classList.toggle('active',globalSpeedMult===2);
+}
+
+function updateSpmDisplay(){
+  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const half=Math.round(spm/2),third=Math.round(spm/3),quarter=Math.round(spm/4);
+  const eq=document.getElementById('bpm-equiv');
+  if(eq)eq.innerHTML='<span style="letter-spacing:-.1em">♩♩</span>='+quarter+'&ensp;♩='+half+'&ensp;♩.='+third;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT — Bootstrap au chargement
+// ═══════════════════════════════════════════════════════════════════════════
+
+function loadFromStorage(){
+  try{
+    const saved=localStorage.getItem('ptk_content_v2');
+    if(saved){
+      const data=JSON.parse(saved);
+      // Fusion superficielle : conserver les champs qui existent dans le saved
+      packCours=Object.assign(JSON.parse(JSON.stringify(PTK_DEFAULT)),data);
+    } else {
+      packCours=JSON.parse(JSON.stringify(PTK_DEFAULT));
+    }
+  } catch(e){
+    packCours=JSON.parse(JSON.stringify(PTK_DEFAULT));
+  }
+}
+
+function attachEvents(){
+  // ── Tempo panel ──
+  document.getElementById('btn-tempo').addEventListener('click',()=>{
+    const panel=document.getElementById('panel-tempo');
+    panel.classList.toggle('open');
+    document.getElementById('btn-tempo').classList.toggle('active',panel.classList.contains('open'));
+  });
+
+  document.getElementById('bpm').addEventListener('input',function(){
+    document.getElementById('bpm-val').textContent=parseInt(this.value)+' spm';
+    updateSpmDisplay();
+  });
+
+  document.getElementById('btn-global-half').addEventListener('click',()=>{
+    pendingGlobalMult=globalSpeedMult===0.5?1:0.5;
+    if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}
+  });
+
+  document.getElementById('btn-global-double').addEventListener('click',()=>{
+    pendingGlobalMult=globalSpeedMult===2?1:2;
+    if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}
+  });
+
+  // ── Sons ──
+  document.getElementById('btn-sons').addEventListener('click',()=>{
+    sonsOuvert=!sonsOuvert;
+    const bar=document.querySelector('.band-bar');
+    if(bar)bar.classList.toggle('visible',sonsOuvert);
+    const bc=document.getElementById('band-content');
+    if(bc)bc.classList.toggle('open',sonsOuvert);
+    document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
+  });
+
+  // ── Play ──
+  document.getElementById('btn-play').addEventListener('click',togglePlay);
+
+  // ── Jouer (volet mains) ──
+  const btnJouer=document.getElementById('btn-jouer');
+  const playDrawer=document.getElementById('play-drawer');
+  btnJouer.addEventListener('click',()=>{
+    playDrawer.classList.toggle('open');
+    btnJouer.classList.toggle('active',playDrawer.classList.contains('open'));
+  });
+  document.getElementById('play-drawer-close').addEventListener('click',()=>{
+    playDrawer.classList.remove('open');
+    btnJouer.classList.remove('active');
+  });
+
+  // ── Mains ──
+  document.getElementById('play-thumb-l').addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}ac.resume();
+    playConga(false);
+    const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
+  });
+  document.getElementById('play-thumb-r').addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}ac.resume();
+    playConga(true);
+    const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
+  });
+
+  // ── Raccourci clavier ──
+  document.addEventListener('keydown',e=>{
+    if(e.code==='Space'&&e.target===document.body){e.preventDefault();togglePlay();}
+  });
+}
+
+function start(){
+  loadFromStorage();
+
+  // Groove aléatoire au démarrage
+  const grooves=packCours.grooves;
+  const randomGroove=grooves[Math.floor(Math.random()*grooves.length)];
+  currentGrooveId=randomGroove.id;
+
+  // Initialiser le state audio depuis le groove
+  LAYERS.forEach((layer,li)=>{
+    const gl=randomGroove.layers[li];if(!gl)return;
+    const pat=getPattern(gl.patternId);if(!pat)return;
+    let seq=pat.sequence.split('');
+    if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
+    state[li].pattern=seq;
+    state[li].muted=gl.mute||false;
+    state[li].halfOn=gl.halfOn||false;
+    state[li].doubleOn=gl.doubleOn||false;
+  });
+  applyBandStyle(randomGroove.band_defaut);
+  globalSpeedMult=randomGroove.vitesse_mult||1;
+  pendingGlobalMult=globalSpeedMult;
+
+  // Construire le DOM
+  render();
+
+  // Mettre à jour l'affichage tempo
+  document.getElementById('bpm-val').textContent='200 spm';
+  updateSpmDisplay();
+  updateGlobalSpeedBtns();
+}
+
+// Lancer l'application
+start();
+attachEvents();
+</script>
+</body>
+</html>
