@@ -154,16 +154,23 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 @keyframes thumbflash{0%{filter:brightness(1)}50%{filter:brightness(2.2) saturate(1.5)}100%{filter:brightness(1)}}
 
 /* ─── MODE TX ─── */
-.btn-tx-save{padding:3px 9px;font-size:11px;font-weight:600;background:#D85A30;color:#fff;border:1px solid #993C1D;border-radius:5px;cursor:pointer;display:none}
-body.mode-tx .btn-tx-save{display:inline-flex;align-items:center;gap:4px}
-.btn-tx-export{padding:3px 7px;font-size:11px;font-weight:500;background:#fff;color:#555;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;display:none}
-body.mode-tx .btn-tx-export{display:inline-block}
 body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 /* Steps éditables en mode TX */
 body.mode-tx .step{cursor:pointer}
 body.mode-tx .step:not(.on):hover{background:var(--cl);border-color:var(--cc)}
 body.mode-tx .step.on:hover{filter:brightness(.85)}
 body:not(.mode-tx) .step{cursor:default}
+
+/* ─── BOUTONS DE SECTION (💾 et ≡) ─── */
+.btn-sec-save{cursor:pointer;font-size:12px;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.6;flex-shrink:0;color:inherit}
+.btn-sec-save:hover{opacity:1}
+.btn-sec-menu{cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.65;flex-shrink:0;color:inherit;display:none}
+body.mode-tx .btn-sec-menu{display:inline-block}
+body.mode-tx .btn-sec-menu:hover{opacity:1}
+/* Variante compacte pour les layers */
+.layer-actions{display:flex;gap:0;margin-top:2px}
+.layer-actions .btn-sec-save{font-size:11px;padding:1px 3px;opacity:.5}
+.layer-actions .btn-sec-menu{font-size:12px;padding:1px 3px;opacity:.5}
 
 /* ─── DIALOG PARTAGE PATTERN ─── */
 .ptk-dialog{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}
@@ -197,8 +204,6 @@ body:not(.mode-tx) .step{cursor:default}
     <span class="app-version">v2.0</span>
   </div>
   <div class="top-bar-right">
-    <button class="btn-tx-save" id="btn-tx-save">💾 Sauvegarder</button>
-    <button class="btn-tx-export" id="btn-tx-export">⬇ JSON</button>
     <button class="btn-top" id="btn-tempo">Tempo</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
@@ -917,6 +922,9 @@ function buildBandSection(){
   sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();});
   bar.appendChild(sel);
 
+  bar.appendChild(mkBtnSave(()=>saveToStorage()));
+  bar.appendChild(mkBtnMenu());
+
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(sonsOuvert?' open':'');
   btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
@@ -956,6 +964,9 @@ function buildGrooveSection(){
   if(currentGrooveId)sel.value=currentGrooveId;
   sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
   bar.appendChild(sel);
+
+  bar.appendChild(mkBtnSave(()=>saveToStorage()));
+  bar.appendChild(mkBtnMenu());
 
   // Bouton i (lien encyclopédie)
   const btnI=document.createElement('button');
@@ -1043,6 +1054,11 @@ function buildLayers(){
       setTimeout(()=>checkWrap(li),0);
     });
     menu.appendChild(sel);
+
+    const layerActions=document.createElement('div');layerActions.className='layer-actions';
+    layerActions.appendChild(mkBtnSave(()=>saveToStorage()));
+    layerActions.appendChild(mkBtnMenu());
+    menu.appendChild(layerActions);
 
     layerDiv.appendChild(menu);
 
@@ -1289,6 +1305,9 @@ function buildEncycloSection(){
   sel.addEventListener('pointerdown',e=>e.stopPropagation());
   bar.appendChild(sel);
 
+  bar.appendChild(mkBtnSave(()=>saveToStorage()));
+  bar.appendChild(mkBtnMenu());
+
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
   btnVolet.textContent=encycloOuvert?'Lire ▼':'Lire ▶';
@@ -1347,6 +1366,20 @@ function renderEncyclo(key){
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
   body.appendChild(ul);
+}
+
+// ── Helpers boutons de section ────────────────────────────────────────────
+function mkBtnSave(onClick){
+  const b=document.createElement('button');
+  b.className='btn-sec-save';b.textContent='💾';b.title='Sauvegarder';
+  b.addEventListener('click',e=>{e.stopPropagation();if(onClick)onClick();});
+  return b;
+}
+function mkBtnMenu(onClick){
+  const b=document.createElement('button');
+  b.className='btn-sec-menu';b.textContent='≡';b.title='Gérer le menu';
+  b.addEventListener('click',e=>{e.stopPropagation();if(onClick)onClick();});
+  return b;
 }
 
 // ── Mises à jour partielles (sans rebuild complet) ─────────────────────────
@@ -1512,15 +1545,6 @@ function attachEvents(){
   document.addEventListener('keydown',e=>{
     if(e.code==='Tab'){e.preventDefault();setMode(currentMode==='tx'?'sx':'tx');}
   });
-
-  // ── Sauvegarde TX ──
-  document.getElementById('btn-tx-save').addEventListener('click',()=>{
-    saveToStorage();
-    const btn=document.getElementById('btn-tx-save');
-    btn.textContent='✓ Sauvegardé';
-    setTimeout(()=>{btn.innerHTML='💾 Sauvegarder';},1500);
-  });
-  document.getElementById('btn-tx-export').addEventListener('click',exportJSON);
 
   // ── Dialog partage pattern ──
   document.getElementById('ptk-dlg-all').addEventListener('click',()=>{
