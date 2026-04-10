@@ -73,7 +73,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;align-items:flex-start;gap:0}
-#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+/* Indent visuel : les layers appartiennent au groove */
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:10px;border-left:2px solid #e0d090;padding-left:6px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
@@ -116,7 +117,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-lbl{font-size:10px;font-weight:600;color:var(--cb);white-space:nowrap;flex-shrink:0}
 .sound-arrow{font-size:13px;color:var(--cb);opacity:.7;transition:transform .15s;flex-shrink:0}
 .sound-arrow.open{transform:rotate(90deg)}
-.vol-h-wrap{flex:1;display:flex;align-items:center;gap:3px;min-width:0}
+.vol-h-wrap{display:flex;align-items:center;gap:3px;width:56px;flex-shrink:0}
 .vol-h-lbl{font-size:8px;color:var(--cb);opacity:.6;flex-shrink:0}
 .vol-h-track{flex:1;height:4px;background:var(--cs);border-radius:2px;position:relative;cursor:pointer;min-width:30px}
 .vol-h-fill{position:absolute;left:0;top:0;height:100%;background:var(--cc);border-radius:2px;pointer-events:none}
@@ -976,7 +977,7 @@ function buildGrooveSection(){
   sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
   bar.appendChild(sel);
 
-  bar.appendChild(mkBtnSave(()=>saveToStorage()));
+  bar.appendChild(mkBtnSave(()=>saveGroove()));
   bar.appendChild(mkBtnMenu());
 
   // Bouton i (lien encyclopédie)
@@ -1021,14 +1022,10 @@ function buildLayers(){
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
 
-    // ── Ligne 1 : contrôles ───────────────────────────────────────────────
+    // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][steps ▼/▶] ──────────
     const row1=document.createElement('div');row1.className='layer-row1';
 
-    // Label couche
-    const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
-    row1.appendChild(lbl);
-
-    // Bouton mute
+    // ●/○ mute
     const btnMute=document.createElement('button');
     btnMute.className='btn-mute-sq'+(state[li].muted?' muted':'');
     btnMute.textContent=state[li].muted?'○':'●';
@@ -1041,6 +1038,10 @@ function buildLayers(){
     });
     row1.appendChild(btnMute);
 
+    // Label
+    const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
+    row1.appendChild(lbl);
+
     // Select pattern
     const sel=document.createElement('select');
     sel.className='layer-select';sel.id='sel-'+layer.id;
@@ -1048,7 +1049,7 @@ function buildLayers(){
     const curPat=findPatternBySeq(state[li].pattern);
     if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});
 
-    // Bouton i (lien encyclopédie du pattern courant)
+    // Bouton i (lien encyclo pattern courant)
     const btnI=document.createElement('button');btnI.className='btn-info-ico';btnI.textContent='i';
     function updateBtnI(){
       const pid=state[li].patternId;
@@ -1075,30 +1076,34 @@ function buildLayers(){
     });
     row1.appendChild(sel);
 
-    // 💾 sauvegarde du pattern
-    row1.appendChild(mkBtnSave(()=>saveLayerPattern(li)));
+    // ≡ TX (gestion menu, TX only)
+    row1.appendChild(mkBtnMenu());
+    // 💾 sauvegarde du pattern (avec feedback)
+    const saveBtn=document.createElement('button');
+    saveBtn.className='btn-sec-save';saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
+    saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
+    row1.appendChild(saveBtn);
+    // i info
     row1.appendChild(btnI);
-
-    // Bouton toggle steps (justifié à droite)
+    // steps ▼/▶ toggle (justifié droite)
     const row2=document.createElement('div');row2.className='layer-row2';
     const btnToggle=document.createElement('button');btnToggle.className='btn-layer-toggle';
-    let stepsOpen=true;
-    btnToggle.textContent='steps ▼';
+    let stepsOpen=true;btnToggle.textContent='steps ▼';
     btnToggle.addEventListener('click',()=>{
       stepsOpen=!stepsOpen;
       row2.classList.toggle('collapsed',!stepsOpen);
       btnToggle.textContent=stepsOpen?'steps ▼':'steps ▶';
     });
     row1.appendChild(btnToggle);
-
     layerDiv.appendChild(row1);
 
-    // ── Ligne 2 : steps + mod ─────────────────────────────────────────────
+    // ── Ligne 2 : [grille steps][mod ▼/▶] ────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
-
-    // Bouton mod ≡ (TX only, justifié à droite)
-    const btnMod=document.createElement('button');btnMod.className='btn-layer-mod';btnMod.textContent='≡';btnMod.title='Gérer ce pattern';
+    // mod ▼/▶ — placeholder pour le futur panneau de transformations
+    const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
+    btnMod.style.cssText='margin-left:auto;font-size:10px;opacity:.45';
+    btnMod.textContent='mod ▶';btnMod.title='Transformations (prochaine version)';
     row2.appendChild(btnMod);
 
     layerDiv.appendChild(row2);
@@ -1146,18 +1151,23 @@ function onStepClick(li,si,el){
 }
 
 // Sauvegarde d'un pattern de layer — dialog si partagé entre plusieurs grooves
-function saveLayerPattern(li){
+function saveLayerPattern(li,btn){
   const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
   if(!srcPat){saveToStorage();return;}
 
   const currentSeq=state[li].pattern.join('');
-  if(currentSeq===srcPat.sequence){saveToStorage();return;}// Aucun changement de séquence
+  // Sync patternId du groove courant dans packCours (utile en SX)
+  const groove=getGroove(currentGrooveId);
+  if(groove&&groove.layers[li])groove.layers[li].patternId=state[li].patternId;
+
+  if(currentSeq===srcPat.sequence){saveToStorage();return;}
 
   const usedIn=packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
 
   const applyPersist=(targetPat)=>{
     targetPat.sequence=currentSeq;
     saveToStorage();
+    if(btn)flashSave(btn);
   };
 
   if(usedIn.length>1){
@@ -1167,17 +1177,30 @@ function saveLayerPattern(li){
         applyPersist(srcPat);
       } else {
         const newPat=createUserPattern([...state[li].pattern],srcPat);
-        const groove=getGroove(currentGrooveId);
         if(groove&&groove.layers[li])groove.layers[li].patternId=newPat.id;
         state[li].patternId=newPat.id;
         const sel=document.getElementById('sel-'+LAYERS[li].id);
         if(sel){buildPatternSelect(sel);sel.value=newPat.id;}
         saveToStorage();
+        if(btn)flashSave(btn);
       }
     });
   } else {
     applyPersist(srcPat);
   }
+}
+
+// Sauvegarde du groove courant (sync état runtime → packCours)
+function saveGroove(){
+  const groove=getGroove(currentGrooveId);if(!groove)return;
+  // Sync les patternIds courants
+  LAYERS.forEach((_,li)=>{
+    if(groove.layers[li]&&state[li].patternId)groove.layers[li].patternId=state[li].patternId;
+  });
+  // Sync le band courant
+  const bandSel=document.querySelector('#section-band select');
+  if(bandSel)groove.band_defaut=bandSel.value;
+  saveToStorage();
 }
 
 function checkWrap(li){
@@ -1225,17 +1248,18 @@ function buildSoundPanel(){
 }
 
 function buildSoundRow(label,cls,cat,ss,openKey){
+  // Format simplifié : [label][select][vol][≡ TX][💾] — sans collapse
   const row=document.createElement('div');row.className='sound-layer '+cls;
-
   const header=document.createElement('div');header.className='sound-header';
-  const arrow=document.createElement('span');arrow.className='sound-arrow';arrow.textContent='▶';
+
+  // Label
   const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
 
   // Select instrument
   const instrSel=document.createElement('select');
-  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);max-width:85px;flex-shrink:1;flex:1';
+  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);flex:1;min-width:0;max-width:90px';
   Object.entries(SOUND_DEFS)
-    .filter(([,d])=>cat==='thumb'?d.cat==='thumb':d.cat===cat.replace('low','low').replace('high','high').replace('noise','noise'))
+    .filter(([,d])=>cat==='thumb'?d.cat==='thumb':d.cat===cat)
     .forEach(([id,d])=>{
       const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
     });
@@ -1243,11 +1267,7 @@ function buildSoundRow(label,cls,cat,ss,openKey){
   instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
   instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
 
-  const headerL=document.createElement('div');
-  headerL.style.cssText='display:flex;align-items:center;gap:5px;flex:1;min-width:0';
-  headerL.appendChild(arrow);headerL.appendChild(lbl);headerL.appendChild(instrSel);
-
-  // Slider volume horizontal
+  // Slider volume (rétréci)
   const volWrap=document.createElement('div');volWrap.className='vol-h-wrap';
   const volLbl=document.createElement('span');volLbl.className='vol-h-lbl';volLbl.textContent='vol';
   const volTrack=document.createElement('div');volTrack.className='vol-h-track';
@@ -1255,35 +1275,18 @@ function buildSoundRow(label,cls,cat,ss,openKey){
   const volThumb=document.createElement('div');volThumb.className='vol-h-thumb';
   volTrack.appendChild(volFill);volTrack.appendChild(volThumb);
   volWrap.appendChild(volLbl);volWrap.appendChild(volTrack);
-
-  header.appendChild(headerL);header.appendChild(volWrap);
-
-  // Contenu collapsible
-  const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
-  const inner=document.createElement('div');inner.className='sound-ctrls-inner';
-  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
-  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
-  ctrls.appendChild(inner);
-
-  // Sync volume visuel
-  function updateVol(v){
-    const pct=Math.max(0,Math.min(1,v))*100;
-    volFill.style.width=pct+'%';volThumb.style.left=pct+'%';
-  }
+  function updateVol(v){const pct=Math.max(0,Math.min(1,v))*100;volFill.style.width=pct+'%';volThumb.style.left=pct+'%';}
   updateVol(ss.vol);
   setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);});
   volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
 
-  // Toggle volet
-  const isOpen=soundPanelOpen[openKey];
-  if(!isOpen)ctrls.classList.add('hidden');else arrow.classList.add('open');
-  header.addEventListener('click',()=>{
-    const nowHidden=ctrls.classList.toggle('hidden');
-    arrow.classList.toggle('open',!nowHidden);
-    soundPanelOpen[openKey]=!nowHidden;
-  });
-
-  row.appendChild(header);row.appendChild(ctrls);return row;
+  header.appendChild(lbl);
+  header.appendChild(instrSel);
+  header.appendChild(volWrap);
+  header.appendChild(mkBtnMenu());
+  header.appendChild(mkBtnSave(()=>saveToStorage()));
+  row.appendChild(header);
+  return row;
 }
 
 function mkSlider(lbl,cb,initVal){
@@ -1414,10 +1417,11 @@ function renderEncyclo(key){
 }
 
 // ── Helpers boutons de section ────────────────────────────────────────────
+function flashSave(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='💾';},1300);}
 function mkBtnSave(onClick){
   const b=document.createElement('button');
   b.className='btn-sec-save';b.textContent='💾';b.title='Sauvegarder';
-  b.addEventListener('click',e=>{e.stopPropagation();if(onClick)onClick();});
+  b.addEventListener('click',e=>{e.stopPropagation();if(onClick)onClick();flashSave(b);});
   return b;
 }
 function mkBtnMenu(onClick){
@@ -1458,6 +1462,8 @@ function setMode(mode){
   document.body.classList.toggle('mode-tx',mode==='tx');
   document.getElementById('btn-sx-tx').textContent=mode.toUpperCase();
   buildLayers();
+  // Rebuild l'encyclo pour ajouter/retirer contenteditable selon le mode
+  if(currentEncycloId)renderEncyclo(currentEncycloId);
 }
 
 function saveToStorage(){
