@@ -103,6 +103,36 @@ body.mode-tx [contenteditable="true"]{border-radius:3px;outline:none;transition:
 body.mode-tx [contenteditable="true"]:hover{background:rgba(216,90,48,.07);cursor:text}
 body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-shadow:0 0 0 2px rgba(216,90,48,.3)}
 
+/* ─── DIRTY STATE ─── */
+.btn-sec-save.dirty{color:#D85A30;opacity:1}
+.btn-sec-save.dirty::after{content:'!';font-size:8px;vertical-align:super;margin-left:1px}
+
+/* ─── SAVE SHEET ─── */
+.save-sheet{position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
+.save-sheet.hidden{display:none}
+.save-sheet-box{width:100%;background:#fff;border-radius:16px 16px 0 0;padding:18px 16px 28px;max-height:85vh;overflow-y:auto}
+.save-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.save-sheet-title{font-size:13px;font-weight:700;color:#1a1a18}
+.save-sheet-x{width:28px;height:28px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#666}
+.save-sheet-x:hover{background:#e0ddd8}
+.save-sheet-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.save-sheet-opt{padding:11px 14px;border-radius:8px;border:1.5px solid #d0cec7;background:#fff;font-size:12px;font-weight:600;cursor:pointer;text-align:left;color:#1a1a18;line-height:1.4}
+.save-sheet-opt:hover{background:#f5f4f0}
+.save-sheet-opt.primary{border-color:#D85A30;color:#D85A30}
+.save-sheet-opt.primary:hover{background:#fff5f2}
+.save-sheet-opt:disabled{opacity:.35;cursor:default}
+.save-sheet-opt:disabled:hover{background:#fff}
+.save-sheet-new{display:none;flex-direction:column;gap:6px;padding:10px 12px;border:1.5px solid #4A7FA5;border-radius:8px;background:#f4f8fb}
+.save-sheet-new.open{display:flex}
+.save-sheet-new-lbl{font-size:10px;font-weight:600;color:#2d5f80}
+.save-sheet-input{font-size:12px;padding:6px 8px;border:1px solid #b0aea7;border-radius:5px;width:100%}
+.save-sheet-input:focus{outline:none;border-color:#4A7FA5;box-shadow:0 0 0 2px rgba(74,127,165,.2)}
+.save-sheet-grp-sel{font-size:11px;padding:4px 6px;border:1px solid #b0aea7;border-radius:5px;background:#fff;color:#1a1a18}
+.save-sheet-confirm{padding:8px 14px;background:#4A7FA5;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;align-self:flex-end}
+.save-sheet-confirm:hover{background:#2d5f80}
+.save-sheet-cancel{width:100%;padding:10px;border:none;background:transparent;font-size:12px;color:#999;cursor:pointer}
+.save-sheet-cancel:hover{color:#555}
+
 /* ─── COULEURS PAR COUCHE ─── */
 .c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55}
 .c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055}
@@ -263,6 +293,27 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   </div>
 </div>
 
+<!-- Save sheet (💾 pattern) -->
+<div class="save-sheet hidden" id="save-sheet">
+  <div class="save-sheet-box">
+    <div class="save-sheet-head">
+      <span class="save-sheet-title" id="ss-title">Sauvegarder le pattern</span>
+      <button class="save-sheet-x" id="ss-close">✕</button>
+    </div>
+    <div class="save-sheet-opts">
+      <button class="save-sheet-opt primary" id="ss-overwrite">① Écraser <span id="ss-overwrite-name"></span></button>
+      <button class="save-sheet-opt" id="ss-new-toggle">② Sauvegarder comme nouveau ▶</button>
+      <div class="save-sheet-new" id="ss-new-panel">
+        <span class="save-sheet-new-lbl">Nom du pattern</span>
+        <input type="text" class="save-sheet-input" id="ss-name" placeholder="Nom">
+        <select class="save-sheet-grp-sel" id="ss-group"></select>
+        <button class="save-sheet-confirm" id="ss-confirm">Confirmer ✓</button>
+      </div>
+    </div>
+    <button class="save-sheet-cancel" id="ss-cancel">Annuler</button>
+  </div>
+</div>
+
 <!-- Dialog partage de pattern (TX) -->
 <div class="ptk-dialog hidden" id="ptk-dialog">
   <div class="ptk-dialog-box">
@@ -389,11 +440,11 @@ const PTK_DEFAULT = {
   ],
   // Groupes pour les select de couches (ordre d'affichage dans les menus)
   groupes_patterns:[
-    {label:'Référentiels', ids:['silence','pulse1','bin2','ter3','fl4','offbeat','pulse4','sync4']},
-    {label:'8 pas',        ids:['tres','cinq','hab','afoxe','reggae']},
-    {label:'16 pas — E(5,16)', ids:['son32','son','rum32','bossa','gahu','shiko']},
-    {label:'16 pas — autres',  ids:['souk','samba','cascara','tumbao']},
-    {label:'12 pas',       ids:['fume','bembe','solea']},
+    {id:'ref',     label:'Référentiels',      ids:['silence','pulse1','bin2','ter3','fl4','offbeat','pulse4','sync4']},
+    {id:'8pas',    label:'8 pas',             ids:['tres','cinq','hab','afoxe','reggae']},
+    {id:'16e5',    label:'16 pas — E(5,16)',  ids:['son32','son','rum32','bossa','gahu','shiko']},
+    {id:'16autre', label:'16 pas — autres',   ids:['souk','samba','cascara','tumbao']},
+    {id:'12pas',   label:'12 pas',            ids:['fume','bembe','solea']},
   ],
   patterns:[
     {id:'pulse1', nom:'Pulse',                   sequence:'X',                pas:1,  unite_temps:'1/4', pas_par_mesure:4},
@@ -846,6 +897,21 @@ function togglePlay(){
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
 let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='tx'?'tx':'sx';
+let dirtyLayers = [false, false, false];
+
+function setLayerDirty(li, isDirty){
+  dirtyLayers[li] = isDirty;
+  // 💾 rouge si dirty
+  const btn = document.getElementById('save-btn-layer-' + li);
+  if(btn) btn.classList.toggle('dirty', isDirty);
+  // Select : "[nom] ✱" si dirty
+  const sel = document.getElementById('sel-' + LAYERS[li].id);
+  if(sel && sel.options[sel.selectedIndex]){
+    const opt = sel.options[sel.selectedIndex];
+    if(isDirty && !opt.textContent.endsWith(' ✱')) opt.textContent += ' ✱';
+    else if(!isDirty) opt.textContent = opt.textContent.replace(' ✱','');
+  }
+}
 let sonsOuvert = false;
 let layersOuverts = true;
 let encycloOuvert = false;
@@ -1071,6 +1137,7 @@ function buildLayers(){
         saveToStorage();
       }
       updateBtnI();
+      setLayerDirty(li,false); // reset dirty sur changement de pattern
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
@@ -1080,7 +1147,8 @@ function buildLayers(){
     row1.appendChild(mkBtnMenu());
     // 💾 sauvegarde du pattern (avec feedback)
     const saveBtn=document.createElement('button');
-    saveBtn.className='btn-sec-save';saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
+    saveBtn.className='btn-sec-save';saveBtn.id='save-btn-layer-'+li;
+    saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
     saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
     row1.appendChild(saveBtn);
     // i info
@@ -1148,46 +1216,126 @@ function onStepClick(li,si,el){
   state[li].pattern[si]=newVal;
   el.className='step'+(newVal==='X'?' on':'');
   if(state[li].stepPos===si)el.classList.add('cur');
+  // Dirty check
+  const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
+  setLayerDirty(li,isDirty);
 }
 
-// Sauvegarde d'un pattern de layer — dialog si partagé entre plusieurs grooves
-function saveLayerPattern(li,btn){
-  const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
-  if(!srcPat){saveToStorage();return;}
+// Sauvegarde d'un pattern de layer
+let _saveSheetLi = -1, _saveSheetBtn = null;
 
-  const currentSeq=state[li].pattern.join('');
-  // Sync patternId du groove courant dans packCours (utile en SX)
-  const groove=getGroove(currentGrooveId);
-  if(groove&&groove.layers[li])groove.layers[li].patternId=state[li].patternId;
+function saveLayerPattern(li, btn){
+  const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
+  // Sync patternId dans packCours
+  const groove = getGroove(currentGrooveId);
+  if(groove && groove.layers[li]) groove.layers[li].patternId = state[li].patternId;
+  // Si pas dirty : juste sauvegarder
+  if(!dirtyLayers[li]){ saveToStorage(); if(btn)flashSave(btn); return; }
+  // Afficher la save sheet
+  _saveSheetLi = li; _saveSheetBtn = btn;
+  showSaveSheet(li, srcPat);
+}
 
-  if(currentSeq===srcPat.sequence){saveToStorage();return;}
+function showSaveSheet(li, srcPat){
+  const nom = srcPat ? srcPat.nom : 'Pattern';
+  const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='user');
 
-  const usedIn=packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
+  document.getElementById('ss-title').textContent = '« ' + nom + ' » modifié';
+  document.getElementById('ss-overwrite-name').textContent = nom;
+  document.getElementById('ss-overwrite').disabled = !canOverwrite;
 
-  const applyPersist=(targetPat)=>{
-    targetPat.sequence=currentSeq;
+  // Pré-remplir le nom
+  const nameInput = document.getElementById('ss-name');
+  nameInput.value = nom + ' (copie)';
+
+  // Construire le select de groupes
+  const grpSel = document.getElementById('ss-group');
+  grpSel.innerHTML = '';
+  const groups = currentMode==='tx'
+    ? packCours.groupes_patterns
+    : (packCours.groupes_patterns.filter(g=>g.id==='user').length
+        ? packCours.groupes_patterns.filter(g=>g.id==='user')
+        : [{id:'user', label:'Mes patterns', ids:[]}]);
+  groups.forEach(g=>{
+    const o=document.createElement('option');o.value=g.id;o.textContent=g.label;grpSel.appendChild(o);
+  });
+  // Sélectionner "Mes patterns" par défaut
+  const userGrp = grpSel.querySelector('[value="user"]');
+  if(userGrp) grpSel.value = 'user';
+
+  // Réinitialiser le panneau ②
+  document.getElementById('ss-new-panel').classList.remove('open');
+  document.getElementById('ss-new-toggle').textContent = '② Sauvegarder comme nouveau ▶';
+
+  document.getElementById('save-sheet').classList.remove('hidden');
+}
+
+function closeSaveSheet(){
+  document.getElementById('save-sheet').classList.add('hidden');
+  _saveSheetLi = -1; _saveSheetBtn = null;
+}
+
+function doOverwrite(){
+  const li = _saveSheetLi;
+  const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
+  if(!srcPat){ closeSaveSheet(); return; }
+  const currentSeq = state[li].pattern.join('');
+  const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
+
+  const persist = (targetPat)=>{
+    targetPat.sequence = currentSeq;
     saveToStorage();
-    if(btn)flashSave(btn);
+    setLayerDirty(li, false);
+    if(_saveSheetBtn) flashSave(_saveSheetBtn);
+    closeSaveSheet();
   };
 
-  if(usedIn.length>1){
-    showPatternShareDialog(srcPat.nom,usedIn.map(g=>g.nom),(choice)=>{
-      if(choice==='cancel')return;
-      if(choice==='all'){
-        applyPersist(srcPat);
-      } else {
-        const newPat=createUserPattern([...state[li].pattern],srcPat);
-        if(groove&&groove.layers[li])groove.layers[li].patternId=newPat.id;
-        state[li].patternId=newPat.id;
-        const sel=document.getElementById('sel-'+LAYERS[li].id);
-        if(sel){buildPatternSelect(sel);sel.value=newPat.id;}
-        saveToStorage();
-        if(btn)flashSave(btn);
-      }
+  closeSaveSheet();
+  if(usedIn.length > 1){
+    showPatternShareDialog(srcPat.nom, usedIn.map(g=>g.nom), choice=>{
+      if(choice==='cancel') return;
+      persist(srcPat);
     });
   } else {
-    applyPersist(srcPat);
+    persist(srcPat);
   }
+}
+
+function doSaveNew(){
+  const li = _saveSheetLi;
+  const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
+  const nom = document.getElementById('ss-name').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
+  const grpId = document.getElementById('ss-group').value;
+
+  const newPat = {
+    id: 'user_' + Date.now(),
+    nom,
+    sequence: state[li].pattern.join(''),
+    pas: state[li].pattern.length,
+    unite_temps: srcPat ? srcPat.unite_temps : '1/8',
+    pas_par_mesure: srcPat ? srcPat.pas_par_mesure : 8,
+    source: 'user',
+  };
+  packCours.patterns.push(newPat);
+
+  // Ajouter au groupe cible
+  let grp = packCours.groupes_patterns.find(g=>g.id===grpId);
+  if(!grp){ grp={id:'user',label:'Mes patterns',ids:[]}; packCours.groupes_patterns.push(grp); }
+  grp.ids.push(newPat.id);
+
+  // Rattacher la couche au nouveau pattern
+  const groove = getGroove(currentGrooveId);
+  if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
+  state[li].patternId = newPat.id;
+
+  // Rebuild le select
+  const sel = document.getElementById('sel-' + LAYERS[li].id);
+  if(sel){ buildPatternSelect(sel); sel.value = newPat.id; }
+
+  saveToStorage();
+  setLayerDirty(li, false);
+  if(_saveSheetBtn) flashSave(_saveSheetBtn);
+  closeSaveSheet();
 }
 
 // Sauvegarde du groove courant (sync état runtime → packCours)
@@ -1597,6 +1745,23 @@ function attachEvents(){
   document.addEventListener('keydown',e=>{
     if(e.code==='Tab'){e.preventDefault();setMode(currentMode==='tx'?'sx':'tx');}
   });
+
+  // ── Save sheet ──
+  document.getElementById('ss-close').addEventListener('click', closeSaveSheet);
+  document.getElementById('ss-cancel').addEventListener('click', closeSaveSheet);
+  document.getElementById('save-sheet').addEventListener('click', e=>{
+    if(e.target===e.currentTarget) closeSaveSheet();
+  });
+  document.getElementById('ss-overwrite').addEventListener('click', ()=>{
+    if(!document.getElementById('ss-overwrite').disabled) doOverwrite();
+  });
+  document.getElementById('ss-new-toggle').addEventListener('click', ()=>{
+    const panel = document.getElementById('ss-new-panel');
+    const isOpen = panel.classList.toggle('open');
+    document.getElementById('ss-new-toggle').textContent =
+      isOpen ? '② Sauvegarder comme nouveau ▼' : '② Sauvegarder comme nouveau ▶';
+  });
+  document.getElementById('ss-confirm').addEventListener('click', doSaveNew);
 
   // ── Dialog partage pattern ──
   document.getElementById('ptk-dlg-all').addEventListener('click',()=>{
