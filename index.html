@@ -74,22 +74,33 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;align-items:flex-start;gap:0}
 #layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
-.layer{display:flex;flex-direction:row;align-items:stretch;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
-.layer-menu{width:100px;flex-shrink:0;padding:4px 5px;background:var(--cl);border-right:1px solid var(--cs);display:flex;flex-direction:column;gap:3px}
-.layer-menu-top{display:flex;align-items:center;gap:4px}
-.layer-lbl{font-size:10px;font-weight:600;color:var(--cb);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.layer-select{font-size:9px;width:100%;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
-.btn-mute-sq{width:26px;height:26px;flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--cc);padding:0;line-height:1;color:#fff;transition:background .15s}
+.layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
+/* Ligne 1 : contrôles */
+.layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
+.layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
+.layer-select{font-size:9px;flex:1;min-width:0;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
+.btn-mute-sq{width:24px;height:24px;flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--cc);padding:0;line-height:1;color:#fff;transition:background .15s}
 .btn-mute-sq:hover{filter:brightness(.9)}
 .btn-mute-sq.muted{background:#c8c5c0}
-.layer-steps-outer{flex:1;min-width:0;padding:4px 5px 4px 6px}
-.layer-steps{display:flex;flex-wrap:wrap;gap:2px}
+.btn-layer-toggle{margin-left:auto;font-size:10px;font-weight:600;background:transparent;border:none;border-radius:4px;color:var(--cb);cursor:pointer;flex-shrink:0;white-space:nowrap;padding:2px 4px;opacity:.6;line-height:1.2}
+.btn-layer-toggle:hover{opacity:1}
+/* Ligne 2 : steps + mod */
+.layer-row2{display:flex;align-items:flex-start;gap:4px;padding:5px 6px 5px;min-width:0;overflow:hidden}
+.layer-row2.collapsed{display:none}
+.layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0}
+.btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:none;align-self:flex-start}
+body.mode-tx .btn-layer-mod{display:inline-block}
+body.mode-tx .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s}
 .step.on{background:var(--cc);border-color:var(--cb)}
 .step.cur{box-shadow:0 0 0 2px var(--cb);border-color:var(--cb)}
 .step.on.cur{background:var(--cb)}
 .layer.muted-layer .step.on{background:var(--cs)}
 .hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
+/* Texte éditable en TX */
+body.mode-tx [contenteditable="true"]{border-radius:3px;outline:none;transition:background .1s}
+body.mode-tx [contenteditable="true"]:hover{background:rgba(216,90,48,.07);cursor:text}
+body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-shadow:0 0 0 2px rgba(216,90,48,.3)}
 
 /* ─── COULEURS PAR COUCHE ─── */
 .c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55}
@@ -1010,13 +1021,12 @@ function buildLayers(){
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
 
-    // Colonne gauche : menu
-    const menu=document.createElement('div');menu.className='layer-menu';
+    // ── Ligne 1 : contrôles ───────────────────────────────────────────────
+    const row1=document.createElement('div');row1.className='layer-row1';
 
-    const menuTop=document.createElement('div');menuTop.className='layer-menu-top';
-
+    // Label couche
     const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
-    menuTop.appendChild(lbl);
+    row1.appendChild(lbl);
 
     // Bouton mute
     const btnMute=document.createElement('button');
@@ -1029,17 +1039,26 @@ function buildLayers(){
       btnMute.textContent=state[li].muted?'○':'●';
       layerDiv.classList.toggle('muted-layer',state[li].muted);
     });
-    menuTop.appendChild(btnMute);
-    menu.appendChild(menuTop);
+    row1.appendChild(btnMute);
 
     // Select pattern
     const sel=document.createElement('select');
-    sel.className='layer-select';
-    sel.id='sel-'+layer.id;
+    sel.className='layer-select';sel.id='sel-'+layer.id;
     buildPatternSelect(sel);
-    // Sélectionner le pattern courant
     const curPat=findPatternBySeq(state[li].pattern);
     if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});
+
+    // Bouton i (lien encyclopédie du pattern courant)
+    const btnI=document.createElement('button');btnI.className='btn-info-ico';btnI.textContent='i';
+    function updateBtnI(){
+      const pid=state[li].patternId;
+      const p=pid?getPattern(pid):null;
+      const has=!!(p&&p.encyclo_ref&&(packCours.encyclo||ENCYCLO)[p.encyclo_ref]);
+      btnI.style.opacity=has?'1':'.3';btnI.style.cursor=has?'pointer':'default';
+      btnI.onclick=has?()=>{showEncycloEntry(p.encyclo_ref);if(!encycloOuvert)toggleEncyclo(true);}:null;
+    }
+    updateBtnI();
+
     sel.addEventListener('change',()=>{
       const pat=getPattern(sel.value);if(!pat)return;
       state[li].pattern=pat.sequence.split('');
@@ -1050,27 +1069,41 @@ function buildLayers(){
         if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
         saveToStorage();
       }
+      updateBtnI();
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
-    menu.appendChild(sel);
+    row1.appendChild(sel);
 
-    const layerActions=document.createElement('div');layerActions.className='layer-actions';
-    layerActions.appendChild(mkBtnSave(()=>saveToStorage()));
-    layerActions.appendChild(mkBtnMenu());
-    menu.appendChild(layerActions);
+    // 💾 sauvegarde du pattern
+    row1.appendChild(mkBtnSave(()=>saveLayerPattern(li)));
+    row1.appendChild(btnI);
 
-    layerDiv.appendChild(menu);
+    // Bouton toggle steps (justifié à droite)
+    const row2=document.createElement('div');row2.className='layer-row2';
+    const btnToggle=document.createElement('button');btnToggle.className='btn-layer-toggle';
+    let stepsOpen=true;
+    btnToggle.textContent='steps ▼';
+    btnToggle.addEventListener('click',()=>{
+      stepsOpen=!stepsOpen;
+      row2.classList.toggle('collapsed',!stepsOpen);
+      btnToggle.textContent=stepsOpen?'steps ▼':'steps ▶';
+    });
+    row1.appendChild(btnToggle);
 
-    // Colonne droite : steps
-    const stepsOuter=document.createElement('div');stepsOuter.className='layer-steps-outer';
+    layerDiv.appendChild(row1);
+
+    // ── Ligne 2 : steps + mod ─────────────────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
-    stepsOuter.appendChild(stepsDiv);
-    layerDiv.appendChild(stepsOuter);
+    row2.appendChild(stepsDiv);
 
+    // Bouton mod ≡ (TX only, justifié à droite)
+    const btnMod=document.createElement('button');btnMod.className='btn-layer-mod';btnMod.textContent='≡';btnMod.title='Gérer ce pattern';
+    row2.appendChild(btnMod);
+
+    layerDiv.appendChild(row2);
     cont.appendChild(layerDiv);
 
-    // Construire les steps
     buildStepsDOM(li,false);
     setTimeout(()=>checkWrap(li),0);
     attachLayerObserver(li);
@@ -1105,23 +1138,25 @@ function onStepClick(li,si,el){
   const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
   const canEdit=currentMode==='tx'||(srcPat&&srcPat.source==='user');
   if(!canEdit)return;
-
+  // Bascule en mémoire uniquement — persistance via 💾
   const newVal=state[li].pattern[si]==='X'?'.':'X';
+  state[li].pattern[si]=newVal;
+  el.className='step'+(newVal==='X'?' on':'');
+  if(state[li].stepPos===si)el.classList.add('cur');
+}
 
-  if(!srcPat){
-    state[li].pattern[si]=newVal;
-    el.className='step'+(newVal==='X'?' on':'');
-    if(state[li].stepPos===si)el.classList.add('cur');
-    return;
-  }
+// Sauvegarde d'un pattern de layer — dialog si partagé entre plusieurs grooves
+function saveLayerPattern(li){
+  const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
+  if(!srcPat){saveToStorage();return;}
+
+  const currentSeq=state[li].pattern.join('');
+  if(currentSeq===srcPat.sequence){saveToStorage();return;}// Aucun changement de séquence
 
   const usedIn=packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
 
-  const applyToggle=(targetPat)=>{
-    state[li].pattern[si]=newVal;
-    el.className='step'+(newVal==='X'?' on':'');
-    if(state[li].stepPos===si)el.classList.add('cur');
-    targetPat.sequence=state[li].pattern.join('');
+  const applyPersist=(targetPat)=>{
+    targetPat.sequence=currentSeq;
     saveToStorage();
   };
 
@@ -1129,24 +1164,19 @@ function onStepClick(li,si,el){
     showPatternShareDialog(srcPat.nom,usedIn.map(g=>g.nom),(choice)=>{
       if(choice==='cancel')return;
       if(choice==='all'){
-        applyToggle(srcPat);
+        applyPersist(srcPat);
       } else {
-        // Créer un pattern utilisateur avec le step déjà basculé
-        const tmp=[...state[li].pattern];tmp[si]=newVal;
-        const newPat=createUserPattern(tmp,srcPat);
+        const newPat=createUserPattern([...state[li].pattern],srcPat);
         const groove=getGroove(currentGrooveId);
         if(groove&&groove.layers[li])groove.layers[li].patternId=newPat.id;
         state[li].patternId=newPat.id;
-        state[li].pattern[si]=newVal;
-        el.className='step'+(newVal==='X'?' on':'');
-        if(state[li].stepPos===si)el.classList.add('cur');
         const sel=document.getElementById('sel-'+LAYERS[li].id);
         if(sel){buildPatternSelect(sel);sel.value=newPat.id;}
         saveToStorage();
       }
     });
   } else {
-    applyToggle(srcPat);
+    applyPersist(srcPat);
   }
 }
 
@@ -1351,18 +1381,33 @@ function showEncycloEntry(key){
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
-  const entry=ENCYCLO[key];
+  const enc=packCours.encyclo||ENCYCLO;
+  const entry=enc[key];
   if(!entry){
     const p=document.createElement('p');p.className='encyclo-vide';p.textContent='Aucune entrée disponible.';
     body.appendChild(p);return;
   }
+  const isTX=currentMode==='tx';
+  const ensureEnc=()=>{if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));};
+
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
+  if(isTX){
+    chapo.contentEditable='true';
+    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;});
+  }
   body.appendChild(chapo);
+
   const ul=document.createElement('ul');ul.className='encyclo-bullets';
-  entry.bullets.forEach(([key,val])=>{
+  entry.bullets.forEach(([bk,bv],i)=>{
     const li=document.createElement('li');
-    const k=document.createElement('span');k.className='encyclo-bkey';k.textContent=key;
-    const v=document.createElement('span');v.className='encyclo-bval';v.textContent=val;
+    const k=document.createElement('span');k.className='encyclo-bkey';k.textContent=bk;
+    const v=document.createElement('span');v.className='encyclo-bval';v.textContent=bv;
+    if(isTX){
+      k.contentEditable='true';
+      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;});
+      v.contentEditable='true';
+      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;});
+    }
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
   body.appendChild(ul);
@@ -1466,7 +1511,6 @@ function loadFromStorage(){
     const saved=localStorage.getItem('ptk_content_v2');
     if(saved){
       const data=JSON.parse(saved);
-      // Fusion superficielle : conserver les champs qui existent dans le saved
       packCours=Object.assign(JSON.parse(JSON.stringify(PTK_DEFAULT)),data);
     } else {
       packCours=JSON.parse(JSON.stringify(PTK_DEFAULT));
@@ -1474,6 +1518,8 @@ function loadFromStorage(){
   } catch(e){
     packCours=JSON.parse(JSON.stringify(PTK_DEFAULT));
   }
+  // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
+  if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
 }
 
 function attachEvents(){
