@@ -329,7 +329,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.2.3</span>
+    <span class="app-version">v2.2.4</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -1075,10 +1075,10 @@ function setDirtyUI(selectId, btnId, isDirty){
     const opt=sel.options[sel.selectedIndex];
     if(isDirty){
       opt.style.color='#D85A30';
-      if(!opt.textContent.endsWith(' (modifié)'))opt.textContent=opt.textContent+' (modifié)';
+      if(!opt.textContent.startsWith('● modifié '))opt.textContent='● modifié '+opt.textContent;
     } else {
       opt.style.color='';
-      opt.textContent=opt.textContent.replace(/ \(modifié\)$/,'');
+      opt.textContent=opt.textContent.replace(/^● modifié /,'');
     }
   }
 }
@@ -1755,8 +1755,11 @@ function doSaveNewGroove(){
 
 function checkWrap(li){
   const outer=document.getElementById('steps-'+LAYERS[li].id);if(!outer)return;
-  const avail=outer.parentElement.clientWidth-8;
-  const needed=state[li].pattern.length*STEP_W;
+  const avail=outer.clientWidth; // largeur réelle du conteneur de steps
+  if(!avail)return; // pas encore layouté
+  const n=state[li].pattern.length;
+  const sw=window.innerWidth<600?20:22; // step width selon breakpoint CSS
+  const needed=n*(sw+2); // largeur totale steps + gaps (légère marge de sécurité)
   const shouldWrap=needed>avail;
   if(shouldWrap!==state[li].wrapped)buildStepsDOM(li,shouldWrap);
 }
