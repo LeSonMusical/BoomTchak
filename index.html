@@ -243,7 +243,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.0.3</span>
+    <span class="app-version">v2.0.4</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -899,10 +899,16 @@ let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='tx'?'tx':'sx';
 let dirtyLayers = [false, false, false];
 let grooveDirty = false;
+let encycloDir = false;
 
 function updateGrooveSaveBtn(){
   const btn=document.getElementById('save-btn-groove');
   if(btn)btn.classList.toggle('dirty',grooveDirty);
+}
+
+function updateEncycloSaveBtn(){
+  const btn=document.getElementById('save-btn-encyclo');
+  if(btn)btn.classList.toggle('dirty',encycloDir);
 }
 
 function setLayerDirty(li, isDirty){
@@ -1147,6 +1153,7 @@ function buildLayers(){
         const groove=getGroove(currentGrooveId);
         if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
         saveToStorage();
+        grooveDirty=true; updateGrooveSaveBtn();
       }
       updateBtnI();
       setLayerDirty(li,false); // reset dirty sur changement de pattern
@@ -1592,7 +1599,10 @@ function buildEncycloSection(){
   sel.addEventListener('pointerdown',e=>e.stopPropagation());
   bar.appendChild(sel);
 
-  bar.appendChild(mkBtnSave(()=>saveToStorage()));
+  const saveBtnEnc=document.createElement('button');
+  saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
+  saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
+  bar.appendChild(saveBtnEnc);
   bar.appendChild(mkBtnMenu());
 
   const btnVolet=document.createElement('button');
@@ -1650,7 +1660,7 @@ function renderEncyclo(key){
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
   if(isTX){
     chapo.contentEditable='true';
-    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;});
+    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;encycloDir=true;updateEncycloSaveBtn();});
   }
   body.appendChild(chapo);
 
@@ -1661,9 +1671,9 @@ function renderEncyclo(key){
     const v=document.createElement('span');v.className='encyclo-bval';v.textContent=bv;
     if(isTX){
       k.contentEditable='true';
-      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;});
+      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;encycloDir=true;updateEncycloSaveBtn();});
       v.contentEditable='true';
-      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;});
+      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;encycloDir=true;updateEncycloSaveBtn();});
     }
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
