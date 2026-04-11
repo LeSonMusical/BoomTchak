@@ -243,7 +243,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.0.5</span>
+    <span class="app-version">v2.0.6</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -901,34 +901,32 @@ let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let encycloDir = false;
 
-function updateGrooveSaveBtn(){
-  const btn=document.getElementById('save-btn-groove');
-  if(btn)btn.classList.toggle('dirty',grooveDirty);
-  const sel=document.getElementById('groove-select');
+// ── Gestion unifiée des états "modifié" ──────────────────────────────────
+// Toutes les sections partagent le même comportement :
+//   bouton 💾 → classe .dirty (rouge + !)
+//   option courante du select → suffixe " ✱"
+function setDirtyUI(selectId, btnId, isDirty){
+  const btn=document.getElementById(btnId);
+  if(btn)btn.classList.toggle('dirty',isDirty);
+  const sel=document.getElementById(selectId);
   if(sel&&sel.options[sel.selectedIndex]){
     const opt=sel.options[sel.selectedIndex];
-    if(grooveDirty&&!opt.textContent.endsWith(' ✱'))opt.textContent+=' ✱';
-    else if(!grooveDirty)opt.textContent=opt.textContent.replace(' ✱','');
+    if(isDirty&&!opt.textContent.endsWith(' ✱'))opt.textContent+=' ✱';
+    else if(!isDirty)opt.textContent=opt.textContent.replace(' ✱','');
   }
-}
-
-function updateEncycloSaveBtn(){
-  const btn=document.getElementById('save-btn-encyclo');
-  if(btn)btn.classList.toggle('dirty',encycloDir);
 }
 
 function setLayerDirty(li, isDirty){
-  dirtyLayers[li] = isDirty;
-  // 💾 rouge si dirty
-  const btn = document.getElementById('save-btn-layer-' + li);
-  if(btn) btn.classList.toggle('dirty', isDirty);
-  // Select : "[nom] ✱" si dirty
-  const sel = document.getElementById('sel-' + LAYERS[li].id);
-  if(sel && sel.options[sel.selectedIndex]){
-    const opt = sel.options[sel.selectedIndex];
-    if(isDirty && !opt.textContent.endsWith(' ✱')) opt.textContent += ' ✱';
-    else if(!isDirty) opt.textContent = opt.textContent.replace(' ✱','');
-  }
+  dirtyLayers[li]=isDirty;
+  setDirtyUI('sel-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
+}
+
+function updateGrooveSaveBtn(){
+  setDirtyUI('groove-select', 'save-btn-groove', grooveDirty);
+}
+
+function updateEncycloSaveBtn(){
+  setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
 }
 let sonsOuvert = false;
 let layersOuverts = true;
@@ -939,8 +937,8 @@ let currentEncycloId = null;
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
   currentGrooveId=grooveId;
-  grooveDirty=false;
-  updateGrooveSaveBtn();
+  grooveDirty=false; updateGrooveSaveBtn();
+  LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
 
   LAYERS.forEach((layer,li)=>{
     const gl=groove.layers[li];if(!gl)return;
@@ -1597,6 +1595,7 @@ function buildEncycloSection(){
   });
   if(currentEncycloId)sel.value=currentEncycloId;
   sel.addEventListener('change',()=>{
+    encycloDir=false; updateEncycloSaveBtn(); // nouvelle entrée = état frais
     if(sel.value){
       showEncycloEntry(sel.value);
       if(!encycloOuvert)toggleEncyclo(true);
