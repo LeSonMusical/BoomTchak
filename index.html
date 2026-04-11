@@ -898,6 +898,12 @@ function togglePlay(){
 let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='tx'?'tx':'sx';
 let dirtyLayers = [false, false, false];
+let grooveDirty = false;
+
+function updateGrooveSaveBtn(){
+  const btn=document.getElementById('save-btn-groove');
+  if(btn)btn.classList.toggle('dirty',grooveDirty);
+}
 
 function setLayerDirty(li, isDirty){
   dirtyLayers[li] = isDirty;
@@ -921,6 +927,8 @@ let currentEncycloId = null;
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
   currentGrooveId=grooveId;
+  grooveDirty=false;
+  updateGrooveSaveBtn();
 
   LAYERS.forEach((layer,li)=>{
     const gl=groove.layers[li];if(!gl)return;
@@ -997,7 +1005,7 @@ function buildBandSection(){
   // Sélectionner le band du groove courant
   const groove=getGroove(currentGrooveId);
   if(groove)sel.value=groove.band_defaut;
-  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();});
+  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();grooveDirty=true;updateGrooveSaveBtn();});
   bar.appendChild(sel);
 
   bar.appendChild(mkBtnSave(()=>saveToStorage()));
@@ -1043,7 +1051,10 @@ function buildGrooveSection(){
   sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
   bar.appendChild(sel);
 
-  bar.appendChild(mkBtnSave(()=>saveGroove()));
+  const saveBtnGroove=document.createElement('button');
+  saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-save';saveBtnGroove.textContent='💾';
+  saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
+  bar.appendChild(saveBtnGroove);
   bar.appendChild(mkBtnMenu());
 
   // Bouton i (lien encyclopédie)
@@ -1222,7 +1233,7 @@ function onStepClick(li,si,el){
 }
 
 // Sauvegarde d'un pattern de layer
-let _saveSheetLi = -1, _saveSheetBtn = null;
+let _saveSheetLi = -1, _saveSheetBtn = null, _saveSheetType = 'layer';
 
 function saveLayerPattern(li, btn){
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
@@ -1250,6 +1261,7 @@ function showSaveSheet(li, srcPat){
 
   // Construire le select de groupes
   const grpSel = document.getElementById('ss-group');
+  grpSel.style.display = '';
   grpSel.innerHTML = '';
   const groups = currentMode==='tx'
     ? packCours.groupes_patterns
@@ -1266,17 +1278,20 @@ function showSaveSheet(li, srcPat){
   // Réinitialiser le panneau ②
   document.getElementById('ss-new-panel').classList.remove('open');
   document.getElementById('ss-new-toggle').textContent = '② Sauvegarder comme nouveau ▶';
+  document.getElementById('ss-overwrite').style.display = '';
 
   document.getElementById('save-sheet').classList.remove('hidden');
 }
 
 function closeSaveSheet(){
   document.getElementById('save-sheet').classList.add('hidden');
-  _saveSheetLi = -1; _saveSheetBtn = null;
+  _saveSheetLi = -1; _saveSheetBtn = null; _saveSheetType = 'layer';
 }
 
 function doOverwrite(){
+  if(_saveSheetType === 'groove'){ doOverwriteGroove(); return; }
   const li = _saveSheetLi;
+  const btn = _saveSheetBtn;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   if(!srcPat){ closeSaveSheet(); return; }
   const currentSeq = state[li].pattern.join('');
@@ -1286,7 +1301,7 @@ function doOverwrite(){
     targetPat.sequence = currentSeq;
     saveToStorage();
     setLayerDirty(li, false);
-    if(_saveSheetBtn) flashSave(_saveSheetBtn);
+    if(btn) flashSave(btn);
     closeSaveSheet();
   };
 
@@ -1294,6 +1309,15 @@ function doOverwrite(){
   if(usedIn.length > 1){
     showPatternShareDialog(srcPat.nom, usedIn.map(g=>g.nom), choice=>{
       if(choice==='cancel') return;
+      if(choice==='new'){
+        // Rouvrir la save sheet en mode "nouveau seulement"
+        _saveSheetLi = li; _saveSheetBtn = btn; _saveSheetType = 'layer';
+        showSaveSheet(li, srcPat);
+        document.getElementById('ss-overwrite').style.display = 'none';
+        document.getElementById('ss-new-panel').classList.add('open');
+        document.getElementById('ss-new-toggle').textContent = '② Sauvegarder comme nouveau ▼';
+        return;
+      }
       persist(srcPat);
     });
   } else {
@@ -1302,6 +1326,7 @@ function doOverwrite(){
 }
 
 function doSaveNew(){
+  if(_saveSheetType === 'groove'){ doSaveNewGroove(); return; }
   const li = _saveSheetLi;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   const nom = document.getElementById('ss-name').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
@@ -1349,6 +1374,82 @@ function saveGroove(){
   const bandSel=document.querySelector('#section-band select');
   if(bandSel)groove.band_defaut=bandSel.value;
   saveToStorage();
+}
+
+// ── Save sheet pour groove ────────────────────────────────────────────────
+function saveGroovePattern(btn){
+  if(!currentGrooveId){ if(btn)flashSave(btn); return; }
+  const groove=getGroove(currentGrooveId);
+  if(!groove){ if(btn)flashSave(btn); return; }
+  if(!grooveDirty){ saveGroove(); if(btn)flashSave(btn); return; }
+  _saveSheetBtn=btn; _saveSheetType='groove';
+  showGrooveSaveSheet(groove);
+}
+
+function showGrooveSaveSheet(groove){
+  const nom=groove.nom;
+  const canOverwrite=currentMode==='tx'||(groove.source&&groove.source==='user');
+
+  document.getElementById('ss-title').textContent='« '+nom+' » modifié';
+  document.getElementById('ss-overwrite-name').textContent=nom;
+  document.getElementById('ss-overwrite').disabled=!canOverwrite;
+  document.getElementById('ss-overwrite').style.display='';
+
+  const nameInput=document.getElementById('ss-name');
+  nameInput.value=nom+' (copie)';
+
+  // Pas de groupes pour les grooves : on cache le select de groupe
+  const grpSel=document.getElementById('ss-group');
+  grpSel.innerHTML='';
+  grpSel.style.display='none';
+
+  document.getElementById('ss-new-panel').classList.remove('open');
+  document.getElementById('ss-new-toggle').textContent='② Sauvegarder comme nouveau ▶';
+
+  document.getElementById('save-sheet').classList.remove('hidden');
+}
+
+function doOverwriteGroove(){
+  const btn=_saveSheetBtn;
+  closeSaveSheet();
+  saveGroove();
+  grooveDirty=false;
+  updateGrooveSaveBtn();
+  if(btn)flashSave(btn);
+}
+
+function doSaveNewGroove(){
+  const btn=_saveSheetBtn;
+  const groove=getGroove(currentGrooveId);
+  if(!groove){ closeSaveSheet(); return; }
+  const nom=document.getElementById('ss-name').value.trim()||groove.nom+' (copie)';
+
+  const bandSel=document.querySelector('#section-band select');
+  const newGroove=JSON.parse(JSON.stringify(groove));
+  newGroove.id='user_groove_'+Date.now();
+  newGroove.nom=nom;
+  newGroove.source='user';
+  if(bandSel)newGroove.band_defaut=bandSel.value;
+  LAYERS.forEach((_,li)=>{
+    if(newGroove.layers[li]&&state[li].patternId)newGroove.layers[li].patternId=state[li].patternId;
+  });
+
+  packCours.grooves.push(newGroove);
+
+  // Ajouter au select groove et sélectionner
+  const grooveSel=document.getElementById('groove-select');
+  if(grooveSel){
+    const o=document.createElement('option');o.value=newGroove.id;o.textContent=newGroove.nom;
+    grooveSel.appendChild(o);
+    grooveSel.value=newGroove.id;
+  }
+  currentGrooveId=newGroove.id;
+
+  saveToStorage();
+  grooveDirty=false;
+  updateGrooveSaveBtn();
+  if(btn)flashSave(btn);
+  closeSaveSheet();
 }
 
 function checkWrap(li){
