@@ -1,18 +1,31 @@
-# PoumTchak v2.0 — Brief de développement
+# PoumTchak v2 — Brief de développement (référence complète)
+
+> **Version courante :** v2.2.4 — commit `6f1f696`  
+> **Fichier :** `/Users/takadimita/Desktop/PoumTchak/index.html` (~2900 lignes)  
+> **Dépôt :** https://github.com/LeSonMusical/BoomTchak  
+> **Déployé :** https://lesonmusical.github.io/BoomTchak/  
+> **Dev local :** `ruby -run -e httpd /Users/takadimita/Desktop/PoumTchak -p 3000`  
+> *(Python bloqué par macOS PermissionError sur `os.getcwd()`)*
+
+---
 
 ## Contexte projet
 
 PoumTchak est une application web pédagogique pour l'enseignement du rythme.
 Conçue par Lamberio, professeur de musique, pour un usage scolaire (relai enseignant→élève).
-La v1.6 existante (~3700 lignes, fichier unique) est une base fonctionnelle mais architecturalement cassée.
-La v2.0 est une réécriture from scratch sur une architecture propre.
+La v2 est une réécriture from scratch sur une architecture propre depuis la v1.6 (~3700 lignes, architecturalement cassée).
+
+**Mode de collaboration :**
+- Lamberio = product owner + designer pédagogique. Il décide de l'architecture et du design.
+- Claude implémente. Les questions architecturales importantes sont soumises AVANT le code.
+- Langue : français. Variables/fonctions : camelCase anglais.
 
 ---
 
-## Contraintes architecturales ABSOLUES
+## Contraintes absolues
 
 - **Fichier unique** : `index.html` — HTML + CSS + JS inline, zéro dépendance externe
-- **Vanilla JS** : pas de framework (React, Vue, etc.), pas de bibliothèque
+- **Vanilla JS** : pas de framework, pas de bibliothèque
 - **Web Audio API** native uniquement pour l'audio
 - **Mobile-first** : testé prioritairement sur smartphone
 - **Déploiement** : GitHub Pages (statique pur)
@@ -27,15 +40,14 @@ index.html
 │
 └── <script>
     ├── MODULE DATA       Source de vérité unique (jamais le DOM)
-    │   ├── CONTENT       patterns, grooves, familles (données par défaut)
-    │   └── packCours     état courant du cours (modifiable par TX)
+    │   ├── CONTENT       patterns, grooves, familles, encyclo (données par défaut)
+    │   └── packCours     état courant du cours (mutable, cloné depuis PTK_DEFAULT)
     │
-    ├── MODULE AUDIO      Moteur scheduler (copié depuis v1.6, stable)
+    ├── MODULE AUDIO      Moteur scheduler (Chris Wilson lookahead)
     │
     ├── MODULE RENDER     DOM piloté par DATA, jamais l'inverse
     │
     ├── MODULE TX         Mode enseignant (édition, sauvegarde)
-    │   └── Visibilité    ENDORMIE pour v2.0 test A
     │
     └── INIT              Bootstrap au chargement
 ```
@@ -44,83 +56,59 @@ index.html
 
 ---
 
-## Format JSON — Source de vérité (VALIDÉ)
+## Format JSON — Source de vérité
 
 ```json
 {
-  "meta": {
-    "titre": "Mon cours",
-    "auteur": "",
-    "version": "1.0",
-    "date": ""
-  },
+  "meta": { "titre": "Mon cours", "auteur": "", "version": "2.0", "date": "" },
+
   "familles": [
-    { "id": "fam_01", "nom": "Afro-cubain", "description": "..." }
+    { "id": "fam_afrocubain", "nom": "Afro-cubain" }
   ],
+
   "patterns": [
     {
-      "id": "clave_3_2",
-      "nom": "Clave 3:2",
-      "texte": "...",
-      "familles": ["fam_01"],
-      "sequence": "X..x..X...X.x...",
-      "pas": 16,
+      "id": "tres",
+      "nom": "Tresillo",
+      "familles": ["fam_euclidien", "fam_afrocubain"],
+      "sequence": "X..X..X.",
+      "pas": 8,
       "unite_temps": "1/8",
       "pas_par_mesure": 8,
-      "shift": 0,
-      "tempo": { "min": 160, "max": 220 },
-      "references": [
-        {
-          "artiste": "Irakere",
-          "titre": "Bacalao con Pan",
-          "timestamp": "0:14",
-          "mbid": "",
-          "texte": "On entend la clave dès l'intro..."
-        }
-      ]
+      "encyclo_ref": "tres",
+      "source": "default"
     }
   ],
+
   "grooves": [
     {
-      "id": "groove_01",
-      "nom": "Clave 3-2 complète",
-      "texte": "...",
-      "familles": ["fam_01"],
-      "band_defaut": "afro_latin",
-      "tempo": { "min": 100, "max": 200, "defaut": 120 },
-      "references": [],
+      "id": "salsa32",
+      "nom": "Salsa 3:2",
+      "familles": ["fam_afrocubain"],
+      "band_defaut": "perc",
+      "tempo": { "min": 80, "max": 360, "defaut": 200 },
+      "vitesse_mult": 2,
       "layers": [
-        {
-          "id": "grave",
-          "patternId": "clave_3_2",
-          "mute": false,
-          "shift": 0,
-          "unite_temps": "1/8",
-          "pas_par_mesure": 8
-        },
-        {
-          "id": "aigu",
-          "patternId": "tresillo",
-          "mute": false,
-          "shift": 0,
-          "unite_temps": "1/8",
-          "pas_par_mesure": 8
-        },
-        {
-          "id": "noise",
-          "patternId": "pulse_4_4",
-          "mute": true,
-          "shift": 0,
-          "unite_temps": "1/8",
-          "pas_par_mesure": 8
-        }
+        { "id": "grave", "patternId": "tres",    "mute": false, "shift": 0, "halfOn": false, "doubleOn": false },
+        { "id": "aigu",  "patternId": "son32",   "mute": false, "shift": 0, "halfOn": false, "doubleOn": false },
+        { "id": "noise", "patternId": "cascara", "mute": false, "shift": 0, "halfOn": false, "doubleOn": false }
       ]
     }
   ],
+
+  "encyclo": {
+    "tres": {
+      "chapo": "Texte chapeau...",
+      "bullets": [["Titre", "Texte"], ["Titre2", "Texte2"]]
+    },
+    "salsa32": { "chapo": "", "bullets": [] }
+  },
+
   "menus": {
     "groove": { "ordre": [], "caches": [] },
     "encyclo": { "ordre": [], "caches": [] }
   },
+
   "parcours": {
     "etapes": [
       {
@@ -128,8 +116,8 @@ index.html
         "titre": "Découverte",
         "consigne": "",
         "etat_appli": {
-          "grooveId": "groove_01",
-          "bandId": "afro_latin",
+          "grooveId": "salsa32",
+          "bandId": "perc",
           "tempo": { "min": 60, "max": 120, "defaut": 80 },
           "sections": { "band": "ferme", "encyclo": "ouvert" }
         },
@@ -141,65 +129,209 @@ index.html
 ```
 
 ### Règles du format
-- `sequence` : chaîne de caractères, 3 niveaux — `X` (fort) / `x` (faible) / `.` (silence)
-- `shift` au niveau layer surcharge le shift du pattern
-- `unite_temps` + `pas_par_mesure` : valeurs moteur audio (pas de chiffrage musical — conversion à faire côté UI)
-- Chaque layer peut avoir son propre `unite_temps` → supporte polymétrie et polyrythmie
-- `tempo` toujours sous forme `{ min, max, defaut }` — omis si non pertinent
-- `visibilite` : map de chemins `"section.sous-section.item"` → `"visible"|"cache"|"gele"` — **champ présent mais ignoré en v2.0**
+- `sequence` : `X` (fort) / `x` (faible) / `.` (silence)
+- `source` : `'default'` (fourni par l'app) ou `'user'` (créé par l'enseignant)
+- `encyclo_ref` sur les patterns : clé vers `packCours.encyclo`. Si absent, la clé est `pattern.id`
+- **Clé encyclopédie** : toujours `p.encyclo_ref || p.id` pour un pattern, `g.id` pour un groove
+- Toutes les entrées encyclo (patterns ET grooves) sont **auto-créées vides** au chargement si absentes
+- `halfOn`/`doubleOn` par layer : vitesse relative de la couche (×0.5 / ×2)
+- `vitesse_mult` sur groove : multiplicateur global tempo
+- `visibilite` : champ présent mais **ENDORMI en v2** (logique absente)
 
 ---
 
-## Structure de l'interface (à conserver depuis v1.6)
+## Familles — système unifié
+
+- `packCours.familles` = pool plat partagé entre patterns ET grooves (ex. `fam_afrocubain`)
+- Chaque pattern/groove a `familles: []` (tableau d'ids)
+- Familles disponibles dans PTK_DEFAULT : `fam_base`, `fam_euclidien`, `fam_afrocubain`, `fam_africain`, `fam_bresilien`, `fam_caraibe`, `fam_flamenco`
+- Filtres famille dans les barres de section (chips) — filtre les selects
+- Panels ≡ patterns et grooves : section "Gérer les familles" — renommer, supprimer, créer
+  - Familles avec 0 items sont masquées dans les panels
+  - `rebuildAllFamFilters()` : reconstruit tous les filtres après modification
+  - `libDeleteFamille(famId, count)` : supprime une famille + retire de tous patterns ET grooves
+
+---
+
+## Structure de l'interface
 
 ```
 ┌──────────────────────────────────────┐
-│  SX/TX  PoumTchak  [Tempo][Sons][⊞][?] │  ← Top bar fixe
+│  SX/TX  PoumTchak  [Tempo][Sons][⊞][?]│  ← Top bar fixe
 ├──────────────────────────────────────┤
-│  [Étape ▼]   (TX only, endormi v2.0) │
-│  [Band ▼]    (si Sons actif)         │  ← zone centrale scrollable
-│  [Groove ▼]                          │
+│  [Band ▼]    (si Sons actif)         │
+│  [Groove ▼]                          │  ← zone centrale scrollable
 │  Layers (3 couches)                  │
 │  [Encyclopédie ▼]                    │
 ├──────────────────────────────────────┤
-│  (vide)  │  ▶/■ Play  │  🤚Jouer    │  ← Bottom bar fixe
+│            │  ▶/■ Play  │  🤚Jouer   │  ← Bottom bar fixe
 └──────────────────────────────────────┘
 ```
 
-### Sections (terme préféré à "volet")
-Chaque section a une barre uniforme :
+### Modèle unifié de barre de section
 ```
-[Label] [select menu] [💾] [✏️ TX only] [i] [Section ▶/▼]
+[Label] [filtre famille chips] [select menu] [💾] [≡ TX only] [i] [▶/▼ volet]
 ```
+CSS : `flex-wrap:nowrap; overflow:hidden` — la barre ne déborde jamais.
+
+### Couleurs des barres
+- **Groove** : fond doré `#faf3e0`, bordure gauche `#C8961A`
+- **Band** : fond bleu `#eef4f8`, bordure gauche `#4A7FA5`
+- **Encyclo** : fond gris `#f5f4f0`, bordure gauche `#888`
+- **Layers** : indent visuel `border-left:2px solid #e0d090` depuis le groove
 
 ---
 
 ## Modes TX / SX
 
-- **SX** (défaut) : mode élève — interface selon configuration enseignant
+- **SX** (défaut) : mode élève
 - **TX** : mode enseignant — accès complet édition + sauvegarde
 - Bascule : bouton `SX/TX` top bar gauche + raccourci `Tab`
 - URL `?mode=tx` démarre en TX
-- **Mode Visibilité** : ENDORMI en v2.0 (bouton masqué, logique absente)
-
-### Périmètre TX pour test A (priorités)
-- **P1** : Sauvegarde/chargement patterns, grooves, textes encyclo
-- **P2** : Édition des menus groove et encyclo (ordre, rename, delete, ajout)
-- **P3** : Parcours + étapes + visibilité (ENDORMI)
+- En TX : boutons 💾 + ≡ visibles sur chaque section
 
 ---
 
-## Moteur audio (à copier depuis v1.6, ne pas modifier)
+## Système dirty state — UNIFIÉ
 
-- Scheduler lookahead : `setTimeout` 25ms / lookahead 100ms (pattern Chris Wilson)
-- SPM : Steps Par Minute (pas BPM)
-- 3 layers indépendants avec timing décalé possible
-- Changement de groove : resync au PPMC des longueurs (à implémenter proprement)
-- iOS 18 : `ac.resume()` synchrone dans le handler de clic
-- Visuel : RAF loop séparée du scheduler audio
+Fonction centrale : `setDirtyUI(selectId, btnId, isDirty)`
+- Bouton 💾 → classe `.dirty` → CSS rouge + `!` via `::after`
+- Option courante du select → préfixe `"● modifié "` + couleur rouge
+- **Ne jamais créer de variante ad hoc** : toujours déléguer à cette fonction
 
-### Variables audio clés
-```javascript
+Les 3 wrappers :
+```js
+setLayerDirty(li, isDirty)       // → sel-{layerId} + save-btn-layer-{li}
+updateGrooveSaveBtn()            // → groove-select + save-btn-groove
+updateEncycloSaveBtn()           // → encyclo-select + save-btn-encyclo
+```
+
+**Déclencheurs dirty :**
+| Action | Effet |
+|--------|-------|
+| Clic sur un step | `setLayerDirty(li, true)` |
+| Changement pattern select (TX) | `grooveDirty=true` |
+| Mute toggle | `grooveDirty=true` |
+| Texte encyclo modifié (blur ≠ focus) | `encycloDir=true` |
+
+**Reset dirty :**
+| Action | Reset |
+|--------|-------|
+| `applyGroove()` (changement groove) | `grooveDirty=false` + toutes couches `false` |
+| Layer pattern select change | `setLayerDirty(li, false)` |
+| Encyclo select change | `encycloDir=false` |
+
+**Détection changement contenteditable :** sauvegarder valeur au `focus` (`element.dataset.orig`), comparer au `blur`.
+
+---
+
+## Système de sauvegarde (TX)
+
+### Popover psp-box (patterns et grooves)
+
+Variable de contexte : `_pspContext = 'pattern' | 'groove'`
+
+- **① Écraser [nom]** → `doOverwrite()` → si pattern partagé entre grooves → `showPatternShareDialog()`
+  - Dialog : `'all'` (écraser partout) / `'new'` (rouvrir en mode nouveau) / `'cancel'`
+- **② Sauvegarder comme nouveau** → champ nom + select famille → `doSaveNew()`
+
+`saveGroove()` persiste : `patternId`, `mute`, `halfOn`, `doubleOn` par couche.
+
+### localStorage
+- Clé `ptk_content_v2` : contenu courant
+- Chargement au démarrage dans `loadFromStorage()`
+
+### Migrations au chargement
+Dans `loadFromStorage()`, après chargement :
+1. `packCours.familles` créé si absent
+2. `familles:[]` garanti sur chaque pattern et groove
+3. `packCours.encyclo` initialisé depuis `ENCYCLO` si absent
+4. Entrées encyclo vides créées pour tous grooves (`g.id`) et tous patterns (`p.encyclo_ref || p.id`) si absentes
+
+---
+
+## Steps — affichage et wrap
+
+### Layout
+- `.layer-steps` : `display:flex; flex-wrap:wrap; gap:2px`
+- `.step` : `width:22px; height:22px` (mobile <600px : `width:20px; height:20px`)
+- `const STEP_W = 22` — référence JS
+
+### Wrap conditionnel
+```js
+function checkWrap(li){
+  const outer = document.getElementById('steps-'+LAYERS[li].id); if(!outer) return;
+  const avail = outer.clientWidth; // largeur RÉELLE du conteneur de steps
+  if(!avail) return;
+  const n = state[li].pattern.length;
+  const sw = window.innerWidth < 600 ? 20 : 22; // step width selon breakpoint CSS
+  const needed = n * (sw + 2); // largeur totale avec gaps (légère marge de sécurité)
+  const shouldWrap = needed > avail;
+  if(shouldWrap !== state[li].wrapped) buildStepsDOM(li, shouldWrap);
+}
+```
+
+⚠️ **Bug historique corrigé en v2.2.4** : utiliser `outer.parentElement.clientWidth - 8` sans le gap `2px` produisait des wraps CSS naturels aberrants (10+2 au lieu de 6+6 pour 12 steps).
+
+### Point de césure
+```js
+function halfAt(len){ if(len<=4) return null; return Math.ceil(len/2); }
+```
+- 8 steps → 4+4 / 12 steps → 6+6 / 16 steps → 8+8
+
+### Breakpoint DOM
+`buildStepsDOM(li, wrap)` insère un div `flex-basis:100%` à l'index `halfAt(n)` pour forcer le retour à la ligne.
+
+### ResizeObserver
+`attachLayerObserver(li)` attache un observer sur `outer.parentElement`. Disconnecté dans `buildLayers()` via `layerObservers.forEach(o=>o.disconnect())`.
+
+---
+
+## Encyclopédie
+
+- Const `ENCYCLO` : dictionnaire de référence (chapo + bullets) — ne jamais modifier
+- `packCours.encyclo` : copie éditable + entrées vides auto-créées pour tous items
+- Structure : `{ key: { chapo: string, bullets: [[titre, texte], ...] } }`
+- En TX : textes éditables (`contentEditable='true'`), detached 💾
+- `hasEncycloContent(key)` : retourne `true` si chapo non vide ou bullets.length > 0
+- `updateEncycloSelect(key)` : sélectionne automatiquement dans le select encyclo
+  - Appelé depuis `applyGroove(grooveId)`, changement pattern layer, et `start()`
+- Select encyclo :
+  - **En SX** : masque les entrées vides (seulement `hasEncycloContent`)
+  - **En TX** : affiche tout, entrées vides en gris
+- `buildEncycloSection()` reconstruit tout le select (appelé aussi depuis `setMode()`)
+
+---
+
+## Panels ≡ (lib-panels)
+
+Deux panels distincts : **patterns** (`lib-panel-patterns`) et **grooves** (`lib-panel-grooves`).
+
+Structure commune :
+```
+Header titre
+Filtre: [Tous | G | P] + filtre famille (chips)
+Liste des items (drag, rename, familles, delete)
+Section "Gérer les familles" (rename inline, count, ×)
+Section "Ajouter une famille" (input + btn)
+```
+
+### Actions par item
+- `≡` drag pour réordonner
+- Clic nom → edit inline (Enter/Escape)
+- Chips famille → add/remove famille sur item
+- `×` supprimer (avec count de dépendances)
+
+---
+
+## Moteur audio
+
+Scheduler lookahead : `setTimeout` 25ms / lookahead 100ms (pattern Chris Wilson)
+SPM : Steps Par Minute (pas BPM)
+3 layers indépendants avec `halfOn` / `doubleOn` par couche.
+
+Variables audio clés :
+```js
 let playing = false;
 let ac = null;
 let globalSpeedMult = 1;
@@ -210,161 +342,164 @@ const LOOKAHEAD = 0.1;
 const SCHED_MS = 25;
 ```
 
+iOS 18 : `ac.resume()` synchrone dans le handler de clic.
+Visualisation : RAF loop séparée du scheduler (`visualLoop()`).
+
 ---
 
-## Système sonore (à copier depuis v1.6)
+## Système sonore
 
 5 couches : Grave / Aigu / Noise / Main gauche / Main droite
 
-### Styles de band
-| Style | Grave | Aigu | Noise |
-|-------|-------|------|-------|
-| Électro | Kick | Snare | Hi-hat |
-| Percussions | Tambour | Clave | Shaker |
-| Rock | Grosse caisse | Caisse claire | Charleston |
-| Minimaliste | Tom grave | Bell | Noise |
+### Styles de band (bandId)
+| bandId | Grave | Aigu | Noise |
+|--------|-------|------|-------|
+| `electro` | Kick | Snare | Hi-hat |
+| `perc` | Tambour | Clave | Shaker |
+| `rock` | Grosse caisse | Caisse claire | Charleston |
+| `minimal` | Tom grave | Bell | Noise |
 
-### Synthèse (Web Audio API pure)
-Kick, Snare, Clave, Hi-hat, Shaker, Bell, Conga, Bongo, Triangle, Strum, Clap
-→ Toutes les fonctions de synthèse sont dans la v1.6, à copier intégralement.
-
----
-
-## Dictionnaire de patterns (à migrer depuis v1.6 vers JSON)
-
-### Référentiels
-- Bin 1:2 — `X.` (2 pas)
-- Ter 1:3 — `X..` (3 pas)
-- Pulse 4:4 — `Xxxx` (4 pas)
-
-### 4 pas
-
-- - Off Beat (2,4) — `.X.X`
-- Double Up (2,4) — `..Xx`
-- Takami (3,4) - `XX.X`
-
-### 8 pas (1/8)
-
-- Silence 0,4 — `.....`
-- Four on the Floor — `X.X.X.X.`
-- Tresillo — `X..X..X.'
-- Habanera — `X..xX.X.`
-- Cinquillo — `X.XX.X.X`
-- Klee Pattern - `..XX.X.`
-
-### 16 pas (1/16)
-- Bossa Nova — `X..X..X..X..X...`
-- Son Clave 3:2 — `X..X..X...X.X...`
-- Son Clave 2:3 — `...X.X...X..X..X`
-- Clave Reggae — `X...X..X........`
-- Cascara 2:3 — `X.XX.X.XX.X.XX.X`
-- Tumbao 2:3 — `..X...X.X.......`
-
-### 12 pas (ternaire)
-- Bembé — `X.XX.XX.X.X.`
-- Soleá — `X.X..X.X.X..`
-- Afoxê — `X..X..X.X...`
-- Gahu — `X.X.XX.X.X..`
+Synthèse Web Audio API pure : Kick, Snare, Clave, Hi-hat, Shaker, Bell, Conga, Bongo, Triangle, Strum, Clap.
+Band change : ne déclenche PAS de dirty sur le groove (intentionnel depuis v2.2.1).
 
 ---
 
-## Encyclopédie (entrées validées — à migrer)
+## Dictionnaire de patterns (PTK_DEFAULT.patterns)
 
-Chaque entrée a : `id`, `nom`, `chapo` (texte court), `corps` (texte long), `exemples` (liste), `pattern_ref` (id pattern associé)
-
-Entrées existantes dans v1.6 :
-`_poumtchak`, `tresillo`, `cinquillo`, `habanera`, `clave_reggae`, `bossa_nova`, `gahu`, `shiko`, `fume_fume`, `samba`, `tumbao`, `bembe`, `afoxe`, `bolero`, `off_beat`, `son_3_2`, `cascara`, `solae`
+| id | nom | pas | famille |
+|----|-----|-----|---------|
+| `pulse1` | Pulse | 1 | base |
+| `bin2` | Bin (1:2) | 2 | base |
+| `ter3` | Ter (1:3) | 3 | base |
+| `fl4` | Four on the Floor | 8 (1/8) | base |
+| `offbeat` | Off Beat (2,4) | 8 (1/8) | base |
+| `pulse4` | Pulse (4:4) | 4 | base |
+| `sync4` | Double Up (2:4) | 4 | base |
+| `silence` | Silence | 4 | base |
+| `tres` | Tresillo | 8 (1/8) | euclidien, afrocubain |
+| `cinq` | Cinquillo | 8 (1/8) | afrocubain |
+| `hab` | Habanera | 8 (1/8) | afrocubain |
+| `afoxe` | Afoxê / Bolero | 8 (1/8) | afrocubain, africain |
+| `reggae` | Clave Reggae | 8 (1/8) | caraibe |
+| `son32` | Son 3:2 | 16 (1/16) | afrocubain |
+| `son` | Son (2:3) | 16 (1/16) | afrocubain |
+| `rum32` | Rumba 3:2 | 16 (1/16) | afrocubain |
+| `shiko` | Shiko | 16 (1/16) | africain |
+| `bossa` | Bossa Nova | 16 (1/16) | brésilien |
+| `gahu` | Gahu | 16 (1/16) | africain |
+| `souk` | Soukous | 16 (1/16) | africain |
+| `samba` | Samba | 16 (1/16) | brésilien |
+| `cascara` | Cascara 3:2 | 16 (1/16) | afrocubain |
+| `tumbao` | Tumbao | 16 (1/16) | afrocubain |
+| `fume` | Fume-fume | 12 (1/12) | africain |
+| `bembe` | Bembé | 12 (1/12) | africain |
+| `solea` | Soleá | 12 (1/12) | flamenco |
 
 ---
 
-## Sauvegarde — Architecture cible
+## Grooves par défaut (PTK_DEFAULT.grooves)
 
-### Phase test A (à implémenter)
-```
-TX (prof)                      SX (élève)
-─────────────────              ──────────────────
-Édite le contenu          →    Reçoit URL publique
-Clique 💾 Sauvegarder     →    Ouvre l'appli
-  ↓                              ↓
-Google Apps Script         →    Charge le JSON
-(stocke dans Google Drive)      (sans compte requis)
-```
+| id | nom | familles | band_defaut | vitesse_mult |
+|----|-----|----------|-------------|--------------|
+| `salsa32` | Salsa 3:2 | afrocubain | perc | 2 |
+| `bossanova` | Bossa Nova | brésilien | minimal | 1 |
+| `techno` | Techno | — | electro | 1 |
+| `reggae` | Reggae | caraibe | rock | 1 |
+| `dancehall` | Dancehall | caraibe | perc | 2 |
 
-### localStorage (intermédiaire)
-- Clé `ptk_content_v2` : contenu courant (patterns, grooves)
-- Clé `ptk_menus_v2` : configuration menus
-- Chargement au démarrage si présent
+---
 
-### Google Apps Script (phase suivante)
-- Script déployé comme Web App publique
-- `POST /save` → stocke JSON, retourne un `id`
-- `GET /load?id=xxx` → retourne le JSON
-- L'élève reçoit l'URL : `https://[github-pages]/?pack=xxx`
+## Encyclopédie — entrées ENCYCLO (const)
+
+Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
+`tres`, `cinq`, `hab`, `afoxe`, `reggae` (clave), `son32`, `son`, `rum32`, `shiko`, `bossa`, `gahu`, `souk`, `samba`, `cascara`, `tumbao`, `fume`, `bembe`, `solea`, `fl4`, `offbeat`
 
 ---
 
 ## Conventions de code
 
 - Commentaires en français
-- Noms de variables/fonctions en camelCase anglais
-- Modules séparés par des blocs commentés `// ═══ MODULE NOM ═══`
-- Pas de `var`, uniquement `let` et `const`
-- Pas d'`innerHTML` pour construire des éléments complexes (sécurité + lisibilité)
-- Fonctions pures quand possible (pas d'effets de bord cachés)
-- **Version** : format `MAJEUR.MINEUR.PATCH`, bumpée à chaque commit, affichée dans la top bar (`<span class="app-version">`)
+- Noms variables/fonctions en camelCase anglais
+- Modules séparés : `// ═══ MODULE NOM ═══`
+- `let` et `const` uniquement (pas de `var`)
+- Pas d'`innerHTML` pour construire des éléments complexes
+- Fonctions pures quand possible
+- **Version** : `MAJEUR.MINEUR.PATCH`, bumpée à chaque commit, affichée dans top bar (`<span class="app-version">`)
 
 ---
 
-## Système de sections — Design unifié
-
-**Règle** : toutes les sections ont exactement le même modèle de barre :
-```
-[Label] [select menu] [💾 btn-sec-save] [≡ TX only] [i] [▶/▼ volet]
-```
-
-**Dirty state unifié** — `setDirtyUI(selectId, btnId, isDirty)` :
-- Bouton 💾 → classe `.dirty` → CSS `.btn-sec-save.dirty` (rouge + `!`)
-- Option courante du select → suffixe `" ✱"`
-- **Ne jamais créer de variante ad hoc** : toujours déléguer à cette fonction
-
-**Déclencheurs dirty (règle générale) :**
-- Toute modification du contenu d'une section → `dirty = true`
-- Changement de sélection dans un menu → `dirty = false` (état frais)
-- Changement de groove → reset dirty groove ET toutes les couches
-
-**Détection de vrai changement (contenteditable) :**
-- Sauvegarder la valeur au `focus` (`element.dataset.orig`)
-- Comparer au `blur` — ne marquer dirty que si `textContent !== dataset.orig`
-
----
-
-## État d'avancement (v2.0.6 — session 2)
+## État d'avancement v2.2.4
 
 ### ✅ Implémenté
+
+**Infrastructure**
 - Modes TX/SX — toggle + URL `?mode=tx`
 - Lecture audio 3 couches + scheduler lookahead
-- Sections : Band, Groove, Layers, Encyclopédie
-- Boutons 💾 et ≡ par section
-- Dirty state unifié (`setDirtyUI`) : 💾 rouge + `✱` dans select
-- Save sheet 2 choix : ① Écraser / ② Sauvegarder comme nouveau
-- Dialog "pattern partagé" entre grooves (option : écraser partout / nouveau)
-- Encyclo : texte éditable en TX (contenteditable), détection de vrai changement
-- `saveGroove()` : sync complet (patternId + mute + halfOn + doubleOn)
-- Version affichée dans la top bar
+- Version affichée top bar
 
-### 🔜 À faire — Phase suivante
-- **P2 — ≡ Menu management** : rename, reorder, delete, ajout grooves/patterns
-- **Encyclopédie ≡** : édition de structure (ajout/suppression d'entrées)
-- **Visualisation circulaire** : canvas rotatif synchronisé au playback
-- **P3 — Parcours/étapes** : navigation TX (structure JSON prête, UI absente)
-- **Sync prof→élève** : Google Apps Script ou export JSON
+**Sections**
+- Band, Groove, Layers, Encyclopédie avec barres uniformes
+- Boutons 💾 (TX+SX selon section) et ≡ (TX only) par section
+- Filtres famille (chips) dans barres Groove et Layers
+
+**Dirty state**
+- Système unifié `setDirtyUI` : 💾 rouge + `!` + `● modifié Nom` dans select
+- Déclencheurs cohérents sur toutes les sections
+- Reset dirty sur navigation (changement de sélection)
+
+**Sauvegarde**
+- Popover psp-box shared (patterns + grooves) via `_pspContext`
+- Save sheet 2 choix : Écraser / Sauvegarder comme nouveau
+- Dialog "pattern partagé" entre grooves
+- `saveGroove()` : sync complet (patternId + mute + halfOn + doubleOn par couche)
+- localStorage `ptk_content_v2`
+
+**Familles (v2.1+)**
+- Familles partagées patterns + grooves (pool plat)
+- Multi-appartenance
+- Panel ≡ patterns : liste items, drag, rename, familles, delete, gérer familles
+- Panel ≡ grooves : idem
+- `libDeleteFamille` : nettoie patterns ET grooves
+- Familles vides masquées dans les panels
+
+**Encyclopédie (v2.2+)**
+- Texte éditable en TX (contenteditable), détection vrai changement focus/blur
+- Entrées auto-créées vides pour tous patterns ET grooves
+- Select inclut TOUS les patterns (pas seulement ceux avec `encyclo_ref`)
+- Auto-select à chaque changement de groove ou pattern de couche
+- SX : entrées vides masquées / TX : entrées vides grisées
+
+**Steps (v2.2.4)**
+- Wrap conditionnel (seulement si pas de place)
+- Calcul correct : `outer.clientWidth` + `n*(sw+2)` (inclut gap CSS)
+- Césure toujours au milieu : `halfAt(n) = Math.ceil(n/2)`
+- ResizeObserver par couche (disconnecté au rebuild)
+
+### 🔜 Prochaines phases
+
+**P2 — ≡ Menu management**
+- Rename, reorder, delete, ajout grooves/patterns dans les panels ≡
+- Interface actuellement en place mais fonctionnalités incomplètes
+
+**Encyclopédie ≡**
+- Édition de structure : ajout/suppression d'entrées depuis le panel lib
+
+**Visualisation circulaire**
+- Canvas rotatif synchronisé au playback (code v1.6 à porter)
+
+**P3 — Parcours/étapes**
+- Navigation TX (structure JSON prête, UI absente)
+
+**Sync prof→élève**
+- Google Apps Script (stockage JSON Drive + URL publique)
+- `GET /load?id=xxx` → `https://[github-pages]/?pack=xxx`
 
 ---
 
-## Ce qu'on NE fait PAS en v2.0
+## Ce qu'on NE fait PAS en v2
 
-- Mode Visibilité TX (endormi — champ JSON présent mais logique absente)
-- Parcours/étapes navigation (P3 — structure JSON prête mais UI absente)
+- Mode Visibilité TX (endormi — champ JSON `visibilite` présent mais logique absente)
+- Parcours/étapes navigation côté SX (P3)
 - Export MIDI
 - Mode multi-utilisateur
 - Mode sombre
@@ -372,10 +507,11 @@ Google Apps Script         →    Charge le JSON
 
 ---
 
-## Référence v1.6
+## Référence v1.6 (pour futur portage)
 
-Le fichier `index.html` v1.6 contient les blocs à copier :
-- Moteur audio (fonctions `scheduler`, `visualLoop`, `scheduleNote`, `getBeatSec`)
-- Synthèse sonore (objet `SOUND_DEFS`, toutes les fonctions de synth)
-- Visualisation circulaire (canvas, `visualLoopCircle`, `resizeCanvas`)
-- Données encyclopédie (objet ou tableau des entrées)
+Fichier v1.6 dans `old/` :
+- Moteur audio (`scheduler`, `visualLoop`, `scheduleNote`, `getBeatSec`) — **déjà porté**
+- Synthèse sonore (`SOUND_DEFS`) — **déjà portée**
+- Visualisation circulaire (`visualLoopCircle`, `resizeCanvas`) — **à porter**
+- Mode Visibilité — **endormi**
+- Parcours/étapes — **à porter (P3)**
