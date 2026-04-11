@@ -226,6 +226,87 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .ptk-dlg-btn-primary{background:#D85A30;color:#fff;border-color:#D85A30}
 .ptk-dlg-btn-cancel{background:transparent;color:#999;border-color:transparent;text-align:center;font-weight:400}
 
+/* ─── FILTRE FAMILLE (select compact avant le select pattern) ─── */
+.fam-filter{font-size:9px;padding:1px 3px;border-radius:4px;border:1px solid var(--cs);background:#fff;color:var(--cb);flex-shrink:0;max-width:72px;cursor:pointer}
+
+/* ─── FAMILY TAG CHIPS ─── */
+.fam-tags{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 2px}
+.fam-tag{display:inline-flex;align-items:center;gap:2px;background:#e8f0fb;border:1px solid #b0c4e8;border-radius:10px;padding:1px 6px 1px 7px;font-size:10px;color:#2d5f80;line-height:1.4;white-space:nowrap}
+.fam-tag-x{background:none;border:none;cursor:pointer;color:#6a8fb0;font-size:11px;padding:0 0 0 2px;line-height:1;flex-shrink:0}
+.fam-tag-x:hover{color:#993C1D}
+.fam-tag-add{display:inline-flex;align-items:center;background:none;border:1px dashed #b0c4e8;border-radius:10px;padding:1px 7px;font-size:10px;color:#6a8fb0;cursor:pointer;line-height:1.4;white-space:nowrap}
+.fam-tag-add:hover{background:#f0f5ff;color:#2d5f80}
+
+/* ─── POPOVER SAVE PATTERN ─── */
+.psp-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.25)}
+.psp-overlay.hidden{display:none}
+.psp-box{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:186;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12px 14px 14px;width:min(340px,96vw);display:flex;flex-direction:column;gap:8px}
+.psp-overwrite{padding:10px 14px;border-radius:8px;border:1.5px solid #D85A30;background:#fff5f2;font-size:12px;font-weight:600;cursor:pointer;color:#D85A30;text-align:left;width:100%}
+.psp-overwrite:hover{background:#ffe8e2}
+.psp-overwrite:disabled{opacity:.35;cursor:default;background:#fff}
+.psp-divider{text-align:center;font-size:10px;color:#aaa;margin:-2px 0}
+.psp-new-toggle{padding:10px 14px;border-radius:8px;border:1.5px solid #4A7FA5;background:#f4f8fb;font-size:12px;font-weight:600;cursor:pointer;color:#2d5f80;text-align:left;width:100%}
+.psp-new-toggle:hover{background:#e8f2f8}
+.psp-new-form{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1.5px solid #4A7FA5;border-top:none;border-radius:0 0 8px 8px;background:#f4f8fb;margin-top:-8px}
+.psp-new-form.hidden{display:none}
+.psp-new-lbl{font-size:10px;font-weight:600;color:#2d5f80}
+.psp-input{font-size:12px;padding:6px 8px;border:1px solid #b0aea7;border-radius:5px;width:100%}
+.psp-input:focus{outline:none;border-color:#4A7FA5;box-shadow:0 0 0 2px rgba(74,127,165,.2)}
+.psp-fam-row{display:flex;gap:5px;align-items:center}
+.psp-fam-sel{font-size:10px;flex:1;padding:3px 5px;border:1px solid #b0aea7;border-radius:5px;background:#fff}
+.psp-fam-create{font-size:10px;padding:3px 8px;border:1px solid #4A7FA5;border-radius:5px;background:#fff;color:#2d5f80;cursor:pointer;white-space:nowrap}
+.psp-fam-create:hover{background:#e8f2f8}
+.psp-confirm{padding:8px 14px;background:#4A7FA5;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;align-self:flex-end}
+.psp-confirm:hover{background:#2d5f80}
+.psp-cancel{width:100%;padding:8px;border:none;background:transparent;font-size:11px;color:#aaa;cursor:pointer}
+.psp-cancel:hover{color:#555}
+
+/* ─── PANEL ≡ BIBLIOTHÈQUE ─── */
+.lib-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.3)}
+.lib-overlay.hidden{display:none}
+.lib-panel{position:fixed;bottom:0;left:0;right:0;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.lib-panel.hidden{display:none}
+.lib-panel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.lib-panel-title{font-size:13px;font-weight:700;color:#1a1a18}
+.lib-panel-close{width:26px;height:26px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:13px;color:#666;display:flex;align-items:center;justify-content:center}
+.lib-panel-close:hover{background:#e0ddd8}
+.lib-list{flex:1;overflow-y:auto;padding:6px 0}
+.lib-item{display:flex;align-items:center;gap:4px;padding:5px 14px;border-bottom:1px solid #f0ede8;min-height:38px}
+.lib-item:last-child{border-bottom:none}
+.lib-item-check{flex-shrink:0;width:16px;height:16px;cursor:pointer}
+.lib-item-reorder{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.lib-item-reorder button{background:none;border:none;cursor:pointer;font-size:10px;padding:0 2px;color:#bbb;line-height:1.1}
+.lib-item-reorder button:hover{color:#555}
+.lib-item-name{flex:1;font-size:11px;font-weight:500;color:#1a1a18;cursor:pointer;border-radius:3px;padding:2px 4px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-item-name:hover{background:#f5f4f0}
+.lib-item-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1);box-shadow:0 0 0 2px rgba(74,127,165,.3);white-space:normal}
+.lib-item-tags{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
+.lib-item-del{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;color:#ccc;line-height:1}
+.lib-item-del:hover{color:#D85A30}
+.lib-item-del.confirming{color:#D85A30;font-weight:700}
+.lib-source-badge{font-size:8px;padding:1px 4px;border-radius:3px;background:#f0ede8;color:#888;flex-shrink:0}
+/* section familles dans le panel */
+.lib-fam-section{border-top:1px solid #e8e5e0;flex-shrink:0}
+.lib-fam-summary{font-size:11px;font-weight:600;color:#555;padding:8px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.lib-fam-summary:hover{background:#f5f4f0}
+.lib-fam-list{padding:4px 14px 8px;display:flex;flex-direction:column;gap:4px}
+.lib-fam-item{display:flex;align-items:center;gap:6px;font-size:11px}
+.lib-fam-name{flex:1;cursor:pointer;padding:2px 4px;border-radius:3px}
+.lib-fam-name:hover{background:#f5f4f0}
+.lib-fam-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1)}
+.lib-fam-count{font-size:9px;color:#aaa}
+.lib-fam-del{background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:2px 4px}
+.lib-fam-del:hover{color:#D85A30}
+.lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
+.lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
+.lib-fam-add-row button{padding:4px 9px;font-size:11px;background:#4A7FA5;color:#fff;border:none;border-radius:5px;cursor:pointer}
+/* barre batch */
+.lib-batch-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #e8e5e0;flex-shrink:0;background:#fafaf8}
+.lib-batch-lbl{font-size:11px;color:#888;display:flex;align-items:center;gap:4px;cursor:pointer}
+.lib-batch-del{padding:5px 10px;font-size:11px;background:#fff;border:1px solid #D85A30;color:#D85A30;border-radius:5px;cursor:pointer;margin-left:auto}
+.lib-batch-del:hover{background:#fff5f2}
+.lib-batch-del:disabled{opacity:.35;cursor:default}
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:599px){
   .layer-menu{width:88px}
@@ -243,7 +324,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.0.6</span>
+    <span class="app-version">v2.1.0</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -290,6 +371,48 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="play-btns">
     <button class="play-thumb play-thumb-l" id="play-thumb-l">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main droite</span></button>
+  </div>
+</div>
+
+<!-- Popover save pattern (💾 couche) -->
+<div class="psp-overlay hidden" id="psp-overlay"></div>
+<div class="psp-box hidden" id="psp-box">
+  <button class="psp-overwrite" id="psp-btn-overwrite">✓ Écraser <span id="psp-overwrite-name"></span></button>
+  <div class="psp-divider">— ou —</div>
+  <button class="psp-new-toggle" id="psp-new-toggle">＋ Sauvegarder comme nouveau ▶</button>
+  <div class="psp-new-form hidden" id="psp-new-form">
+    <span class="psp-new-lbl">Nom</span>
+    <input type="text" class="psp-input" id="psp-name-input" placeholder="Nom du pattern">
+    <span class="psp-new-lbl">Familles</span>
+    <div class="fam-tags" id="psp-fam-tags"></div>
+    <div class="psp-fam-row">
+      <select class="psp-fam-sel" id="psp-fam-sel"></select>
+      <button class="psp-fam-create" id="psp-fam-create">＋ Créer</button>
+    </div>
+    <button class="psp-confirm" id="psp-confirm">Sauvegarder</button>
+  </div>
+  <button class="psp-cancel" id="psp-cancel">Annuler</button>
+</div>
+
+<!-- Panel ≡ bibliothèque patterns -->
+<div class="lib-overlay hidden" id="lib-overlay-patterns"></div>
+<div class="lib-panel hidden" id="lib-panel-patterns">
+  <div class="lib-panel-head">
+    <span class="lib-panel-title">Patterns</span>
+    <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
+  </div>
+  <div class="lib-list" id="lib-list-patterns"></div>
+  <details class="lib-fam-section" id="lib-fam-details-patterns">
+    <summary class="lib-fam-summary">Gérer les familles <span id="lib-fam-arrow">▶</span></summary>
+    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
+    <div class="lib-fam-add-row">
+      <input type="text" id="lib-fam-new-input" placeholder="Nouvelle famille…">
+      <button id="lib-fam-add-btn">＋</button>
+    </div>
+  </details>
+  <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
+    <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
   </div>
 </div>
 
@@ -432,47 +555,43 @@ const ENCYCLO = {
 // Données par défaut du cours (source de vérité)
 const PTK_DEFAULT = {
   meta:{titre:'', auteur:'', version:'2.0', date:''},
+  // Familles partagées (patterns, grooves, encyclo) — source de vérité unique
   familles:[
-    {id:'fam_base',      nom:'Référentiel',  description:'Patterns de base et pulsations'},
-    {id:'fam_euclidien', nom:'Euclidien',    description:'Distributions euclidiennes maximales'},
-    {id:'fam_afrocubain',nom:'Afro-cubain',  description:'Rythmes de Cuba et des Caraïbes'},
-    {id:'fam_africain',  nom:'Africain',     description:"Rythmes d'Afrique de l'Ouest"},
-  ],
-  // Groupes pour les select de couches (ordre d'affichage dans les menus)
-  groupes_patterns:[
-    {id:'ref',     label:'Référentiels',      ids:['silence','pulse1','bin2','ter3','fl4','offbeat','pulse4','sync4']},
-    {id:'8pas',    label:'8 pas',             ids:['tres','cinq','hab','afoxe','reggae']},
-    {id:'16e5',    label:'16 pas — E(5,16)',  ids:['son32','son','rum32','bossa','gahu','shiko']},
-    {id:'16autre', label:'16 pas — autres',   ids:['souk','samba','cascara','tumbao']},
-    {id:'12pas',   label:'12 pas',            ids:['fume','bembe','solea']},
+    {id:'fam_base',       nom:'Référentiel'},
+    {id:'fam_euclidien',  nom:'Euclidien'},
+    {id:'fam_afrocubain', nom:'Afro-cubain'},
+    {id:'fam_africain',   nom:'Africain'},
+    {id:'fam_bresilien',  nom:'Brésilien'},
+    {id:'fam_caraibe',    nom:'Caraïbe'},
+    {id:'fam_flamenco',   nom:'Flamenco'},
   ],
   patterns:[
-    {id:'pulse1', nom:'Pulse',                   sequence:'X',                pas:1,  unite_temps:'1/4', pas_par_mesure:4},
-    {id:'bin2',   nom:'Bin (1:2)',               sequence:'X.',               pas:2,  unite_temps:'1/4', pas_par_mesure:2},
-    {id:'ter3',   nom:'Ter (1:3)',               sequence:'X..',              pas:3,  unite_temps:'1/4', pas_par_mesure:3},
-    {id:'fl4',    nom:'Four on the Floor (2,4)', sequence:'X.X.X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'fl4'},
-    {id:'offbeat',nom:'Off Beat (2,4)',          sequence:'.X.X.X.X',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'offbeat'},
-    {id:'pulse4', nom:'Pulse (4:4)',             sequence:'XXXX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
-    {id:'sync4',  nom:'Double Up (2:4)',         sequence:'..XX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
-    {id:'silence',nom:'Silence',                sequence:'....',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
-    {id:'tres',   nom:'Tresillo',               sequence:'X..X..X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'tres'},
-    {id:'cinq',   nom:'Cinquillo',              sequence:'X.XX.XX.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'cinq'},
-    {id:'hab',    nom:'Habanera',               sequence:'X..XX.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'hab'},
-    {id:'afoxe',  nom:'Afoxê / Bolero',        sequence:'X..X.X..',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'afoxe'},
-    {id:'reggae', nom:'Clave Reggae',           sequence:'....X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'reggae'},
-    {id:'son32',  nom:'Son 3:2',               sequence:'X..X..X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son32'},
-    {id:'son',    nom:'Son (2:3)',             sequence:'..X.X...X..X..X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son'},
-    {id:'rum32',  nom:'Rumba 3:2',            sequence:'X..X...X..X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'rum32'},
-    {id:'shiko',  nom:'Shiko',               sequence:'X...X.X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'shiko'},
-    {id:'bossa',  nom:'Bossa Nova',           sequence:'X..X..X...X..X..',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'bossa'},
-    {id:'gahu',   nom:'Gahu',                sequence:'X..X..X...X...X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'gahu'},
-    {id:'souk',   nom:'Soukous',             sequence:'X..X..X...XX....',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'souk'},
-    {id:'samba',  nom:'Samba',               sequence:'X..X.X.X..X.X.X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'samba'},
-    {id:'cascara',nom:'Cascara 3:2',          sequence:'X.XX.X.XX.X.XX.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'cascara'},
-    {id:'tumbao', nom:'Tumbao',              sequence:'X.XX.X.X.X.X.X.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'tumbao'},
-    {id:'fume',   nom:'Fume-fume',           sequence:'X.X.X..X.X..',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'fume'},
-    {id:'bembe',  nom:'Bembé',             sequence:'X.X.XX.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'bembe'},
-    {id:'solea',  nom:'Soleá',            sequence:'..X..X.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'solea'},
+    {id:'pulse1', nom:'Pulse',                   familles:['fam_base'],                              sequence:'X',                pas:1,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'bin2',   nom:'Bin (1:2)',               familles:['fam_base'],                              sequence:'X.',               pas:2,  unite_temps:'1/4', pas_par_mesure:2},
+    {id:'ter3',   nom:'Ter (1:3)',               familles:['fam_base'],                              sequence:'X..',              pas:3,  unite_temps:'1/4', pas_par_mesure:3},
+    {id:'fl4',    nom:'Four on the Floor (2,4)', familles:['fam_base'],                              sequence:'X.X.X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'fl4'},
+    {id:'offbeat',nom:'Off Beat (2,4)',          familles:['fam_base'],                              sequence:'.X.X.X.X',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'offbeat'},
+    {id:'pulse4', nom:'Pulse (4:4)',             familles:['fam_base'],                              sequence:'XXXX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'sync4',  nom:'Double Up (2:4)',         familles:['fam_base'],                              sequence:'..XX',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'silence',nom:'Silence',                familles:['fam_base'],                              sequence:'....',             pas:4,  unite_temps:'1/4', pas_par_mesure:4},
+    {id:'tres',   nom:'Tresillo',               familles:['fam_euclidien','fam_afrocubain'],         sequence:'X..X..X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'tres'},
+    {id:'cinq',   nom:'Cinquillo',              familles:['fam_afrocubain'],                        sequence:'X.XX.XX.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'cinq'},
+    {id:'hab',    nom:'Habanera',               familles:['fam_afrocubain'],                        sequence:'X..XX.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'hab'},
+    {id:'afoxe',  nom:'Afoxê / Bolero',        familles:['fam_afrocubain','fam_africain'],          sequence:'X..X.X..',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'afoxe'},
+    {id:'reggae', nom:'Clave Reggae',           familles:['fam_caraibe'],                           sequence:'....X.X.',         pas:8,  unite_temps:'1/8', pas_par_mesure:8,  encyclo_ref:'reggae'},
+    {id:'son32',  nom:'Son 3:2',               familles:['fam_afrocubain'],                        sequence:'X..X..X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son32'},
+    {id:'son',    nom:'Son (2:3)',             familles:['fam_afrocubain'],                        sequence:'..X.X...X..X..X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'son'},
+    {id:'rum32',  nom:'Rumba 3:2',            familles:['fam_afrocubain'],                        sequence:'X..X...X..X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'rum32'},
+    {id:'shiko',  nom:'Shiko',               familles:['fam_africain'],                          sequence:'X...X.X...X.X...',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'shiko'},
+    {id:'bossa',  nom:'Bossa Nova',           familles:['fam_bresilien'],                         sequence:'X..X..X...X..X..',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'bossa'},
+    {id:'gahu',   nom:'Gahu',                familles:['fam_africain'],                          sequence:'X..X..X...X...X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'gahu'},
+    {id:'souk',   nom:'Soukous',             familles:['fam_africain'],                          sequence:'X..X..X...XX....',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'souk'},
+    {id:'samba',  nom:'Samba',               familles:['fam_bresilien'],                         sequence:'X..X.X.X..X.X.X.',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'samba'},
+    {id:'cascara',nom:'Cascara 3:2',          familles:['fam_afrocubain'],                        sequence:'X.XX.X.XX.X.XX.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'cascara'},
+    {id:'tumbao', nom:'Tumbao',              familles:['fam_afrocubain'],                        sequence:'X.XX.X.X.X.X.X.X',  pas:16, unite_temps:'1/16',pas_par_mesure:16, encyclo_ref:'tumbao'},
+    {id:'fume',   nom:'Fume-fume',           familles:['fam_africain'],                          sequence:'X.X.X..X.X..',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'fume'},
+    {id:'bembe',  nom:'Bembé',             familles:['fam_africain'],                          sequence:'X.X.XX.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'bembe'},
+    {id:'solea',  nom:'Soleá',            familles:['fam_flamenco'],                          sequence:'..X..X.X.X.X',     pas:12, unite_temps:'1/12',pas_par_mesure:12, encyclo_ref:'solea'},
   ],
   grooves:[
     // vitesse_mult: multiplicateur de vitesse global (1=normal, 2=double)
@@ -1130,12 +1249,28 @@ function buildLayers(){
     const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
     row1.appendChild(lbl);
 
+    // Filtre famille (compact select avant le select pattern)
+    const famSel=document.createElement('select');
+    famSel.className='fam-filter';famSel.title='Filtrer par famille';
+    const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
+    packCours.familles.forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
+    });
+    row1.appendChild(famSel);
+
     // Select pattern
     const sel=document.createElement('select');
     sel.className='layer-select';sel.id='sel-'+layer.id;
-    buildPatternSelect(sel);
+    buildPatternSelect(sel,'all');
     const curPat=findPatternBySeq(state[li].pattern);
     if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});
+
+    // Filtre → rebuild le select en gardant la sélection courante
+    famSel.addEventListener('change',()=>{
+      const prev=sel.value;
+      buildPatternSelect(sel, famSel.value);
+      if([...sel.options].some(o=>o.value===prev))sel.value=prev;
+    });
 
     // Bouton i (lien encyclo pattern courant)
     const btnI=document.createElement('button');btnI.className='btn-info-ico';btnI.textContent='i';
@@ -1166,9 +1301,10 @@ function buildLayers(){
     });
     row1.appendChild(sel);
 
-    // ≡ TX (gestion menu, TX only)
-    row1.appendChild(mkBtnMenu());
-    // 💾 sauvegarde du pattern (avec feedback)
+    // ≡ TX (gestion bibliothèque patterns, TX only)
+    const menuBtn=mkBtnMenu(()=>openLibPanelPatterns());
+    row1.appendChild(menuBtn);
+    // 💾 sauvegarde du pattern → popover
     const saveBtn=document.createElement('button');
     saveBtn.className='btn-sec-save';saveBtn.id='save-btn-layer-'+li;
     saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
@@ -1244,109 +1380,121 @@ function onStepClick(li,si,el){
   setLayerDirty(li,isDirty);
 }
 
-// Sauvegarde d'un pattern de layer
-let _saveSheetLi = -1, _saveSheetBtn = null, _saveSheetType = 'layer';
+// ── Sauvegarde pattern couche — popover ──────────────────────────────────
+let _pspLi = -1, _pspBtn = null;
+// familles sélectionnées pour le nouveau pattern (dans le popover)
+let _pspNewFamIds = [];
 
 function saveLayerPattern(li, btn){
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   // Sync patternId dans packCours
   const groove = getGroove(currentGrooveId);
   if(groove && groove.layers[li]) groove.layers[li].patternId = state[li].patternId;
-  // Si pas dirty : juste sauvegarder
+  // Si pas dirty : quick-save silencieux
   if(!dirtyLayers[li]){ saveToStorage(); if(btn)flashSave(btn); return; }
-  // Afficher la save sheet
-  _saveSheetLi = li; _saveSheetBtn = btn;
-  showSaveSheet(li, srcPat);
+  // Ouvrir le popover
+  openPatSavePop(li, btn, srcPat);
 }
 
-function showSaveSheet(li, srcPat){
+function openPatSavePop(li, btn, srcPat){
+  _pspLi = li; _pspBtn = btn;
   const nom = srcPat ? srcPat.nom : 'Pattern';
   const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='user');
 
-  document.getElementById('ss-title').textContent = '« ' + nom + ' » modifié';
-  document.getElementById('ss-overwrite-name').textContent = nom;
-  document.getElementById('ss-overwrite').disabled = !canOverwrite;
+  // Bouton écraser
+  const ovBtn = document.getElementById('psp-btn-overwrite');
+  document.getElementById('psp-overwrite-name').textContent = nom;
+  ovBtn.disabled = !canOverwrite;
 
-  // Pré-remplir le nom
-  const nameInput = document.getElementById('ss-name');
-  nameInput.value = nom + ' (copie)';
+  // Pré-remplir nom
+  document.getElementById('psp-name-input').value = nom + ' (copie)';
 
-  // Construire le select de groupes
-  const grpSel = document.getElementById('ss-group');
-  grpSel.style.display = '';
-  grpSel.innerHTML = '';
-  const groups = currentMode==='tx'
-    ? packCours.groupes_patterns
-    : (packCours.groupes_patterns.filter(g=>g.id==='user').length
-        ? packCours.groupes_patterns.filter(g=>g.id==='user')
-        : [{id:'user', label:'Mes patterns', ids:[]}]);
-  groups.forEach(g=>{
-    const o=document.createElement('option');o.value=g.id;o.textContent=g.label;grpSel.appendChild(o);
+  // Familles initiales = celles du pattern source
+  _pspNewFamIds = srcPat && srcPat.familles ? [...srcPat.familles] : [];
+  buildPspFamTags();
+  buildPspFamSel();
+
+  // Réinitialiser le formulaire nouveau
+  document.getElementById('psp-new-form').classList.add('hidden');
+  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau ▶';
+
+  document.getElementById('psp-overlay').classList.remove('hidden');
+  document.getElementById('psp-box').classList.remove('hidden');
+}
+
+function closePatSavePop(){
+  document.getElementById('psp-overlay').classList.add('hidden');
+  document.getElementById('psp-box').classList.add('hidden');
+  _pspLi = -1; _pspBtn = null; _pspNewFamIds = [];
+}
+
+// Construit les tag chips dans le popover
+function buildPspFamTags(){
+  const container = document.getElementById('psp-fam-tags');
+  container.innerHTML = '';
+  _pspNewFamIds.forEach(fid=>{
+    const fam = getFamille(fid); if(!fam) return;
+    const chip = document.createElement('span'); chip.className = 'fam-tag';
+    chip.textContent = fam.nom;
+    const x = document.createElement('button'); x.className = 'fam-tag-x'; x.textContent = '×';
+    x.addEventListener('click',()=>{
+      _pspNewFamIds = _pspNewFamIds.filter(id=>id!==fid);
+      buildPspFamTags(); buildPspFamSel();
+    });
+    chip.appendChild(x); container.appendChild(chip);
   });
-  // Sélectionner "Mes patterns" par défaut
-  const userGrp = grpSel.querySelector('[value="user"]');
-  if(userGrp) grpSel.value = 'user';
-
-  // Réinitialiser le panneau ②
-  document.getElementById('ss-new-panel').classList.remove('open');
-  document.getElementById('ss-new-toggle').textContent = '② Sauvegarder comme nouveau ▶';
-  document.getElementById('ss-overwrite').style.display = '';
-
-  document.getElementById('save-sheet').classList.remove('hidden');
 }
 
-function closeSaveSheet(){
-  document.getElementById('save-sheet').classList.add('hidden');
-  _saveSheetLi = -1; _saveSheetBtn = null; _saveSheetType = 'layer';
+// Construit le select d'ajout de famille (uniquement les non-déjà-assignées)
+function buildPspFamSel(){
+  const sel = document.getElementById('psp-fam-sel');
+  sel.innerHTML = '<option value="">— Ajouter une famille —</option>';
+  packCours.familles
+    .filter(f => !_pspNewFamIds.includes(f.id))
+    .forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
+    });
 }
 
-function doOverwrite(){
-  if(_saveSheetType === 'groove'){ doOverwriteGroove(); return; }
-  const li = _saveSheetLi;
-  const btn = _saveSheetBtn;
+function pspDoOverwrite(){
+  const li = _pspLi; const btn = _pspBtn;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
-  if(!srcPat){ closeSaveSheet(); return; }
+  if(!srcPat){ closePatSavePop(); return; }
   const currentSeq = state[li].pattern.join('');
   const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
 
-  const persist = (targetPat)=>{
-    targetPat.sequence = currentSeq;
-    saveToStorage();
-    setLayerDirty(li, false);
-    if(btn) flashSave(btn);
-    closeSaveSheet();
+  const persist = ()=>{
+    srcPat.sequence = currentSeq;
+    saveToStorage(); setLayerDirty(li,false);
+    if(btn)flashSave(btn); closePatSavePop();
   };
 
-  closeSaveSheet();
+  closePatSavePop();
   if(usedIn.length > 1){
     showPatternShareDialog(srcPat.nom, usedIn.map(g=>g.nom), choice=>{
       if(choice==='cancel') return;
       if(choice==='new'){
-        // Rouvrir la save sheet en mode "nouveau seulement"
-        _saveSheetLi = li; _saveSheetBtn = btn; _saveSheetType = 'layer';
-        showSaveSheet(li, srcPat);
-        document.getElementById('ss-overwrite').style.display = 'none';
-        document.getElementById('ss-new-panel').classList.add('open');
-        document.getElementById('ss-new-toggle').textContent = '② Sauvegarder comme nouveau ▼';
+        // Rouvrir en mode "nouveau seulement"
+        openPatSavePop(li, btn, srcPat);
+        document.getElementById('psp-btn-overwrite').style.display='none';
+        document.getElementById('psp-new-form').classList.remove('hidden');
+        document.getElementById('psp-new-toggle').textContent='＋ Sauvegarder comme nouveau ▼';
         return;
       }
-      persist(srcPat);
+      persist();
     });
-  } else {
-    persist(srcPat);
-  }
+  } else { persist(); }
 }
 
-function doSaveNew(){
-  if(_saveSheetType === 'groove'){ doSaveNewGroove(); return; }
-  const li = _saveSheetLi;
+function pspDoSaveNew(){
+  const li = _pspLi; const btn = _pspBtn;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
-  const nom = document.getElementById('ss-name').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
-  const grpId = document.getElementById('ss-group').value;
+  const nom = document.getElementById('psp-name-input').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
 
   const newPat = {
     id: 'user_' + Date.now(),
     nom,
+    familles: [..._pspNewFamIds],
     sequence: state[li].pattern.join(''),
     pas: state[li].pattern.length,
     unite_temps: srcPat ? srcPat.unite_temps : '1/8',
@@ -1355,25 +1503,22 @@ function doSaveNew(){
   };
   packCours.patterns.push(newPat);
 
-  // Ajouter au groupe cible
-  let grp = packCours.groupes_patterns.find(g=>g.id===grpId);
-  if(!grp){ grp={id:'user',label:'Mes patterns',ids:[]}; packCours.groupes_patterns.push(grp); }
-  grp.ids.push(newPat.id);
-
   // Rattacher la couche au nouveau pattern
   const groove = getGroove(currentGrooveId);
   if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
   state[li].patternId = newPat.id;
 
-  // Rebuild le select
+  // Rebuild le select de la couche
   const sel = document.getElementById('sel-' + LAYERS[li].id);
-  if(sel){ buildPatternSelect(sel); sel.value = newPat.id; }
+  if(sel){ buildPatternSelect(sel,'all'); sel.value = newPat.id; }
 
-  saveToStorage();
-  setLayerDirty(li, false);
-  if(_saveSheetBtn) flashSave(_saveSheetBtn);
-  closeSaveSheet();
+  saveToStorage(); setLayerDirty(li,false);
+  if(btn) flashSave(btn);
+  closePatSavePop();
 }
+
+// ── Héritage save sheet (utilisé par groove uniquement désormais) ─────────
+let _saveSheetBtn = null, _saveSheetType = 'groove';
 
 // Sauvegarde du groove courant (sync état runtime → packCours)
 function saveGroove(){
@@ -1390,6 +1535,12 @@ function saveGroove(){
   const bandSel=document.querySelector('#section-band select');
   if(bandSel)groove.band_defaut=bandSel.value;
   saveToStorage();
+}
+
+// Ferme la save-sheet groove (partagée uniquement par le groove désormais)
+function closeSaveSheet(){
+  document.getElementById('save-sheet').classList.add('hidden');
+  _saveSheetBtn = null;
 }
 
 // ── Save sheet pour groove ────────────────────────────────────────────────
@@ -1483,18 +1634,21 @@ function attachLayerObserver(li){
 }
 
 // ── Select pattern (menu déroulant couche) ─────────────────────────────────
-function buildPatternSelect(sel){
+// filtreId : id de famille ('all' ou null = tout afficher)
+function buildPatternSelect(sel, filtreId){
   sel.innerHTML='';
-  packCours.groupes_patterns.forEach(group=>{
-    const og=document.createElement('optgroup');og.label=group.label;
-    group.ids.forEach(id=>{
-      const pat=getPattern(id);if(!pat)return;
-      const o=document.createElement('option');o.value=pat.id;o.textContent=pat.nom;
-      og.appendChild(o);
-    });
-    sel.appendChild(og);
+  const patterns = filtreId && filtreId !== 'all'
+    ? packCours.patterns.filter(p => p.familles && p.familles.includes(filtreId))
+    : packCours.patterns;
+  patterns.forEach(pat=>{
+    const o=document.createElement('option');o.value=pat.id;o.textContent=pat.nom;
+    sel.appendChild(o);
   });
 }
+
+// ── Helpers familles ──────────────────────────────────────────────────────
+function getFamille(id){ return packCours.familles.find(f=>f.id===id); }
+function getFamillesPattern(pat){ return (pat.familles||[]).map(getFamille).filter(Boolean); }
 
 // ── Panneau sons ──────────────────────────────────────────────────────────
 function buildSoundPanel(){
@@ -1767,6 +1921,7 @@ function createUserPattern(seq,sourcePat){
   const newPat={
     id,
     nom:(sourcePat?sourcePat.nom:'Pattern')+' (modifié)',
+    familles: sourcePat&&sourcePat.familles ? [...sourcePat.familles] : [],
     sequence:seq.join(''),
     pas:seq.length,
     unite_temps:sourcePat?sourcePat.unite_temps:'1/8',
@@ -1774,10 +1929,299 @@ function createUserPattern(seq,sourcePat){
     source:'user',
   };
   packCours.patterns.push(newPat);
-  let grp=packCours.groupes_patterns.find(g=>g.id==='user');
-  if(!grp){grp={id:'user',label:'Mes patterns',ids:[]};packCours.groupes_patterns.push(grp);}
-  grp.ids.push(id);
   return newPat;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE LIB — Gestion bibliothèque patterns (panel ≡ générique, instancié pour patterns)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openLibPanelPatterns(){
+  buildLibListPatterns();
+  buildLibFamListPatterns();
+  document.getElementById('lib-overlay-patterns').classList.remove('hidden');
+  document.getElementById('lib-panel-patterns').classList.remove('hidden');
+}
+
+function closeLibPanelPatterns(){
+  document.getElementById('lib-overlay-patterns').classList.add('hidden');
+  document.getElementById('lib-panel-patterns').classList.add('hidden');
+}
+
+// ── Liste des patterns ────────────────────────────────────────────────────
+function buildLibListPatterns(){
+  const list = document.getElementById('lib-list-patterns');
+  list.innerHTML = '';
+  // Réinitialiser la checkbox "tout sélectionner"
+  document.getElementById('lib-select-all-patterns').checked = false;
+  document.getElementById('lib-batch-del-patterns').disabled = true;
+
+  packCours.patterns.forEach((pat, idx)=>{
+    const item = document.createElement('div');
+    item.className = 'lib-item';
+    item.dataset.patId = pat.id;
+
+    // Checkbox sélection batch
+    const chk = document.createElement('input');
+    chk.type = 'checkbox'; chk.className = 'lib-item-check';
+    chk.addEventListener('change', updateLibBatchBar);
+    item.appendChild(chk);
+
+    // Boutons ↑↓ réordonnancement
+    const reorder = document.createElement('div'); reorder.className = 'lib-item-reorder';
+    const btnUp = document.createElement('button'); btnUp.textContent = '↑';
+    btnUp.title = 'Monter';
+    btnUp.addEventListener('click', ()=>libMovePattern(pat.id, -1));
+    const btnDn = document.createElement('button'); btnDn.textContent = '↓';
+    btnDn.title = 'Descendre';
+    btnDn.addEventListener('click', ()=>libMovePattern(pat.id, +1));
+    reorder.appendChild(btnUp); reorder.appendChild(btnDn);
+    item.appendChild(reorder);
+
+    // Nom (cliquable → rename inline)
+    const nameEl = document.createElement('span');
+    nameEl.className = 'lib-item-name';
+    nameEl.textContent = pat.nom;
+    nameEl.title = 'Cliquer pour renommer';
+    nameEl.addEventListener('click', ()=>libStartRenamePattern(nameEl, pat.id));
+    item.appendChild(nameEl);
+
+    // Tags famille
+    const tagsWrap = document.createElement('div'); tagsWrap.className = 'lib-item-tags';
+    libBuildPatternTags(tagsWrap, pat);
+    item.appendChild(tagsWrap);
+
+    // Badge source
+    if(pat.source === 'default'){
+      const badge = document.createElement('span'); badge.className = 'lib-source-badge';
+      badge.textContent = 'défaut'; item.appendChild(badge);
+    }
+
+    // Bouton supprimer
+    const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
+    delBtn.textContent = '×'; delBtn.title = 'Supprimer';
+    let delTimer = null;
+    delBtn.addEventListener('click', ()=>{
+      if(delBtn.classList.contains('confirming')){
+        clearTimeout(delTimer);
+        libDeletePattern(pat.id);
+      } else {
+        delBtn.classList.add('confirming'); delBtn.textContent = '×?';
+        delTimer = setTimeout(()=>{
+          delBtn.classList.remove('confirming'); delBtn.textContent = '×';
+        }, 2000);
+      }
+    });
+    item.appendChild(delBtn);
+
+    list.appendChild(item);
+  });
+}
+
+function libBuildPatternTags(container, pat){
+  container.innerHTML = '';
+  (pat.familles||[]).forEach(fid=>{
+    const fam = getFamille(fid); if(!fam) return;
+    const chip = document.createElement('span'); chip.className = 'fam-tag';
+    chip.textContent = fam.nom;
+    const x = document.createElement('button'); x.className = 'fam-tag-x'; x.textContent = '×';
+    x.title = 'Retirer cette famille';
+    x.addEventListener('click', e=>{ e.stopPropagation();
+      pat.familles = (pat.familles||[]).filter(id=>id!==fid);
+      libBuildPatternTags(container, pat);
+      saveToStorage();
+    });
+    chip.appendChild(x); container.appendChild(chip);
+  });
+  // Bouton ajouter famille
+  const addBtn = document.createElement('span'); addBtn.className = 'fam-tag-add';
+  addBtn.textContent = '＋';
+  // Construire un select inline au clic
+  addBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const available = packCours.familles.filter(f=>!(pat.familles||[]).includes(f.id));
+    if(!available.length) return;
+    const sel = document.createElement('select');
+    sel.className = 'psp-fam-sel'; sel.style.cssText='font-size:9px;max-width:100px';
+    sel.innerHTML = '<option value="">— Famille —</option>';
+    available.forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
+    });
+    sel.addEventListener('change', ()=>{
+      if(!sel.value) return;
+      if(!pat.familles) pat.familles = [];
+      pat.familles.push(sel.value);
+      libBuildPatternTags(container, pat);
+      saveToStorage();
+    });
+    sel.addEventListener('blur', ()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
+    addBtn.parentNode.insertBefore(sel, addBtn);
+    sel.focus();
+  });
+  container.appendChild(addBtn);
+}
+
+function libStartRenamePattern(nameEl, patId){
+  nameEl.contentEditable = 'true';
+  nameEl.focus();
+  // Sélectionner tout le texte
+  const range = document.createRange(); range.selectNodeContents(nameEl);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  nameEl.dataset.orig = nameEl.textContent;
+  const commit = ()=>{
+    nameEl.contentEditable = 'false';
+    const newNom = nameEl.textContent.trim();
+    if(!newNom){ nameEl.textContent = nameEl.dataset.orig; return; }
+    const pat = packCours.patterns.find(p=>p.id===patId);
+    if(pat && newNom !== nameEl.dataset.orig){
+      pat.nom = newNom;
+      saveToStorage();
+      // Mettre à jour les selects ouverts
+      LAYERS.forEach((_,li)=>{
+        const s = document.getElementById('sel-'+LAYERS[li].id);
+        if(s) [...s.options].forEach(o=>{ if(o.value===patId) o.textContent=newNom; });
+      });
+    }
+  };
+  nameEl.addEventListener('blur', commit, {once:true});
+  nameEl.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
+    if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
+  });
+}
+
+function libMovePattern(patId, dir){
+  const arr = packCours.patterns;
+  const idx = arr.findIndex(p=>p.id===patId);
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  saveToStorage();
+  buildLibListPatterns();
+  // Rebuild les selects des couches
+  LAYERS.forEach((_,li)=>{
+    const s = document.getElementById('sel-'+LAYERS[li].id);
+    if(s){ const prev=s.value; buildPatternSelect(s,'all'); s.value=prev; }
+  });
+}
+
+function libDeletePattern(patId){
+  // Vérifier si utilisé dans un groove courant
+  const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===patId));
+  if(usedIn.length){
+    alert('Ce pattern est utilisé dans : '+usedIn.map(g=>g.nom).join(', ')+'\nRetirez-le d\'abord des grooves.');
+    return;
+  }
+  packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
+  saveToStorage();
+  buildLibListPatterns();
+  LAYERS.forEach((_,li)=>{
+    const s = document.getElementById('sel-'+LAYERS[li].id);
+    if(s){ buildPatternSelect(s,'all'); }
+  });
+}
+
+function updateLibBatchBar(){
+  const checks = document.querySelectorAll('#lib-list-patterns .lib-item-check');
+  const anyChecked = [...checks].some(c=>c.checked);
+  document.getElementById('lib-batch-del-patterns').disabled = !anyChecked;
+}
+
+// ── Gestion des familles dans le panel ≡ ─────────────────────────────────
+function buildLibFamListPatterns(){
+  const list = document.getElementById('lib-fam-list-patterns');
+  list.innerHTML = '';
+  packCours.familles.forEach(fam=>{
+    const count = packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
+    const row = document.createElement('div'); row.className = 'lib-fam-item';
+    const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
+    nameEl.textContent = fam.nom; nameEl.title = 'Cliquer pour renommer';
+    nameEl.addEventListener('click', ()=>{
+      nameEl.contentEditable = 'true'; nameEl.focus();
+      nameEl.dataset.orig = nameEl.textContent;
+      nameEl.addEventListener('blur', ()=>{
+        nameEl.contentEditable = 'false';
+        const newNom = nameEl.textContent.trim();
+        if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
+        fam.nom = newNom; saveToStorage();
+        buildLibListPatterns(); // refresh tags
+      }, {once:true});
+      nameEl.addEventListener('keydown', e=>{
+        if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
+        if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
+      });
+    });
+    const cntEl = document.createElement('span'); cntEl.className = 'lib-fam-count';
+    cntEl.textContent = count + ' pattern'+(count!==1?'s':'');
+    const delBtn = document.createElement('button'); delBtn.className = 'lib-fam-del';
+    delBtn.textContent = '×'; delBtn.title = 'Supprimer cette famille';
+    delBtn.addEventListener('click', ()=>libDeleteFamille(fam.id, count));
+    row.appendChild(nameEl); row.appendChild(cntEl); row.appendChild(delBtn);
+    list.appendChild(row);
+  });
+}
+
+function libDeleteFamille(famId, count){
+  if(count > 0){
+    const items = packCours.patterns.filter(p=>(p.familles||[]).includes(famId)).map(p=>p.nom);
+    const ok = confirm(
+      'Cette famille est utilisée par '+count+' pattern'+(count!==1?'s':'')+' :\n'+
+      items.join(', ')+'\n\nLa supprimer quand même ? (elle sera retirée de ces patterns)'
+    );
+    if(!ok) return;
+    packCours.patterns.forEach(p=>{ p.familles=(p.familles||[]).filter(id=>id!==famId); });
+  }
+  packCours.familles = packCours.familles.filter(f=>f.id!==famId);
+  saveToStorage();
+  buildLibFamListPatterns();
+  buildLibListPatterns();
+}
+
+// ── Events panel ≡ (attachés une seule fois dans attachEvents) ────────────
+function attachLibPanelEvents(){
+  document.getElementById('lib-overlay-patterns').addEventListener('click', closeLibPanelPatterns);
+  document.getElementById('lib-panel-patterns-close').addEventListener('click', closeLibPanelPatterns);
+
+  // Checkbox tout sélectionner
+  document.getElementById('lib-select-all-patterns').addEventListener('change', e=>{
+    document.querySelectorAll('#lib-list-patterns .lib-item-check')
+      .forEach(c=>{ c.checked=e.target.checked; });
+    updateLibBatchBar();
+  });
+
+  // Supprimer la sélection
+  document.getElementById('lib-batch-del-patterns').addEventListener('click', ()=>{
+    const toDelete = [...document.querySelectorAll('#lib-list-patterns .lib-item-check:checked')]
+      .map(c=>c.closest('.lib-item').dataset.patId);
+    const blocked = toDelete.filter(id=>packCours.grooves.some(g=>g.layers.some(l=>l.patternId===id)));
+    if(blocked.length){
+      const noms = blocked.map(id=>{ const p=packCours.patterns.find(p=>p.id===id); return p?p.nom:id; });
+      alert('Ces patterns sont utilisés dans des grooves et ne peuvent pas être supprimés :\n'+noms.join(', '));
+      return;
+    }
+    if(!confirm('Supprimer '+toDelete.length+' pattern'+(toDelete.length!==1?'s':'')+' ?')) return;
+    toDelete.forEach(id=>{ packCours.patterns=packCours.patterns.filter(p=>p.id!==id); });
+    saveToStorage();
+    buildLibListPatterns();
+    LAYERS.forEach((_,li)=>{
+      const s=document.getElementById('sel-'+LAYERS[li].id);
+      if(s) buildPatternSelect(s,'all');
+    });
+  });
+
+  // Ajouter une nouvelle famille
+  document.getElementById('lib-fam-add-btn').addEventListener('click', ()=>{
+    const input = document.getElementById('lib-fam-new-input');
+    const nom = input.value.trim(); if(!nom) return;
+    const newFam = {id:'fam_user_'+Date.now(), nom};
+    packCours.familles.push(newFam);
+    saveToStorage();
+    input.value = '';
+    buildLibFamListPatterns();
+  });
+  document.getElementById('lib-fam-new-input').addEventListener('keydown', e=>{
+    if(e.key==='Enter') document.getElementById('lib-fam-add-btn').click();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1798,6 +2242,31 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
+
+  // ── Migration v2.0.x → v2.1.0 : groupes_patterns → familles sur chaque pattern ──
+  if(packCours.groupes_patterns && !packCours._migrated_21){
+    // Reconstituer familles[] sur chaque pattern depuis les anciens groupes
+    packCours.groupes_patterns.forEach(grp=>{
+      (grp.ids||[]).forEach(pid=>{
+        const pat=packCours.patterns.find(p=>p.id===pid);
+        if(pat && !pat.familles) pat.familles = [];
+      });
+    });
+    // S'assurer que familles[] existe sur tous les patterns
+    packCours.patterns.forEach(p=>{ if(!p.familles) p.familles=[]; });
+    // Supprimer l'ancienne clé
+    delete packCours.groupes_patterns;
+    packCours._migrated_21 = true;
+    saveToStorage();
+  } else {
+    // Garantir familles[] sur tout pattern sans (données fraîches ou déjà migrées)
+    packCours.patterns.forEach(p=>{ if(!p.familles) p.familles=[]; });
+  }
+
+  // Garantir packCours.familles existe (peut manquer dans vieilles données)
+  if(!packCours.familles || !packCours.familles.length){
+    packCours.familles = JSON.parse(JSON.stringify(PTK_DEFAULT.familles));
+  }
 }
 
 function attachEvents(){
@@ -1870,14 +2339,14 @@ function attachEvents(){
     if(e.code==='Tab'){e.preventDefault();setMode(currentMode==='tx'?'sx':'tx');}
   });
 
-  // ── Save sheet ──
+  // ── Save sheet groove ──
   document.getElementById('ss-close').addEventListener('click', closeSaveSheet);
   document.getElementById('ss-cancel').addEventListener('click', closeSaveSheet);
   document.getElementById('save-sheet').addEventListener('click', e=>{
     if(e.target===e.currentTarget) closeSaveSheet();
   });
   document.getElementById('ss-overwrite').addEventListener('click', ()=>{
-    if(!document.getElementById('ss-overwrite').disabled) doOverwrite();
+    if(!document.getElementById('ss-overwrite').disabled) doOverwriteGroove();
   });
   document.getElementById('ss-new-toggle').addEventListener('click', ()=>{
     const panel = document.getElementById('ss-new-panel');
@@ -1885,7 +2354,38 @@ function attachEvents(){
     document.getElementById('ss-new-toggle').textContent =
       isOpen ? '② Sauvegarder comme nouveau ▼' : '② Sauvegarder comme nouveau ▶';
   });
-  document.getElementById('ss-confirm').addEventListener('click', doSaveNew);
+  document.getElementById('ss-confirm').addEventListener('click', doSaveNewGroove);
+
+  // ── Popover save pattern ──
+  document.getElementById('psp-overlay').addEventListener('click', closePatSavePop);
+  document.getElementById('psp-cancel').addEventListener('click', closePatSavePop);
+  document.getElementById('psp-btn-overwrite').addEventListener('click', ()=>{
+    if(!document.getElementById('psp-btn-overwrite').disabled) pspDoOverwrite();
+  });
+  document.getElementById('psp-new-toggle').addEventListener('click', ()=>{
+    const form = document.getElementById('psp-new-form');
+    const open = form.classList.toggle('hidden');
+    document.getElementById('psp-new-toggle').textContent =
+      open ? '＋ Sauvegarder comme nouveau ▶' : '＋ Sauvegarder comme nouveau ▼';
+  });
+  document.getElementById('psp-fam-sel').addEventListener('change', e=>{
+    const fid = e.target.value; if(!fid) return;
+    if(!_pspNewFamIds.includes(fid)) _pspNewFamIds.push(fid);
+    buildPspFamTags(); buildPspFamSel();
+    e.target.value = '';
+  });
+  document.getElementById('psp-fam-create').addEventListener('click', ()=>{
+    const input = document.getElementById('psp-name-input');
+    // Utiliser le champ nom comme source si on veut créer une famille ad-hoc
+    // → ouvrir un prompt simple
+    const nomFam = prompt('Nom de la nouvelle famille :');
+    if(!nomFam || !nomFam.trim()) return;
+    const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim()};
+    packCours.familles.push(newFam);
+    _pspNewFamIds.push(newFam.id);
+    buildPspFamTags(); buildPspFamSel();
+  });
+  document.getElementById('psp-confirm').addEventListener('click', pspDoSaveNew);
 
   // ── Dialog partage pattern ──
   document.getElementById('ptk-dlg-all').addEventListener('click',()=>{
@@ -1903,6 +2403,9 @@ function attachEvents(){
     if(dialogCallback)dialogCallback('cancel');
     dialogCallback=null;
   });
+
+  // ── Panel ≡ bibliothèque patterns ──
+  attachLibPanelEvents();
 
   // ── Raccourci clavier ──
   document.addEventListener('keydown',e=>{
