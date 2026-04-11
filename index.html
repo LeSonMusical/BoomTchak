@@ -105,8 +105,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 
 /* ─── DIRTY STATE ─── */
 .btn-sec-save.dirty{color:#D85A30;opacity:1;background:#fff5f2;border-radius:4px}
-.section-dirty-strip{font-size:9px;color:#D85A30;padding:1px 6px 2px;background:#fff5f2;border-left:3px solid #D85A30;border-radius:0 0 4px 4px;margin:-4px 0 4px;display:none;line-height:1.6;letter-spacing:.01em}
-.section-dirty-strip.visible{display:block}
+.btn-sec-save.dirty::after{content:'!';font-size:8px;vertical-align:super;margin-left:1px}
 
 /* ─── SAVE SHEET ─── */
 .save-sheet{position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
@@ -267,7 +266,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 /* ─── PANEL ≡ BIBLIOTHÈQUE ─── */
 .lib-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.3)}
 .lib-overlay.hidden{display:none}
-.lib-panel{position:fixed;bottom:0;left:0;right:0;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
 .lib-panel.hidden{display:none}
 .lib-panel-head{display:flex;align-items:center;gap:6px;padding:10px 14px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
 .lib-panel-title{font-size:13px;font-weight:700;color:#1a1a18;flex-shrink:0}
@@ -330,7 +329,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.2.0</span>
+    <span class="app-version">v2.2.1</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -436,6 +435,14 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
     <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
+  <details class="lib-fam-section" id="lib-fam-details-grooves">
+    <summary class="lib-fam-summary">Gérer les familles <span>▶</span></summary>
+    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
+    <div class="lib-fam-add-row">
+      <input type="text" id="lib-fam-new-input-grooves" placeholder="Nouvelle famille…">
+      <button id="lib-fam-add-btn-grooves">＋</button>
+    </div>
+  </details>
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
@@ -1065,10 +1072,15 @@ function setDirtyUI(selectId, btnId, isDirty){
   if(btn)btn.classList.toggle('dirty',isDirty);
   const sel=document.getElementById(selectId);
   if(sel&&sel.options[sel.selectedIndex]){
-    sel.options[sel.selectedIndex].style.color=isDirty?'#D85A30':'';
+    const opt=sel.options[sel.selectedIndex];
+    if(isDirty){
+      opt.style.color='#D85A30';
+      if(!opt.textContent.startsWith('● modifié '))opt.textContent='● modifié '+opt.textContent;
+    } else {
+      opt.style.color='';
+      opt.textContent=opt.textContent.replace(/^● modifié /,'');
+    }
   }
-  const strip=document.getElementById('dirty-strip-'+selectId);
-  if(strip)strip.classList.toggle('visible',isDirty);
 }
 
 function setLayerDirty(li, isDirty){
@@ -1137,6 +1149,7 @@ function applyGroove(grooveId){
   buildLayers();
   buildSoundPanel();
   updateGrooveSelect();
+  updateEncycloSelect(grooveId);
   updateSpmDisplay();
 }
 
@@ -1206,13 +1219,25 @@ function buildGrooveSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
   bar.appendChild(lbl);
 
+  // Filtre famille (compact, avant le select groove)
+  const grooveFamSel=document.createElement('select');
+  grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
+  grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
+  const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
+  packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
+  bar.appendChild(grooveFamSel);
+
   const sel=document.createElement('select');
   sel.id='groove-select';
-  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:150px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
-  packCours.grooves.forEach(g=>{
-    const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);
-  });
+  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
+  function buildGrooveSelectOpts(filtreId){
+    sel.innerHTML='';
+    const grooves=filtreId&&filtreId!=='all'?packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId)):packCours.grooves;
+    grooves.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);});
+  }
+  buildGrooveSelectOpts('all');
   if(currentGrooveId)sel.value=currentGrooveId;
+  grooveFamSel.addEventListener('change',()=>{const prev=sel.value;buildGrooveSelectOpts(grooveFamSel.value);if([...sel.options].some(o=>o.value===prev))sel.value=prev;});
   sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
   bar.appendChild(sel);
 
@@ -1251,10 +1276,6 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnVolet);
   cont.appendChild(bar);
-
-  const strip=document.createElement('div');
-  strip.id='dirty-strip-groove-select';strip.className='section-dirty-strip';strip.textContent='● modifié';
-  cont.appendChild(strip);
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -1331,21 +1352,21 @@ function buildLayers(){
         grooveDirty=true; updateGrooveSaveBtn();
       }
       updateBtnI();
+      if(pat.encyclo_ref) updateEncycloSelect(pat.encyclo_ref);
       setLayerDirty(li,false); // reset dirty sur changement de pattern
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
     row1.appendChild(sel);
 
-    // ≡ TX (gestion bibliothèque patterns, TX only)
-    const menuBtn=mkBtnMenu(()=>openLibPanelPatterns());
-    row1.appendChild(menuBtn);
     // 💾 sauvegarde du pattern → popover
     const saveBtn=document.createElement('button');
     saveBtn.className='btn-sec-save';saveBtn.id='save-btn-layer-'+li;
     saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
     saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
     row1.appendChild(saveBtn);
+    // ≡ TX (gestion bibliothèque patterns, TX only)
+    row1.appendChild(mkBtnMenu(()=>openLibPanelPatterns()));
     // i info
     row1.appendChild(btnI);
     // steps ▼/▶ toggle (justifié droite)
@@ -1359,9 +1380,6 @@ function buildLayers(){
     });
     row1.appendChild(btnToggle);
     layerDiv.appendChild(row1);
-    const layerStrip=document.createElement('div');
-    layerStrip.id='dirty-strip-sel-'+layer.id;layerStrip.className='section-dirty-strip';layerStrip.textContent='● modifié';
-    layerDiv.appendChild(layerStrip);
 
     // ── Ligne 2 : [grille steps][mod ▼/▶] ────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
@@ -1939,9 +1957,6 @@ function buildEncycloSection(){
     }
   });
   cont.appendChild(bar);
-  const encStrip=document.createElement('div');
-  encStrip.id='dirty-strip-encyclo-select';encStrip.className='section-dirty-strip';encStrip.textContent='● modifié';
-  cont.appendChild(encStrip);
 
   // Contenu collapsible
   const content=document.createElement('div');
@@ -2026,6 +2041,17 @@ function mkBtnMenu(onClick){
 function updateGrooveSelect(){
   const sel=document.getElementById('groove-select');
   if(sel&&currentGrooveId)sel.value=currentGrooveId;
+}
+
+// Sélectionne automatiquement une entrée dans le menu Encyclopédie (sans ouvrir la section)
+function updateEncycloSelect(key){
+  if(!key) return;
+  currentEncycloId=key;
+  const sel=document.getElementById('encyclo-select');
+  if(sel&&[...sel.options].some(o=>o.value===key)){
+    sel.value=key;
+    if(encycloOuvert) renderEncyclo(key);
+  }
 }
 
 function updateGlobalSpeedBtns(){
@@ -2384,18 +2410,22 @@ function buildLibFamListPatterns(){
 
 function libDeleteFamille(famId, count){
   if(count > 0){
-    const items = packCours.patterns.filter(p=>(p.familles||[]).includes(famId)).map(p=>p.nom);
-    const ok = confirm(
-      'Cette famille est utilisée par '+count+' pattern'+(count!==1?'s':'')+' :\n'+
-      items.join(', ')+'\n\nLa supprimer quand même ? (elle sera retirée de ces patterns)'
-    );
+    const pats = packCours.patterns.filter(p=>(p.familles||[]).includes(famId)).map(p=>p.nom);
+    const grvs = packCours.grooves.filter(g=>(g.familles||[]).includes(famId)).map(g=>g.nom);
+    const all = [...pats.map(n=>'P: '+n), ...grvs.map(n=>'G: '+n)];
+    const ok = confirm('Cette famille est utilisée par '+count+' élément'+(count!==1?'s':'')+':\n'+all.join(', ')+'\n\nLa supprimer quand même ?');
     if(!ok) return;
     packCours.patterns.forEach(p=>{ p.familles=(p.familles||[]).filter(id=>id!==famId); });
+    packCours.grooves.forEach(g=>{ g.familles=(g.familles||[]).filter(id=>id!==famId); });
   }
   packCours.familles = packCours.familles.filter(f=>f.id!==famId);
   saveToStorage();
   buildLibFamListPatterns();
   buildLibListPatterns();
+  // Rafraîchir aussi le panel grooves s'il est ouvert
+  if(!document.getElementById('lib-panel-grooves').classList.contains('hidden')){
+    buildLibFamListGrooves(); buildLibListGrooves();
+  }
 }
 
 // ── Events panel ≡ (attachés une seule fois dans attachEvents) ────────────
@@ -2456,8 +2486,38 @@ function attachLibPanelEvents(){
 function openLibPanelGrooves(){
   rebuildGrooveFamFilter();
   buildLibListGrooves();
+  buildLibFamListGrooves();
   document.getElementById('lib-overlay-grooves').classList.remove('hidden');
   document.getElementById('lib-panel-grooves').classList.remove('hidden');
+}
+
+function buildLibFamListGrooves(){
+  const list=document.getElementById('lib-fam-list-grooves'); if(!list) return;
+  list.innerHTML='';
+  packCours.familles.forEach(fam=>{
+    const pCnt=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
+    const gCnt=packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
+    const row=document.createElement('div'); row.className='lib-fam-item';
+    const nameEl=document.createElement('span'); nameEl.className='lib-fam-name';
+    nameEl.textContent=fam.nom; nameEl.title='Cliquer pour renommer';
+    nameEl.addEventListener('click',()=>{
+      nameEl.contentEditable='true'; nameEl.focus();
+      nameEl.dataset.orig=nameEl.textContent;
+      nameEl.addEventListener('blur',()=>{
+        nameEl.contentEditable='false';
+        const newNom=nameEl.textContent.trim();
+        if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
+        fam.nom=newNom; saveToStorage(); buildLibListGrooves(); buildLibFamListGrooves();
+      },{once:true});
+      nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
+    });
+    const cntEl=document.createElement('span'); cntEl.className='lib-fam-count';
+    cntEl.textContent=gCnt+'G · '+pCnt+'P';
+    const delBtn=document.createElement('button'); delBtn.className='lib-fam-del'; delBtn.textContent='×';
+    delBtn.addEventListener('click',()=>libDeleteFamille(fam.id, pCnt+gCnt));
+    row.appendChild(nameEl); row.appendChild(cntEl); row.appendChild(delBtn);
+    list.appendChild(row);
+  });
 }
 
 function closeLibPanelGrooves(){
@@ -2618,6 +2678,17 @@ function attachGrooveLibEvents(){
     if(!confirm('Supprimer '+toDelete.length+' groove'+(toDelete.length!==1?'s':'')+' ?')) return;
     toDelete.forEach(id=>libDeleteGroove(id));
   });
+  // Gérer les familles (partagées avec patterns)
+  document.getElementById('lib-fam-add-btn-grooves').addEventListener('click',()=>{
+    const input=document.getElementById('lib-fam-new-input-grooves');
+    const nom=input.value.trim(); if(!nom) return;
+    packCours.familles.push({id:'fam_user_'+Date.now(),nom});
+    saveToStorage(); input.value='';
+    buildLibFamListGrooves(); rebuildAllFamFilters();
+  });
+  document.getElementById('lib-fam-new-input-grooves').addEventListener('keydown',e=>{
+    if(e.key==='Enter') document.getElementById('lib-fam-add-btn-grooves').click();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2703,7 +2774,7 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
-  // Migration v2.2.0 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
+  // Migration v2.2.1 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
   packCours.grooves.forEach(g=>{
     if(!g.familles) g.familles=[];
     if(!packCours.encyclo[g.id]) packCours.encyclo[g.id]={chapo:'',bullets:[]};
