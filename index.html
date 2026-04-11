@@ -226,8 +226,9 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .ptk-dlg-btn-primary{background:#D85A30;color:#fff;border-color:#D85A30}
 .ptk-dlg-btn-cancel{background:transparent;color:#999;border-color:transparent;text-align:center;font-weight:400}
 
-/* ─── FILTRE FAMILLE (select compact avant le select pattern) ─── */
-.fam-filter{font-size:9px;padding:1px 3px;border-radius:4px;border:1px solid var(--cs);background:#fff;color:var(--cb);flex-shrink:0;max-width:72px;cursor:pointer}
+/* ─── FILTRE FAMILLE (select secondaire, discret, avant le select pattern) ─── */
+.fam-filter{font-size:8px;padding:1px 2px;border-radius:4px;border:1px solid var(--cs);background:var(--cl);color:var(--cb);flex-shrink:0;max-width:58px;cursor:pointer;opacity:.75}
+.fam-filter:focus{opacity:1}
 
 /* ─── FAMILY TAG CHIPS ─── */
 .fam-tags{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 2px}
@@ -241,6 +242,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .psp-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.25)}
 .psp-overlay.hidden{display:none}
 .psp-box{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:186;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12px 14px 14px;width:min(340px,96vw);display:flex;flex-direction:column;gap:8px}
+.psp-box.hidden{display:none}
 .psp-overwrite{padding:10px 14px;border-radius:8px;border:1.5px solid #D85A30;background:#fff5f2;font-size:12px;font-weight:600;cursor:pointer;color:#D85A30;text-align:left;width:100%}
 .psp-overwrite:hover{background:#ffe8e2}
 .psp-overwrite:disabled{opacity:.35;cursor:default;background:#fff}
@@ -1244,10 +1246,6 @@ function buildLayers(){
       grooveDirty=true; updateGrooveSaveBtn();
     });
     row1.appendChild(btnMute);
-
-    // Label
-    const lbl=document.createElement('span');lbl.className='layer-lbl';lbl.textContent=layer.label;
-    row1.appendChild(lbl);
 
     // Filtre famille (compact select avant le select pattern)
     const famSel=document.createElement('select');
