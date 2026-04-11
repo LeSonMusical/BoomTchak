@@ -74,7 +74,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;align-items:flex-start;gap:0}
 /* Indent visuel : les layers appartiennent au groove */
-#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:10px;border-left:2px solid #e0d090;padding-left:6px}
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #e0d090;padding-left:6px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
@@ -104,8 +104,9 @@ body.mode-tx [contenteditable="true"]:hover{background:rgba(216,90,48,.07);curso
 body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-shadow:0 0 0 2px rgba(216,90,48,.3)}
 
 /* ─── DIRTY STATE ─── */
-.btn-sec-save.dirty{color:#D85A30;opacity:1}
-.btn-sec-save.dirty::after{content:'!';font-size:8px;vertical-align:super;margin-left:1px}
+.btn-sec-save.dirty{color:#D85A30;opacity:1;background:#fff5f2;border-radius:4px}
+.section-dirty-strip{font-size:9px;color:#D85A30;padding:1px 6px 2px;background:#fff5f2;border-left:3px solid #D85A30;border-radius:0 0 4px 4px;margin:-4px 0 4px;display:none;line-height:1.6;letter-spacing:.01em}
+.section-dirty-strip.visible{display:block}
 
 /* ─── SAVE SHEET ─── */
 .save-sheet{position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
@@ -329,7 +330,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.1.2</span>
+    <span class="app-version">v2.2.0</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -422,6 +423,38 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
   </div>
+</div>
+
+<!-- Panel ≡ bibliothèque grooves -->
+<div class="lib-overlay hidden" id="lib-overlay-grooves"></div>
+<div class="lib-panel hidden" id="lib-panel-grooves">
+  <div class="lib-panel-head">
+    <span class="lib-panel-title">Grooves</span>
+    <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
+      <option value="all">Toutes les familles</option>
+    </select>
+    <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
+  </div>
+  <div class="lib-list" id="lib-list-grooves"></div>
+  <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
+    <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
+  </div>
+</div>
+
+<!-- Panel ≡ bibliothèque encyclopédie -->
+<div class="lib-overlay hidden" id="lib-overlay-encyclo"></div>
+<div class="lib-panel hidden" id="lib-panel-encyclo">
+  <div class="lib-panel-head">
+    <span class="lib-panel-title">Encyclopédie</span>
+    <select class="lib-fam-filter-sel" id="lib-type-filter-encyclo">
+      <option value="all">Tous</option>
+      <option value="groove">Grooves</option>
+      <option value="pattern">Patterns</option>
+    </select>
+    <button class="lib-panel-close" id="lib-panel-encyclo-close">✕</button>
+  </div>
+  <div class="lib-list" id="lib-list-encyclo"></div>
 </div>
 
 <!-- Save sheet (💾 pattern) -->
@@ -604,36 +637,31 @@ const PTK_DEFAULT = {
   grooves:[
     // vitesse_mult: multiplicateur de vitesse global (1=normal, 2=double)
     // halfOn/doubleOn par layer : vitesse relative de la couche (simplifié Phase 1, futur: unite_temps)
-    {id:'salsa32',   nom:'Salsa 3:2',  band_defaut:'perc',   tempo:{min:80,max:360,defaut:200}, vitesse_mult:2,
-     encyclo_ref:'son32',
+    {id:'salsa32',   nom:'Salsa 3:2',  familles:['fam_afrocubain'], band_defaut:'perc',   tempo:{min:80,max:360,defaut:200}, vitesse_mult:2,
      layers:[
        {id:'grave', patternId:'tres',    mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'son32',   mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'noise', patternId:'cascara', mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'bossanova', nom:'Bossa Nova', band_defaut:'minimal',tempo:{min:60,max:200,defaut:160}, vitesse_mult:1,
-     encyclo_ref:'bossa',
+    {id:'bossanova', nom:'Bossa Nova', familles:['fam_bresilien'],   band_defaut:'minimal',tempo:{min:60,max:200,defaut:160}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'sync4',  mute:false, shift:1, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'bossa',  mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'techno',    nom:'Techno',     band_defaut:'electro',tempo:{min:80,max:400,defaut:260}, vitesse_mult:1,
-     encyclo_ref:'fl4',
+    {id:'techno',    nom:'Techno',     familles:[],                  band_defaut:'electro',tempo:{min:80,max:400,defaut:260}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'fl4',    mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'tres',   mute:true,  shift:0, halfOn:false, doubleOn:true},
        {id:'noise', patternId:'offbeat',mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'reggae',    nom:'Reggae',     band_defaut:'rock',   tempo:{min:60,max:220,defaut:200}, vitesse_mult:1,
-     encyclo_ref:'reggae',
+    {id:'reggae',    nom:'Reggae',     familles:['fam_caraibe'],     band_defaut:'rock',   tempo:{min:60,max:220,defaut:200}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'reggae', mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
        {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'dancehall', nom:'Dancehall',  band_defaut:'perc',   tempo:{min:80,max:320,defaut:200}, vitesse_mult:2,
-     encyclo_ref:'tres',
+    {id:'dancehall', nom:'Dancehall',  familles:['fam_caraibe'],     band_defaut:'perc',   tempo:{min:80,max:320,defaut:200}, vitesse_mult:2,
      layers:[
        {id:'grave', patternId:'tres',   mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
@@ -1037,10 +1065,10 @@ function setDirtyUI(selectId, btnId, isDirty){
   if(btn)btn.classList.toggle('dirty',isDirty);
   const sel=document.getElementById(selectId);
   if(sel&&sel.options[sel.selectedIndex]){
-    const opt=sel.options[sel.selectedIndex];
-    if(isDirty&&!opt.textContent.endsWith(' ✱'))opt.textContent+=' ✱';
-    else if(!isDirty)opt.textContent=opt.textContent.replace(' ✱','');
+    sel.options[sel.selectedIndex].style.color=isDirty?'#D85A30':'';
   }
+  const strip=document.getElementById('dirty-strip-'+selectId);
+  if(strip)strip.classList.toggle('visible',isDirty);
 }
 
 function setLayerDirty(li, isDirty){
@@ -1142,7 +1170,7 @@ function buildBandSection(){
   // Sélectionner le band du groove courant
   const groove=getGroove(currentGrooveId);
   if(groove)sel.value=groove.band_defaut;
-  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();grooveDirty=true;updateGrooveSaveBtn();});
+  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();});
   bar.appendChild(sel);
 
   bar.appendChild(mkBtnSave(()=>saveToStorage()));
@@ -1192,19 +1220,19 @@ function buildGrooveSection(){
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
-  bar.appendChild(mkBtnMenu());
+  bar.appendChild(mkBtnMenu(()=>openLibPanelGrooves()));
 
-  // Bouton i (lien encyclopédie)
+  // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   const groove=getGroove(currentGrooveId);
-  const hasE=!!(groove&&groove.encyclo_ref&&ENCYCLO[groove.encyclo_ref]);
+  const hasE=hasEncycloContent(groove&&groove.id);
   btnI.style.opacity=hasE?'1':'.3';
   btnI.style.cursor=hasE?'pointer':'default';
   btnI.addEventListener('click',()=>{
     const g=getGroove(currentGrooveId);
-    if(!g||!g.encyclo_ref||!ENCYCLO[g.encyclo_ref])return;
-    showEncycloEntry(g.encyclo_ref);
+    if(!g||!hasEncycloContent(g.id))return;
+    showEncycloEntry(g.id);
     if(!encycloOuvert)toggleEncyclo(true);
   });
   bar.appendChild(btnI);
@@ -1223,6 +1251,10 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnVolet);
   cont.appendChild(bar);
+
+  const strip=document.createElement('div');
+  strip.id='dirty-strip-groove-select';strip.className='section-dirty-strip';strip.textContent='● modifié';
+  cont.appendChild(strip);
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -1281,7 +1313,7 @@ function buildLayers(){
     function updateBtnI(){
       const pid=state[li].patternId;
       const p=pid?getPattern(pid):null;
-      const has=!!(p&&p.encyclo_ref&&(packCours.encyclo||ENCYCLO)[p.encyclo_ref]);
+      const has=hasEncycloContent(p&&p.encyclo_ref);
       btnI.style.opacity=has?'1':'.3';btnI.style.cursor=has?'pointer':'default';
       btnI.onclick=has?()=>{showEncycloEntry(p.encyclo_ref);if(!encycloOuvert)toggleEncyclo(true);}:null;
     }
@@ -1327,6 +1359,9 @@ function buildLayers(){
     });
     row1.appendChild(btnToggle);
     layerDiv.appendChild(row1);
+    const layerStrip=document.createElement('div');
+    layerStrip.id='dirty-strip-sel-'+layer.id;layerStrip.className='section-dirty-strip';layerStrip.textContent='● modifié';
+    layerDiv.appendChild(layerStrip);
 
     // ── Ligne 2 : [grille steps][mod ▼/▶] ────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
@@ -1385,8 +1420,8 @@ function onStepClick(li,si,el){
 }
 
 // ── Sauvegarde pattern couche — popover ──────────────────────────────────
-let _pspLi = -1, _pspBtn = null;
-// familles sélectionnées pour le nouveau pattern (dans le popover)
+let _pspLi = -1, _pspBtn = null, _pspContext = 'pattern', _pspGrooveId = null;
+// familles sélectionnées pour le nouveau pattern/groove (dans le popover)
 let _pspNewFamIds = [];
 
 function saveLayerPattern(li, btn){
@@ -1430,6 +1465,10 @@ function closePatSavePop(){
   document.getElementById('psp-overlay').classList.add('hidden');
   document.getElementById('psp-box').classList.add('hidden');
   _pspLi = -1; _pspBtn = null; _pspNewFamIds = [];
+  _pspContext = 'pattern'; _pspGrooveId = null;
+  // Réafficher le bouton écraser (peut être masqué en mode re-nouvelle)
+  const ovBtn = document.getElementById('psp-btn-overwrite');
+  if(ovBtn) ovBtn.style.display = '';
 }
 
 // Construit les tag chips dans le popover
@@ -1460,7 +1499,17 @@ function buildPspFamSel(){
     });
 }
 
+// Dispatchers selon le contexte (pattern ou groove)
 function pspDoOverwrite(){
+  if(_pspContext==='groove'){ pspDoOverwriteGroove(); return; }
+  pspDoOverwritePattern();
+}
+function pspDoSaveNew(){
+  if(_pspContext==='groove'){ pspDoSaveNewGroove(); return; }
+  pspDoSaveNewPattern();
+}
+
+function pspDoOverwritePattern(){
   const li = _pspLi; const btn = _pspBtn;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   if(!srcPat){ closePatSavePop(); return; }
@@ -1478,7 +1527,6 @@ function pspDoOverwrite(){
     showPatternShareDialog(srcPat.nom, usedIn.map(g=>g.nom), choice=>{
       if(choice==='cancel') return;
       if(choice==='new'){
-        // Rouvrir en mode "nouveau seulement"
         openPatSavePop(li, btn, srcPat);
         document.getElementById('psp-btn-overwrite').style.display='none';
         document.getElementById('psp-new-form').classList.remove('hidden');
@@ -1490,7 +1538,7 @@ function pspDoOverwrite(){
   } else { persist(); }
 }
 
-function pspDoSaveNew(){
+function pspDoSaveNewPattern(){
   const li = _pspLi; const btn = _pspBtn;
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   const nom = document.getElementById('psp-name-input').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
@@ -1507,18 +1555,85 @@ function pspDoSaveNew(){
   };
   packCours.patterns.push(newPat);
 
-  // Rattacher la couche au nouveau pattern
   const groove = getGroove(currentGrooveId);
   if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
   state[li].patternId = newPat.id;
 
-  // Rebuild le select de la couche
   const sel = document.getElementById('sel-' + LAYERS[li].id);
   if(sel){ buildPatternSelect(sel,'all'); sel.value = newPat.id; }
 
   saveToStorage(); setLayerDirty(li,false);
   if(btn) flashSave(btn);
   closePatSavePop();
+}
+
+// ── Popover save groove (réutilise psp-box avec _pspContext='groove') ──────
+function openGrooveSavePop(btn){
+  const groove = getGroove(currentGrooveId); if(!groove) return;
+  _pspContext = 'groove'; _pspGrooveId = groove.id; _pspBtn = btn;
+  const nom = groove.nom;
+  const canOverwrite = currentMode==='tx' || (groove.source && groove.source==='user');
+
+  const ovBtn = document.getElementById('psp-btn-overwrite');
+  document.getElementById('psp-overwrite-name').textContent = nom;
+  ovBtn.disabled = !canOverwrite;
+  ovBtn.style.display = '';
+
+  document.getElementById('psp-name-input').value = nom + ' (copie)';
+  document.getElementById('psp-name-input').placeholder = 'Nom du groove';
+
+  _pspNewFamIds = groove.familles ? [...groove.familles] : [];
+  buildPspFamTags(); buildPspFamSel();
+
+  document.getElementById('psp-new-form').classList.add('hidden');
+  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau ▶';
+
+  document.getElementById('psp-overlay').classList.remove('hidden');
+  document.getElementById('psp-box').classList.remove('hidden');
+}
+
+function pspDoOverwriteGroove(){
+  const btn = _pspBtn;
+  const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
+  closePatSavePop();
+  saveGroove();
+  groove.familles = [..._pspNewFamIds];
+  grooveDirty = false; updateGrooveSaveBtn();
+  if(btn) flashSave(btn);
+}
+
+function pspDoSaveNewGroove(){
+  const btn = _pspBtn;
+  const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
+  const nom = document.getElementById('psp-name-input').value.trim() || groove.nom+' (copie)';
+
+  const newGroove = JSON.parse(JSON.stringify(groove));
+  newGroove.id = 'user_groove_' + Date.now();
+  newGroove.nom = nom;
+  newGroove.source = 'user';
+  newGroove.familles = [..._pspNewFamIds];
+  LAYERS.forEach((_,li)=>{
+    if(newGroove.layers[li] && state[li].patternId) newGroove.layers[li].patternId = state[li].patternId;
+  });
+  packCours.grooves.push(newGroove);
+
+  // Auto-créer une entrée encyclo vide pour ce nouveau groove
+  if(!packCours.encyclo) packCours.encyclo = {};
+  if(!packCours.encyclo[newGroove.id]) packCours.encyclo[newGroove.id] = {chapo:'', bullets:[]};
+
+  // Ajouter au select groove et sélectionner
+  const grooveSel = document.getElementById('groove-select');
+  if(grooveSel){
+    const o = document.createElement('option'); o.value = newGroove.id; o.textContent = newGroove.nom;
+    grooveSel.appendChild(o); grooveSel.value = newGroove.id;
+  }
+  currentGrooveId = newGroove.id;
+  saveToStorage();
+  grooveDirty = false; updateGrooveSaveBtn();
+  if(btn) flashSave(btn);
+  closePatSavePop();
+  // Rebuild l'encyclo pour inclure la nouvelle entrée
+  buildEncycloSection();
 }
 
 // ── Héritage save sheet (utilisé par groove uniquement désormais) ─────────
@@ -1535,9 +1650,6 @@ function saveGroove(){
     groove.layers[li].halfOn=state[li].halfOn;
     groove.layers[li].doubleOn=state[li].doubleOn;
   });
-  // Sync le band courant
-  const bandSel=document.querySelector('#section-band select');
-  if(bandSel)groove.band_defaut=bandSel.value;
   saveToStorage();
 }
 
@@ -1553,8 +1665,7 @@ function saveGroovePattern(btn){
   const groove=getGroove(currentGrooveId);
   if(!groove){ if(btn)flashSave(btn); return; }
   if(!grooveDirty){ saveGroove(); if(btn)flashSave(btn); return; }
-  _saveSheetBtn=btn; _saveSheetType='groove';
-  showGrooveSaveSheet(groove);
+  openGrooveSavePop(btn);
 }
 
 function showGrooveSaveSheet(groove){
@@ -1654,6 +1765,15 @@ function buildPatternSelect(sel, filtreId){
 function getFamille(id){ return packCours.familles.find(f=>f.id===id); }
 function getFamillesPattern(pat){ return (pat.familles||[]).map(getFamille).filter(Boolean); }
 
+// Vérifie si une entrée encyclo a du contenu réel (chapo ou au moins un bullet)
+function hasEncycloContent(ref){
+  if(!ref) return false;
+  const enc = packCours.encyclo || ENCYCLO;
+  const entry = enc[ref];
+  if(!entry) return false;
+  return !!(entry.chapo || (entry.bullets && entry.bullets.length > 0));
+}
+
 // Reconstruit tous les selects de filtre famille (barre de couche + panel ≡)
 function rebuildAllFamFilters(){
   // Sélects dans les barres de couche
@@ -1665,16 +1785,17 @@ function rebuildAllFamFilters(){
     });
     if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
   });
-  // Select filtre en haut du panel ≡
-  const panelFil = document.getElementById('lib-fam-filter-patterns');
-  if(panelFil){
+  // Select filtre en haut du panel ≡ patterns
+  ['lib-fam-filter-patterns','lib-fam-filter-grooves'].forEach(elId=>{
+    const panelFil = document.getElementById(elId);
+    if(!panelFil) return;
     const prev = panelFil.value;
     panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
     });
     if([...panelFil.options].some(o=>o.value===prev)) panelFil.value=prev;
-  }
+  });
 }
 
 // ── Panneau sons ──────────────────────────────────────────────────────────
@@ -1771,8 +1892,21 @@ function buildEncycloSection(){
   sel.id='encyclo-select';
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:180px;padding:1px 3px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;color:#1a1a18';
   const optVide=document.createElement('option');optVide.value='';optVide.textContent='— Choisir —';sel.appendChild(optVide);
-  packCours.patterns.filter(p=>p.encyclo_ref&&ENCYCLO[p.encyclo_ref]).forEach(p=>{
-    const o=document.createElement('option');o.value=p.encyclo_ref;o.textContent=p.nom;sel.appendChild(o);
+  // Grooves d'abord (entrée propre, clé = groove.id)
+  packCours.grooves.forEach(g=>{
+    const hasC=hasEncycloContent(g.id);
+    if(currentMode!=='tx'&&!hasC) return; // SX : masquer les entrées vides
+    const o=document.createElement('option');o.value=g.id;o.textContent='[G] '+g.nom;
+    if(!hasC)o.style.color='#aaa';
+    sel.appendChild(o);
+  });
+  // Patterns ensuite (entrée liée via p.encyclo_ref)
+  packCours.patterns.filter(p=>p.encyclo_ref).forEach(p=>{
+    const hasC=hasEncycloContent(p.encyclo_ref);
+    if(currentMode!=='tx'&&!hasC) return; // SX : masquer les entrées vides
+    const o=document.createElement('option');o.value=p.encyclo_ref;o.textContent=p.nom;
+    if(!hasC)o.style.color='#aaa';
+    sel.appendChild(o);
   });
   if(currentEncycloId)sel.value=currentEncycloId;
   sel.addEventListener('change',()=>{
@@ -1789,7 +1923,7 @@ function buildEncycloSection(){
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
   bar.appendChild(saveBtnEnc);
-  bar.appendChild(mkBtnMenu());
+  bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -1805,6 +1939,9 @@ function buildEncycloSection(){
     }
   });
   cont.appendChild(bar);
+  const encStrip=document.createElement('div');
+  encStrip.id='dirty-strip-encyclo-select';encStrip.className='section-dirty-strip';encStrip.textContent='● modifié';
+  cont.appendChild(encStrip);
 
   // Contenu collapsible
   const content=document.createElement('div');
@@ -1836,8 +1973,9 @@ function renderEncyclo(key){
   body.innerHTML='';
   const enc=packCours.encyclo||ENCYCLO;
   const entry=enc[key];
-  if(!entry){
-    const p=document.createElement('p');p.className='encyclo-vide';p.textContent='Aucune entrée disponible.';
+  if(!entry || (currentMode!=='tx' && !hasEncycloContent(key))){
+    const p=document.createElement('p');p.className='encyclo-vide';
+    p.textContent=currentMode==='tx'?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
     body.appendChild(p);return;
   }
   const isTX=currentMode==='tx';
@@ -1915,7 +2053,8 @@ function setMode(mode){
   document.body.classList.toggle('mode-tx',mode==='tx');
   document.getElementById('btn-sx-tx').textContent=mode.toUpperCase();
   buildLayers();
-  // Rebuild l'encyclo pour ajouter/retirer contenteditable selon le mode
+  // Rebuild le select encyclo (SX masque les entrées vides)
+  buildEncycloSection();
   if(currentEncycloId)renderEncyclo(currentEncycloId);
 }
 
@@ -2311,6 +2450,242 @@ function attachLibPanelEvents(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MODULE LIB — Grooves (panel ≡)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openLibPanelGrooves(){
+  rebuildGrooveFamFilter();
+  buildLibListGrooves();
+  document.getElementById('lib-overlay-grooves').classList.remove('hidden');
+  document.getElementById('lib-panel-grooves').classList.remove('hidden');
+}
+
+function closeLibPanelGrooves(){
+  document.getElementById('lib-overlay-grooves').classList.add('hidden');
+  document.getElementById('lib-panel-grooves').classList.add('hidden');
+}
+
+function rebuildGrooveFamFilter(){
+  const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="all">Toutes les familles</option>';
+  packCours.familles.forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
+  });
+  if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
+}
+
+function buildLibListGrooves(){
+  const list = document.getElementById('lib-list-grooves'); list.innerHTML='';
+  document.getElementById('lib-select-all-grooves').checked = false;
+  document.getElementById('lib-batch-del-grooves').disabled = true;
+
+  const filtreEl = document.getElementById('lib-fam-filter-grooves');
+  const filtreId = filtreEl ? filtreEl.value : 'all';
+  const grooves = filtreId && filtreId !== 'all'
+    ? packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId))
+    : packCours.grooves;
+
+  grooves.forEach(groove=>{
+    const item = document.createElement('div');
+    item.className = 'lib-item'; item.dataset.grooveId = groove.id;
+    item.setAttribute('draggable','true');
+
+    const chk = document.createElement('input'); chk.type='checkbox'; chk.className='lib-item-check';
+    chk.addEventListener('change', updateLibGrooveBatchBar);
+    item.appendChild(chk);
+
+    const handle = document.createElement('span'); handle.className='lib-drag-handle'; handle.textContent='⠿';
+    handle.title='Glisser pour réordonner'; item.appendChild(handle);
+
+    const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
+    nameEl.textContent = groove.nom; nameEl.title='Cliquer pour renommer';
+    nameEl.addEventListener('click', ()=>libStartRenameGroove(nameEl, groove.id));
+    item.appendChild(nameEl);
+
+    const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
+    libBuildGrooveTags(tagsWrap, groove); item.appendChild(tagsWrap);
+
+    if(groove.source==='default'||!groove.source){
+      const badge=document.createElement('span');badge.className='lib-source-badge';badge.textContent='défaut';item.appendChild(badge);
+    }
+
+    const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
+    let delTimer=null;
+    delBtn.addEventListener('click',()=>{
+      if(delBtn.classList.contains('confirming')){ clearTimeout(delTimer); libDeleteGroove(groove.id); }
+      else { delBtn.classList.add('confirming'); delTimer=setTimeout(()=>delBtn.classList.remove('confirming'),2000); }
+    });
+    item.appendChild(delBtn);
+
+    // Drag HTML5
+    item.addEventListener('dragstart',e=>{ _libDragSrcId=groove.id; e.dataTransfer.effectAllowed='move'; setTimeout(()=>item.classList.add('lib-item-dragging'),0); });
+    item.addEventListener('dragend',()=>{ item.classList.remove('lib-item-dragging'); list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); _libDragSrcId=null; });
+    item.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(groove.id!==_libDragSrcId)item.classList.add('lib-item-drag-over'); });
+    item.addEventListener('drop',e=>{ e.preventDefault(); if(_libDragSrcId&&_libDragSrcId!==groove.id)libDropGroove(_libDragSrcId,groove.id); });
+
+    // Drag Touch
+    handle.addEventListener('touchstart',e=>{ e.preventDefault(); _libDragSrcId=groove.id; item.classList.add('lib-item-dragging'); },{passive:false});
+    handle.addEventListener('touchmove',e=>{ e.preventDefault(); if(!_libDragSrcId)return; const t=e.touches[0]; const el=document.elementFromPoint(t.clientX,t.clientY); const tgt=el?el.closest('.lib-item'):null; list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(tgt&&tgt.dataset.grooveId!==_libDragSrcId)tgt.classList.add('lib-item-drag-over'); },{passive:false});
+    handle.addEventListener('touchend',e=>{ e.preventDefault(); const over=list.querySelector('.lib-item-drag-over'); item.classList.remove('lib-item-dragging'); list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(over&&_libDragSrcId&&over.dataset.grooveId!==_libDragSrcId)libDropGroove(_libDragSrcId,over.dataset.grooveId); _libDragSrcId=null; },{passive:false});
+
+    list.appendChild(item);
+  });
+}
+
+function libBuildGrooveTags(container, groove){
+  container.innerHTML='';
+  (groove.familles||[]).forEach(fid=>{
+    const fam=getFamille(fid); if(!fam) return;
+    const chip=document.createElement('span'); chip.className='fam-tag'; chip.textContent=fam.nom;
+    const x=document.createElement('button'); x.className='fam-tag-x'; x.textContent='×';
+    x.addEventListener('click',e=>{ e.stopPropagation(); groove.familles=(groove.familles||[]).filter(id=>id!==fid); libBuildGrooveTags(container,groove); saveToStorage(); });
+    chip.appendChild(x); container.appendChild(chip);
+  });
+  const addBtn=document.createElement('span'); addBtn.className='fam-tag-add'; addBtn.textContent='＋';
+  addBtn.addEventListener('click',e=>{ e.stopPropagation();
+    const available=packCours.familles.filter(f=>!(groove.familles||[]).includes(f.id)); if(!available.length) return;
+    const sel=document.createElement('select'); sel.className='psp-fam-sel'; sel.style.cssText='font-size:9px;max-width:100px';
+    sel.innerHTML='<option value="">— Famille —</option>';
+    available.forEach(f=>{ const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o); });
+    sel.addEventListener('change',()=>{ if(!sel.value) return; if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); libBuildGrooveTags(container,groove); saveToStorage(); });
+    sel.addEventListener('blur',()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
+    addBtn.parentNode.insertBefore(sel,addBtn); sel.focus();
+  });
+  container.appendChild(addBtn);
+}
+
+function libStartRenameGroove(nameEl, grooveId){
+  nameEl.contentEditable='true'; nameEl.focus();
+  const range=document.createRange(); range.selectNodeContents(nameEl);
+  const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  nameEl.dataset.orig=nameEl.textContent;
+  const commit=()=>{
+    nameEl.contentEditable='false';
+    const newNom=nameEl.textContent.trim();
+    if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
+    const g=packCours.grooves.find(g=>g.id===grooveId);
+    if(g&&newNom!==nameEl.dataset.orig){
+      g.nom=newNom; saveToStorage();
+      // Mettre à jour le select groove
+      const s=document.getElementById('groove-select');
+      if(s) [...s.options].forEach(o=>{ if(o.value===grooveId)o.textContent=newNom; });
+    }
+  };
+  nameEl.addEventListener('blur',commit,{once:true});
+  nameEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
+}
+
+function libDropGroove(srcId, tgtId){
+  const arr=packCours.grooves;
+  const srcIdx=arr.findIndex(g=>g.id===srcId); const tgtIdx=arr.findIndex(g=>g.id===tgtId);
+  if(srcIdx<0||tgtIdx<0||srcIdx===tgtIdx) return;
+  const [moved]=arr.splice(srcIdx,1);
+  const newTgt=arr.findIndex(g=>g.id===tgtId);
+  arr.splice(newTgt,0,moved);
+  saveToStorage(); buildLibListGrooves();
+  const s=document.getElementById('groove-select');
+  if(s){ const prev=s.value; s.innerHTML=''; packCours.grooves.forEach(g=>{ const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;s.appendChild(o); }); s.value=prev; }
+}
+
+function libDeleteGroove(grooveId){
+  if(packCours.grooves.length<=1){ alert('Impossible de supprimer le dernier groove.'); return; }
+  packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
+  saveToStorage(); buildLibListGrooves();
+  if(currentGrooveId===grooveId){ applyGroove(packCours.grooves[0].id); buildGrooveSection(); }
+  else {
+    const s=document.getElementById('groove-select');
+    if(s){ [...s.options].forEach(o=>{ if(o.value===grooveId)s.removeChild(o); }); }
+  }
+}
+
+function updateLibGrooveBatchBar(){
+  const checks=document.querySelectorAll('#lib-list-grooves .lib-item-check');
+  document.getElementById('lib-batch-del-grooves').disabled=[...checks].every(c=>!c.checked);
+}
+
+function attachGrooveLibEvents(){
+  document.getElementById('lib-overlay-grooves').addEventListener('click',closeLibPanelGrooves);
+  document.getElementById('lib-panel-grooves-close').addEventListener('click',closeLibPanelGrooves);
+  document.getElementById('lib-fam-filter-grooves').addEventListener('change',buildLibListGrooves);
+  document.getElementById('lib-select-all-grooves').addEventListener('change',e=>{
+    document.querySelectorAll('#lib-list-grooves .lib-item-check').forEach(c=>{ c.checked=e.target.checked; });
+    updateLibGrooveBatchBar();
+  });
+  document.getElementById('lib-batch-del-grooves').addEventListener('click',()=>{
+    const toDelete=[...document.querySelectorAll('#lib-list-grooves .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.grooveId);
+    if(packCours.grooves.length-toDelete.length<1){ alert('Impossible de supprimer tous les grooves.'); return; }
+    if(!confirm('Supprimer '+toDelete.length+' groove'+(toDelete.length!==1?'s':'')+' ?')) return;
+    toDelete.forEach(id=>libDeleteGroove(id));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE LIB — Encyclopédie (panel ≡)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openLibPanelEncyclo(){
+  buildLibListEncyclo();
+  document.getElementById('lib-overlay-encyclo').classList.remove('hidden');
+  document.getElementById('lib-panel-encyclo').classList.remove('hidden');
+}
+
+function closeLibPanelEncyclo(){
+  document.getElementById('lib-overlay-encyclo').classList.add('hidden');
+  document.getElementById('lib-panel-encyclo').classList.add('hidden');
+}
+
+function buildLibListEncyclo(){
+  const list=document.getElementById('lib-list-encyclo'); list.innerHTML='';
+  const typeFilter=document.getElementById('lib-type-filter-encyclo');
+  const typeVal=typeFilter?typeFilter.value:'all';
+  const enc=packCours.encyclo||{};
+
+  // Entrées grooves (dans l'ordre des grooves)
+  if(typeVal==='all'||typeVal==='groove'){
+    packCours.grooves.forEach(g=>{
+      const entry=enc[g.id];
+      const hasContent=hasEncycloContent(g.id);
+      const item=buildEncycloLibItem(g.id, g.nom, 'G', hasContent);
+      list.appendChild(item);
+    });
+  }
+  // Entrées patterns (dans l'ordre des patterns)
+  if(typeVal==='all'||typeVal==='pattern'){
+    packCours.patterns.filter(p=>p.encyclo_ref).forEach(p=>{
+      const hasContent=hasEncycloContent(p.encyclo_ref);
+      const item=buildEncycloLibItem(p.encyclo_ref, p.nom, 'P', hasContent);
+      list.appendChild(item);
+    });
+  }
+}
+
+function buildEncycloLibItem(key, nom, typeBadge, hasContent){
+  const item=document.createElement('div'); item.className='lib-item';
+  const badge=document.createElement('span'); badge.className='lib-source-badge';
+  badge.textContent=typeBadge; badge.style.cssText='background:'+(typeBadge==='G'?'#faf3e0':'#f0f5ff')+';color:'+(typeBadge==='G'?'#8B6914':'#2d5f80');
+  item.appendChild(badge);
+  const nameEl=document.createElement('span'); nameEl.className='lib-item-name';
+  nameEl.textContent=nom; nameEl.style.opacity=hasContent?'1':'.4';
+  nameEl.title=hasContent?'Cliquer pour voir':'Entrée vide';
+  nameEl.addEventListener('click',()=>{
+    closeLibPanelEncyclo();
+    showEncycloEntry(key);
+    if(!encycloOuvert)toggleEncyclo(true);
+  });
+  item.appendChild(nameEl);
+  const statusEl=document.createElement('span'); statusEl.style.cssText='font-size:9px;color:'+(hasContent?'#1D9E75':'#ccc');
+  statusEl.textContent=hasContent?'● remplie':'○ vide'; item.appendChild(statusEl);
+  return item;
+}
+
+function attachEncycloLibEvents(){
+  document.getElementById('lib-overlay-encyclo').addEventListener('click',closeLibPanelEncyclo);
+  document.getElementById('lib-panel-encyclo-close').addEventListener('click',closeLibPanelEncyclo);
+  document.getElementById('lib-type-filter-encyclo').addEventListener('change',buildLibListEncyclo);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INIT — Bootstrap au chargement
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2328,6 +2703,11 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
+  // Migration v2.2.0 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
+  packCours.grooves.forEach(g=>{
+    if(!g.familles) g.familles=[];
+    if(!packCours.encyclo[g.id]) packCours.encyclo[g.id]={chapo:'',bullets:[]};
+  });
 
   // ── Migration v2.0.x → v2.1.0 : groupes_patterns → familles sur chaque pattern ──
   if(packCours.groupes_patterns && !packCours._migrated_21){
@@ -2499,6 +2879,9 @@ function attachEvents(){
 
   // ── Panel ≡ bibliothèque patterns ──
   attachLibPanelEvents();
+  // ── Panel ≡ grooves + encyclopédie ──
+  attachGrooveLibEvents();
+  attachEncycloLibEvents();
 
   // ── Raccourci clavier ──
   document.addEventListener('keydown',e=>{
