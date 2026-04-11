@@ -329,7 +329,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.2.2</span>
+    <span class="app-version">v2.2.3</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -1334,9 +1334,10 @@ function buildLayers(){
     function updateBtnI(){
       const pid=state[li].patternId;
       const p=pid?getPattern(pid):null;
-      const has=hasEncycloContent(p&&p.encyclo_ref);
+      const eKey=p&&(p.encyclo_ref||p.id);
+      const has=hasEncycloContent(eKey);
       btnI.style.opacity=has?'1':'.3';btnI.style.cursor=has?'pointer':'default';
-      btnI.onclick=has?()=>{showEncycloEntry(p.encyclo_ref);if(!encycloOuvert)toggleEncyclo(true);}:null;
+      btnI.onclick=has?()=>{showEncycloEntry(eKey);if(!encycloOuvert)toggleEncyclo(true);}:null;
     }
     updateBtnI();
 
@@ -1352,7 +1353,7 @@ function buildLayers(){
         grooveDirty=true; updateGrooveSaveBtn();
       }
       updateBtnI();
-      if(pat.encyclo_ref) updateEncycloSelect(pat.encyclo_ref);
+      updateEncycloSelect(pat.encyclo_ref||pat.id);
       setLayerDirty(li,false); // reset dirty sur changement de pattern
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
@@ -1754,10 +1755,9 @@ function doSaveNewGroove(){
 
 function checkWrap(li){
   const outer=document.getElementById('steps-'+LAYERS[li].id);if(!outer)return;
-  const n=state[li].pattern.length;
   const avail=outer.parentElement.clientWidth-8;
-  const needed=n*STEP_W;
-  const shouldWrap=Math.floor(n/2)>3||needed>avail;
+  const needed=state[li].pattern.length*STEP_W;
+  const shouldWrap=needed>avail;
   if(shouldWrap!==state[li].wrapped)buildStepsDOM(li,shouldWrap);
 }
 
@@ -1919,11 +1919,12 @@ function buildEncycloSection(){
     if(!hasC)o.style.color='#aaa';
     sel.appendChild(o);
   });
-  // Patterns ensuite (entrée liée via p.encyclo_ref)
-  packCours.patterns.filter(p=>p.encyclo_ref).forEach(p=>{
-    const hasC=hasEncycloContent(p.encyclo_ref);
+  // Patterns ensuite (clé = p.encyclo_ref si présent, sinon p.id)
+  packCours.patterns.forEach(p=>{
+    const key=p.encyclo_ref||p.id;
+    const hasC=hasEncycloContent(key);
     if(currentMode!=='tx'&&!hasC) return; // SX : masquer les entrées vides
-    const o=document.createElement('option');o.value=p.encyclo_ref;o.textContent=p.nom;
+    const o=document.createElement('option');o.value=key;o.textContent=p.nom;
     if(!hasC)o.style.color='#aaa';
     sel.appendChild(o);
   });
@@ -2726,9 +2727,10 @@ function buildLibListEncyclo(){
   }
   // Entrées patterns (dans l'ordre des patterns)
   if(typeVal==='all'||typeVal==='pattern'){
-    packCours.patterns.filter(p=>p.encyclo_ref).forEach(p=>{
-      const hasContent=hasEncycloContent(p.encyclo_ref);
-      const item=buildEncycloLibItem(p.encyclo_ref, p.nom, 'P', hasContent);
+    packCours.patterns.forEach(p=>{
+      const key=p.encyclo_ref||p.id;
+      const hasContent=hasEncycloContent(key);
+      const item=buildEncycloLibItem(key, p.nom, 'P', hasContent);
       list.appendChild(item);
     });
   }
@@ -2777,10 +2779,13 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
-  // Migration v2.2.2 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
+  // Garantir entrées encyclo vides pour tous les grooves et patterns
   packCours.grooves.forEach(g=>{
     if(!g.familles) g.familles=[];
     if(!packCours.encyclo[g.id]) packCours.encyclo[g.id]={chapo:'',bullets:[]};
+  });
+  packCours.patterns.forEach(p=>{
+    if(!packCours.encyclo[p.id]) packCours.encyclo[p.id]={chapo:'',bullets:[]};
   });
 
   // ── Migration v2.0.x → v2.1.0 : groupes_patterns → familles sur chaque pattern ──
