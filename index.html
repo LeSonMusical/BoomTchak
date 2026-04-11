@@ -1052,7 +1052,7 @@ function buildGrooveSection(){
   bar.appendChild(sel);
 
   const saveBtnGroove=document.createElement('button');
-  saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-save';saveBtnGroove.textContent='💾';
+  saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
   bar.appendChild(mkBtnMenu());
@@ -1112,6 +1112,7 @@ function buildLayers(){
       btnMute.classList.toggle('muted',state[li].muted);
       btnMute.textContent=state[li].muted?'○':'●';
       layerDiv.classList.toggle('muted-layer',state[li].muted);
+      grooveDirty=true; updateGrooveSaveBtn();
     });
     row1.appendChild(btnMute);
 
@@ -1366,9 +1367,13 @@ function doSaveNew(){
 // Sauvegarde du groove courant (sync état runtime → packCours)
 function saveGroove(){
   const groove=getGroove(currentGrooveId);if(!groove)return;
-  // Sync les patternIds courants
+  // Sync l'état complet de chaque couche
   LAYERS.forEach((_,li)=>{
-    if(groove.layers[li]&&state[li].patternId)groove.layers[li].patternId=state[li].patternId;
+    if(!groove.layers[li])return;
+    if(state[li].patternId)groove.layers[li].patternId=state[li].patternId;
+    groove.layers[li].mute=state[li].muted;
+    groove.layers[li].halfOn=state[li].halfOn;
+    groove.layers[li].doubleOn=state[li].doubleOn;
   });
   // Sync le band courant
   const bandSel=document.querySelector('#section-band select');
