@@ -329,7 +329,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.2.1</span>
+    <span class="app-version">v2.2.2</span>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
@@ -1075,10 +1075,10 @@ function setDirtyUI(selectId, btnId, isDirty){
     const opt=sel.options[sel.selectedIndex];
     if(isDirty){
       opt.style.color='#D85A30';
-      if(!opt.textContent.startsWith('● modifié '))opt.textContent='● modifié '+opt.textContent;
+      if(!opt.textContent.endsWith(' (modifié)'))opt.textContent=opt.textContent+' (modifié)';
     } else {
       opt.style.color='';
-      opt.textContent=opt.textContent.replace(/^● modifié /,'');
+      opt.textContent=opt.textContent.replace(/ \(modifié\)$/,'');
     }
   }
 }
@@ -1754,9 +1754,10 @@ function doSaveNewGroove(){
 
 function checkWrap(li){
   const outer=document.getElementById('steps-'+LAYERS[li].id);if(!outer)return;
+  const n=state[li].pattern.length;
   const avail=outer.parentElement.clientWidth-8;
-  const needed=state[li].pattern.length*STEP_W;
-  const shouldWrap=needed>avail;
+  const needed=n*STEP_W;
+  const shouldWrap=Math.floor(n/2)>3||needed>avail;
   if(shouldWrap!==state[li].wrapped)buildStepsDOM(li,shouldWrap);
 }
 
@@ -2380,6 +2381,7 @@ function buildLibFamListPatterns(){
   list.innerHTML = '';
   packCours.familles.forEach(fam=>{
     const count = packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
+    if(count===0) return;
     const row = document.createElement('div'); row.className = 'lib-fam-item';
     const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
     nameEl.textContent = fam.nom; nameEl.title = 'Cliquer pour renommer';
@@ -2497,6 +2499,7 @@ function buildLibFamListGrooves(){
   packCours.familles.forEach(fam=>{
     const pCnt=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
     const gCnt=packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
+    if(pCnt+gCnt===0) return;
     const row=document.createElement('div'); row.className='lib-fam-item';
     const nameEl=document.createElement('span'); nameEl.className='lib-fam-name';
     nameEl.textContent=fam.nom; nameEl.title='Cliquer pour renommer';
@@ -2774,7 +2777,7 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
-  // Migration v2.2.1 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
+  // Migration v2.2.2 : familles:[] sur chaque groove + entrées encyclo vides pour les grooves
   packCours.grooves.forEach(g=>{
     if(!g.familles) g.familles=[];
     if(!packCours.encyclo[g.id]) packCours.encyclo[g.id]={chapo:'',bullets:[]};
@@ -2992,6 +2995,9 @@ function start(){
 
   // Construire le DOM
   render();
+
+  // Sélectionner le groove courant dans l'encyclopédie
+  updateEncycloSelect(currentGrooveId);
 
   // Mettre à jour l'affichage tempo
   document.getElementById('bpm-val').textContent='200 spm';
