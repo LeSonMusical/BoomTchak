@@ -904,6 +904,12 @@ let encycloDir = false;
 function updateGrooveSaveBtn(){
   const btn=document.getElementById('save-btn-groove');
   if(btn)btn.classList.toggle('dirty',grooveDirty);
+  const sel=document.getElementById('groove-select');
+  if(sel&&sel.options[sel.selectedIndex]){
+    const opt=sel.options[sel.selectedIndex];
+    if(grooveDirty&&!opt.textContent.endsWith(' ✱'))opt.textContent+=' ✱';
+    else if(!grooveDirty)opt.textContent=opt.textContent.replace(' ✱','');
+  }
 }
 
 function updateEncycloSaveBtn(){
@@ -1660,7 +1666,8 @@ function renderEncyclo(key){
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
   if(isTX){
     chapo.contentEditable='true';
-    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;encycloDir=true;updateEncycloSaveBtn();});
+    chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;});
+    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
   }
   body.appendChild(chapo);
 
@@ -1671,9 +1678,11 @@ function renderEncyclo(key){
     const v=document.createElement('span');v.className='encyclo-bval';v.textContent=bv;
     if(isTX){
       k.contentEditable='true';
-      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;encycloDir=true;updateEncycloSaveBtn();});
+      k.addEventListener('focus',()=>{k.dataset.orig=k.textContent;});
+      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;if(k.textContent!==k.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
       v.contentEditable='true';
-      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;encycloDir=true;updateEncycloSaveBtn();});
+      v.addEventListener('focus',()=>{v.dataset.orig=v.textContent;});
+      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;if(v.textContent!==v.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
     }
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
