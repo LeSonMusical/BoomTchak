@@ -210,6 +210,10 @@ body:not(.mode-tx) .step{cursor:default}
 .btn-sec-menu{cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.65;flex-shrink:0;color:inherit;display:none}
 body.mode-tx .btn-sec-menu{display:inline-block}
 body.mode-tx .btn-sec-menu:hover{opacity:1}
+/* SX : cacher 💾 et ≡ — réafficher seulement pour items perso */
+body:not(.mode-tx) .btn-sec-save{display:none}
+body:not(.mode-tx) .section-perso .btn-sec-save{display:inline-block}
+body:not(.mode-tx) .section-perso .btn-sec-menu{display:inline-block}
 /* Variante compacte pour les layers */
 .layer-actions{display:flex;gap:0;margin-top:2px}
 .layer-actions .btn-sec-save{font-size:11px;padding:1px 3px;opacity:.5}
@@ -377,7 +381,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.5</span>
+      <span class="app-version">v2.4.6</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -680,6 +684,10 @@ const ENCYCLO = {
   misc_transformations:{
     chapo:"Chaque pattern est éditable directement en cliquant sur ses steps. Le volet Mod ▶ donne accès à des transformations globales du pattern.",
     bullets:[["◀ n ▶  Décalage","Tourne le pattern : déplace le point de départ sans changer les intervalles. Les appuis peuvent devenir des levés et les rapports avec les autres couches sont bouleversés. Le Son 2:3 est un shift du Son 3:2."],["⇄  Intervertir","Échange les deux moitiés du pattern. Sur 8 steps, les steps 1–4 et 5–8 sont permutés."],["⇅  Inversion des accents","Échange forts et faibles : X ↔ x. Les silences restent inchangés. Permet de jouer le même squelette rythmique avec la dynamique inversée."],["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : silence → faible → fort → silence. Transforme progressivement un pattern en version accentuée."],["/ 2 × 2  Vitesse","Divise ou double la vitesse de la couche indépendamment des autres, appliqué au prochain cycle pour rester en phase."],["🎲  Dé","Redistribue aléatoirement les steps (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],["✨  Magie","Applique une combinaison aléatoire de transformations (décalage, intervertir, rotation des accents, /2, ×2). Bon point de départ pour explorer des variations inattendues d'un pattern connu."]]
+  },
+  misc_familles:{
+    chapo:"Les familles permettent de regrouper patterns et grooves selon le style, la fonction musicale ou tout autre critère. Un même élément peut appartenir à plusieurs familles. Les familles sont partagées entre patterns et grooves.",
+    bullets:[["Filtrer","Dans les menus déroulants de couche et de groove, sélectionner une famille (ou 'Perso') pour n'afficher que les éléments concernés."],["Perso","Le filtre 'Perso' affiche uniquement les patterns et grooves créés par l'utilisateur (source : perso), indépendamment des familles."],["Créer / renommer","En mode TX, utiliser le bouton ≡ d'une section pour créer, renommer ou supprimer des familles, et les assigner aux éléments."],["Exemples","Référentiel (patterns fondamentaux), 4-on-the-floor, Afro-cubain, Brésilien, Progressif…"]]
   }
 };
 
@@ -692,6 +700,7 @@ const ENCYCLO_MISC=[
   {id:'misc_notations',      nom:'Notations'},
   {id:'misc_tempo',          nom:'Tempo'},
   {id:'misc_transformations',nom:'Transformations'},
+  {id:'misc_familles',       nom:'Familles'},
 ];
 
 // Données par défaut du cours (source de vérité)
@@ -1316,6 +1325,12 @@ function buildGrooveSection(){
 
   const bar=document.createElement('div');
   bar.className='section-bar groove-bar';
+  bar.id='groove-bar';
+  function refreshGrooveClass(){
+    const g=getGroove(currentGrooveId);
+    bar.classList.toggle('section-perso',!!(g&&g.source==='user'));
+  }
+  refreshGrooveClass();
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
   bar.appendChild(lbl);
@@ -1325,6 +1340,7 @@ function buildGrooveSection(){
   grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
   grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
   const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
+  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='Perso';grooveFamSel.appendChild(gfPerso);
   packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
   bar.appendChild(grooveFamSel);
 
@@ -1333,13 +1349,13 @@ function buildGrooveSection(){
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
   function buildGrooveSelectOpts(filtreId){
     sel.innerHTML='';
-    const grooves=filtreId&&filtreId!=='all'?packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId)):packCours.grooves;
+    const grooves=filtreId==='__perso__'?packCours.grooves.filter(g=>g.source==='user'):filtreId&&filtreId!=='all'?packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId)):packCours.grooves;
     grooves.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);});
   }
   buildGrooveSelectOpts('all');
   if(currentGrooveId)sel.value=currentGrooveId;
   grooveFamSel.addEventListener('change',()=>{const prev=sel.value;buildGrooveSelectOpts(grooveFamSel.value);if([...sel.options].some(o=>o.value===prev))sel.value=prev;});
-  sel.addEventListener('change',()=>{if(sel.value)applyGroove(sel.value);});
+  sel.addEventListener('change',()=>{if(sel.value){applyGroove(sel.value);refreshGrooveClass();}});
   bar.appendChild(sel);
 
   const saveBtnGroove=document.createElement('button');
@@ -1391,6 +1407,12 @@ function buildLayers(){
   LAYERS.forEach((layer,li)=>{
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
+    // Marquer section-perso si le pattern courant est source:'user'
+    function refreshLayerClass(){
+      const p=state[li].patternId?getPattern(state[li].patternId):null;
+      layerDiv.classList.toggle('section-perso',!!(p&&p.source==='user'));
+    }
+    refreshLayerClass();
 
     // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][steps ▼/▶] ──────────
     const row1=document.createElement('div');row1.className='layer-row1';
@@ -1413,6 +1435,7 @@ function buildLayers(){
     const famSel=document.createElement('select');
     famSel.className='fam-filter';famSel.title='Filtrer par famille';
     const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
+    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='Perso';famSel.appendChild(optPersoFam);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
     });
@@ -1458,6 +1481,7 @@ function buildLayers(){
       updateBtnI();
       updateEncycloSelect(pat.encyclo_ref||pat.id);
       setLayerDirty(li,false); // reset dirty sur changement de pattern
+      refreshLayerClass();
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
@@ -2023,9 +2047,11 @@ function attachLayerObserver(li){
 // filtreId : id de famille ('all' ou null = tout afficher)
 function buildPatternSelect(sel, filtreId){
   sel.innerHTML='';
-  const patterns = filtreId && filtreId !== 'all'
-    ? packCours.patterns.filter(p => p.familles && p.familles.includes(filtreId))
-    : packCours.patterns;
+  const patterns = filtreId === '__perso__'
+    ? packCours.patterns.filter(p => p.source === 'user')
+    : filtreId && filtreId !== 'all'
+      ? packCours.patterns.filter(p => p.familles && p.familles.includes(filtreId))
+      : packCours.patterns;
   patterns.forEach(pat=>{
     const o=document.createElement('option');o.value=pat.id;o.textContent=pat.nom;
     sel.appendChild(o);
@@ -2051,6 +2077,7 @@ function rebuildAllFamFilters(){
   document.querySelectorAll('.fam-filter').forEach(sel=>{
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
+    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='Perso';sel.appendChild(_rp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
@@ -2062,6 +2089,7 @@ function rebuildAllFamFilters(){
     if(!panelFil) return;
     const prev = panelFil.value;
     panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
+    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— Perso —';panelFil.appendChild(_pp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
     });
@@ -2304,6 +2332,9 @@ function mkBtnMenu(onClick){
 function updateGrooveSelect(){
   const sel=document.getElementById('groove-select');
   if(sel&&currentGrooveId)sel.value=currentGrooveId;
+  // Mettre à jour le marquage perso sur la barre groove
+  const grooveBar=document.getElementById('groove-bar');
+  if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-perso',!!(g&&g.source==='user'));}
 }
 
 // Sélectionne automatiquement une entrée dans le menu Encyclopédie (sans ouvrir la section)
@@ -2634,9 +2665,11 @@ function buildLibListPatterns(){
   // Filtre famille courant (sélect en tête du panel)
   const filtreEl = document.getElementById('lib-fam-filter-patterns');
   const filtreId = filtreEl ? filtreEl.value : 'all';
-  const patterns = filtreId && filtreId !== 'all'
-    ? packCours.patterns.filter(p=>(p.familles||[]).includes(filtreId))
-    : packCours.patterns;
+  const patterns = filtreId === '__perso__'
+    ? packCours.patterns.filter(p=>p.source==='user')
+    : filtreId && filtreId !== 'all'
+      ? packCours.patterns.filter(p=>(p.familles||[]).includes(filtreId))
+      : packCours.patterns;
 
   patterns.forEach(pat=>{
     const item = document.createElement('div');
@@ -3007,6 +3040,7 @@ function rebuildGrooveFamFilter(){
   const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="all">Toutes les familles</option>';
+  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— Perso —';sel.appendChild(_gp);
   packCours.familles.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
   });
@@ -3020,9 +3054,11 @@ function buildLibListGrooves(){
 
   const filtreEl = document.getElementById('lib-fam-filter-grooves');
   const filtreId = filtreEl ? filtreEl.value : 'all';
-  const grooves = filtreId && filtreId !== 'all'
-    ? packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId))
-    : packCours.grooves;
+  const grooves = filtreId === '__perso__'
+    ? packCours.grooves.filter(g=>g.source==='user')
+    : filtreId && filtreId !== 'all'
+      ? packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId))
+      : packCours.grooves;
 
   grooves.forEach(groove=>{
     const item = document.createElement('div');
@@ -3337,9 +3373,9 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
-  // Garantir les entrées misc (non liées à un pattern/groove)
+  // Toujours synchroniser les entrées misc depuis ENCYCLO (contenu géré par l'app)
   ENCYCLO_MISC.forEach(m=>{
-    if(ENCYCLO[m.id]&&!packCours.encyclo[m.id])
+    if(ENCYCLO[m.id])
       packCours.encyclo[m.id]=JSON.parse(JSON.stringify(ENCYCLO[m.id]));
   });
   // Garantir entrées encyclo vides pour tous les grooves et patterns
