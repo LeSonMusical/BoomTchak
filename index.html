@@ -19,16 +19,16 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;justify-content:space-between;padding:6px 12px;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .top-bar-left{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .top-bar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.app-name{font-size:14px;font-weight:700;letter-spacing:.06em;color:#1a1a18}
-.app-version{font-size:9px;color:#aaa;font-weight:400;margin-left:3px}
+.app-title-block{display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;line-height:1;padding:2px 4px;border-radius:4px}
+.app-title-block:hover{background:#f0ede8}
+.app-name{font-size:13px;font-weight:700;letter-spacing:.06em;color:#1a1a18}
+.app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-sx-tx{font-size:9px;padding:2px 6px;background:#ffeedd;border:1px solid #D85A30;border-radius:3px;color:#993C1D;font-weight:600;cursor:pointer}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
 .btn-view:hover{background:#e8e5e0}
-.btn-about{padding:1px 7px;font-size:11px;font-weight:700;background:#fff;border:1px solid #c0bdb7;border-radius:50%;color:#888;cursor:pointer;line-height:1.5}
-.btn-about:hover{background:#e8e5e0}
 
 /* ─── PANEL TEMPO ─── */
 .panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .22s ease,padding .22s ease;max-height:0;padding:0 .85rem}
@@ -274,15 +274,24 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .lib-panel-close{width:26px;height:26px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:13px;color:#666;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .lib-panel-close:hover{background:#e0ddd8}
 .lib-list{flex:1;overflow-y:auto;padding:6px 0}
-.lib-item{display:flex;align-items:center;gap:4px;padding:5px 10px 5px 6px;border-bottom:1px solid #f0ede8;min-height:38px;transition:background .1s}
+/* ─── MOD PANEL ─── */
+.layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel.hidden{display:none}
+.btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
+.btn-mod:hover:not(:disabled){filter:brightness(.9)}
+.btn-mod.on{background:var(--cc);color:#fff;border-color:var(--cb)}
+.btn-mod:disabled{opacity:.3;cursor:default}
+.mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 3px;flex-shrink:0}
+.shift-num{min-width:18px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
+.lib-item{display:flex;align-items:center;gap:3px;padding:2px 8px 2px 4px;border-bottom:1px solid #f0ede8;min-height:28px;transition:background .1s}
 .lib-item:last-child{border-bottom:none}
 .lib-item.lib-item-dragging{opacity:.4}
 .lib-item.lib-item-drag-over{background:#e8f2f8;border-top:2px solid #4A7FA5}
 .lib-item-check{flex-shrink:0;width:16px;height:16px;cursor:pointer}
-.lib-drag-handle{flex-shrink:0;cursor:grab;padding:2px 5px;font-size:14px;color:#c0bdb7;line-height:1;touch-action:none;user-select:none;-webkit-user-select:none}
+.lib-drag-handle{flex-shrink:0;cursor:grab;padding:1px 3px;font-size:13px;color:#c0bdb7;line-height:1;touch-action:none;user-select:none;-webkit-user-select:none}
 .lib-drag-handle:hover{color:#888}
 .lib-drag-handle:active{cursor:grabbing}
-.lib-item-name{flex:1;font-size:11px;font-weight:500;color:#1a1a18;cursor:pointer;border-radius:3px;padding:2px 4px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-item-name{flex:1;font-size:11px;font-weight:500;color:#1a1a18;cursor:pointer;border-radius:3px;padding:1px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lib-item-name:hover{background:#f5f4f0}
 .lib-item-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1);box-shadow:0 0 0 2px rgba(74,127,165,.3);white-space:normal}
 .lib-item-tags{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
@@ -312,6 +321,35 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .lib-batch-del:hover{background:#fff5f2}
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
+/* ─── VUE CIRCULAIRE ─── */
+#circle-view{display:none;justify-content:center;align-items:flex-start;padding:.5rem 0;flex-shrink:0}
+body.view-circle #circle-view{display:flex}
+body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
+body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
+body.view-circle .hdivider{display:none}
+#rhythm-canvas{display:block;touch-action:none;cursor:default;max-width:100%;max-height:100%}
+body.mode-tx #rhythm-canvas{cursor:pointer}
+
+/* Portrait : cercle pleine largeur, controls empilés dessous */
+body.view-circle .frame{display:flex;flex-direction:column}
+body.view-circle #circle-view{width:100%;order:3}     /* après section-groove (order:2) */
+body.view-circle #section-band{order:1}
+body.view-circle #band-content{order:2}
+body.view-circle #section-groove{order:2}
+body.view-circle #layers-wrap{order:4;display:block;width:100%}
+body.view-circle #section-encyclo{order:5}
+
+/* Desktop ≥600px : split circle gauche / controls droite */
+@media(min-width:600px){
+  body.view-circle .frame{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:0}
+  body.view-circle #section-band{order:1;width:100%;flex-shrink:0}
+  body.view-circle #band-content{order:2;width:100%;flex-shrink:0}
+  body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
+  body.view-circle #circle-view{order:4;flex:0 0 auto;align-self:flex-start}
+  body.view-circle #layers-wrap{order:4;flex:1;min-width:0;display:block;padding-left:.75rem}
+  body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
+}
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:599px){
   .layer-menu{width:88px}
@@ -328,14 +366,15 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 <div class="top-bar">
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
-    <span class="app-name">PoumTchak</span>
-    <span class="app-version">v2.2.4</span>
+    <div class="app-title-block" id="btn-app-title" title="Présentation de PoumTchak">
+      <span class="app-name">PoumTchak</span>
+      <span class="app-version">v2.3.0</span>
+    </div>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
-    <button class="btn-about" id="btn-about">?</button>
   </div>
 </div>
 
@@ -365,6 +404,8 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
   <div id="section-groove"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
+  <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
+  <div id="circle-view"><canvas id="rhythm-canvas"></canvas></div>
   <div class="hdivider"></div>
   <!-- Section Encyclopédie -->
   <div id="section-encyclo"></div>
@@ -597,6 +638,10 @@ const ENCYCLO = {
   bembe:{
     chapo:"Le Bembé est un rythme de cérémonie yoruba, joué dans la Santería cubaine pour l'invocation des Orishas. C'est le rythme euclidien le plus dense du dictionnaire sur base 12 — 7 frappes sur 12 pas, laissant à peine de l'espace. Cette densité quasi-continue produit une tension hypnotique sans repos qui explique son usage rituel.",
     bullets:[["Origine","Yoruba (Nigeria/Bénin), transplanté à Cuba avec la traite ; \"Bembé\" désigne aussi la cérémonie elle-même."],["Utilisation","Rituels de Santería (Cuba) ; jazz modal : Miles Davis Kind of Blue (1959), Coltrane Africa/Brass (1961) ; Steve Reich, Drumming (1971)."],["Écriture","X.X.XX.X.X.X\nIntervalles : 2-2-1-2-2-2\nE(7,12) — maximum euclidien sur base 12"],["Singularité","Un seul intervalle d'1 pas (entre frappes 5 et 6) — micro-accentuation caractéristique, comme un trébuchement contrôlé."],["Sensation","Urgence hypnotique, absence de respiration, état de transe — la densité est fonctionnelle, pas décorative."]]
+  },
+  poumtchak:{
+    chapo:"PoumTchak est un outil pédagogique pour explorer, écouter et comprendre les rythmes — du plus simple au plus complexe. Son nom vient du langage universel de l'onomatopée rythmique : « Poum » pour la grosse caisse (grave, appui), « Tchak » pour la caisse claire ou le charleston (aigu, contretemps). Ensemble ils dessinent le squelette de presque toutes les musiques de danse.",
+    bullets:[["Principe","Trois couches rythmiques superposables, chacune avec un pattern indépendant. On peut les muter, les modifier, les décaler — et écouter comment les rythmes se combinent."],["Patterns","Un dictionnaire de patterns rythmiques issus de traditions du monde entier : Afrique, Cuba, Brésil, Jamaïque, Europe. Chaque pattern a sa logique propre, son histoire, ses usages."],["Grooves","Un groove = une combinaison de 3 patterns, une mise en situation. On peut naviguer entre les grooves pour explorer différentes esthétiques rythmiques."],["Vue circulaire","La vue cercle affiche les patterns comme des horloges rythmiques — les frappes sont des points sur un cercle, et on voit immédiatement les symétries, les densités, les relations entre couches."],["Usage","Outil conçu pour la classe : le prof configure une situation pédagogique (TX = mode enseignant), l'élève l'explore (SX = mode élève)."]]
   }
 };
 
@@ -978,6 +1023,7 @@ function scheduler(){
 
 function visualLoop(){
   if(!playing)return;
+  if(circleView){ visualLoopCircle(); return; }
   const now=getAC().currentTime;
   LAYERS.forEach((layer,li)=>{
     const beatSec=getBeatSec(li);
@@ -1032,10 +1078,15 @@ function stopPlay(){
   playing=false;
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
-  LAYERS.forEach(l=>{
-    const d=document.getElementById('steps-'+l.id);
-    if(d)d.querySelectorAll('.step').forEach(s=>s.classList.remove('cur'));
-  });
+  if(circleView){
+    flashStep[0]=flashStep[1]=flashStep[2]=-1;
+    drawCircles();
+  } else {
+    LAYERS.forEach(l=>{
+      const d=document.getElementById('steps-'+l.id);
+      if(d)d.querySelectorAll('.step').forEach(s=>s.classList.remove('cur'));
+    });
+  }
 }
 
 function togglePlay(){
@@ -1064,9 +1115,8 @@ let grooveDirty = false;
 let encycloDir = false;
 
 // ── Gestion unifiée des états "modifié" ──────────────────────────────────
-// Toutes les sections partagent le même comportement :
-//   bouton 💾 → classe .dirty (rouge + !)
-//   option courante du select → suffixe " ✱"
+// bouton 💾 → classe .dirty (rouge + !)
+// option courante du select → préfixe "● modifié : " + rouge
 function setDirtyUI(selectId, btnId, isDirty){
   const btn=document.getElementById(btnId);
   if(btn)btn.classList.toggle('dirty',isDirty);
@@ -1075,10 +1125,11 @@ function setDirtyUI(selectId, btnId, isDirty){
     const opt=sel.options[sel.selectedIndex];
     if(isDirty){
       opt.style.color='#D85A30';
-      if(!opt.textContent.startsWith('● modifié '))opt.textContent='● modifié '+opt.textContent;
+      if(!opt.dataset.origName) opt.dataset.origName=opt.textContent;
+      opt.textContent='● modifié : '+opt.dataset.origName;
     } else {
       opt.style.color='';
-      opt.textContent=opt.textContent.replace(/^● modifié /,'');
+      if(opt.dataset.origName){ opt.textContent=opt.dataset.origName; delete opt.dataset.origName; }
     }
   }
 }
@@ -1268,8 +1319,10 @@ function buildGrooveSection(){
   btnVolet.addEventListener('click',()=>{
     layersOuverts=!layersOuverts;
     const lw=document.getElementById('layers-wrap');
+    const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
     if(lw)lw.style.display=layersOuverts?'':'none';
+    if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(hd)hd.style.display=layersOuverts?'':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
@@ -1370,28 +1423,182 @@ function buildLayers(){
     row1.appendChild(mkBtnMenu(()=>openLibPanelPatterns()));
     // i info
     row1.appendChild(btnI);
-    // steps ▼/▶ toggle (justifié droite)
+    // steps ▼/▶ toggle (justifié droite) — caché en vue circulaire
     const row2=document.createElement('div');row2.className='layer-row2';
-    const btnToggle=document.createElement('button');btnToggle.className='btn-layer-toggle';
+    const btnToggle=document.createElement('button');
+    btnToggle.className='btn-layer-toggle btn-steps-toggle';
     let stepsOpen=true;btnToggle.textContent='steps ▼';
     btnToggle.addEventListener('click',()=>{
       stepsOpen=!stepsOpen;
       row2.classList.toggle('collapsed',!stepsOpen);
       btnToggle.textContent=stepsOpen?'steps ▼':'steps ▶';
+      // mod panel suit le volet steps
+      const mp=layerDiv.querySelector('.layer-mod-panel');
+      if(mp&&!stepsOpen){ mp.classList.add('hidden'); btnMod.textContent='mod ▶'; }
     });
     row1.appendChild(btnToggle);
     layerDiv.appendChild(row1);
 
-    // ── Ligne 2 : [grille steps][mod ▼/▶] ────────────────────────────────
+    // ── Ligne 2 : grille steps + mod ─────────────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
-    // mod ▼/▶ — placeholder pour le futur panneau de transformations
+
+    // bouton mod ▶/▼ dans row2 (à droite des steps)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
-    btnMod.style.cssText='margin-left:auto;font-size:10px;opacity:.45';
-    btnMod.textContent='mod ▶';btnMod.title='Transformations (prochaine version)';
+    btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
+    btnMod.textContent='mod ▶';
     row2.appendChild(btnMod);
 
     layerDiv.appendChild(row2);
+
+    // ── Panneau mod (transformations) ────────────────────────────────────────
+    const modPanel=document.createElement('div');
+    modPanel.className='layer-mod-panel hidden';
+    modPanel.id='mod-panel-'+li;
+
+    // — Shift ◀ [n] ▶ —
+    const bShL=document.createElement('button');bShL.className='btn-mod';bShL.textContent='◀';bShL.title='Décaler gauche';
+    const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent='0';
+    const bShR=document.createElement('button');bShR.className='btn-mod';bShR.textContent='▶';bShR.title='Décaler droite';
+
+    bShL.addEventListener('click',()=>{
+      state[li].pattern=rotate(state[li].pattern,1);
+      const n=parseInt(shNum.textContent);
+      shNum.textContent=((n-1+state[li].pattern.length)%state[li].pattern.length).toString();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    bShR.addEventListener('click',()=>{
+      state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
+      const n=parseInt(shNum.textContent);
+      shNum.textContent=((n+1)%state[li].pattern.length).toString();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+
+    modPanel.appendChild(bShL);
+    modPanel.appendChild(shNum);
+    modPanel.appendChild(bShR);
+
+    // séparateur
+    const sep1=document.createElement('span');sep1.className='mod-sep';modPanel.appendChild(sep1);
+
+    // — Complémentaire ⊙ —
+    const bComp=document.createElement('button');bComp.className='btn-mod';bComp.textContent='⊙';bComp.title='Complémentaire (inverse les frappes)';
+    bComp.addEventListener('click',()=>{
+      state[li].pattern=state[li].pattern.map(p=>p==='X'?'.':'X');
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    modPanel.appendChild(bComp);
+
+    // — Inverser ⇄ (swap halves) —
+    const bSwap=document.createElement('button');bSwap.className='btn-mod';bSwap.textContent='⇄';bSwap.title='Inverser (swap moitiés)';
+    const updateSwapBtn=()=>{
+      const ok=state[li].pattern.length>=4&&state[li].pattern.length%2===0;
+      bSwap.disabled=!ok;
+    };
+    updateSwapBtn();
+    bSwap.addEventListener('click',()=>{
+      const p=state[li].pattern,h=Math.floor(p.length/2);
+      state[li].pattern=[...p.slice(h),...p.slice(0,h)];
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    modPanel.appendChild(bSwap);
+
+    // séparateur
+    const sep2=document.createElement('span');sep2.className='mod-sep';modPanel.appendChild(sep2);
+
+    // — Vitesse /2 ×2 —
+    const bHalf=document.createElement('button');bHalf.className='btn-mod';bHalf.id='mod-half-'+li;bHalf.textContent='/2';bHalf.title='Vitesse ÷2 (appliqué au prochain cycle)';
+    const bDbl=document.createElement('button');bDbl.className='btn-mod';bDbl.id='mod-dbl-'+li;bDbl.textContent='×2';bDbl.title='Vitesse ×2 (appliqué au prochain cycle)';
+
+    const updateSpeedBtns=()=>{
+      bHalf.classList.toggle('on', state[li].halfOn||state[li].pendingHalf);
+      bDbl.classList.toggle('on', state[li].doubleOn||state[li].pendingDouble);
+    };
+    updateSpeedBtns();
+
+    bHalf.addEventListener('click',()=>{
+      if(state[li].halfOn||state[li].pendingHalf){
+        state[li].pendingHalf=false;state[li].pendingClear=true;
+      } else {
+        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
+        state[li].pendingHalf=true;state[li].pendingClear=false;
+      }
+      updateSpeedBtns(); grooveDirty=true; updateGrooveSaveBtn();
+    });
+    bDbl.addEventListener('click',()=>{
+      if(state[li].doubleOn||state[li].pendingDouble){
+        state[li].pendingDouble=false;state[li].pendingClear=true;
+      } else {
+        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
+        state[li].pendingDouble=true;state[li].pendingClear=false;
+      }
+      updateSpeedBtns(); grooveDirty=true; updateGrooveSaveBtn();
+    });
+
+    modPanel.appendChild(bHalf);
+    modPanel.appendChild(bDbl);
+
+    // séparateur
+    const sep3=document.createElement('span');sep3.className='mod-sep';modPanel.appendChild(sep3);
+
+    // — Aléatoire combiné ✦ —
+    const bRand=document.createElement('button');bRand.className='btn-mod';bRand.textContent='✦';bRand.title='Transformations aléatoires (shift, comp, swap, vitesse)';
+    bRand.addEventListener('click',()=>{
+      const r=Math.random();
+      // vitesse aléatoire (25% /2, 25% ×2, 50% inchangé)
+      if(r<0.25&&!state[li].halfOn&&!state[li].pendingHalf){
+        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
+        state[li].pendingHalf=true;state[li].pendingClear=false;
+      } else if(r<0.5&&!state[li].doubleOn&&!state[li].pendingDouble){
+        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
+        state[li].pendingDouble=true;state[li].pendingClear=false;
+      }
+      // shift aléatoire (50%)
+      if(Math.random()<0.5){
+        const n=Math.floor(Math.random()*(state[li].pattern.length-1))+1;
+        state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-n);
+        shNum.textContent=((parseInt(shNum.textContent)+n)%state[li].pattern.length).toString();
+      }
+      // complémentaire (33%)
+      if(Math.random()<0.33) state[li].pattern=state[li].pattern.map(p=>p==='X'?'.':'X');
+      // swap halves (50%, si applicable)
+      if(Math.random()<0.5&&state[li].pattern.length>=4&&state[li].pattern.length%2===0){
+        const p=state[li].pattern,h=Math.floor(p.length/2);
+        state[li].pattern=[...p.slice(h),...p.slice(0,h)];
+      }
+      updateSpeedBtns();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    modPanel.appendChild(bRand);
+
+    // — Dé 🎲 (pattern aléatoire, même densité) —
+    const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Pattern aléatoire (même densité)';
+    bDice.addEventListener('click',()=>{
+      const pat=state[li].pattern;
+      const n=pat.length;
+      const beats=pat.filter(p=>p==='X').length;
+      // mélanger en gardant le même nombre de X
+      const arr=Array(n).fill('.');
+      let placed=0;
+      while(placed<beats){
+        const idx=Math.floor(Math.random()*n);
+        if(arr[idx]==='.'){arr[idx]='X';placed++;}
+      }
+      state[li].pattern=arr;
+      shNum.textContent='0';
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    modPanel.appendChild(bDice);
+
+    layerDiv.appendChild(modPanel);
+
+    // toggle mod panel via bouton
+    btnMod.addEventListener('click',()=>{
+      const open=modPanel.classList.toggle('hidden');
+      btnMod.textContent=open?'mod ▶':'mod ▼';
+      if(!open) updateSwapBtn();
+    });
+
     cont.appendChild(layerDiv);
 
     buildStepsDOM(li,false);
@@ -1433,7 +1640,7 @@ function onStepClick(li,si,el){
   state[li].pattern[si]=newVal;
   el.className='step'+(newVal==='X'?' on':'');
   if(state[li].stepPos===si)el.classList.add('cur');
-  // Dirty check
+  // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
 }
@@ -1661,7 +1868,8 @@ let _saveSheetBtn = null, _saveSheetType = 'groove';
 // Sauvegarde du groove courant (sync état runtime → packCours)
 function saveGroove(){
   const groove=getGroove(currentGrooveId);if(!groove)return;
-  // Sync l'état complet de chaque couche
+  // Sync l'état complet de chaque couche (patternId, mute, half/double)
+  // ⚠️ Ne jamais toucher aux séquences de steps ici — elles se sauvegardent via 💾 du layer
   LAYERS.forEach((_,li)=>{
     if(!groove.layers[li])return;
     if(state[li].patternId)groove.layers[li].patternId=state[li].patternId;
@@ -2074,6 +2282,208 @@ function updateSpmDisplay(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MODULE CIRCLE — Vue circulaire (canvas)
+// ═══════════════════════════════════════════════════════════════════════════
+
+let circleView = false;
+const flashStep = [-1,-1,-1];
+
+const CIRCLE_COLORS = [
+  {fill:'#378ADD', stroke:'#185FA5', track:'rgba(55,138,221,0.25)'},   // grave — cercle intérieur
+  {fill:'#D85A30', stroke:'#993C1D', track:'rgba(216,90,48,0.25)'},    // aigu  — cercle médian
+  {fill:'#1D9E75', stroke:'#0F6E56', track:'rgba(29,158,117,0.25)'},   // noise — cercle extérieur
+];
+
+function stepAngle(si, total){
+  return -Math.PI/2 + (2*Math.PI*si/total);
+}
+
+function resizeCanvas(){
+  const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
+  const wrap = document.getElementById('circle-view');
+  const frame = wrap.closest('.frame');
+  const dotR = 10;
+  const r0 = 16*dotR/Math.PI;    // rayon cercle intérieur (~50.9px)
+  const r2 = r0 + dotR*4;        // rayon cercle extérieur
+  const szNatural = Math.round(2*(r2+dotR+6));   // taille naturelle du canvas
+
+  // Sur desktop (≥600px) : le canvas partage la ligne avec les controls
+  // → on lui alloue ~45% de la largeur du frame (max szNatural)
+  const frameW = frame ? frame.clientWidth : window.innerWidth;
+  const isDesktop = window.innerWidth >= 600;
+  const maxW = isDesktop ? Math.min(szNatural, Math.floor(frameW*0.46)) : frameW - 16;
+  const scale = Math.min(1, maxW / szNatural);
+
+  cv.width = szNatural; cv.height = szNatural;
+  cv.style.transform = scale < 1 ? 'scale('+scale+')' : '';
+  const physSz = Math.round(szNatural * scale);
+  if(isDesktop){
+    cv.style.transformOrigin = 'top left';
+    wrap.style.width  = physSz + 'px';
+  } else {
+    cv.style.transformOrigin = 'top center';
+    wrap.style.width  = '100%';
+  }
+  wrap.style.height = physSz + 'px';
+  drawCircles();
+}
+
+function drawCircles(){
+  const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height, cx = W/2, cy = H/2;
+  const dotR = 10;
+  const r0 = 16*dotR/Math.PI;
+  const radii = [r0, r0+dotR*2, r0+dotR*4];
+
+  ctx.clearRect(0, 0, W, H);
+
+  const now = playing ? getAC().currentTime : 0;
+
+  // Calcul fraction needle par layer
+  const fracs = LAYERS.map((_,li)=>{
+    if(!playing) return 0;
+    const bs = getBeatSec(li), el = now - state[li].startTime;
+    const cyc = bs * state[li].pattern.length;
+    return ((el % cyc) + cyc) % cyc / cyc;
+  });
+
+  // Dessin extérieur → intérieur (outer on top visuellement)
+  [2,1,0].forEach(li=>{
+    const pat = state[li].pattern;
+    const n = pat.length;
+    const r = radii[li];
+    const col = CIRCLE_COLORS[li];
+    const isMuted = state[li].muted;
+
+    // Anneau de piste
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI);
+    ctx.strokeStyle = col.track; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Step courant (pour flash)
+    let curSi = -1;
+    if(playing){
+      const bs = getBeatSec(li), el = now - state[li].startTime;
+      curSi = Math.floor(el/bs) % n;
+      if(curSi !== flashStep[li]) flashStep[li] = curSi;
+    }
+
+    // Points
+    for(let si=0; si<n; si++){
+      const a = stepAngle(si, n);
+      const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
+      const isOn = pat[si]==='X';
+      const isFlash = playing && si===flashStep[li] && isOn && !isMuted;
+
+      ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
+      if(isFlash){
+        ctx.fillStyle='#F5C518'; ctx.fill();
+        ctx.strokeStyle='#c89a00'; ctx.lineWidth=1.5; ctx.stroke();
+      } else if(isOn){
+        ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
+        ctx.strokeStyle = col.stroke; ctx.lineWidth=1; ctx.stroke();
+      } else {
+        ctx.fillStyle='#f0ede8'; ctx.fill();
+        ctx.strokeStyle='#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
+      }
+    }
+  });
+
+  // Aiguilles — dégradé transparent au centre, opaque à leur cercle
+  LAYERS.forEach((_, li)=>{
+    const r = radii[li];
+    const col = CIRCLE_COLORS[li];
+    const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
+    const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
+
+    const grad = ctx.createLinearGradient(cx, cy, ex, ey);
+    grad.addColorStop(0,   col.stroke+'00');   // transparent au pivot
+    grad.addColorStop(0.5, col.stroke+'44');   // semi au milieu
+    grad.addColorStop(1,   col.stroke+'cc');   // opaque à la tête
+
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
+    ctx.strokeStyle = grad; ctx.lineWidth = 2;
+    ctx.lineCap = 'round'; ctx.stroke();
+    ctx.restore();
+  });
+
+  // Pivot central
+  ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
+  ctx.fillStyle='#1a1a18'; ctx.fill();
+}
+
+function circleHitTest(x, y){
+  const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
+  const dotR = 10, r0 = 16*dotR/Math.PI;
+  const radii = [r0, r0+dotR*2, r0+dotR*4];
+  const cx = cv.width/2, cy = cv.height/2;
+  for(let li=0; li<LAYERS.length; li++){
+    const n = state[li].pattern.length, r = radii[li];
+    for(let si=0; si<n; si++){
+      const a = stepAngle(si, n);
+      const dx = cx+r*Math.cos(a), dy = cy+r*Math.sin(a);
+      if(Math.hypot(x-dx, y-dy) <= dotR+4) return {li, si};
+    }
+  }
+  return null;
+}
+
+function setupCanvasInteraction(){
+  const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
+  function onPt(ex, ey){
+    if(currentMode!=='tx') return;
+    const rect = cv.getBoundingClientRect();
+    const scaleX = cv.width/rect.width, scaleY = cv.height/rect.height;
+    const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
+    if(!hit) return;
+    const {li, si} = hit;
+    const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
+    const newVal = state[li].pattern[si]==='X' ? '.' : 'X';
+    state[li].pattern[si] = newVal;
+    const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
+    setLayerDirty(li, isDirty);
+    drawCircles();
+  }
+  cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
+  cv.addEventListener('touchend', e=>{
+    e.preventDefault();
+    const t = e.changedTouches[0]; onPt(t.clientX, t.clientY);
+  }, {passive:false});
+}
+
+function setView(circle){
+  circleView = circle;
+  document.body.classList.toggle('view-circle', circle);
+  document.getElementById('btn-view').textContent = circle ? '⊞' : '◎';
+  document.getElementById('btn-view').title = circle ? 'Vue linéaire' : 'Vue circulaire';
+
+  cancelAnimationFrame(visualRafID);
+  visualRafID = null;
+
+  // Sync visibilité cercle et layers-wrap selon layersOuverts
+  const cv=document.getElementById('circle-view');
+  const lw=document.getElementById('layers-wrap');
+  if(cv)cv.style.display=(circle&&layersOuverts)?'flex':'none';
+  if(lw)lw.style.display=layersOuverts?'':'none';
+
+  if(circle){
+    flashStep[0]=flashStep[1]=flashStep[2]=-1;
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
+    if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
+  } else {
+    LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
+    if(playing) visualRafID = requestAnimationFrame(visualLoop);
+  }
+}
+
+function visualLoopCircle(){
+  if(!playing) return;
+  drawCircles();
+  visualRafID = requestAnimationFrame(visualLoopCircle);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MODULE TX — Mode enseignant (édition, sauvegarde)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2204,15 +2614,10 @@ function buildLibListPatterns(){
 
     // Bouton supprimer 🗑
     const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer (confirmer)';
-    let delTimer = null;
+    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer ce pattern';
     delBtn.addEventListener('click', ()=>{
-      if(delBtn.classList.contains('confirming')){
-        clearTimeout(delTimer); libDeletePattern(pat.id);
-      } else {
-        delBtn.classList.add('confirming');
-        delTimer = setTimeout(()=>delBtn.classList.remove('confirming'), 2000);
-      }
+      if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
+      libDeletePattern(pat.id);
     });
     item.appendChild(delBtn);
 
@@ -2578,10 +2983,9 @@ function buildLibListGrooves(){
     }
 
     const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-    let delTimer=null;
     delBtn.addEventListener('click',()=>{
-      if(delBtn.classList.contains('confirming')){ clearTimeout(delTimer); libDeleteGroove(groove.id); }
-      else { delBtn.classList.add('confirming'); delTimer=setTimeout(()=>delBtn.classList.remove('confirming'),2000); }
+      if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
+      libDeleteGroove(groove.id);
     });
     item.appendChild(delBtn);
 
@@ -2840,6 +3244,10 @@ function attachEvents(){
     if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}
   });
 
+  // ── Vue circulaire / linéaire ──
+  document.getElementById('btn-view').addEventListener('click',()=>setView(!circleView));
+  window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); });
+
   // ── Sons ──
   document.getElementById('btn-sons').addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
@@ -2848,6 +3256,14 @@ function attachEvents(){
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
+  });
+
+  // ── Titre PoumTchak → encyclo ──
+  document.getElementById('btn-app-title').addEventListener('click',()=>{
+    showEncycloEntry('poumtchak');
+    if(!encycloOuvert)toggleEncyclo(true);
+    const el=document.getElementById('section-encyclo');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
 
   // ── Play ──
