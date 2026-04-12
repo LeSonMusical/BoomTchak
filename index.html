@@ -92,11 +92,14 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:none;align-self:flex-start}
 body.mode-tx .btn-layer-mod{display:inline-block}
 body.mode-tx .btn-layer-mod:hover{opacity:1}
-.step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s}
-.step.on{background:var(--cc);border-color:var(--cb)}
+.step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s}
+.step.soft{background:var(--cc);border-color:var(--cb)}
+.step.on{background:#fff;border-color:var(--cb);box-shadow:inset 0 0 0 4px var(--cc)}
 .step.cur{box-shadow:0 0 0 2px var(--cb);border-color:var(--cb)}
-.step.on.cur{background:var(--cb)}
-.layer.muted-layer .step.on{background:var(--cs)}
+.step.soft.cur{box-shadow:0 0 0 2px var(--cb)}
+.step.on.cur{background:var(--cb);box-shadow:0 0 0 2px var(--cb)}
+.layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs)}
+.layer.muted-layer .step.on{background:#fff;border-color:var(--cs);box-shadow:inset 0 0 0 4px var(--cs)}
 .hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
 /* Texte éditable en TX */
 body.mode-tx [contenteditable="true"]{border-radius:3px;outline:none;transition:background .1s}
@@ -199,8 +202,8 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 /* Steps éditables en mode TX */
 body.mode-tx .step{cursor:pointer}
-body.mode-tx .step:not(.on):hover{background:var(--cl);border-color:var(--cc)}
-body.mode-tx .step.on:hover{filter:brightness(.85)}
+body.mode-tx .step:not(.on):not(.soft):hover{background:var(--cl);border-color:var(--cc)}
+body.mode-tx .step.on:hover,body.mode-tx .step.soft:hover{filter:brightness(.85)}
 body:not(.mode-tx) .step{cursor:default}
 
 /* ─── BOUTONS DE SECTION (💾 et ≡) ─── */
@@ -372,7 +375,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.3.5</span>
+      <span class="app-version">v2.4.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1020,8 +1023,9 @@ function scheduler(){
         if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
         if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
       }
-      // Phase 1 : seul 'X' (fort) déclenche le son — 'x' (faible) prévu pour une itération future
-      if(state[li].pattern[si]==='X'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime);
+      // X (fort) joue plein volume, x (faible) joue à 40%
+      const stepVal=state[li].pattern[si];
+      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime,stepVal==='x'?0.4:1.0);
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
@@ -1047,14 +1051,14 @@ function rotate(arr,n){const l=arr.length;if(!l)return arr;const k=((n%l)+l)%l;r
 function halfAt(len){if(len<=4)return null;return Math.ceil(len/2);}
 
 // ── Son ───────────────────────────────────────────────────────────────────
-function playSound(ss,atTime){
+function playSound(ss,atTime,velMult){
   const a=getAC();if(!a)return;
   const lat=latencyMs/1000;
   const t=Math.max(a.currentTime,atTime+lat);
   const def=SOUND_DEFS[ss.soundId];if(!def)return;
-  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol});
+  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol*(velMult??1)});
 }
-function scheduleNote(li,atTime){playSound(soundState[li],atTime);}
+function scheduleNote(li,atTime,velMult){playSound(soundState[li],atTime,velMult??1);}
 function playConga(isRight){
   const a=getAC();if(!a)return;
   playSound(soundStateThumb[isRight?1:0],a.currentTime);
@@ -1492,7 +1496,7 @@ function buildLayers(){
     // — Complémentaire ⊙ —
     const bComp=document.createElement('button');bComp.className='btn-mod';bComp.textContent='⊙';bComp.title='Complémentaire (inverse les frappes)';
     bComp.addEventListener('click',()=>{
-      state[li].pattern=state[li].pattern.map(p=>p==='X'?'.':'X');
+      state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
     modPanel.appendChild(bComp);
@@ -1567,8 +1571,8 @@ function buildLayers(){
         state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-n);
         shNum.textContent=((parseInt(shNum.textContent)+n)%state[li].pattern.length).toString();
       }
-      // complémentaire (33%)
-      if(Math.random()<0.33) state[li].pattern=state[li].pattern.map(p=>p==='X'?'.':'X');
+      // complémentaire (33%) — tout ce qui sonne → silence, silence → fort
+      if(Math.random()<0.33) state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
       // swap halves (50%, si applicable)
       if(Math.random()<0.5&&state[li].pattern.length>=4&&state[li].pattern.length%2===0){
         const p=state[li].pattern,h=Math.floor(p.length/2);
@@ -1584,8 +1588,8 @@ function buildLayers(){
     bDice.addEventListener('click',()=>{
       const pat=state[li].pattern;
       const n=pat.length;
-      const beats=pat.filter(p=>p==='X').length;
-      // mélanger en gardant le même nombre de X
+      const beats=pat.filter(p=>p!=='.').length;
+      // mélanger en gardant le même nombre de frappes (X uniquement — sans distinction d'accent)
       const arr=Array(n).fill('.');
       let placed=0;
       while(placed<beats){
@@ -1632,7 +1636,7 @@ function buildStepsDOM(li,wrap){
       div.appendChild(br);
     }
     const s=document.createElement('div');
-    s.className='step'+(p==='X'?' on':p==='x'?' on':'');
+    s.className='step'+(p==='X'?' on':p==='x'?' soft':'');
     s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
@@ -1643,10 +1647,11 @@ function onStepClick(li,si,el){
   const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
   const canEdit=currentMode==='tx'||(srcPat&&srcPat.source==='user');
   if(!canEdit)return;
-  // Bascule en mémoire uniquement — persistance via 💾
-  const newVal=state[li].pattern[si]==='X'?'.':'X';
+  // Cycle 3 états en mémoire uniquement — persistance via 💾
+  const STEP_CYCLE={'.':'X','X':'x','x':'.'};
+  const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
   state[li].pattern[si]=newVal;
-  el.className='step'+(newVal==='X'?' on':'');
+  el.className='step'+(newVal==='X'?' on':newVal==='x'?' soft':'');
   if(state[li].stepPos===si)el.classList.add('cur');
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
@@ -2380,17 +2385,35 @@ function drawCircles(){
     for(let si=0; si<n; si++){
       const a = stepAngle(si, n);
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
-      const isOn = pat[si]==='X';
-      const isFlash = playing && si===flashStep[li] && isOn && !isMuted;
+      const isOn   = pat[si]==='X';
+      const isSoft = pat[si]==='x';
+      const isFlash = playing && si===flashStep[li] && (isOn||isSoft) && !isMuted;
 
-      ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
       if(isFlash){
+        // Flash jaune — grand cercle pour X, petit pour x
+        const fr = isOn ? dotR : dotR*0.7;
+        ctx.beginPath(); ctx.arc(dx, dy, fr, 0, 2*Math.PI);
         ctx.fillStyle='#F5C518'; ctx.fill();
         ctx.strokeStyle='#c89a00'; ctx.lineWidth=1.5; ctx.stroke();
+        if(isOn){
+          ctx.beginPath(); ctx.arc(dx, dy, dotR*0.4, 0, 2*Math.PI);
+          ctx.fillStyle='#c89a00'; ctx.fill();
+        }
       } else if(isOn){
+        // Fort X : grand cercle vide + petit point coloré intérieur
+        ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
+        ctx.fillStyle='#f0ede8'; ctx.fill();
+        ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.4, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
-        ctx.strokeStyle = col.stroke; ctx.lineWidth=1; ctx.stroke();
+      } else if(isSoft){
+        // Faible x : petit cercle plein couleur
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
+        ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
+        ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
       } else {
+        // Silence : petit cercle vide
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
         ctx.fillStyle='#f0ede8'; ctx.fill();
         ctx.strokeStyle='#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
       }
@@ -2447,8 +2470,9 @@ function setupCanvasInteraction(){
     if(!hit) return;
     const {li, si} = hit;
     const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
-    const newVal = state[li].pattern[si]==='X' ? '.' : 'X';
-    state[li].pattern[si] = newVal;
+    const STEP_CYCLE={'.':'X','X':'x','x':'.'};
+    const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
+    state[li].pattern[si]=newVal;
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
     drawCircles();
