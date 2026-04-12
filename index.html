@@ -372,7 +372,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de PoumTchak">
       <span class="app-name">PoumTchak</span>
-      <span class="app-version">v2.3.2</span>
+      <span class="app-version">v2.3.3</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3116,13 +3116,15 @@ function attachGrooveLibEvents(){
 
 function openLibPanelEncyclo(){
   rebuildAllFamFilters();
-  // Reset le toggle contenu
   const tog=document.getElementById('lib-encyclo-content-filter');
   if(tog){tog.dataset.state='all';tog.textContent='Tous';}
-  document.getElementById('lib-batch-del-encyclo').disabled=true;
+  const delBtn=document.getElementById('lib-batch-del-encyclo');
+  if(delBtn) delBtn.disabled=true;
   buildLibListEncyclo();
-  document.getElementById('lib-overlay-encyclo').classList.remove('hidden');
-  document.getElementById('lib-panel-encyclo').classList.remove('hidden');
+  const overlay=document.getElementById('lib-overlay-encyclo');
+  const panel=document.getElementById('lib-panel-encyclo');
+  if(overlay) overlay.classList.remove('hidden');
+  if(panel)   panel.classList.remove('hidden');
 }
 
 function closeLibPanelEncyclo(){
@@ -3201,24 +3203,24 @@ function buildEncycloLibItem(key, nom, typeBadge, hasContent){
 function updateEncycloBatchBar(){
   const checks=[...document.querySelectorAll('#lib-list-encyclo .lib-item-check')];
   const anyChecked=checks.some(c=>c.checked);
-  document.getElementById('lib-batch-del-encyclo').disabled=!anyChecked;
+  const delBtn=document.getElementById('lib-batch-del-encyclo');
+  if(delBtn) delBtn.disabled=!anyChecked;
   const selAll=document.getElementById('lib-select-all-encyclo');
-  selAll.indeterminate=anyChecked&&!checks.every(c=>c.checked);
-  selAll.checked=checks.length>0&&checks.every(c=>c.checked);
+  if(selAll){
+    selAll.indeterminate=anyChecked&&!checks.every(c=>c.checked);
+    selAll.checked=checks.length>0&&checks.every(c=>c.checked);
+  }
 }
 
 function attachEncycloLibEvents(){
-  document.getElementById('lib-overlay-encyclo').addEventListener('click',closeLibPanelEncyclo);
-  document.getElementById('lib-panel-encyclo-close').addEventListener('click',closeLibPanelEncyclo);
+  const el=id=>document.getElementById(id);
+  el('lib-overlay-encyclo')?.addEventListener('click',closeLibPanelEncyclo);
+  el('lib-panel-encyclo-close')?.addEventListener('click',closeLibPanelEncyclo);
+  el('lib-fam-filter-encyclo')?.addEventListener('change',buildLibListEncyclo);
+  el('lib-encyclo-filter-g')?.addEventListener('change',buildLibListEncyclo);
+  el('lib-encyclo-filter-p')?.addEventListener('change',buildLibListEncyclo);
 
-  // Filtre famille
-  document.getElementById('lib-fam-filter-encyclo').addEventListener('change',buildLibListEncyclo);
-  // Filtres type G/P
-  document.getElementById('lib-encyclo-filter-g').addEventListener('change',buildLibListEncyclo);
-  document.getElementById('lib-encyclo-filter-p').addEventListener('change',buildLibListEncyclo);
-
-  // Toggle contenu : Tous → Remplis → Vides → Tous
-  document.getElementById('lib-encyclo-content-filter').addEventListener('click',e=>{
+  el('lib-encyclo-content-filter')?.addEventListener('click',e=>{
     const states=['all','filled','empty'];
     const labels=['Tous','Remplis','Vides'];
     const cur=states.indexOf(e.currentTarget.dataset.state);
@@ -3228,8 +3230,13 @@ function attachEncycloLibEvents(){
     buildLibListEncyclo();
   });
 
+  el('lib-select-all-encyclo')?.addEventListener('change',e=>{
+    document.querySelectorAll('#lib-list-encyclo .lib-item-check').forEach(c=>{c.checked=e.target.checked;});
+    updateEncycloBatchBar();
+  });
+
   // Supprimer la sélection (vider le contenu)
-  document.getElementById('lib-batch-del-encyclo').addEventListener('click',()=>{
+  el('lib-batch-del-encyclo')?.addEventListener('click',()=>{
     const toEmpty=[...document.querySelectorAll('#lib-list-encyclo .lib-item-check:checked')]
       .map(c=>c.closest('.lib-item').dataset.encycloKey);
     if(!toEmpty.length)return;
