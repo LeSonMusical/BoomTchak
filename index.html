@@ -207,13 +207,8 @@ body:not(.mode-tx) .step{cursor:default}
 /* ─── BOUTONS DE SECTION (💾 et ≡) ─── */
 .btn-sec-save{cursor:pointer;font-size:12px;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.6;flex-shrink:0;color:inherit}
 .btn-sec-save:hover{opacity:1}
-.btn-sec-menu{cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.65;flex-shrink:0;color:inherit;display:none}
-body.mode-tx .btn-sec-menu{display:inline-block}
-body.mode-tx .btn-sec-menu:hover{opacity:1}
-/* SX : cacher 💾 et ≡ — réafficher seulement pour items perso */
-body:not(.mode-tx) .btn-sec-save{display:none}
-body:not(.mode-tx) .section-perso .btn-sec-save{display:inline-block}
-body:not(.mode-tx) .section-perso .btn-sec-menu{display:inline-block}
+.btn-sec-menu{cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.65;flex-shrink:0;color:inherit;display:inline-block}
+.btn-sec-menu:hover{opacity:1}
 /* Variante compacte pour les layers */
 .layer-actions{display:flex;gap:0;margin-top:2px}
 .layer-actions .btn-sec-save{font-size:11px;padding:1px 3px;opacity:.5}
@@ -381,7 +376,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.6</span>
+      <span class="app-version">v2.4.7</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1340,7 +1335,7 @@ function buildGrooveSection(){
   grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
   grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
   const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
-  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='Perso';grooveFamSel.appendChild(gfPerso);
+  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='Perso';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
   packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
   bar.appendChild(grooveFamSel);
 
@@ -1435,7 +1430,7 @@ function buildLayers(){
     const famSel=document.createElement('select');
     famSel.className='fam-filter';famSel.title='Filtrer par famille';
     const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
-    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='Perso';famSel.appendChild(optPersoFam);
+    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='Perso';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
     });
@@ -2077,7 +2072,7 @@ function rebuildAllFamFilters(){
   document.querySelectorAll('.fam-filter').forEach(sel=>{
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
-    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='Perso';sel.appendChild(_rp);
+    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='Perso';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
@@ -2089,7 +2084,7 @@ function rebuildAllFamFilters(){
     if(!panelFil) return;
     const prev = panelFil.value;
     panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
-    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— Perso —';panelFil.appendChild(_pp);
+    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— Perso —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
     });
@@ -2662,9 +2657,9 @@ function buildLibListPatterns(){
   document.getElementById('lib-select-all-patterns').checked = false;
   document.getElementById('lib-batch-del-patterns').disabled = true;
 
-  // Filtre famille courant (sélect en tête du panel)
+  // Filtre famille courant (sélect en tête du panel) — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-patterns');
-  const filtreId = filtreEl ? filtreEl.value : 'all';
+  const filtreId = currentMode !== 'tx' ? '__perso__' : (filtreEl ? filtreEl.value : 'all');
   const patterns = filtreId === '__perso__'
     ? packCours.patterns.filter(p=>p.source==='user')
     : filtreId && filtreId !== 'all'
@@ -3040,7 +3035,7 @@ function rebuildGrooveFamFilter(){
   const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="all">Toutes les familles</option>';
-  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— Perso —';sel.appendChild(_gp);
+  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— Perso —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
   packCours.familles.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
   });
@@ -3052,8 +3047,9 @@ function buildLibListGrooves(){
   document.getElementById('lib-select-all-grooves').checked = false;
   document.getElementById('lib-batch-del-grooves').disabled = true;
 
+  // Filtre famille courant — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-grooves');
-  const filtreId = filtreEl ? filtreEl.value : 'all';
+  const filtreId = currentMode !== 'tx' ? '__perso__' : (filtreEl ? filtreEl.value : 'all');
   const grooves = filtreId === '__perso__'
     ? packCours.grooves.filter(g=>g.source==='user')
     : filtreId && filtreId !== 'all'
