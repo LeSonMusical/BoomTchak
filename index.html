@@ -373,7 +373,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.2</span>
+      <span class="app-version">v2.4.3</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1433,11 +1433,15 @@ function buildLayers(){
     row1.appendChild(mkBtnMenu(()=>openLibPanelPatterns()));
     // i info
     row1.appendChild(btnI);
-    // steps ▼/▶ toggle (justifié droite) — caché en vue circulaire
+    // steps ▼/▶ toggle + mod ▶/▼ (row1, côte à côte à droite)
     const row2=document.createElement('div');row2.className='layer-row2';
     const btnToggle=document.createElement('button');
     btnToggle.className='btn-layer-toggle btn-steps-toggle';
     let stepsOpen=true;btnToggle.textContent='steps ▼';
+    // bouton mod — dans row1 pour rester visible en vue circulaire
+    const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
+    btnMod.style.cssText='font-size:10px;opacity:.55;flex-shrink:0;align-self:flex-start';
+    btnMod.textContent='mod ▶';
     btnToggle.addEventListener('click',()=>{
       stepsOpen=!stepsOpen;
       row2.classList.toggle('collapsed',!stepsOpen);
@@ -1447,17 +1451,12 @@ function buildLayers(){
       if(mp&&!stepsOpen){ mp.classList.add('hidden'); btnMod.textContent='mod ▶'; }
     });
     row1.appendChild(btnToggle);
+    row1.appendChild(btnMod);
     layerDiv.appendChild(row1);
 
-    // ── Ligne 2 : grille steps + mod ─────────────────────────────────────────
+    // ── Ligne 2 : grille steps ────────────────────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
-
-    // bouton mod ▶/▼ dans row2 (à droite des steps)
-    const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
-    btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
-    btnMod.textContent='mod ▶';
-    row2.appendChild(btnMod);
 
     layerDiv.appendChild(row2);
 
@@ -1556,24 +1555,50 @@ function buildLayers(){
       updateSpeedBtns();
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Pattern aléatoire (même densité)';
+    const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
     bDice.addEventListener('click',()=>{
-      const pat=state[li].pattern;
-      const n=pat.length;
-      const beats=pat.filter(p=>p!=='.').length;
-      // mélanger en gardant le même nombre de frappes (X uniquement — sans distinction d'accent)
-      const arr=Array(n).fill('.');
-      let placed=0;
-      while(placed<beats){
-        const idx=Math.floor(Math.random()*n);
-        if(arr[idx]==='.'){arr[idx]='X';placed++;}
+      // Fisher-Yates shuffle — préserve la proportion exacte de X, x et .
+      const arr=[...state[li].pattern];
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
       }
       state[li].pattern=arr;
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
 
-    // Assemblage : Vitesse | Shift | ⇄ ⊙ | ✦ 🎲
+    // — Magie ✨ (tout au hasard : densité, accents, vitesse) —
+    const bMagic=document.createElement('button');bMagic.className='btn-mod';bMagic.textContent='✨';bMagic.title='Magie : tout au hasard (densité, accents, vitesse)';
+    bMagic.addEventListener('click',()=>{
+      const n=state[li].pattern.length;
+      // densité : entre 1 et n-1 frappes
+      const nBeats=Math.floor(Math.random()*(n-1))+1;
+      // proportion x/X aléatoire parmi les frappes
+      const nSoft=Math.floor(Math.random()*(nBeats+1)); // 0..nBeats accents faibles
+      const nHard=nBeats-nSoft;
+      const arr=Array(n).fill('.');
+      let hPlaced=0,sPlaced=0;
+      // Placer les X
+      while(hPlaced<nHard){const i=Math.floor(Math.random()*n);if(arr[i]==='.'){arr[i]='X';hPlaced++;}}
+      // Placer les x
+      while(sPlaced<nSoft){const i=Math.floor(Math.random()*n);if(arr[i]==='.'){arr[i]='x';sPlaced++;}}
+      state[li].pattern=arr;
+      // vitesse aléatoire (50% inchangé, 25% /2, 25% ×2)
+      const rv=Math.random();
+      if(rv<0.25){
+        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
+        state[li].pendingHalf=true;state[li].pendingClear=false;
+      } else if(rv<0.5){
+        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
+        state[li].pendingDouble=true;state[li].pendingClear=false;
+      }
+      shNum.textContent='0';
+      updateSpeedBtns();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+
+    // Assemblage : Vitesse | Shift | ⇄ ⊙ | ✦ 🎲 ✨
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
     modPanel.appendChild(bHalf); modPanel.appendChild(bDbl);
     modPanel.appendChild(mkSep());
@@ -1581,7 +1606,7 @@ function buildLayers(){
     modPanel.appendChild(mkSep());
     modPanel.appendChild(bSwap); modPanel.appendChild(bComp);
     modPanel.appendChild(mkSep());
-    modPanel.appendChild(bRand); modPanel.appendChild(bDice);
+    modPanel.appendChild(bRand); modPanel.appendChild(bDice); modPanel.appendChild(bMagic);
 
     layerDiv.appendChild(modPanel);
 
@@ -2378,20 +2403,20 @@ function drawCircles(){
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
       } else if(isSoft){
-        // x faible : petit cercle, ~33% opacité (cohérent avec --cs)
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
+        // x faible : taille intermédiaire entre . (×0.6) et X (×1), ~33% opacité
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
         // Silence : petit cercle vide
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
         ctx.fillStyle='#f0ede8'; ctx.fill();
         ctx.strokeStyle='#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
       }
 
       // Anneau "grossi" sur le step en cours de lecture (remplace le flash jaune)
       if(isPlaying && (isOn || isSoft) && !isMuted){
-        const dotSz = isOn ? dotR : dotR*0.7;
+        const dotSz = isOn ? dotR : dotR*0.82;
         ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
