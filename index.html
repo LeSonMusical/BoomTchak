@@ -376,7 +376,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.7</span>
+      <span class="app-version">v2.4.8</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1357,7 +1357,9 @@ function buildGrooveSection(){
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
-  bar.appendChild(mkBtnMenu(()=>openLibPanelGrooves()));
+  const menuBtnGroove=mkBtnMenu(()=>openLibPanelGrooves());
+  if(!packCours.grooves.some(g=>g.source==='user')){menuBtnGroove.disabled=true;menuBtnGroove.style.opacity='0.25';menuBtnGroove.title='Aucun groove perso';}
+  bar.appendChild(menuBtnGroove);
 
   // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
   const btnI=document.createElement('button');
@@ -1488,8 +1490,10 @@ function buildLayers(){
     saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
     saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
     row1.appendChild(saveBtn);
-    // ≡ TX (gestion bibliothèque patterns, TX only)
-    row1.appendChild(mkBtnMenu(()=>openLibPanelPatterns()));
+    // ≡ gestion bibliothèque patterns
+    const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
+    if(!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern perso';}
+    row1.appendChild(menuBtnPat);
     // i info
     row1.appendChild(btnI);
     // steps ▼/▶ toggle (row1) + mod ▶ ghost dans row1 pour vue circulaire
@@ -2227,7 +2231,7 @@ function buildEncycloSection(){
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
   bar.appendChild(saveBtnEnc);
-  bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
+  if(currentMode==='tx') bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
