@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PoumTchak</title>
+<title>BoomTchak</title>
 <style>
 /* ─── RESET ─── */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -174,10 +174,10 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .bottom-left{flex:1;display:flex;align-items:center;justify-content:center}
 .bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
 .bottom-right{flex:1;display:flex;align-items:center;justify-content:center}
-.btn-play-main{height:44px;padding:0 28px;font-size:22px;font-weight:700;border:2px solid #F5C518;border-radius:10px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s}
-.btn-play-main:hover{background:#fffbe8}
-.btn-play-main.active{background:#F5C518;border-color:#d4a800}
-.btn-jouer-wrap{height:52px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #1D9E75;border-radius:10px;color:#1D9E75;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.btn-play-main{height:44px;padding:0 28px;font-size:22px;font-weight:700;border:2px solid #1a1a18;border-radius:10px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s}
+.btn-play-main:hover{background:#f0ede8}
+.btn-play-main.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #1D9E75;border-radius:10px;color:#1D9E75;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .btn-jouer-wrap:hover{background:#ddfff4}
 .btn-jouer-wrap.active{background:#1D9E75;color:#fff}
 .hand{font-size:22px;line-height:1}
@@ -370,9 +370,9 @@ body.view-circle #section-encyclo{order:5}
 <div class="top-bar">
   <div class="top-bar-left">
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
-    <div class="app-title-block" id="btn-app-title" title="Présentation de PoumTchak">
-      <span class="app-name">PoumTchak</span>
-      <span class="app-version">v2.3.4</span>
+    <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
+      <span class="app-name">BoomTchak</span>
+      <span class="app-version">v2.3.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -648,7 +648,7 @@ const ENCYCLO = {
     bullets:[["Origine","Yoruba (Nigeria/Bénin), transplanté à Cuba avec la traite ; \"Bembé\" désigne aussi la cérémonie elle-même."],["Utilisation","Rituels de Santería (Cuba) ; jazz modal : Miles Davis Kind of Blue (1959), Coltrane Africa/Brass (1961) ; Steve Reich, Drumming (1971)."],["Écriture","X.X.XX.X.X.X\nIntervalles : 2-2-1-2-2-2\nE(7,12) — maximum euclidien sur base 12"],["Singularité","Un seul intervalle d'1 pas (entre frappes 5 et 6) — micro-accentuation caractéristique, comme un trébuchement contrôlé."],["Sensation","Urgence hypnotique, absence de respiration, état de transe — la densité est fonctionnelle, pas décorative."]]
   },
   poumtchak:{
-    chapo:"PoumTchak est un outil pédagogique pour explorer, écouter et comprendre les rythmes — du plus simple au plus complexe. Son nom vient du langage universel de l'onomatopée rythmique : « Poum » pour la grosse caisse (grave, appui), « Tchak » pour la caisse claire ou le charleston (aigu, contretemps). Ensemble ils dessinent le squelette de presque toutes les musiques de danse.",
+    chapo:"BoomTchak est un outil pédagogique pour explorer, écouter et comprendre les rythmes — du plus simple au plus complexe. Son nom vient du langage universel de l'onomatopée rythmique : « Boom » pour la grosse caisse (grave, appui), « Tchak » pour la caisse claire ou le charleston (aigu, contretemps). Ensemble ils dessinent le squelette de presque toutes les musiques de danse.",
     bullets:[["Principe","Trois couches rythmiques superposables, chacune avec un pattern indépendant. On peut les muter, les modifier, les décaler — et écouter comment les rythmes se combinent."],["Patterns","Un dictionnaire de patterns rythmiques issus de traditions du monde entier : Afrique, Cuba, Brésil, Jamaïque, Europe. Chaque pattern a sa logique propre, son histoire, ses usages."],["Grooves","Un groove = une combinaison de 3 patterns, une mise en situation. On peut naviguer entre les grooves pour explorer différentes esthétiques rythmiques."],["Vue circulaire","La vue cercle affiche les patterns comme des horloges rythmiques — les frappes sont des points sur un cercle, et on voit immédiatement les symétries, les densités, les relations entre couches."],["Usage","Outil conçu pour la classe : le prof configure une situation pédagogique (TX = mode enseignant), l'élève l'explore (SX = mode élève)."]]
   }
 };
@@ -3338,7 +3338,7 @@ function attachEvents(){
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
   });
 
-  // ── Titre PoumTchak → encyclo ──
+  // ── Titre BoomTchak → encyclo ──
   document.getElementById('btn-app-title').addEventListener('click',()=>{
     showEncycloEntry('poumtchak');
     if(!encycloOuvert)toggleEncyclo(true);
