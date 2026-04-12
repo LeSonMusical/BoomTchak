@@ -1,7 +1,7 @@
 # BoomTchak v2 — Brief de développement (référence complète)
 
 > **Nom de l'appli :** BoomTchak *(anciennement BasicRythm puis PoumTchak)*  
-> **Version courante :** v2.3.5 — commit `a3c57e6`  
+> **Version courante :** v2.5.0  
 > **Fichier :** `/Users/takadimita/Desktop/PoumTchak/index.html` (~3000 lignes)  
 > **Dépôt :** https://github.com/LeSonMusical/BoomTchak  
 > **Déployé :** https://lesonmusical.github.io/BoomTchak/  
@@ -174,9 +174,19 @@ index.html
 
 ### Modèle unifié de barre de section
 ```
-[Label] [filtre famille chips] [select menu] [💾] [≡ TX only] [i] [▶/▼ volet]
+[Label] [filtre famille chips] [select menu] [💾] [≡] [i] [▶/▼ volet]
 ```
 CSS : `flex-wrap:nowrap; overflow:hidden` — la barre ne déborde jamais.
+
+**Visibilité 💾 / ≡ selon mode :**
+| Section | TX | SX |
+|---------|----|----|
+| Band | 💾 ≡ | 💾 ≡ |
+| Groove | 💾 ≡ | 💾 ✓ / ≡ grisé si aucun groove perso |
+| Layer | 💾 ≡ | 💾 ✓ / ≡ grisé si aucun pattern perso |
+| Encyclo | 💾 ≡ | 💾 seulement (≡ masqué) |
+
+Règle SX : `canOverwrite` protège la sauvegarde des défauts ; les panels ≡ n'affichent que les items `source:'user'`.
 
 ### Couleurs des barres
 - **Groove** : fond doré `#faf3e0`, bordure gauche `#C8961A`
@@ -198,7 +208,10 @@ CSS : `flex-wrap:nowrap; overflow:hidden` — la barre ne déborde jamais.
 - **MX** *(v3)* : mode Master — droits supplémentaires : édition contenu encyclopédique global + gestion des familles de parcours
 - Bascule : bouton `SX/TX` top bar gauche + raccourci `Tab`
 - URL `?mode=tx` démarre en TX
-- En TX : boutons 💾 + ≡ visibles sur chaque section
+- En TX : boutons 💾 + ≡ visibles sur toutes les sections
+- En SX : 💾 toujours visible (protection par `canOverwrite`) ; ≡ visible mais grisé si aucun item perso pour Groove/Layer, masqué pour Encyclo
+- Panels ≡ en SX : liste filtrée sur `source:'user'` uniquement (force `__perso__`)
+- Step editing : disponible en SX (canEdit retiré) — `canOverwrite` protège la surcharge des défauts
 
 ---
 
@@ -294,12 +307,20 @@ function halfAt(len){ if(len<=4) return null; return Math.ceil(len/2); }
 ## Encyclopédie
 
 - Const `ENCYCLO` : dictionnaire de référence (chapo + bullets) — ne jamais modifier
+- Const `ENCYCLO_MISC` : tableau des entrées "Misc" (catégorie M) — ordre du select
+  ```js
+  [{id:'poumtchak',nom:'★ BoomTchak'},{id:'misc_groove',nom:'Groove'},{id:'misc_pattern',nom:'Pattern'},
+   {id:'misc_sons',nom:'Sons & instruments'},{id:'misc_notations',nom:'Notations'},
+   {id:'misc_tempo',nom:'Tempo'},{id:'misc_transformations',nom:'Transformations'},{id:'misc_familles',nom:'Familles'}]
+  ```
 - `packCours.encyclo` : copie éditable + entrées vides auto-créées pour tous items
 - Structure : `{ key: { chapo: string, bullets: [[titre, texte], ...] } }`
 - En TX : textes éditables (`contentEditable='true'`), détaché 💾
 - `hasEncycloContent(key)` : retourne `true` si chapo non vide ou bullets.length > 0
 - `updateEncycloSelect(key)` : sélectionne automatiquement dans le select encyclo
 - Select encyclo : **SX** masque les entrées vides / **TX** affiche tout en gris
+- **Catégorie M (Misc)** : case à cocher dans les filtres du panel ≡ encyclo
+- **Migration** : entrées `ENCYCLO_MISC` toujours resynchronisées depuis `ENCYCLO` au chargement (contenu géré par l'app, écrase `packCours.encyclo[m.id]`)
 
 ### Format des fiches Pattern
 - **Chapo** : l'essentiel en 3 phrases
@@ -388,13 +409,26 @@ Un menu de preset d'instrument sera disponible.
 
 ## Modes visuels (circulaires)
 
-### Mode visuel actuel — *vitesse-step* (nom à définir)
-Basé sur la **vitesse du pas** : 1 tour = 1 cycle de pattern. Un pattern de 3 steps tourne deux fois plus vite qu'un pattern de 6. Le tempo est en **steps par minute (SPM)**.
+### Mode visuel actuel — *vitesse-step*
+Basé sur la **vitesse du pas** : 1 tour = 1 cycle de pattern. 
+Un pattern de 3 steps tourne deux fois plus vite qu'un pattern de 6. 
+Le tempo est en **steps par minute (SPM)**.
 
-### Mode visuel bis — *vitesse-cycle* (nom à définir)
-Basé sur le **step** : toutes les aiguilles avancent à la même vitesse. Un pattern de 6 et un pattern de 3 font un tour en même temps — mais le cercle se divise différemment (6 ou 3 divisions). Le tempo est en **cycles par minute**.
+### Mode visuel bis — *vitesse-cycle*
+Toutes les aiguilles avancent à la **même vitesse angulaire** : elles font un tour en même temps. 
+Chaque cercle se divise différemment selon le nombre de steps du pattern (3 ou 6 divisions). 
+Le tempo est en **MCM (tours par minute)**. Référence de cycle = mesure du groove (`vitesse_mult`). Le flash de step suit le scheduler audio.
 
 Ces deux modes sont complémentaires pédagogiquement : l'un montre la densité rythmique, l'autre la durée du cycle.
+
+### Explication pour les non-musiciens
+
+**Mode vitesse-step :** Imagine trois aiguilles qui tournent chacune sur leur cercle à leur propre vitesse. Si un cercle a 8 points et un autre en a 16, l'aiguille du cercle à 8 points tourne deux fois plus vite — elle a moins de points à "visiter" dans le même temps. On voit directement la densité de chaque rythme : plus de points = aiguille plus lente.
+
+**Mode vitesse-cycle :** Cette fois, toutes les aiguilles tournent exactement à la même vitesse — elles font le tour en même temps. 
+La différence, c'est le nombre de points sur chaque cercle : 8 points pour l'un, 16 pour l'autre. Quand l'aiguille passe devant un point, un son est joué. 
+Ce mode permet de voir directement quels sons tombent simultanément : si deux points de deux cercles différents se trouvent face à l'aiguille au même moment, les deux sons jouent ensemble. 
+C'est ce qu'on appelle un polyrythme.
 
 ---
 
@@ -462,7 +496,7 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 
 ---
 
-## État d'avancement v2.3.5
+## État d'avancement v2.5.0
 
 ### ✅ Implémenté
 
@@ -474,8 +508,9 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 
 **Sections**
 - Band, Groove, Layers, Encyclopédie avec barres uniformes
-- Boutons 💾 (TX+SX selon section) et ≡ (TX only) par section
+- Boutons 💾 + ≡ avec règles de visibilité SX/TX (voir tableau ci-dessus)
 - Filtres famille (chips) dans barres Groove et Layers
+- Option "Perso" (fond vert `#ddfff4`, texte `#0F6E56`) dans tous les menus famille
 
 **Dirty state**
 - Système unifié `setDirtyUI` : 💾 rouge + `!` + `● modifié Nom` dans select
@@ -498,7 +533,8 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 - Texte éditable en TX, détection vrai changement focus/blur
 - Entrées auto-créées vides pour tous patterns ET grooves
 - Auto-select à chaque changement de groove ou pattern de couche
-- Panel ≡ encyclo avec 3 filtres cumulatifs (famille, G/P, vide/rempli) — v2.3.2
+- Panel ≡ encyclo avec 4 filtres cumulatifs : famille + M/G/P + Tous/Remplis/Vides — v2.3.2 + v2.4.5
+- Catégorie Misc (M) : `ENCYCLO_MISC` (8 entrées) + migration always-sync
 
 **Steps (v2.2.4)**
 - Wrap conditionnel + césure au milieu + ResizeObserver
@@ -506,6 +542,27 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 **Bottom bar (v2.3.5)**
 - Play : sobriété neutre `#1a1a18`, actif fond noir + texte blanc
 - Jouer : aligné hauteur 44px avec Play
+
+**Accents (v2.4.x)**
+- 3 états : `X` (forte, vol 100%), `x` (faible, vol ~33%), `.` (silence)
+- Cycle au clic : `. → X → x → .`
+- Steps éditables en SX également (sans restriction `canEdit`)
+- Mod panel : `/2 ×2` | `◀ n ▶` (shift compact) | `⇄ ⇅ ⊙` | `🎲 ✨`
+- Transformations tenant compte des accents (×2, /2, reverse, invert, shuffle, magic)
+
+**Source badges (v2.4.5)**
+- Badge "perso" (vert) et "défaut" (gris) dans les panels ≡ lib
+- Classe CSS `.section-perso` sur `layerDiv` et `#groove-bar` selon `source:'user'`
+
+**Mode SX (v2.4.6 → v2.4.8)**
+- Panels ≡ en SX forcés sur filtre `__perso__` (ne montrent que les items `source:'user'`)
+- ≡ Groove/Pattern grisé si aucun item perso (disabled + opacity 0.25)
+- ≡ Encyclo masqué en SX
+
+**Section Band — volet sons (v2.5.0)**
+- Volet collapsible par instrument : flèche ▶/▼ + sliders Hauteur + Enveloppe
+- `soundPanelOpen` mémorise l'état ouvert/fermé par couche
+- Suppression des boutons ≡/💾 redondants dans les lignes individuelles (ils restent dans la barre Band)
 
 ---
 

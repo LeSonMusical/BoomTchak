@@ -65,6 +65,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .band-bar select{border:1px solid #8ab4d0}
 .band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .band-content.open{max-height:700px}
+.band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
 /* barre encyclo : grise */
 .encyclo-bar{background:#f5f4f0;border-left:3px solid #888;cursor:pointer}
 .encyclo-bar .section-bar-lbl{color:#444}
@@ -145,20 +146,26 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-layer{border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:var(--cl);margin-bottom:3px}
 .sound-header{display:flex;align-items:center;gap:6px;padding:5px 8px;cursor:pointer}
 .sound-header:hover{filter:brightness(.97)}
-.sound-lbl{font-size:10px;font-weight:600;color:var(--cb);white-space:nowrap;flex-shrink:0}
+.sound-lbl{font-size:10px;font-weight:600;color:var(--cb);white-space:nowrap;flex-shrink:0;width:68px;overflow:hidden;text-overflow:ellipsis}
 .sound-arrow{font-size:13px;color:var(--cb);opacity:.7;transition:transform .15s;flex-shrink:0}
 .sound-arrow.open{transform:rotate(90deg)}
-.vol-h-wrap{display:flex;align-items:center;gap:3px;width:56px;flex-shrink:0}
+.vol-h-wrap{display:flex;align-items:center;gap:3px;flex:1}
 .vol-h-lbl{font-size:8px;color:var(--cb);opacity:.6;flex-shrink:0}
-.vol-h-track{flex:1;height:4px;background:var(--cs);border-radius:2px;position:relative;cursor:pointer;min-width:30px}
-.vol-h-fill{position:absolute;left:0;top:0;height:100%;background:var(--cc);border-radius:2px;pointer-events:none}
-.vol-h-thumb{position:absolute;top:50%;width:12px;height:12px;background:var(--cc);border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:none}
+.vol-h-track{flex:1;height:20px;background:transparent;border-radius:2px;position:relative;cursor:pointer;min-width:30px}
+.vol-h-track::before{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:2px;background:var(--cs);border-radius:2px;pointer-events:none}
+.vol-h-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:2px;background:var(--cc);border-radius:2px;pointer-events:none}
+.vol-h-thumb{position:absolute;top:50%;width:14px;height:14px;background:var(--cc);border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:none}
 .sound-ctrls{border-top:1px solid var(--cs)}
 .sound-ctrls.hidden{display:none}
-.sound-ctrls-inner{display:flex;flex-direction:column;gap:2px;padding:4px 8px 5px}
+.sound-ctrls-inner{display:flex;flex-direction:column;gap:2px;padding:2px 8px 5px}
 .sl-row{display:flex;align-items:center;gap:4px}
 .sl-row label{font-size:9px;color:#888;width:36px;flex-shrink:0}
-.sl-row input[type=range]{flex:1;padding:0;accent-color:var(--cc)}
+.sl-row input[type=range]{flex:1;padding:0;accent-color:var(--cc);height:20px;cursor:pointer;-webkit-appearance:none;appearance:none;background:transparent}
+.sl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--cc,#888);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
+.sl-row input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--cs,#ccc);border-radius:2px}
+.sl-row input[type=range]::-moz-range-track{height:2px;background:var(--cs,#ccc);border-radius:2px}
+.sl-row input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--cc,#888);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.instr-sel{background:#fff}
 .sound-sep{height:1px;background:#d0cec7;margin:4px 0}
 
 /* ─── ENCYCLOPÉDIE ─── */
@@ -358,6 +365,92 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
 }
 
+/* ─── RÉGLAGES / THÈME ─── */
+.theme-toggle{display:flex;gap:3px}
+.btn-theme{padding:4px 10px;font-size:10px;background:#fff;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;color:#555}
+.btn-theme:hover{background:#e8e5e0}
+.btn-theme.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+
+/* ─── MODE SOMBRE ─── */
+body.dark-mode{background:#18181a;color:#e0ddd8}
+body.dark-mode .frame{background:#222220}
+body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
+body.dark-mode .app-name{color:#e0ddd8}
+body.dark-mode .app-version{color:#555}
+body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
+body.dark-mode .btn-top:hover{background:#333330}
+body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#666}
+body.dark-mode .btn-view{background:#2a2a28;border-color:#444;color:#888}
+body.dark-mode .btn-view:hover{background:#333330}
+body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
+body.dark-mode .panel2{background:#252522;border-bottom-color:#333330}
+body.dark-mode .t-spm-display{color:#666}
+body.dark-mode .t-spm-display:hover{color:#aaa}
+body.dark-mode .t-equiv{color:#e0ddd8}
+body.dark-mode .btn-sm-tempo{background:#2a2a28;border-color:#444;color:#888}
+body.dark-mode .btn-sm-tempo:hover{background:#333330}
+body.dark-mode .btn-sm-tempo.active{background:#1a3060;border-color:#5599cc;color:#88aadd}
+body.dark-mode .btn-theme{background:#2a2a28;border-color:#444;color:#888}
+body.dark-mode .btn-theme:hover{background:#333330}
+body.dark-mode .btn-theme.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
+body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color:#444}
+body.dark-mode .section-bar-lbl{color:inherit}
+body.dark-mode .groove-bar{background:#28251a;border-bottom-color:#3a3520}
+body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
+body.dark-mode .groove-bar select{background:#1e1a08;color:#c8961a;border-color:#5a4820}
+body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
+body.dark-mode .band-bar .section-bar-lbl{color:#7ab0cc}
+body.dark-mode .band-bar select{background:#0d1e2a;color:#7ab0cc;border-color:#3a5a70}
+body.dark-mode .band-sounds-wrap{border-left-color:#3a5a70}
+body.dark-mode .encyclo-bar{background:#252522;border-left-color:#555}
+body.dark-mode .encyclo-bar .section-bar-lbl{color:#888}
+body.dark-mode .encyclo-bar select{background:#202020;color:#999;border-color:#444}
+body.dark-mode .sound-sep{background:#333330}
+body.dark-mode .sl-row label{color:#666}
+body.dark-mode #layers{border-left-color:#4a4020}
+body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
+body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .layer-row2{background:#252522}
+body.dark-mode .layer-select{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
+body.dark-mode .btn-mute-sq{background:#1c1c1a;border:1.5px solid var(--cc);color:var(--cc)}
+body.dark-mode .btn-mute-sq.muted{background:#2a2a28;border:1.5px solid #444;color:#555}
+body.dark-mode .instr-sel{background:#0d1e2a;color:#7ab0cc;border-color:#3a5a70}
+body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
+body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
+body.dark-mode .step.soft{background:var(--cs);border-color:var(--cc)}
+body.dark-mode .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
+body.dark-mode .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
+body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
+body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
+body.dark-mode .hdivider{background:#333330}
+body.dark-mode .encyclo-wrap{color:#c0bdb7}
+body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
+body.dark-mode .encyclo-bkey{color:#e0ddd8}
+body.dark-mode .encyclo-bval{color:#888}
+body.dark-mode .encyclo-vide{color:#555}
+body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
+body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#444}
+body.dark-mode .btn-play-main:hover{background:#333330}
+body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
+body.dark-mode .btn-jouer-wrap{background:#252522}
+body.dark-mode .btn-info-ico{border-color:#444;color:#666}
+body.dark-mode .btn-info-ico:hover{background:#333330}
+body.dark-mode .btn-volet{color:#555}
+body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
+body.dark-mode .btn-volet-groove{color:#C8961A !important}
+body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
+body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
+body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
+body.dark-mode .groove-bar .fam-filter{background:#1e1a08;color:#c8961a;border-color:#5a4820}
+body.dark-mode .encyclo-bar .fam-filter{background:#202020;color:#888;border-color:#444}
+body.dark-mode .save-sheet-box,body.dark-mode .psp-box{background:#252522;color:#e0ddd8}
+body.dark-mode .lib-panel{background:#252522;color:#e0ddd8}
+body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333330}
+body.dark-mode .lib-item{border-bottom-color:#333330}
+body.dark-mode .lib-item-name{color:#e0ddd8}
+body.dark-mode .lib-batch-bar{background:#1e1e1c}
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:599px){
   .layer-menu{width:88px}
@@ -376,13 +469,14 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.8</span>
+      <span class="app-version">v2.5.4</span>
     </div>
   </div>
   <div class="top-bar-right">
     <button class="btn-top" id="btn-tempo">Tempo</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
+    <button class="btn-top" id="btn-settings" title="Réglages">⚙</button>
   </div>
 </div>
 
@@ -403,10 +497,24 @@ body.view-circle #section-encyclo{order:5}
       </div>
     </div>
   </div>
+  <!-- Panel réglages -->
+  <div class="panel2" id="panel-settings">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">RÉGLAGES</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
+        <div class="theme-toggle" id="theme-toggle">
+          <button class="btn-theme" data-theme-val="light">Clair</button>
+          <button class="btn-theme" data-theme-val="system">= Sys.</button>
+          <button class="btn-theme" data-theme-val="dark">Sombre</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Section Band (Sons) -->
   <div id="section-band"></div>
   <div class="band-content" id="band-content">
-    <div style="padding:.4rem .6rem .5rem"><div id="sounds"></div></div>
+    <div class="band-sounds-wrap"><div id="sounds"></div></div>
   </div>
   <!-- Section Groove -->
   <div id="section-groove"></div>
@@ -1201,6 +1309,18 @@ function updateEncycloSaveBtn(){
   setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
 }
 let sonsOuvert = false;
+let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
+
+function applyColorScheme(scheme){
+  colorScheme = scheme;
+  localStorage.setItem('boomtchak_theme', scheme);
+  let dark;
+  if(scheme==='dark') dark=true;
+  else if(scheme==='light') dark=false;
+  else dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark-mode', dark);
+  document.querySelectorAll('.btn-theme').forEach(b=>b.classList.toggle('active', b.dataset.themeVal===scheme));
+}
 let layersOuverts = true;
 let encycloOuvert = true;
 let currentEncycloId = 'poumtchak';
@@ -1305,6 +1425,15 @@ function buildBandSection(){
     btnVolet.classList.toggle('open',sonsOuvert);
   });
   bar.appendChild(btnVolet);
+  bar.addEventListener('click',e=>{
+    if(e.target===bar||e.target===lbl){
+      sonsOuvert=!sonsOuvert;
+      const bc=document.getElementById('band-content');
+      if(bc)bc.classList.toggle('open',sonsOuvert);
+      btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+      btnVolet.classList.toggle('open',sonsOuvert);
+    }
+  });
   cont.appendChild(bar);
 
   // Initialiser l'état du contenu
@@ -1391,6 +1520,19 @@ function buildGrooveSection(){
     btnVolet.classList.toggle('open',layersOuverts);
   });
   bar.appendChild(btnVolet);
+  bar.addEventListener('click',e=>{
+    if(e.target===bar||e.target===lbl){
+      layersOuverts=!layersOuverts;
+      const lw=document.getElementById('layers-wrap');
+      const cv=document.getElementById('circle-view');
+      const hd=document.querySelector('.hdivider');
+      if(lw)lw.style.display=layersOuverts?'':'none';
+      if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
+      if(hd)hd.style.display=layersOuverts?'':'none';
+      btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
+      btnVolet.classList.toggle('open',layersOuverts);
+    }
+  });
   cont.appendChild(bar);
 }
 
@@ -2113,16 +2255,19 @@ function buildSoundPanel(){
 }
 
 function buildSoundRow(label,cls,cat,ss,openKey){
-  // Format simplifié : [label][select][vol][≡ TX][💾] — sans collapse
   const row=document.createElement('div');row.className='sound-layer '+cls;
   const header=document.createElement('div');header.className='sound-header';
+
+  // Flèche toggle volet
+  const arrow=document.createElement('span');arrow.className='sound-arrow';arrow.textContent='▶';
 
   // Label
   const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
 
   // Select instrument
   const instrSel=document.createElement('select');
-  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);flex:1;min-width:0;max-width:90px';
+  instrSel.className='instr-sel';
+  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;color:var(--cb);width:80px;flex-shrink:0';
   Object.entries(SOUND_DEFS)
     .filter(([,d])=>cat==='thumb'?d.cat==='thumb':d.cat===cat)
     .forEach(([id,d])=>{
@@ -2132,25 +2277,45 @@ function buildSoundRow(label,cls,cat,ss,openKey){
   instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
   instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
 
-  // Slider volume (rétréci)
+  // Slider volume horizontal (header)
   const volWrap=document.createElement('div');volWrap.className='vol-h-wrap';
   const volLbl=document.createElement('span');volLbl.className='vol-h-lbl';volLbl.textContent='vol';
   const volTrack=document.createElement('div');volTrack.className='vol-h-track';
   const volFill=document.createElement('div');volFill.className='vol-h-fill';
   const volThumb=document.createElement('div');volThumb.className='vol-h-thumb';
   volTrack.appendChild(volFill);volTrack.appendChild(volThumb);
-  volWrap.appendChild(volLbl);volWrap.appendChild(volTrack);
+  volWrap.appendChild(volTrack);volWrap.appendChild(volLbl);
   function updateVol(v){const pct=Math.max(0,Math.min(1,v))*100;volFill.style.width=pct+'%';volThumb.style.left=pct+'%';}
   updateVol(ss.vol);
   setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);});
   volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
+  volWrap.addEventListener('click',e=>e.stopPropagation());
 
+  header.appendChild(arrow);
   header.appendChild(lbl);
   header.appendChild(instrSel);
   header.appendChild(volWrap);
-  header.appendChild(mkBtnMenu());
-  header.appendChild(mkBtnSave(()=>saveToStorage()));
+
+  // Volet collapsible : Hauteur + Enveloppe
+  const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
+  const inner=document.createElement('div');inner.className='sound-ctrls-inner';
+  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
+  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
+  ctrls.appendChild(inner);
+
+  // État initial
+  if(!soundPanelOpen[openKey]) ctrls.classList.add('hidden');
+  else arrow.classList.add('open');
+
+  // Toggle volet
+  header.addEventListener('click',()=>{
+    const nowHidden=ctrls.classList.toggle('hidden');
+    arrow.classList.toggle('open',!nowHidden);
+    soundPanelOpen[openKey]=!nowHidden;
+  });
+
   row.appendChild(header);
+  row.appendChild(ctrls);
   return row;
 }
 
@@ -3419,7 +3584,29 @@ function attachEvents(){
     const panel=document.getElementById('panel-tempo');
     panel.classList.toggle('open');
     document.getElementById('btn-tempo').classList.toggle('active',panel.classList.contains('open'));
+    if(panel.classList.contains('open')){
+      document.getElementById('panel-settings').classList.remove('open');
+      document.getElementById('btn-settings').classList.remove('active');
+    }
   });
+
+  // ── Settings panel ──
+  document.getElementById('btn-settings').addEventListener('click',()=>{
+    const panel=document.getElementById('panel-settings');
+    panel.classList.toggle('open');
+    document.getElementById('btn-settings').classList.toggle('active',panel.classList.contains('open'));
+    if(panel.classList.contains('open')){
+      document.getElementById('panel-tempo').classList.remove('open');
+      document.getElementById('btn-tempo').classList.remove('active');
+    }
+  });
+  document.querySelectorAll('.btn-theme').forEach(btn=>{
+    btn.addEventListener('click',()=>applyColorScheme(btn.dataset.themeVal));
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+    if(colorScheme==='system') applyColorScheme('system');
+  });
+  applyColorScheme(colorScheme);
 
   document.getElementById('bpm').addEventListener('input',function(){
     document.getElementById('bpm-val').textContent=parseInt(this.value)+' spm';
