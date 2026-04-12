@@ -372,7 +372,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de PoumTchak">
       <span class="app-name">PoumTchak</span>
-      <span class="app-version">v2.3.3</span>
+      <span class="app-version">v2.3.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2604,7 +2604,7 @@ function buildLibListPatterns(){
     // Nom (cliquable → rename inline)
     const nameEl = document.createElement('span');
     nameEl.className = 'lib-item-name';
-    nameEl.textContent = pat.nom;
+    nameEl.textContent = pat.nom.replace(/^● modifié /,'');
     nameEl.title = 'Cliquer pour renommer';
     nameEl.addEventListener('click', ()=>libStartRenamePattern(nameEl, pat.id));
     item.appendChild(nameEl);
@@ -2798,7 +2798,6 @@ function buildLibFamListPatterns(){
   list.innerHTML = '';
   packCours.familles.forEach(fam=>{
     const count = packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
-    if(count===0) return;
     const row = document.createElement('div'); row.className = 'lib-fam-item';
     const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
     nameEl.textContent = fam.nom; nameEl.title = 'Cliquer pour renommer';
@@ -2810,7 +2809,7 @@ function buildLibFamListPatterns(){
         const newNom = nameEl.textContent.trim();
         if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
         fam.nom = newNom; saveToStorage();
-        buildLibListPatterns(); // refresh tags
+        buildLibListPatterns(); buildLibFamListPatterns(); rebuildAllFamFilters();
       }, {once:true});
       nameEl.addEventListener('keydown', e=>{
         if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
@@ -2839,6 +2838,7 @@ function libDeleteFamille(famId, count){
   }
   packCours.familles = packCours.familles.filter(f=>f.id!==famId);
   saveToStorage();
+  rebuildAllFamFilters();
   buildLibFamListPatterns();
   buildLibListPatterns();
   // Rafraîchir aussi le panel grooves s'il est ouvert
@@ -2916,7 +2916,6 @@ function buildLibFamListGrooves(){
   packCours.familles.forEach(fam=>{
     const pCnt=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
     const gCnt=packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
-    if(pCnt+gCnt===0) return;
     const row=document.createElement('div'); row.className='lib-fam-item';
     const nameEl=document.createElement('span'); nameEl.className='lib-fam-name';
     nameEl.textContent=fam.nom; nameEl.title='Cliquer pour renommer';
@@ -2927,7 +2926,7 @@ function buildLibFamListGrooves(){
         nameEl.contentEditable='false';
         const newNom=nameEl.textContent.trim();
         if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
-        fam.nom=newNom; saveToStorage(); buildLibListGrooves(); buildLibFamListGrooves();
+        fam.nom=newNom; saveToStorage(); buildLibListGrooves(); buildLibFamListGrooves(); rebuildAllFamFilters();
       },{once:true});
       nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
     });
@@ -2979,7 +2978,7 @@ function buildLibListGrooves(){
     handle.title='Glisser pour réordonner'; item.appendChild(handle);
 
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
-    nameEl.textContent = groove.nom; nameEl.title='Cliquer pour renommer';
+    nameEl.textContent = groove.nom.replace(/^● modifié /,''); nameEl.title='Cliquer pour renommer';
     nameEl.addEventListener('click', ()=>libStartRenameGroove(nameEl, groove.id));
     item.appendChild(nameEl);
 
