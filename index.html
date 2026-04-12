@@ -279,11 +279,12 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
+.btn-mod-sm{padding:1px 3px}
 .btn-mod:hover:not(:disabled){filter:brightness(.9)}
 .btn-mod.on{background:var(--cc);color:#fff;border-color:var(--cb)}
 .btn-mod:disabled{opacity:.3;cursor:default}
-.mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 3px;flex-shrink:0}
-.shift-num{min-width:18px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
+.mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
+.shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .lib-item{display:flex;align-items:center;gap:3px;padding:2px 8px 2px 4px;border-bottom:1px solid #f0ede8;min-height:28px;transition:background .1s}
 .lib-item:last-child{border-bottom:none}
 .lib-item.lib-item-dragging{opacity:.4}
@@ -300,6 +301,7 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .lib-item-del:hover{color:#D85A30}
 .lib-item-del.confirming{color:#D85A30}
 .lib-source-badge{font-size:8px;padding:1px 4px;border-radius:3px;background:#f0ede8;color:#888;flex-shrink:0}
+.lib-source-badge-user{background:#ddfff4;color:#0F6E56}
 /* section familles dans le panel */
 .lib-fam-section{border-top:1px solid #e8e5e0;flex-shrink:0}
 .lib-fam-summary{font-size:11px;font-weight:600;color:#555;padding:8px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
@@ -375,7 +377,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.4</span>
+      <span class="app-version">v2.4.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -509,6 +511,7 @@ body.view-circle #section-encyclo{order:5}
   </div>
   <div class="lib-list" id="lib-list-encyclo"></div>
   <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-encyclo-filter-m" checked> M</label>
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-encyclo-filter-g" checked> G</label>
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-encyclo-filter-p" checked> P</label>
     <button class="lib-content-toggle" id="lib-encyclo-content-filter" data-state="all">Tous</button>
@@ -651,10 +654,45 @@ const ENCYCLO = {
     bullets:[["Origine","Yoruba (Nigeria/Bénin), transplanté à Cuba avec la traite ; \"Bembé\" désigne aussi la cérémonie elle-même."],["Utilisation","Rituels de Santería (Cuba) ; jazz modal : Miles Davis Kind of Blue (1959), Coltrane Africa/Brass (1961) ; Steve Reich, Drumming (1971)."],["Écriture","X.X.XX.X.X.X\nIntervalles : 2-2-1-2-2-2\nE(7,12) — maximum euclidien sur base 12"],["Singularité","Un seul intervalle d'1 pas (entre frappes 5 et 6) — micro-accentuation caractéristique, comme un trébuchement contrôlé."],["Sensation","Urgence hypnotique, absence de respiration, état de transe — la densité est fonctionnelle, pas décorative."]]
   },
   poumtchak:{
-    chapo:"BoomTchak est un outil pédagogique pour explorer, écouter et comprendre les rythmes — du plus simple au plus complexe. Son nom vient du langage universel de l'onomatopée rythmique : « Boom » pour la grosse caisse (grave, appui), « Tchak » pour la caisse claire ou le charleston (aigu, contretemps). Ensemble ils dessinent le squelette de presque toutes les musiques de danse.",
-    bullets:[["Principe","Trois couches rythmiques superposables, chacune avec un pattern indépendant. On peut les muter, les modifier, les décaler — et écouter comment les rythmes se combinent."],["Patterns","Un dictionnaire de patterns rythmiques issus de traditions du monde entier : Afrique, Cuba, Brésil, Jamaïque, Europe. Chaque pattern a sa logique propre, son histoire, ses usages."],["Grooves","Un groove = une combinaison de 3 patterns, une mise en situation. On peut naviguer entre les grooves pour explorer différentes esthétiques rythmiques."],["Vue circulaire","La vue cercle affiche les patterns comme des horloges rythmiques — les frappes sont des points sur un cercle, et on voit immédiatement les symétries, les densités, les relations entre couches."],["Usage","Outil conçu pour la classe : le prof configure une situation pédagogique (TX = mode enseignant), l'élève l'explore (SX = mode élève)."]]
+    chapo:"BoomTchak permet de découvrir les rythmes fondamentaux qui constituent le langage rythmique mondial : des grooves africains aux musiques électroniques, en passant par les Caraïbes et le Brésil… L'objectif est de comprendre comment des structures simples génèrent une richesse infinie. Cette appli permet d'écouter, voir, comprendre, jouer ou composer des rythmiques.",
+    bullets:[["Groove","Un groove = une superposition de patterns qui forment une rythmique cohérente. Chaque ligne est une couche."],["Pattern","Une cellule rythmique qui se répète en boucle. Chaque pattern a un rôle : ancrer le temps, créer la tension, marquer le contretemps…"],["Sons & instruments","Trois couches complémentaires : Grave (kick, basse), Aigu (snare, clave), Noise (hi-hat, shaker). Son paramétrable en hauteur et volume."],["Notation","X = fort, x = faible, . = silence. Vue ⊞ linéaire ou ◎ circulaire pour voir les patterns et leurs symétries."],["Tempo","Réglage en SPM (Steps Par Minute). /2 et ×2 divisent ou doublent toutes les couches en restant synchronisés."],["Usage","TX = mode enseignant (édition complète), SX = mode élève (exploration et édition de ses propres patterns)."]]
+  },
+  misc_groove:{
+    chapo:"Un groove est une superposition de patterns qui forment ensemble une rythmique cohérente. Dans une section rythmique, chacun joue une cellule répétitive, et c'est leur empilement qui crée le groove. Dans BoomTchak, chaque ligne du groove est appelée une couche et joue un pattern.",
+    bullets:[]
+  },
+  misc_pattern:{
+    chapo:"Un pattern est une cellule rythmique : une séquence de sons et de silences qui se répète en boucle. Chaque pattern a un rôle fonctionnel dans l'ensemble : ancrer le temps, créer la tension, marquer le contretemps, compléter une autre couche… La combinaison de rôles différents est ce qui fait swinguer un groove.",
+    bullets:[]
+  },
+  misc_sons:{
+    chapo:"Chaque couche joue un son paramétrable via le bouton Sons ▶. BoomTchak propose trois couches aux fonctions complémentaires : Grave (kick, basse, tambour), Aigu (snare, guitare, clave), Noise (hi-hat, pulsation, shaker). Chaque son peut être réglé en hauteur, timbre et volume.",
+    bullets:[]
+  },
+  misc_notations:{
+    chapo:"Chaque pattern est représenté comme une grille de cases — un chemin pour la musique. Chaque case est un step, l'unité de temps de base (1 step = 1 croche). BoomTchak propose deux vues : ⊞ linéaire (grille gauche→droite) et ◎ circulaire (rotation horaire depuis 12h).",
+    bullets:[["X — son fort","Volume plein (100%). Le pas est joué avec toute son intensité."],["x — son faible","Volume réduit (33%). Le squelette rythmique est maintenu, la dynamique allégée."],["· — silence","Pas joué. L'absence de son est constitutive du pattern au même titre que les frappes."]]
+  },
+  misc_tempo:{
+    chapo:"Le tempo (bouton Tempo) règle la vitesse des steps en SPM (Steps Par Minute). Les équivalences en notation traditionnelle sont affichées : ♩♩ (blanche), ♩ (noire), ♩. (noire pointée). Les boutons /2 et ×2 divisent ou doublent le tempo de toutes les couches en restant synchronisés.",
+    bullets:[]
+  },
+  misc_transformations:{
+    chapo:"Chaque pattern est éditable directement en cliquant sur ses steps. Le volet Mod ▶ donne accès à des transformations globales du pattern.",
+    bullets:[["◀ n ▶  Décalage","Tourne le pattern : déplace le point de départ sans changer les intervalles. Les appuis peuvent devenir des levés et les rapports avec les autres couches sont bouleversés. Le Son 2:3 est un shift du Son 3:2."],["⇄  Intervertir","Échange les deux moitiés du pattern. Sur 8 steps, les steps 1–4 et 5–8 sont permutés."],["⇅  Inversion des accents","Échange forts et faibles : X ↔ x. Les silences restent inchangés. Permet de jouer le même squelette rythmique avec la dynamique inversée."],["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : silence → faible → fort → silence. Transforme progressivement un pattern en version accentuée."],["/ 2 × 2  Vitesse","Divise ou double la vitesse de la couche indépendamment des autres, appliqué au prochain cycle pour rester en phase."],["🎲  Dé","Redistribue aléatoirement les steps (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],["✨  Magie","Applique une combinaison aléatoire de transformations (décalage, intervertir, rotation des accents, /2, ×2). Bon point de départ pour explorer des variations inattendues d'un pattern connu."]]
   }
 };
+
+// Entrées misc de l'encyclopédie (ni groove ni pattern)
+const ENCYCLO_MISC=[
+  {id:'poumtchak',           nom:'★ BoomTchak'},
+  {id:'misc_groove',         nom:'Groove'},
+  {id:'misc_pattern',        nom:'Pattern'},
+  {id:'misc_sons',           nom:'Sons & instruments'},
+  {id:'misc_notations',      nom:'Notations'},
+  {id:'misc_tempo',          nom:'Tempo'},
+  {id:'misc_transformations',nom:'Transformations'},
+];
 
 // Données par défaut du cours (source de vérité)
 const PTK_DEFAULT = {
@@ -1501,9 +1539,9 @@ function buildLayers(){
     });
 
     // — Shift ◀ [n] ▶ —
-    const bShL=document.createElement('button');bShL.className='btn-mod';bShL.textContent='◀';bShL.title='Décaler gauche';
+    const bShL=document.createElement('button');bShL.className='btn-mod btn-mod-sm';bShL.textContent='◀';bShL.title='Décaler gauche';
     const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent='0';
-    const bShR=document.createElement('button');bShR.className='btn-mod';bShR.textContent='▶';bShR.title='Décaler droite';
+    const bShR=document.createElement('button');bShR.className='btn-mod btn-mod-sm';bShR.textContent='▶';bShR.title='Décaler droite';
     bShL.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,1);
       const n=parseInt(shNum.textContent);
@@ -1637,8 +1675,6 @@ function buildStepsDOM(li,wrap){
 
 function onStepClick(li,si,el){
   const srcPat=state[li].patternId?getPattern(state[li].patternId):null;
-  const canEdit=currentMode==='tx'||(srcPat&&srcPat.source==='user');
-  if(!canEdit)return;
   // Cycle 3 états en mémoire uniquement — persistance via 💾
   const STEP_CYCLE={'.':'X','X':'x','x':'.'};
   const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
@@ -2127,8 +2163,15 @@ function buildEncycloSection(){
   sel.id='encyclo-select';
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:180px;padding:1px 3px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;color:#1a1a18';
   const optVide=document.createElement('option');optVide.value='';optVide.textContent='— Choisir —';sel.appendChild(optVide);
-  // Entrée meta BoomTchak (toujours visible)
-  const optBT=document.createElement('option');optBT.value='poumtchak';optBT.textContent='★ BoomTchak';sel.appendChild(optBT);
+  // Entrées misc (★ BoomTchak + articles généraux)
+  ENCYCLO_MISC.forEach(m=>{
+    const hasC=hasEncycloContent(m.id);
+    if(currentMode!=='tx'&&!hasC) return;
+    const o=document.createElement('option');o.value=m.id;o.textContent=m.nom;
+    if(!hasC)o.style.color='#aaa';
+    sel.appendChild(o);
+  });
+  const sepMisc=document.createElement('option');sepMisc.disabled=true;sepMisc.textContent='─ ─ ─ ─ ─';sel.appendChild(sepMisc);
   // Grooves d'abord (entrée propre, clé = groove.id)
   packCours.grooves.forEach(g=>{
     const hasC=hasEncycloContent(g.id);
@@ -2631,6 +2674,9 @@ function buildLibListPatterns(){
     if(pat.source === 'default'){
       const badge = document.createElement('span'); badge.className = 'lib-source-badge';
       badge.textContent = 'défaut'; item.appendChild(badge);
+    } else if(pat.source === 'user'){
+      const badge = document.createElement('span'); badge.className = 'lib-source-badge lib-source-badge-user';
+      badge.textContent = 'perso'; item.appendChild(badge);
     }
 
     // Bouton supprimer 🗑
@@ -3000,6 +3046,8 @@ function buildLibListGrooves(){
 
     if(groove.source==='default'||!groove.source){
       const badge=document.createElement('span');badge.className='lib-source-badge';badge.textContent='défaut';item.appendChild(badge);
+    } else if(groove.source==='user'){
+      const badge=document.createElement('span');badge.className='lib-source-badge lib-source-badge-user';badge.textContent='perso';item.appendChild(badge);
     }
 
     const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
@@ -3149,7 +3197,8 @@ function buildLibListEncyclo(){
 
   // Filtre 1 : famille
   const famVal=(document.getElementById('lib-fam-filter-encyclo')?.value)||'all';
-  // Filtre 2 : type G/P
+  // Filtre 2 : type M/G/P
+  const showM=document.getElementById('lib-encyclo-filter-m')?.checked!==false;
   const showG=document.getElementById('lib-encyclo-filter-g')?.checked!==false;
   const showP=document.getElementById('lib-encyclo-filter-p')?.checked!==false;
   // Filtre 3 : contenu (all | filled | empty)
@@ -3164,6 +3213,13 @@ function buildLibListEncyclo(){
     return famVal==='all'||(familles||[]).includes(famVal);
   }
 
+  if(showM){
+    ENCYCLO_MISC.forEach(m=>{
+      const hasC=hasEncycloContent(m.id);
+      if(!passContent(hasC)) return;
+      list.appendChild(buildEncycloLibItem(m.id, m.nom, 'M', hasC));
+    });
+  }
   if(showG){
     packCours.grooves.forEach(g=>{
       if(!passFam(g.familles)) return;
@@ -3193,7 +3249,8 @@ function buildEncycloLibItem(key, nom, typeBadge, hasContent){
   item.appendChild(cb);
 
   const badge=document.createElement('span'); badge.className='lib-source-badge';
-  badge.textContent=typeBadge; badge.style.cssText='background:'+(typeBadge==='G'?'#faf3e0':'#f0f5ff')+';color:'+(typeBadge==='G'?'#8B6914':'#2d5f80');
+  const badgeStyles={G:'background:#faf3e0;color:#8B6914',P:'background:#f0f5ff;color:#2d5f80',M:'background:#f5f4f0;color:#666'};
+  badge.textContent=typeBadge; badge.style.cssText=badgeStyles[typeBadge]||badgeStyles.M;
   item.appendChild(badge);
 
   const nameEl=document.createElement('span'); nameEl.className='lib-item-name';
@@ -3229,6 +3286,7 @@ function attachEncycloLibEvents(){
   el('lib-overlay-encyclo')?.addEventListener('click',closeLibPanelEncyclo);
   el('lib-panel-encyclo-close')?.addEventListener('click',closeLibPanelEncyclo);
   el('lib-fam-filter-encyclo')?.addEventListener('change',buildLibListEncyclo);
+  el('lib-encyclo-filter-m')?.addEventListener('change',buildLibListEncyclo);
   el('lib-encyclo-filter-g')?.addEventListener('change',buildLibListEncyclo);
   el('lib-encyclo-filter-p')?.addEventListener('change',buildLibListEncyclo);
 
@@ -3279,9 +3337,11 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
-  // Garantir l'entrée meta "poumtchak" (intro app, non liée à un pattern/groove)
-  if(ENCYCLO.poumtchak&&!packCours.encyclo.poumtchak)
-    packCours.encyclo.poumtchak=JSON.parse(JSON.stringify(ENCYCLO.poumtchak));
+  // Garantir les entrées misc (non liées à un pattern/groove)
+  ENCYCLO_MISC.forEach(m=>{
+    if(ENCYCLO[m.id]&&!packCours.encyclo[m.id])
+      packCours.encyclo[m.id]=JSON.parse(JSON.stringify(ENCYCLO[m.id]));
+  });
   // Garantir entrées encyclo vides pour tous les grooves et patterns
   packCours.grooves.forEach(g=>{
     if(!g.familles) g.familles=[];
