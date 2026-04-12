@@ -93,13 +93,11 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 body.mode-tx .btn-layer-mod{display:inline-block}
 body.mode-tx .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s}
-.step.soft{background:var(--cc);border-color:var(--cb)}
-.step.on{background:#fff;border-color:var(--cb);box-shadow:inset 0 0 0 4px var(--cc)}
-.step.cur{box-shadow:0 0 0 2px var(--cb);border-color:var(--cb)}
-.step.soft.cur{box-shadow:0 0 0 2px var(--cb)}
-.step.on.cur{background:var(--cb);box-shadow:0 0 0 2px var(--cb)}
-.layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs)}
-.layer.muted-layer .step.on{background:#fff;border-color:var(--cs);box-shadow:inset 0 0 0 4px var(--cs)}
+.step.soft{background:var(--cs);border-color:var(--cc)}
+.step.on{background:var(--cc);border-color:var(--cb)}
+.step.cur{box-shadow:0 0 0 3px var(--cb);border-color:var(--cb)}
+.layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
+.layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 .hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
 /* Texte éditable en TX */
 body.mode-tx [contenteditable="true"]{border-radius:3px;outline:none;transition:background .1s}
@@ -375,7 +373,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.0</span>
+      <span class="app-version">v2.4.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1025,7 +1023,7 @@ function scheduler(){
       }
       // X (fort) joue plein volume, x (faible) joue à 40%
       const stepVal=state[li].pattern[si];
-      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime,stepVal==='x'?0.4:1.0);
+      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime,stepVal==='x'?0.33:1.0);
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
@@ -2387,35 +2385,30 @@ function drawCircles(){
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
       const isOn   = pat[si]==='X';
       const isSoft = pat[si]==='x';
-      const isFlash = playing && si===flashStep[li] && (isOn||isSoft) && !isMuted;
+      const isPlaying = playing && si===flashStep[li];
 
-      if(isFlash){
-        // Flash jaune — grand cercle pour X, petit pour x
-        const fr = isOn ? dotR : dotR*0.7;
-        ctx.beginPath(); ctx.arc(dx, dy, fr, 0, 2*Math.PI);
-        ctx.fillStyle='#F5C518'; ctx.fill();
-        ctx.strokeStyle='#c89a00'; ctx.lineWidth=1.5; ctx.stroke();
-        if(isOn){
-          ctx.beginPath(); ctx.arc(dx, dy, dotR*0.4, 0, 2*Math.PI);
-          ctx.fillStyle='#c89a00'; ctx.fill();
-        }
-      } else if(isOn){
-        // Fort X : grand cercle vide + petit point coloré intérieur
+      // Dessin du point selon l'état (X grand plein, x petit atténué, . petit vide)
+      if(isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
-        ctx.fillStyle='#f0ede8'; ctx.fill();
-        ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1.5; ctx.stroke();
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.4, 0, 2*Math.PI);
-        ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
-      } else if(isSoft){
-        // Faible x : petit cercle plein couleur
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
+      } else if(isSoft){
+        // x faible : petit cercle, ~33% opacité (cohérent avec --cs)
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
+        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
+        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
         // Silence : petit cercle vide
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.7, 0, 2*Math.PI);
         ctx.fillStyle='#f0ede8'; ctx.fill();
         ctx.strokeStyle='#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
+      }
+
+      // Anneau "grossi" sur le step en cours de lecture (remplace le flash jaune)
+      if(isPlaying && (isOn || isSoft) && !isMuted){
+        const dotSz = isOn ? dotR : dotR*0.7;
+        ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
+        ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
     }
   });
