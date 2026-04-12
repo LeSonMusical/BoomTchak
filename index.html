@@ -373,7 +373,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.1</span>
+      <span class="app-version">v2.4.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1158,8 +1158,8 @@ function updateEncycloSaveBtn(){
 }
 let sonsOuvert = false;
 let layersOuverts = true;
-let encycloOuvert = false;
-let currentEncycloId = null;
+let encycloOuvert = true;
+let currentEncycloId = 'poumtchak';
 
 // ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
 function applyGroove(grooveId){
@@ -1358,12 +1358,12 @@ function buildLayers(){
     // ●/○ mute
     const btnMute=document.createElement('button');
     btnMute.className='btn-mute-sq'+(state[li].muted?' muted':'');
-    btnMute.textContent=state[li].muted?'○':'●';
+    btnMute.textContent=state[li].muted?'🔇':'🔊';
     btnMute.title=state[li].muted?'Activer':'Muet';
     btnMute.addEventListener('click',()=>{
       state[li].muted=!state[li].muted;
       btnMute.classList.toggle('muted',state[li].muted);
-      btnMute.textContent=state[li].muted?'○':'●';
+      btnMute.textContent=state[li].muted?'🔇':'🔊';
       layerDiv.classList.toggle('muted-layer',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
     });
@@ -1466,66 +1466,14 @@ function buildLayers(){
     modPanel.className='layer-mod-panel hidden';
     modPanel.id='mod-panel-'+li;
 
-    // — Shift ◀ [n] ▶ —
-    const bShL=document.createElement('button');bShL.className='btn-mod';bShL.textContent='◀';bShL.title='Décaler gauche';
-    const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent='0';
-    const bShR=document.createElement('button');bShR.className='btn-mod';bShR.textContent='▶';bShR.title='Décaler droite';
-
-    bShL.addEventListener('click',()=>{
-      state[li].pattern=rotate(state[li].pattern,1);
-      const n=parseInt(shNum.textContent);
-      shNum.textContent=((n-1+state[li].pattern.length)%state[li].pattern.length).toString();
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
-    });
-    bShR.addEventListener('click',()=>{
-      state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
-      const n=parseInt(shNum.textContent);
-      shNum.textContent=((n+1)%state[li].pattern.length).toString();
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
-    });
-
-    modPanel.appendChild(bShL);
-    modPanel.appendChild(shNum);
-    modPanel.appendChild(bShR);
-
-    // séparateur
-    const sep1=document.createElement('span');sep1.className='mod-sep';modPanel.appendChild(sep1);
-
-    // — Complémentaire ⊙ —
-    const bComp=document.createElement('button');bComp.className='btn-mod';bComp.textContent='⊙';bComp.title='Complémentaire (inverse les frappes)';
-    bComp.addEventListener('click',()=>{
-      state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
-    });
-    modPanel.appendChild(bComp);
-
-    // — Inverser ⇄ (swap halves) —
-    const bSwap=document.createElement('button');bSwap.className='btn-mod';bSwap.textContent='⇄';bSwap.title='Inverser (swap moitiés)';
-    const updateSwapBtn=()=>{
-      const ok=state[li].pattern.length>=4&&state[li].pattern.length%2===0;
-      bSwap.disabled=!ok;
-    };
-    updateSwapBtn();
-    bSwap.addEventListener('click',()=>{
-      const p=state[li].pattern,h=Math.floor(p.length/2);
-      state[li].pattern=[...p.slice(h),...p.slice(0,h)];
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
-    });
-    modPanel.appendChild(bSwap);
-
-    // séparateur
-    const sep2=document.createElement('span');sep2.className='mod-sep';modPanel.appendChild(sep2);
-
     // — Vitesse /2 ×2 —
     const bHalf=document.createElement('button');bHalf.className='btn-mod';bHalf.id='mod-half-'+li;bHalf.textContent='/2';bHalf.title='Vitesse ÷2 (appliqué au prochain cycle)';
     const bDbl=document.createElement('button');bDbl.className='btn-mod';bDbl.id='mod-dbl-'+li;bDbl.textContent='×2';bDbl.title='Vitesse ×2 (appliqué au prochain cycle)';
-
     const updateSpeedBtns=()=>{
       bHalf.classList.toggle('on', state[li].halfOn||state[li].pendingHalf);
       bDbl.classList.toggle('on', state[li].doubleOn||state[li].pendingDouble);
     };
     updateSpeedBtns();
-
     bHalf.addEventListener('click',()=>{
       if(state[li].halfOn||state[li].pendingHalf){
         state[li].pendingHalf=false;state[li].pendingClear=true;
@@ -1545,13 +1493,42 @@ function buildLayers(){
       updateSpeedBtns(); grooveDirty=true; updateGrooveSaveBtn();
     });
 
-    modPanel.appendChild(bHalf);
-    modPanel.appendChild(bDbl);
+    // — Shift ◀ [n] ▶ —
+    const bShL=document.createElement('button');bShL.className='btn-mod';bShL.textContent='◀';bShL.title='Décaler gauche';
+    const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent='0';
+    const bShR=document.createElement('button');bShR.className='btn-mod';bShR.textContent='▶';bShR.title='Décaler droite';
+    bShL.addEventListener('click',()=>{
+      state[li].pattern=rotate(state[li].pattern,1);
+      const n=parseInt(shNum.textContent);
+      shNum.textContent=((n-1+state[li].pattern.length)%state[li].pattern.length).toString();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    bShR.addEventListener('click',()=>{
+      state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
+      const n=parseInt(shNum.textContent);
+      shNum.textContent=((n+1)%state[li].pattern.length).toString();
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
 
-    // séparateur
-    const sep3=document.createElement('span');sep3.className='mod-sep';modPanel.appendChild(sep3);
+    // — Inverser ⇄ (swap moitiés) + Complémentaire ⊙ —
+    const bSwap=document.createElement('button');bSwap.className='btn-mod';bSwap.textContent='⇄';bSwap.title='Inverser (swap moitiés)';
+    const updateSwapBtn=()=>{
+      const ok=state[li].pattern.length>=4&&state[li].pattern.length%2===0;
+      bSwap.disabled=!ok;
+    };
+    updateSwapBtn();
+    bSwap.addEventListener('click',()=>{
+      const p=state[li].pattern,h=Math.floor(p.length/2);
+      state[li].pattern=[...p.slice(h),...p.slice(0,h)];
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
+    const bComp=document.createElement('button');bComp.className='btn-mod';bComp.textContent='⊙';bComp.title='Complémentaire (inverse les frappes)';
+    bComp.addEventListener('click',()=>{
+      state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
+      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+    });
 
-    // — Aléatoire combiné ✦ —
+    // — Aléatoire ✦ + Dé 🎲 —
     const bRand=document.createElement('button');bRand.className='btn-mod';bRand.textContent='✦';bRand.title='Transformations aléatoires (shift, comp, swap, vitesse)';
     bRand.addEventListener('click',()=>{
       const r=Math.random();
@@ -1579,9 +1556,6 @@ function buildLayers(){
       updateSpeedBtns();
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    modPanel.appendChild(bRand);
-
-    // — Dé 🎲 (pattern aléatoire, même densité) —
     const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Pattern aléatoire (même densité)';
     bDice.addEventListener('click',()=>{
       const pat=state[li].pattern;
@@ -1598,7 +1572,16 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    modPanel.appendChild(bDice);
+
+    // Assemblage : Vitesse | Shift | ⇄ ⊙ | ✦ 🎲
+    const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
+    modPanel.appendChild(bHalf); modPanel.appendChild(bDbl);
+    modPanel.appendChild(mkSep());
+    modPanel.appendChild(bShL); modPanel.appendChild(shNum); modPanel.appendChild(bShR);
+    modPanel.appendChild(mkSep());
+    modPanel.appendChild(bSwap); modPanel.appendChild(bComp);
+    modPanel.appendChild(mkSep());
+    modPanel.appendChild(bRand); modPanel.appendChild(bDice);
 
     layerDiv.appendChild(modPanel);
 
@@ -2133,6 +2116,8 @@ function buildEncycloSection(){
   sel.id='encyclo-select';
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:180px;padding:1px 3px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;color:#1a1a18';
   const optVide=document.createElement('option');optVide.value='';optVide.textContent='— Choisir —';sel.appendChild(optVide);
+  // Entrée meta BoomTchak (toujours visible)
+  const optBT=document.createElement('option');optBT.value='poumtchak';optBT.textContent='★ BoomTchak';sel.appendChild(optBT);
   // Grooves d'abord (entrée propre, clé = groove.id)
   packCours.grooves.forEach(g=>{
     const hasC=hasEncycloContent(g.id);
@@ -3283,6 +3268,9 @@ function loadFromStorage(){
   }
   // Initialiser packCours.encyclo si absent (copie éditable de ENCYCLO)
   if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));
+  // Garantir l'entrée meta "poumtchak" (intro app, non liée à un pattern/groove)
+  if(ENCYCLO.poumtchak&&!packCours.encyclo.poumtchak)
+    packCours.encyclo.poumtchak=JSON.parse(JSON.stringify(ENCYCLO.poumtchak));
   // Garantir entrées encyclo vides pour tous les grooves et patterns
   packCours.grooves.forEach(g=>{
     if(!g.familles) g.familles=[];
