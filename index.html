@@ -331,6 +331,8 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
+.btn-mod-circle{display:none!important}                   /* bouton mod dans row1 : caché en vue linéaire */
+body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:none;cursor:default;max-width:100%;max-height:100%}
 body.mode-tx #rhythm-canvas{cursor:pointer}
@@ -373,7 +375,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.4.3</span>
+      <span class="app-version">v2.4.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1433,30 +1435,36 @@ function buildLayers(){
     row1.appendChild(mkBtnMenu(()=>openLibPanelPatterns()));
     // i info
     row1.appendChild(btnI);
-    // steps ▼/▶ toggle + mod ▶/▼ (row1, côte à côte à droite)
+    // steps ▼/▶ toggle (row1) + mod ▶ ghost dans row1 pour vue circulaire
     const row2=document.createElement('div');row2.className='layer-row2';
     const btnToggle=document.createElement('button');
     btnToggle.className='btn-layer-toggle btn-steps-toggle';
     let stepsOpen=true;btnToggle.textContent='steps ▼';
-    // bouton mod — dans row1 pour rester visible en vue circulaire
+    // Bouton mod circulaire dans row1 (caché en vue linéaire via CSS)
+    const btnModCircle=document.createElement('button');btnModCircle.className='btn-layer-toggle btn-mod-circle';
+    btnModCircle.style.cssText='font-size:10px;opacity:.55;flex-shrink:0;align-self:flex-start';
+    btnModCircle.textContent='mod ▶';
+    // Bouton mod linéaire dans row2 (caché en vue circulaire via row2)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
-    btnMod.style.cssText='font-size:10px;opacity:.55;flex-shrink:0;align-self:flex-start';
+    btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
     btnMod.textContent='mod ▶';
+    const syncModText=(txt)=>{btnMod.textContent=txt;btnModCircle.textContent=txt;};
     btnToggle.addEventListener('click',()=>{
       stepsOpen=!stepsOpen;
       row2.classList.toggle('collapsed',!stepsOpen);
       btnToggle.textContent=stepsOpen?'steps ▼':'steps ▶';
       // mod panel suit le volet steps
       const mp=layerDiv.querySelector('.layer-mod-panel');
-      if(mp&&!stepsOpen){ mp.classList.add('hidden'); btnMod.textContent='mod ▶'; }
+      if(mp&&!stepsOpen){ mp.classList.add('hidden'); syncModText('mod ▶'); }
     });
     row1.appendChild(btnToggle);
-    row1.appendChild(btnMod);
+    row1.appendChild(btnModCircle);
     layerDiv.appendChild(row1);
 
-    // ── Ligne 2 : grille steps ────────────────────────────────────────────────
+    // ── Ligne 2 : grille steps + mod ──────────────────────────────────────────
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
+    row2.appendChild(btnMod);
 
     layerDiv.appendChild(row2);
 
@@ -1509,7 +1517,7 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
 
-    // — Inverser ⇄ (swap moitiés) + Complémentaire ⊙ —
+    // — Inverser ⇄ (swap moitiés) + Inversion accents ⇅ + Rotation accents ⊙ —
     const bSwap=document.createElement('button');bSwap.className='btn-mod';bSwap.textContent='⇄';bSwap.title='Inverser (swap moitiés)';
     const updateSwapBtn=()=>{
       const ok=state[li].pattern.length>=4&&state[li].pattern.length%2===0;
@@ -1521,38 +1529,14 @@ function buildLayers(){
       state[li].pattern=[...p.slice(h),...p.slice(0,h)];
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    const bComp=document.createElement('button');bComp.className='btn-mod';bComp.textContent='⊙';bComp.title='Complémentaire (inverse les frappes)';
-    bComp.addEventListener('click',()=>{
-      state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
+    const bInv=document.createElement('button');bInv.className='btn-mod';bInv.textContent='⇅';bInv.title='Inverser les accents (X↔x, silences inchangés)';
+    bInv.addEventListener('click',()=>{
+      state[li].pattern=state[li].pattern.map(p=>p==='X'?'x':p==='x'?'X':p);
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-
-    // — Aléatoire ✦ + Dé 🎲 —
-    const bRand=document.createElement('button');bRand.className='btn-mod';bRand.textContent='✦';bRand.title='Transformations aléatoires (shift, comp, swap, vitesse)';
-    bRand.addEventListener('click',()=>{
-      const r=Math.random();
-      // vitesse aléatoire (25% /2, 25% ×2, 50% inchangé)
-      if(r<0.25&&!state[li].halfOn&&!state[li].pendingHalf){
-        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
-        state[li].pendingHalf=true;state[li].pendingClear=false;
-      } else if(r<0.5&&!state[li].doubleOn&&!state[li].pendingDouble){
-        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
-        state[li].pendingDouble=true;state[li].pendingClear=false;
-      }
-      // shift aléatoire (50%)
-      if(Math.random()<0.5){
-        const n=Math.floor(Math.random()*(state[li].pattern.length-1))+1;
-        state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-n);
-        shNum.textContent=((parseInt(shNum.textContent)+n)%state[li].pattern.length).toString();
-      }
-      // complémentaire (33%) — tout ce qui sonne → silence, silence → fort
-      if(Math.random()<0.33) state[li].pattern=state[li].pattern.map(p=>p==='.'?'X':'.');
-      // swap halves (50%, si applicable)
-      if(Math.random()<0.5&&state[li].pattern.length>=4&&state[li].pattern.length%2===0){
-        const p=state[li].pattern,h=Math.floor(p.length/2);
-        state[li].pattern=[...p.slice(h),...p.slice(0,h)];
-      }
-      updateSpeedBtns();
+    const bRot=document.createElement('button');bRot.className='btn-mod';bRot.textContent='⊙';bRot.title='Rotation des accents (. → x → X → .)';
+    bRot.addEventListener('click',()=>{
+      state[li].pattern=state[li].pattern.map(p=>p==='.'?'x':p==='x'?'X':'.');
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
     const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
@@ -1598,24 +1582,26 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
 
-    // Assemblage : Vitesse | Shift | ⇄ ⊙ | ✦ 🎲 ✨
+    // Assemblage : Vitesse | Shift | ⇄ ⇅ ⊙ | 🎲 ✨
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
     modPanel.appendChild(bHalf); modPanel.appendChild(bDbl);
     modPanel.appendChild(mkSep());
     modPanel.appendChild(bShL); modPanel.appendChild(shNum); modPanel.appendChild(bShR);
     modPanel.appendChild(mkSep());
-    modPanel.appendChild(bSwap); modPanel.appendChild(bComp);
+    modPanel.appendChild(bSwap); modPanel.appendChild(bInv); modPanel.appendChild(bRot);
     modPanel.appendChild(mkSep());
-    modPanel.appendChild(bRand); modPanel.appendChild(bDice); modPanel.appendChild(bMagic);
+    modPanel.appendChild(bDice); modPanel.appendChild(bMagic);
 
     layerDiv.appendChild(modPanel);
 
-    // toggle mod panel via bouton
-    btnMod.addEventListener('click',()=>{
+    // toggle mod panel via les deux boutons (linéaire + circulaire)
+    const onToggleMod=()=>{
       const open=modPanel.classList.toggle('hidden');
-      btnMod.textContent=open?'mod ▶':'mod ▼';
+      syncModText(open?'mod ▶':'mod ▼');
       if(!open) updateSwapBtn();
-    });
+    };
+    btnMod.addEventListener('click',onToggleMod);
+    btnModCircle.addEventListener('click',onToggleMod);
 
     cont.appendChild(layerDiv);
 
