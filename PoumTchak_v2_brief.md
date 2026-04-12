@@ -18,6 +18,8 @@ La v2 est une réécriture from scratch sur une architecture propre depuis la v1
 **Mode de collaboration :**
 - Lamberio = product owner + designer pédagogique. Il décide de l'architecture et du design.
 - Claude implémente. Les questions architecturales importantes sont soumises AVANT le code.
+- Lamberio a aussi besoin d'un regard critique constructif. 
+- Claude doit être aussi force de proposition meme si cela va à l'encontre de certains consignes
 - Langue : français. Variables/fonctions : camelCase anglais.
 
 ---
