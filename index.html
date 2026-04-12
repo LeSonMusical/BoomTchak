@@ -314,9 +314,10 @@ body.mode-tx .btn-sec-menu:hover{opacity:1}
 .lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
 .lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
 .lib-fam-add-row button{padding:4px 9px;font-size:11px;background:#4A7FA5;color:#fff;border:none;border-radius:5px;cursor:pointer}
-/* filtre type encyclopédie */
-.lib-encyclo-filter-row{display:flex;gap:18px;padding:6px 14px 10px}
-.lib-encyclo-filter-lbl{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;cursor:pointer}
+/* toggle contenu encyclopédie (Tous / Remplis / Vides) */
+.lib-content-toggle{padding:3px 8px;font-size:10px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.lib-content-toggle[data-state="filled"]{border-color:#1D9E75;color:#1D9E75;background:#f0fdf8}
+.lib-content-toggle[data-state="empty"]{border-color:#aaa;color:#888;background:#f5f4f0}
 /* barre batch */
 .lib-batch-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #e8e5e0;flex-shrink:0;background:#fafaf8}
 .lib-batch-lbl{font-size:11px;color:#888;display:flex;align-items:center;gap:4px;cursor:pointer}
@@ -371,7 +372,7 @@ body.view-circle #section-encyclo{order:5}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de PoumTchak">
       <span class="app-name">PoumTchak</span>
-      <span class="app-version">v2.3.1</span>
+      <span class="app-version">v2.3.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -498,18 +499,16 @@ body.view-circle #section-encyclo{order:5}
 <div class="lib-panel hidden" id="lib-panel-encyclo">
   <div class="lib-panel-head">
     <span class="lib-panel-title">Encyclopédie</span>
+    <select class="lib-fam-filter-sel" id="lib-fam-filter-encyclo">
+      <option value="all">Toutes les familles</option>
+    </select>
     <button class="lib-panel-close" id="lib-panel-encyclo-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-encyclo"></div>
-  <details class="lib-fam-section" id="lib-fam-details-encyclo">
-    <summary class="lib-fam-summary">Gérer les familles <span>▶</span></summary>
-    <div class="lib-encyclo-filter-row">
-      <label class="lib-encyclo-filter-lbl"><input type="checkbox" id="lib-encyclo-filter-g" checked> Grooves</label>
-      <label class="lib-encyclo-filter-lbl"><input type="checkbox" id="lib-encyclo-filter-p" checked> Patterns</label>
-    </div>
-  </details>
   <div class="lib-batch-bar">
-    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-encyclo"> Tout sélectionner</label>
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-encyclo-filter-g" checked> G</label>
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-encyclo-filter-p" checked> P</label>
+    <button class="lib-content-toggle" id="lib-encyclo-content-filter" data-state="all">Tous</button>
     <button class="lib-batch-del" id="lib-batch-del-encyclo" disabled>🗑 Vider</button>
   </div>
 </div>
@@ -2025,7 +2024,7 @@ function rebuildAllFamFilters(){
     if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
   });
   // Select filtre en haut du panel ≡ patterns
-  ['lib-fam-filter-patterns','lib-fam-filter-grooves'].forEach(elId=>{
+  ['lib-fam-filter-patterns','lib-fam-filter-grooves','lib-fam-filter-encyclo'].forEach(elId=>{
     const panelFil = document.getElementById(elId);
     if(!panelFil) return;
     const prev = panelFil.value;
@@ -3116,7 +3115,10 @@ function attachGrooveLibEvents(){
 // ═══════════════════════════════════════════════════════════════════════════
 
 function openLibPanelEncyclo(){
-  document.getElementById('lib-select-all-encyclo').checked=false;
+  rebuildAllFamFilters();
+  // Reset le toggle contenu
+  const tog=document.getElementById('lib-encyclo-content-filter');
+  if(tog){tog.dataset.state='all';tog.textContent='Tous';}
   document.getElementById('lib-batch-del-encyclo').disabled=true;
   buildLibListEncyclo();
   document.getElementById('lib-overlay-encyclo').classList.remove('hidden');
@@ -3130,22 +3132,39 @@ function closeLibPanelEncyclo(){
 
 function buildLibListEncyclo(){
   const list=document.getElementById('lib-list-encyclo'); list.innerHTML='';
-  const inclG=document.getElementById('lib-encyclo-filter-g');
-  const inclP=document.getElementById('lib-encyclo-filter-p');
-  const showG=!inclG||inclG.checked;
-  const showP=!inclP||inclP.checked;
+
+  // Filtre 1 : famille
+  const famVal=(document.getElementById('lib-fam-filter-encyclo')?.value)||'all';
+  // Filtre 2 : type G/P
+  const showG=document.getElementById('lib-encyclo-filter-g')?.checked!==false;
+  const showP=document.getElementById('lib-encyclo-filter-p')?.checked!==false;
+  // Filtre 3 : contenu (all | filled | empty)
+  const contentState=document.getElementById('lib-encyclo-content-filter')?.dataset.state||'all';
+
+  function passContent(hasC){
+    if(contentState==='filled') return hasC;
+    if(contentState==='empty')  return !hasC;
+    return true;
+  }
+  function passFam(familles){
+    return famVal==='all'||(familles||[]).includes(famVal);
+  }
 
   if(showG){
     packCours.grooves.forEach(g=>{
-      const hasContent=hasEncycloContent(g.id);
-      list.appendChild(buildEncycloLibItem(g.id, g.nom, 'G', hasContent));
+      if(!passFam(g.familles)) return;
+      const hasC=hasEncycloContent(g.id);
+      if(!passContent(hasC)) return;
+      list.appendChild(buildEncycloLibItem(g.id, g.nom, 'G', hasC));
     });
   }
   if(showP){
     packCours.patterns.forEach(p=>{
+      if(!passFam(p.familles)) return;
       const key=p.encyclo_ref||p.id;
-      const hasContent=hasEncycloContent(key);
-      list.appendChild(buildEncycloLibItem(key, p.nom, 'P', hasContent));
+      const hasC=hasEncycloContent(key);
+      if(!passContent(hasC)) return;
+      list.appendChild(buildEncycloLibItem(key, p.nom, 'P', hasC));
     });
   }
   updateEncycloBatchBar();
@@ -3191,25 +3210,34 @@ function updateEncycloBatchBar(){
 function attachEncycloLibEvents(){
   document.getElementById('lib-overlay-encyclo').addEventListener('click',closeLibPanelEncyclo);
   document.getElementById('lib-panel-encyclo-close').addEventListener('click',closeLibPanelEncyclo);
+
+  // Filtre famille
+  document.getElementById('lib-fam-filter-encyclo').addEventListener('change',buildLibListEncyclo);
+  // Filtres type G/P
   document.getElementById('lib-encyclo-filter-g').addEventListener('change',buildLibListEncyclo);
   document.getElementById('lib-encyclo-filter-p').addEventListener('change',buildLibListEncyclo);
 
-  document.getElementById('lib-select-all-encyclo').addEventListener('change',e=>{
-    document.querySelectorAll('#lib-list-encyclo .lib-item-check').forEach(c=>{c.checked=e.target.checked;});
-    updateEncycloBatchBar();
+  // Toggle contenu : Tous → Remplis → Vides → Tous
+  document.getElementById('lib-encyclo-content-filter').addEventListener('click',e=>{
+    const states=['all','filled','empty'];
+    const labels=['Tous','Remplis','Vides'];
+    const cur=states.indexOf(e.currentTarget.dataset.state);
+    const next=(cur+1)%states.length;
+    e.currentTarget.dataset.state=states[next];
+    e.currentTarget.textContent=labels[next];
+    buildLibListEncyclo();
   });
 
+  // Supprimer la sélection (vider le contenu)
   document.getElementById('lib-batch-del-encyclo').addEventListener('click',()=>{
     const toEmpty=[...document.querySelectorAll('#lib-list-encyclo .lib-item-check:checked')]
       .map(c=>c.closest('.lib-item').dataset.encycloKey);
     if(!toEmpty.length)return;
     if(!confirm('Vider '+toEmpty.length+' entrée'+(toEmpty.length>1?'s':'')+' ?'))return;
-    toEmpty.forEach(key=>{
-      packCours.encyclo[key]={chapo:'',bullets:[]};
-    });
+    toEmpty.forEach(key=>{ packCours.encyclo[key]={chapo:'',bullets:[]}; });
     saveToStorage();
     buildLibListEncyclo();
-    buildEncycloSection(); // rafraîchit le select (SX masque les entrées vides)
+    buildEncycloSection();
     if(toEmpty.includes(currentEncycloId))renderEncyclo(currentEncycloId);
   });
 }
