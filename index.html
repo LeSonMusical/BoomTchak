@@ -50,9 +50,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .temps-content.open{max-height:160px}
-.metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:column;gap:5px}
-.metro-row{display:flex;align-items:center;gap:8px}
-.metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;width:64px;flex-shrink:0}
+.metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
+.metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+.metro-sep{color:#c8c0e0;flex-shrink:0;padding:0 2px}
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
@@ -75,8 +75,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-volet-groove{color:#C8961A !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#8B6914 !important}
 /* barre band : bleue */
-.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
-.band-bar.visible{display:flex}
+.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:flex}
 .band-bar .section-bar-lbl{color:#2d5f80}
 .band-bar select{border:1px solid #8ab4d0}
 .band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
@@ -500,7 +499,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.0</span>
+      <span class="app-version">v2.6.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -515,7 +514,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="frame">
   <!-- Section Temps -->
   <div class="section-bar temps-bar" id="section-temps">
-    <span class="section-bar-lbl">⏱ Temps</span>
+    <span class="section-bar-lbl">Temps</span>
     <select class="sig-sel" id="sig-sel">
       <option value="2/4">2/4</option>
       <option value="3/4">3/4</option>
@@ -533,23 +532,19 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content" id="temps-content">
     <div class="metro-panel">
-      <div class="metro-row">
-        <span class="metro-row-lbl">Accent ①</span>
-        <button class="btn-metro-on" id="btn-metro-accent">OFF</button>
-      </div>
-      <div class="metro-row">
-        <span class="metro-row-lbl">Temps</span>
-        <button class="btn-metro-on on" id="btn-metro-temps">ON</button>
-      </div>
-      <div class="metro-row">
-        <span class="metro-row-lbl">Subdiv.</span>
-        <select class="metro-subdiv-sel" id="metro-subdiv-sel">
-          <option value="2">÷2</option>
-          <option value="3">÷3</option>
-          <option value="4">÷4</option>
-        </select>
-        <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
-      </div>
+      <span class="metro-row-lbl">Accent ①</span>
+      <button class="btn-metro-on" id="btn-metro-accent">OFF</button>
+      <span class="metro-sep">·</span>
+      <span class="metro-row-lbl">Temps</span>
+      <button class="btn-metro-on on" id="btn-metro-temps">ON</button>
+      <span class="metro-sep">·</span>
+      <span class="metro-row-lbl">Subdiv.</span>
+      <select class="metro-subdiv-sel" id="metro-subdiv-sel">
+        <option value="2">÷2</option>
+        <option value="3">÷3</option>
+        <option value="4">÷4</option>
+      </select>
+      <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
     </div>
   </div>
   <!-- Panel réglages -->
@@ -1199,8 +1194,8 @@ const SIGNATURES=[
   {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2},
   {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3},
   {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4},
-  {id:'3/2', beatSym:'𝅗𝅥',  stepsPerBeat:4, beatsPerMeasure:3},
-  {id:'2/2', beatSym:'𝅗𝅥',  stepsPerBeat:4, beatsPerMeasure:2},
+  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3},
+  {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2},
 ];
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
@@ -1498,7 +1493,7 @@ function buildBandSection(){
   cont.innerHTML='';
 
   const bar=document.createElement('div');
-  bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
+  bar.className='section-bar band-bar';
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
   bar.appendChild(lbl);
@@ -3793,11 +3788,11 @@ function attachEvents(){
   // ── Sons ──
   document.getElementById('btn-sons').addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
-    const bar=document.querySelector('.band-bar');
-    if(bar)bar.classList.toggle('visible',sonsOuvert);
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
+    const btnV=document.querySelector('.band-bar .btn-volet');
+    if(btnV){btnV.textContent=sonsOuvert?'Sons ▼':'Sons ▶';btnV.classList.toggle('open',sonsOuvert);}
   });
 
   // ── Titre BoomTchak → encyclo ──
@@ -3973,6 +3968,7 @@ function start(){
 // Lancer l'application
 start();
 attachEvents();
+setView(true); // vue circulaire par défaut
 </script>
 </body>
 </html>
