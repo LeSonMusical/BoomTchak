@@ -397,14 +397,14 @@ body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color
 body.dark-mode .section-bar-lbl{color:inherit}
 body.dark-mode .groove-bar{background:#28251a;border-bottom-color:#3a3520}
 body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
-body.dark-mode .groove-bar select{background:#1e1a08;color:#c8961a;border-color:#5a4820}
+body.dark-mode .groove-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
 body.dark-mode .band-bar .section-bar-lbl{color:#7ab0cc}
-body.dark-mode .band-bar select{background:#0d1e2a;color:#7ab0cc;border-color:#3a5a70}
+body.dark-mode .band-bar select,body.dark-mode #band-style-sel{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-sounds-wrap{border-left-color:#3a5a70}
 body.dark-mode .encyclo-bar{background:#252522;border-left-color:#555}
 body.dark-mode .encyclo-bar .section-bar-lbl{color:#888}
-body.dark-mode .encyclo-bar select{background:#202020;color:#999;border-color:#444}
+body.dark-mode .encyclo-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
 body.dark-mode #layers{border-left-color:#4a4020}
@@ -414,7 +414,7 @@ body.dark-mode .layer-row2{background:#252522}
 body.dark-mode .layer-select{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
 body.dark-mode .btn-mute-sq{background:#1c1c1a;border:1.5px solid var(--cc);color:var(--cc)}
 body.dark-mode .btn-mute-sq.muted{background:#2a2a28;border:1.5px solid #444;color:#555}
-body.dark-mode .instr-sel{background:#0d1e2a;color:#7ab0cc;border-color:#3a5a70}
+body.dark-mode .instr-sel{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
 body.dark-mode .step.soft{background:var(--cs);border-color:var(--cc)}
@@ -469,7 +469,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.5.4</span>
+      <span class="app-version">v2.5.8</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1308,6 +1308,19 @@ function updateGrooveSaveBtn(){
 function updateEncycloSaveBtn(){
   setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
 }
+function refreshMenuBtnStates(){
+  if(currentMode==='tx') return; // TX : toujours actif, rien à faire
+  const hasGrooveUser=packCours.grooves.some(g=>g.source==='user');
+  document.querySelectorAll('.menu-btn-groove').forEach(b=>{
+    b.disabled=!hasGrooveUser;b.style.opacity=hasGrooveUser?'':'0.25';
+    b.title=hasGrooveUser?'Gérer le menu':'Aucun groove user';
+  });
+  const hasPatUser=packCours.patterns.some(p=>p.source==='user');
+  document.querySelectorAll('.menu-btn-pat').forEach(b=>{
+    b.disabled=!hasPatUser;b.style.opacity=hasPatUser?'':'0.25';
+    b.title=hasPatUser?'Gérer le menu':'Aucun pattern user';
+  });
+}
 let sonsOuvert = false;
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
 
@@ -1401,6 +1414,7 @@ function buildBandSection(){
 
   // Select style de band
   const sel=document.createElement('select');
+  sel.id='band-style-sel';
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #8ab4d0;border-radius:4px;background:#fff;color:#1a1a18';
   BAND_STYLES.forEach(bs=>{
     const o=document.createElement('option');o.value=bs.id;o.textContent=bs.label;sel.appendChild(o);
@@ -1464,7 +1478,7 @@ function buildGrooveSection(){
   grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
   grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
   const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
-  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='Perso';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
+  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='User';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
   packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
   bar.appendChild(grooveFamSel);
 
@@ -1487,7 +1501,8 @@ function buildGrooveSection(){
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
   const menuBtnGroove=mkBtnMenu(()=>openLibPanelGrooves());
-  if(!packCours.grooves.some(g=>g.source==='user')){menuBtnGroove.disabled=true;menuBtnGroove.style.opacity='0.25';menuBtnGroove.title='Aucun groove perso';}
+  menuBtnGroove.classList.add('menu-btn-groove');
+  if(currentMode!=='tx'&&!packCours.grooves.some(g=>g.source==='user')){menuBtnGroove.disabled=true;menuBtnGroove.style.opacity='0.25';menuBtnGroove.title='Aucun groove user';}
   bar.appendChild(menuBtnGroove);
 
   // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
@@ -1574,7 +1589,7 @@ function buildLayers(){
     const famSel=document.createElement('select');
     famSel.className='fam-filter';famSel.title='Filtrer par famille';
     const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
-    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='Perso';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
+    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='User';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
     });
@@ -1634,7 +1649,8 @@ function buildLayers(){
     row1.appendChild(saveBtn);
     // ≡ gestion bibliothèque patterns
     const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
-    if(!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern perso';}
+    menuBtnPat.classList.add('menu-btn-pat');
+    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern user';}
     row1.appendChild(menuBtnPat);
     // i info
     row1.appendChild(btnI);
@@ -1995,6 +2011,7 @@ function pspDoSaveNewPattern(){
   if(sel){ buildPatternSelect(sel,'all'); sel.value = newPat.id; }
 
   saveToStorage(); setLayerDirty(li,false);
+  refreshMenuBtnStates();
   if(btn) flashSave(btn);
   closePatSavePop();
 }
@@ -2062,6 +2079,7 @@ function pspDoSaveNewGroove(){
   currentGrooveId = newGroove.id;
   saveToStorage();
   grooveDirty = false; updateGrooveSaveBtn();
+  refreshMenuBtnStates();
   if(btn) flashSave(btn);
   closePatSavePop();
   // Rebuild l'encyclo pour inclure la nouvelle entrée
@@ -2163,6 +2181,7 @@ function doSaveNewGroove(){
   saveToStorage();
   grooveDirty=false;
   updateGrooveSaveBtn();
+  refreshMenuBtnStates();
   if(btn)flashSave(btn);
   closeSaveSheet();
 }
@@ -2218,7 +2237,7 @@ function rebuildAllFamFilters(){
   document.querySelectorAll('.fam-filter').forEach(sel=>{
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
-    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='Perso';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
+    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='User';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
@@ -2230,7 +2249,7 @@ function rebuildAllFamFilters(){
     if(!panelFil) return;
     const prev = panelFil.value;
     panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
-    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— Perso —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
+    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— User —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
     });
@@ -2396,7 +2415,7 @@ function buildEncycloSection(){
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
   bar.appendChild(saveBtnEnc);
-  if(currentMode==='tx') bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
+  if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='user')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -2873,7 +2892,7 @@ function buildLibListPatterns(){
       badge.textContent = 'défaut'; item.appendChild(badge);
     } else if(pat.source === 'user'){
       const badge = document.createElement('span'); badge.className = 'lib-source-badge lib-source-badge-user';
-      badge.textContent = 'perso'; item.appendChild(badge);
+      badge.textContent = 'user'; item.appendChild(badge);
     }
 
     // Bouton supprimer 🗑
@@ -3204,7 +3223,7 @@ function rebuildGrooveFamFilter(){
   const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="all">Toutes les familles</option>';
-  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— Perso —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
+  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— User —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
   packCours.familles.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
   });
@@ -3248,7 +3267,7 @@ function buildLibListGrooves(){
     if(groove.source==='default'||!groove.source){
       const badge=document.createElement('span');badge.className='lib-source-badge';badge.textContent='défaut';item.appendChild(badge);
     } else if(groove.source==='user'){
-      const badge=document.createElement('span');badge.className='lib-source-badge lib-source-badge-user';badge.textContent='perso';item.appendChild(badge);
+      const badge=document.createElement('span');badge.className='lib-source-badge lib-source-badge-user';badge.textContent='user';item.appendChild(badge);
     }
 
     const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
