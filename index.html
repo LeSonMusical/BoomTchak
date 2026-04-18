@@ -47,9 +47,12 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
-.btn-metro-volet{padding:2px 7px;cursor:pointer;font-size:10px;font-weight:600;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s,background .12s,border-color .12s}
-.btn-metro-volet:hover{color:#4a3d8a}
-.btn-metro-volet.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+/* Bouton Métro : pilule on/off (comme les labels de couche) */
+.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 6px;height:22px;min-width:38px;background:#d8d2e8;color:#6B5FA5;transition:background .15s,color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.btn-metro-main.on{background:#6B5FA5;color:#fff}
+/* Bouton Accents (panel toggle) */
+.btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
+.btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .temps-content.open{max-height:160px}
 .metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
@@ -449,9 +452,10 @@ body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
 body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#8878c8;border-color:#1e1c2a}
+body.dark-mode .btn-metro-main{background:#2e2840;color:#a89fd0}
+body.dark-mode .btn-metro-main.on{background:#6B5FA5;color:#fff}
 body.dark-mode .btn-metro-volet{color:#6858a8}
-body.dark-mode .btn-metro-volet:hover{color:#a89fd0}
-body.dark-mode .btn-metro-volet.on{background:#4a3d8a;color:#e0ddd8;border-color:#6B5FA5}
+body.dark-mode .btn-metro-volet:hover,.btn-metro-volet.open{color:#a89fd0}
 body.dark-mode .metro-panel{border-left-color:#3a3448}
 body.dark-mode .metro-row-lbl{color:#555}
 body.dark-mode .btn-metro-on{background:#252330;color:#8878c8;border-color:#3a3448}
@@ -518,7 +522,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.7</span>
+      <span class="app-version">v2.6.8</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -534,7 +538,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
-    <span class="section-bar-lbl">Temps</span>
+    <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <select class="sig-sel" id="sig-sel">
       <option value="2/4">2/4</option>
       <option value="3/4">3/4</option>
@@ -549,7 +553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
-    <button class="btn-metro-volet" id="btn-metro-volet">Métro ▶</button>
+    <button class="btn-metro-volet" id="btn-metro-volet">Accents ▶</button>
   </div>
   <div class="temps-content" id="temps-content">
     <div class="metro-panel">
@@ -3805,19 +3809,23 @@ function attachEvents(){
 
     btnT.addEventListener('pointercancel',()=>{_dragging=false;});
   }
-  // ── Metro volet : toggle panel ET on/off global du métronome ──
-  // Pas de bouton séparé : ouvrir le panel = activer le métro, fermer = désactiver
+  // ── Bouton Métro (on/off global) ──
   function setMetroGlobal(on){
     metro.globalOn=on;
-    const content=document.getElementById('temps-content');
-    const btn=document.getElementById('btn-metro-volet');
-    content.classList.toggle('open',on);
-    btn.textContent=on?'Métro ▼':'Métro ▶';
-    btn.classList.toggle('on',on);
+    const btn=document.getElementById('btn-metro-main');
+    if(btn) btn.classList.toggle('on',on);
     if(on){metroBeatPos=0; metroNextBeatTime=getAC().currentTime;}
   }
-  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
+  document.getElementById('btn-metro-main').addEventListener('click',()=>{
     setMetroGlobal(!metro.globalOn);
+  });
+  // ── Bouton Accents (panel seul, indépendant du on/off) ──
+  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
+    const content=document.getElementById('temps-content');
+    const btn=document.getElementById('btn-metro-volet');
+    const open=content.classList.toggle('open');
+    btn.textContent=open?'Accents ▼':'Accents ▶';
+    btn.classList.toggle('open',open);
   });
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
@@ -3849,50 +3857,69 @@ function attachEvents(){
   });
 
   // ── Tap Tempo ──
-  // _tapTimes et _tapN sont globaux (déclarés en tête de script)
-  // n = nombre de temps à collecter avant évaluation (défaut = beatsPerMeasure)
+  // _tapTimes et _tapN sont globaux. n = nb de temps à collecter avant évaluation.
   {
     const tapBtn=document.getElementById('btn-tap-tempo');
     const tapNInput=document.getElementById('tap-n-input');
     const tapCount=document.getElementById('tap-count');
+    let _metroSavedOn=false; // état métro sauvegardé pendant la frappe
 
-    // Initialiser n depuis la signature courante
     _tapN=currentSig.beatsPerMeasure;
     tapNInput.value=_tapN;
 
-    // L'utilisateur peut changer n manuellement
     tapNInput.addEventListener('change',function(){
       _tapN=Math.max(1,Math.min(7,parseInt(this.value)||4));
       this.value=_tapN;
       _tapTimes=[]; tapCount.textContent='';
+      // Restaurer le métro si on était en cours de tap
+      metro.globalOn=_metroSavedOn;
+      const mb=document.getElementById('btn-metro-main');
+      if(mb) mb.classList.toggle('on',_metroSavedOn);
     });
 
     tapBtn.addEventListener('pointerdown',e=>{
       e.preventDefault();
       const now=performance.now();
-      // Réinitialiser si silence > 3 s depuis le dernier tap
-      if(_tapTimes.length && now-_tapTimes[_tapTimes.length-1]>3000){
+
+      // Reset si silence > 3 temps depuis le dernier tap
+      const silenceMs=3*getMetroBeatSec()*1000;
+      if(_tapTimes.length && now-_tapTimes[_tapTimes.length-1]>silenceMs){
+        metro.globalOn=_metroSavedOn;
+        const mb=document.getElementById('btn-metro-main');
+        if(mb) mb.classList.toggle('on',_metroSavedOn);
+        if(_metroSavedOn){metroBeatPos=0;metroNextBeatTime=getAC().currentTime;}
         _tapTimes=[]; tapCount.textContent='';
       }
-      _tapTimes.push(now);
 
-      const tapsDone=_tapTimes.length-1; // nombre d'intervalles enregistrés
-      if(tapsDone>0 && tapsDone<_tapN){
-        // En cours d'acquisition — afficher le compteur
-        tapCount.textContent=tapsDone+'/'+_tapN;
+      // Premier tap : sauvegarder et couper le métro
+      if(_tapTimes.length===0){
+        _metroSavedOn=metro.globalOn;
+        metro.globalOn=false;
+        const mb=document.getElementById('btn-metro-main');
+        if(mb) mb.classList.remove('on');
       }
 
-      if(tapsDone>=_tapN){
-        // Suffisamment d'intervalles : calculer sur les _tapN derniers
+      _tapTimes.push(now);
+      const numTaps=_tapTimes.length;
+
+      // Afficher le compteur dès le 1er tap : "1/n", "2/n" ...
+      tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
+
+      // Évaluer quand on a n+1 taps (= n intervalles)
+      if(numTaps>=_tapN+1){
         const recent=_tapTimes.slice(-(_tapN+1));
         const intervals=[];
         for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
-        const bpmTapped=60000/avgMs;           // BPM en unités de temps de la signature
-        const spm=Math.round(bpmTapped*currentSig.stepsPerBeat);
+        const spm=Math.round((60000/avgMs)*currentSig.stepsPerBeat);
         document.getElementById('bpm').value=Math.max(40,Math.min(960,spm));
         updateBeatDisplay();
-        // Réinitialiser pour la prochaine série (conserver le dernier tap comme premier)
+        // Restaurer le métro
+        metro.globalOn=_metroSavedOn;
+        const mb=document.getElementById('btn-metro-main');
+        if(mb) mb.classList.toggle('on',_metroSavedOn);
+        if(_metroSavedOn){metroBeatPos=0;metroNextBeatTime=getAC().currentTime;}
+        // Réinitialiser pour la prochaine série
         _tapTimes=[now];
         tapCount.textContent='';
       }
