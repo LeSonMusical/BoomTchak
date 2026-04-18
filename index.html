@@ -50,7 +50,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* Bouton Métro : pilule on/off (comme les labels de couche) */
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 6px;height:22px;min-width:38px;background:#d8d2e8;color:#6B5FA5;transition:background .15s,color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .btn-metro-main.on{background:#6B5FA5;color:#fff}
-/* Bouton Accents (panel toggle) */
+/* Bouton Pulsation (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
@@ -522,7 +522,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.8</span>
+      <span class="app-version">v2.6.9</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -553,7 +553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
-    <button class="btn-metro-volet" id="btn-metro-volet">Accents ▶</button>
+    <button class="btn-metro-volet" id="btn-metro-volet">Pulsation ▶</button>
   </div>
   <div class="temps-content" id="temps-content">
     <div class="metro-panel">
@@ -1238,7 +1238,9 @@ const SIGNATURES=[
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
 // ── État métronome ────────────────────────────────────────────────────────
-let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2, globalOn:false};
+let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true};
+// metro.muted=true  → Métro OFF : timing en sync avec Play, mais aucun son émis
+// metro.muted=false → Métro ON  : les clics sont audibles
 let metroBeatPos=0, metroNextBeatTime=0;
 let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 
@@ -1291,17 +1293,21 @@ function scheduler(){
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
   });
-  // ── Métronome ────────────────────────────────────────────────────────────
-  if(metro.globalOn&&(metro.tempsOn||metro.accentOn||metro.subdivOn)){
+  // ── Métronome ─────────────────────────────────────────────────────────────
+  // La boucle timing avance TOUJOURS avec Play pour rester en sync.
+  // Les clics audio ne sont émis que si non-muté (metro.muted=false).
+  {
     const nowM=getAC().currentTime;
     const beatSec=getMetroBeatSec();
     while(metroNextBeatTime<nowM+LOOKAHEAD){
-      const isFirst=metroBeatPos===0;
-      if(isFirst&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
-      else if(metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
-      if(metro.subdivOn){
-        for(let s=1;s<metro.subdivDiv;s++){
-          playMetroClick(metroNextBeatTime+beatSec*s/metro.subdivDiv,'subdiv');
+      if(!metro.muted){
+        const isFirst=metroBeatPos===0;
+        if(isFirst&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
+        else if(metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
+        if(metro.subdivOn){
+          for(let s=1;s<metro.subdivDiv;s++){
+            playMetroClick(metroNextBeatTime+beatSec*s/metro.subdivDiv,'subdiv');
+          }
         }
       }
       metroNextBeatTime+=beatSec;
@@ -3811,20 +3817,20 @@ function attachEvents(){
   }
   // ── Bouton Métro (on/off global) ──
   function setMetroGlobal(on){
-    metro.globalOn=on;
+    metro.muted=!on; // on=true → muted=false (son audible)
     const btn=document.getElementById('btn-metro-main');
     if(btn) btn.classList.toggle('on',on);
-    if(on){metroBeatPos=0; metroNextBeatTime=getAC().currentTime;}
+    // Pas de manipulation AudioContext ici : Play gère le déclenchement/arrêt
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    setMetroGlobal(!metro.globalOn);
+    setMetroGlobal(!metro.muted);
   });
-  // ── Bouton Accents (panel seul, indépendant du on/off) ──
+  // ── Bouton Pulsation (panel seul, indépendant du on/off) ──
   document.getElementById('btn-metro-volet').addEventListener('click',()=>{
     const content=document.getElementById('temps-content');
     const btn=document.getElementById('btn-metro-volet');
     const open=content.classList.toggle('open');
-    btn.textContent=open?'Accents ▼':'Accents ▶';
+    btn.textContent=open?'Pulsation ▼':'Pulsation ▶';
     btn.classList.toggle('open',open);
   });
   // ── Signature ──
@@ -3857,24 +3863,29 @@ function attachEvents(){
   });
 
   // ── Tap Tempo ──
-  // _tapTimes et _tapN sont globaux. n = nb de temps à collecter avant évaluation.
+  // Séquence : n coups → calcul du tempo ; coup n+1 → le métronome repart en sync
+  // metro.muted est utilisé (pas metro.globalOn supprimé)
   {
     const tapBtn=document.getElementById('btn-tap-tempo');
     const tapNInput=document.getElementById('tap-n-input');
     const tapCount=document.getElementById('tap-count');
-    let _metroSavedOn=false; // état métro sauvegardé pendant la frappe
+    let _metroSavedMuted=true; // état mute sauvegardé pendant la frappe
+    let _tapCalculated=false;  // true après n coups, en attente du coup n+1
 
     _tapN=currentSig.beatsPerMeasure;
     tapNInput.value=_tapN;
 
+    function _tapReset(){
+      metro.muted=_metroSavedMuted;
+      const mb=document.getElementById('btn-metro-main');
+      if(mb) mb.classList.toggle('on',!_metroSavedMuted);
+      _tapTimes=[]; _tapCalculated=false;
+      tapCount.textContent='';
+    }
+
     tapNInput.addEventListener('change',function(){
       _tapN=Math.max(1,Math.min(7,parseInt(this.value)||4));
-      this.value=_tapN;
-      _tapTimes=[]; tapCount.textContent='';
-      // Restaurer le métro si on était en cours de tap
-      metro.globalOn=_metroSavedOn;
-      const mb=document.getElementById('btn-metro-main');
-      if(mb) mb.classList.toggle('on',_metroSavedOn);
+      this.value=_tapN; _tapReset();
     });
 
     tapBtn.addEventListener('pointerdown',e=>{
@@ -3884,44 +3895,47 @@ function attachEvents(){
       // Reset si silence > 3 temps depuis le dernier tap
       const silenceMs=3*getMetroBeatSec()*1000;
       if(_tapTimes.length && now-_tapTimes[_tapTimes.length-1]>silenceMs){
-        metro.globalOn=_metroSavedOn;
-        const mb=document.getElementById('btn-metro-main');
-        if(mb) mb.classList.toggle('on',_metroSavedOn);
-        if(_metroSavedOn){metroBeatPos=0;metroNextBeatTime=getAC().currentTime;}
-        _tapTimes=[]; tapCount.textContent='';
+        _tapReset();
       }
 
-      // Premier tap : sauvegarder et couper le métro
+      // Premier tap : sauvegarder l'état mute et muter le métro
       if(_tapTimes.length===0){
-        _metroSavedOn=metro.globalOn;
-        metro.globalOn=false;
+        _metroSavedMuted=metro.muted;
+        metro.muted=true; // couper le son pendant la frappe
         const mb=document.getElementById('btn-metro-main');
         if(mb) mb.classList.remove('on');
+        _tapCalculated=false;
       }
 
       _tapTimes.push(now);
       const numTaps=_tapTimes.length;
 
-      // Afficher le compteur dès le 1er tap : "1/n", "2/n" ...
+      // ── Coup n+1 : lancer le métronome au nouveau tempo ──
+      if(_tapCalculated){
+        metro.muted=_metroSavedMuted;
+        const mb=document.getElementById('btn-metro-main');
+        if(mb) mb.classList.toggle('on',!_metroSavedMuted);
+        // Sync : ce coup est le temps 1 du nouveau tempo
+        metroBeatPos=0; metroNextBeatTime=getAC().currentTime;
+        _tapTimes=[now]; _tapCalculated=false;
+        tapCount.textContent='';
+        return;
+      }
+
+      // Afficher compteur : 1/n → n/n
       tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
 
-      // Évaluer quand on a n+1 taps (= n intervalles)
-      if(numTaps>=_tapN+1){
-        const recent=_tapTimes.slice(-(_tapN+1));
+      // ── n coups atteints : calculer le tempo ──
+      if(numTaps>=_tapN){
+        const recent=_tapTimes.slice(-_tapN);          // n taps = n-1 intervalles
         const intervals=[];
         for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
         const spm=Math.round((60000/avgMs)*currentSig.stepsPerBeat);
         document.getElementById('bpm').value=Math.max(40,Math.min(960,spm));
         updateBeatDisplay();
-        // Restaurer le métro
-        metro.globalOn=_metroSavedOn;
-        const mb=document.getElementById('btn-metro-main');
-        if(mb) mb.classList.toggle('on',_metroSavedOn);
-        if(_metroSavedOn){metroBeatPos=0;metroNextBeatTime=getAC().currentTime;}
-        // Réinitialiser pour la prochaine série
-        _tapTimes=[now];
-        tapCount.textContent='';
+        _tapCalculated=true;       // en attente du coup n+1 pour lancer le métro
+        tapCount.textContent='▶';  // signal visuel : "tape encore une fois"
       }
     },{passive:false});
   }
