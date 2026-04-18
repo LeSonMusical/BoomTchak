@@ -27,6 +27,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
+.btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
 .btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
 .btn-view:hover{background:#e8e5e0}
 
@@ -500,11 +501,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.2</span>
+      <span class="app-version">v2.6.3</span>
     </div>
   </div>
   <div class="top-bar-right">
-    <button class="btn-top" id="btn-tempo">Tempo</button>
+    <button class="btn-top btn-tempo-display" id="btn-tempo">♩= 100</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <button class="btn-top" id="btn-settings" title="Réglages">⚙</button>
@@ -1570,6 +1571,11 @@ function buildGrooveSection(){
   const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='User';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
   packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
   bar.appendChild(grooveFamSel);
+  // ≡ avant le select groove
+  const menuBtnGrooveEarly=mkBtnMenu(()=>openLibPanelGrooves());
+  menuBtnGrooveEarly.classList.add('menu-btn-groove');
+  if(currentMode!=='tx'&&!packCours.grooves.some(g=>g.source==='user')){menuBtnGrooveEarly.disabled=true;menuBtnGrooveEarly.style.opacity='0.25';menuBtnGrooveEarly.title='Aucun groove user';}
+  bar.appendChild(menuBtnGrooveEarly);
 
   const sel=document.createElement('select');
   sel.id='groove-select';
@@ -1589,10 +1595,6 @@ function buildGrooveSection(){
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
-  const menuBtnGroove=mkBtnMenu(()=>openLibPanelGrooves());
-  menuBtnGroove.classList.add('menu-btn-groove');
-  if(currentMode!=='tx'&&!packCours.grooves.some(g=>g.source==='user')){menuBtnGroove.disabled=true;menuBtnGroove.style.opacity='0.25';menuBtnGroove.title='Aucun groove user';}
-  bar.appendChild(menuBtnGroove);
 
   // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
   const btnI=document.createElement('button');
@@ -2636,8 +2638,11 @@ function updateSpmDisplay(){
 function updateBeatDisplay(){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
   const bpm=Math.round(spm/currentSig.stepsPerBeat);
+  const txt=currentSig.beatSym+'= '+bpm;
   const el=document.getElementById('beat-display');
-  if(el) el.textContent=currentSig.beatSym+'= '+bpm;
+  if(el) el.textContent=txt;
+  const btn=document.getElementById('btn-tempo');
+  if(btn) btn.textContent=txt;
 }
 function getMetroBeatSec(){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
@@ -3708,17 +3713,47 @@ function loadFromStorage(){
 }
 
 function attachEvents(){
-  // ── Btn Tempo → toggle section Temps (wrapper entier) ──
-  document.getElementById('btn-tempo').addEventListener('click',()=>{
-    const wrap=document.getElementById('temps-wrap');
-    const hidden=wrap.style.display==='none';
-    wrap.style.display=hidden?'':'none';
-    document.getElementById('btn-tempo').classList.toggle('active',hidden);
-    if(!hidden){ // on cache → fermer réglages si ouvert
-      document.getElementById('panel-settings').classList.remove('open');
-      document.getElementById('btn-settings').classList.remove('active');
+  // ── Btn Tempo : tap = toggle section Temps, drag horizontal = changer le tempo ──
+  {
+    const btnT=document.getElementById('btn-tempo');
+    const bpmSlider=document.getElementById('bpm');
+    let _startX=0,_startVal=0,_dragging=false,_dragMoved=false;
+    const DRAG_THRESHOLD=4; // px avant de passer en mode drag
+    const SPM_PER_PX=1;     // 1 spm par pixel
+
+    function toggleTempsWrap(){
+      const wrap=document.getElementById('temps-wrap');
+      const hidden=wrap.style.display==='none';
+      wrap.style.display=hidden?'':'none';
+      btnT.classList.toggle('active',hidden);
     }
-  });
+
+    btnT.addEventListener('pointerdown',e=>{
+      _startX=e.clientX;
+      _startVal=parseInt(bpmSlider.value);
+      _dragging=true; _dragMoved=false;
+      btnT.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    },{passive:false});
+
+    btnT.addEventListener('pointermove',e=>{
+      if(!_dragging)return;
+      const dx=e.clientX-_startX;
+      if(!_dragMoved&&Math.abs(dx)<DRAG_THRESHOLD)return;
+      _dragMoved=true;
+      const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
+      bpmSlider.value=newVal;
+      updateBeatDisplay();
+    });
+
+    btnT.addEventListener('pointerup',e=>{
+      if(!_dragging)return;
+      _dragging=false;
+      if(!_dragMoved) toggleTempsWrap(); // tap simple → toggle section
+    });
+
+    btnT.addEventListener('pointercancel',()=>{_dragging=false;});
+  }
   // ── Metro volet toggle (bouton dans la barre) ──
   document.getElementById('btn-metro-volet').addEventListener('click',()=>{
     const content=document.getElementById('temps-content');
