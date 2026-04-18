@@ -47,8 +47,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
-.btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
-.btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
+.btn-metro-volet{padding:2px 7px;cursor:pointer;font-size:10px;font-weight:600;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s,background .12s,border-color .12s}
+.btn-metro-volet:hover{color:#4a3d8a}
+.btn-metro-volet.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .temps-content.open{max-height:160px}
 .metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
@@ -57,9 +58,12 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
-.tap-tempo-row{padding:.2rem .5rem .35rem .5rem;margin-left:4px}
-.btn-tap-tempo{width:100%;padding:5px 12px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
+.tap-tempo-row{padding:.2rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:6px}
+.tap-n-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0}
+.tap-n-input{width:32px;font-size:11px;text-align:center;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;padding:2px 3px;flex-shrink:0}
+.btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
+.tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -446,7 +450,8 @@ body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-col
 body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#8878c8;border-color:#1e1c2a}
 body.dark-mode .btn-metro-volet{color:#6858a8}
-body.dark-mode .btn-metro-volet:hover,.btn-metro-volet.open{color:#a89fd0}
+body.dark-mode .btn-metro-volet:hover{color:#a89fd0}
+body.dark-mode .btn-metro-volet.on{background:#4a3d8a;color:#e0ddd8;border-color:#6B5FA5}
 body.dark-mode .metro-panel{border-left-color:#3a3448}
 body.dark-mode .metro-row-lbl{color:#555}
 body.dark-mode .btn-metro-on{background:#252330;color:#8878c8;border-color:#3a3448}
@@ -454,6 +459,8 @@ body.dark-mode .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d
 body.dark-mode .metro-subdiv-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3d8a}
 body.dark-mode .btn-tap-tempo:active{background:#3a3448}
+body.dark-mode .tap-n-input{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
+body.dark-mode .tap-count{color:#a89fd0}
 body.dark-mode .instr-sel{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
@@ -511,7 +518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.6</span>
+      <span class="app-version">v2.6.7</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -561,7 +568,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
     </div>
     <div class="tap-tempo-row">
-      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap tempo</button>
+      <span class="tap-n-lbl">n =</span>
+      <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="7" value="4">
+      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap</button>
+      <span class="tap-count" id="tap-count"></span>
     </div>
   </div>
   </div><!-- /temps-wrap -->
@@ -1205,27 +1215,28 @@ const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
 
 // ── Signatures rythmiques ─────────────────────────────────────────────────
 const SIGNATURES=[
-  // stepsPerBeat = nombre de steps par unité de temps (beat)
-  // Les patterns existants utilisent la croche (1/8) comme résolution de base :
-  // Simple (noire = beat) : 1 noire = 2 croches → stepsPerBeat = 2
-  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2},
-  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3},
-  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4},
-  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5},
-  // Composé (noire pointée = beat) : 1 noire. = 3 croches → stepsPerBeat = 3
-  {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2},
-  {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3},
-  {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4},
-  // Alla breve (blanche = beat) : 1 blanche = 4 croches → stepsPerBeat = 4
-  {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2},
-  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3},
-  {id:'4/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:4},
+  // stepsPerBeat  : utilisé pour tap tempo et métronome (base croche = résolution des patterns)
+  // beatSteps     : intervalle VISUEL du séparateur, lié à l'unité de temps de la signature
+  //   ♩ (bas=4)  : step=double croche → 1 temps = 4 steps (beatSteps=4)
+  //   ♩.(bas=8)  : step=croche        → 1 temps = 3 steps (beatSteps=3)
+  //   𝅗𝅥 (bas=2) : step=croche        → 1 temps = 4 steps (beatSteps=4)
+  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2, beatSteps:4},
+  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3, beatSteps:4},
+  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4, beatSteps:4},
+  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5, beatSteps:4},
+  {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2, beatSteps:3},
+  {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3, beatSteps:3},
+  {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4, beatSteps:3},
+  {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2, beatSteps:4},
+  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3, beatSteps:4},
+  {id:'4/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:4, beatSteps:4},
 ];
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
 // ── État métronome ────────────────────────────────────────────────────────
-let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2};
+let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2, globalOn:false};
 let metroBeatPos=0, metroNextBeatTime=0;
+let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
@@ -1277,7 +1288,7 @@ function scheduler(){
     }
   });
   // ── Métronome ────────────────────────────────────────────────────────────
-  if(metro.tempsOn||metro.accentOn||metro.subdivOn){
+  if(metro.globalOn&&(metro.tempsOn||metro.accentOn||metro.subdivOn)){
     const nowM=getAC().currentTime;
     const beatSec=getMetroBeatSec();
     while(metroNextBeatTime<nowM+LOOKAHEAD){
@@ -1956,26 +1967,19 @@ function buildStepsDOM(li,wrap){
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
 
-  // Séparateurs de temps piano-roll :
-  // interval = arrondi(pas_du_pattern / beats_par_mesure)  ex: 8 steps en 4/4 → 2 steps/beat
-  const beatInterval = currentSig ? Math.round(pat.length / currentSig.beatsPerMeasure) : 0;
-  const showBeatSep = beatInterval >= 2;
-  // Largeur d'un step + gap flex (2px) pour le calcul de position
+  // Séparateurs de temps piano-roll : liés à l'unité de temps de la signature (beatSteps)
+  // beatSteps = noire→4, noire pointée→3, blanche→4  (indépendant de la longueur du pattern)
+  const sepInterval = currentSig ? currentSig.beatSteps : 4;
   const sw = window.innerWidth < 600 ? 20 : 22;
-  const stepPitch = sw + 2; // px par step dans le flux flex
+  const stepPitch = sw + 2; // px par step (largeur + gap flex)
 
-  // Insérer les lignes séparatrices AVANT les steps (position:absolute, hors flux)
-  if(showBeatSep){
-    for(let beat=1; beat*beatInterval < pat.length; beat++){
-      const si = beat * beatInterval;
-      // Décalage si en 2e ligne (wrap) — li.wrapped mis à jour après
-      const rowSi = (ha && si >= ha) ? si - ha : si;
-      const line=document.createElement('div');
-      line.className='beat-sep-line';
-      // Positionné dans le gap avant le step si : si*(sw+2) - 1px
-      line.style.left = (rowSi * stepPitch - 1) + 'px';
-      div.appendChild(line);
-    }
+  // Insérer les lignes séparatrices (position:absolute, hors flux flex)
+  for(let si = sepInterval; si < pat.length; si += sepInterval){
+    const rowSi = (ha && si >= ha) ? si - ha : si;
+    const line = document.createElement('div');
+    line.className = 'beat-sep-line';
+    line.style.left = (rowSi * stepPitch - 1) + 'px';
+    div.appendChild(line);
   }
 
   pat.forEach((p,si)=>{
@@ -3801,20 +3805,32 @@ function attachEvents(){
 
     btnT.addEventListener('pointercancel',()=>{_dragging=false;});
   }
-  // ── Metro volet toggle (bouton dans la barre) ──
-  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
+  // ── Metro volet : toggle panel ET on/off global du métronome ──
+  // Pas de bouton séparé : ouvrir le panel = activer le métro, fermer = désactiver
+  function setMetroGlobal(on){
+    metro.globalOn=on;
     const content=document.getElementById('temps-content');
     const btn=document.getElementById('btn-metro-volet');
-    const open=content.classList.toggle('open');
-    btn.textContent=open?'Métro ▼':'Métro ▶';
-    btn.classList.toggle('open',open);
-    document.getElementById('btn-tempo').classList.toggle('active',open);
+    content.classList.toggle('open',on);
+    btn.textContent=on?'Métro ▼':'Métro ▶';
+    btn.classList.toggle('on',on);
+    if(on){metroBeatPos=0; metroNextBeatTime=getAC().currentTime;}
+  }
+  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
+    setMetroGlobal(!metro.globalOn);
   });
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
     currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
     updateBeatDisplay();
-    // Reconstruire les steps pour mettre à jour les séparateurs de temps
+    // Mettre à jour n tap tempo selon la nouvelle signature (si l'utilisateur n'a pas forcé une valeur)
+    _tapN=currentSig.beatsPerMeasure;
+    const ni=document.getElementById('tap-n-input');
+    if(ni) ni.value=_tapN;
+    _tapTimes=[];
+    const tc=document.getElementById('tap-count');
+    if(tc) tc.textContent='';
+    // Reconstruire les steps pour mettre à jour les séparateurs
     LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
   });
   // ── Boutons métronome ──
@@ -3833,25 +3849,52 @@ function attachEvents(){
   });
 
   // ── Tap Tempo ──
+  // _tapTimes et _tapN sont globaux (déclarés en tête de script)
+  // n = nombre de temps à collecter avant évaluation (défaut = beatsPerMeasure)
   {
-    let _tapTimes=[];
-    document.getElementById('btn-tap-tempo').addEventListener('pointerdown',e=>{
+    const tapBtn=document.getElementById('btn-tap-tempo');
+    const tapNInput=document.getElementById('tap-n-input');
+    const tapCount=document.getElementById('tap-count');
+
+    // Initialiser n depuis la signature courante
+    _tapN=currentSig.beatsPerMeasure;
+    tapNInput.value=_tapN;
+
+    // L'utilisateur peut changer n manuellement
+    tapNInput.addEventListener('change',function(){
+      _tapN=Math.max(1,Math.min(7,parseInt(this.value)||4));
+      this.value=_tapN;
+      _tapTimes=[]; tapCount.textContent='';
+    });
+
+    tapBtn.addEventListener('pointerdown',e=>{
       e.preventDefault();
       const now=performance.now();
+      // Réinitialiser si silence > 3 s depuis le dernier tap
+      if(_tapTimes.length && now-_tapTimes[_tapTimes.length-1]>3000){
+        _tapTimes=[]; tapCount.textContent='';
+      }
       _tapTimes.push(now);
-      // Garder les 8 derniers taps, et ignorer les taps trop espacés (> 3 s)
-      _tapTimes=_tapTimes.filter(t=>now-t<3000);
-      if(_tapTimes.length>8) _tapTimes=_tapTimes.slice(-8);
-      if(_tapTimes.length>=2){
+
+      const tapsDone=_tapTimes.length-1; // nombre d'intervalles enregistrés
+      if(tapsDone>0 && tapsDone<_tapN){
+        // En cours d'acquisition — afficher le compteur
+        tapCount.textContent=tapsDone+'/'+_tapN;
+      }
+
+      if(tapsDone>=_tapN){
+        // Suffisamment d'intervalles : calculer sur les _tapN derniers
+        const recent=_tapTimes.slice(-(_tapN+1));
         const intervals=[];
-        for(let i=1;i<_tapTimes.length;i++) intervals.push(_tapTimes[i]-_tapTimes[i-1]);
+        for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
-        // avgMs = durée d'un beat → convertir en steps-par-minute (spm)
-        const bpmTapped=60000/avgMs;
+        const bpmTapped=60000/avgMs;           // BPM en unités de temps de la signature
         const spm=Math.round(bpmTapped*currentSig.stepsPerBeat);
-        const clamped=Math.max(40,Math.min(960,spm));
-        document.getElementById('bpm').value=clamped;
+        document.getElementById('bpm').value=Math.max(40,Math.min(960,spm));
         updateBeatDisplay();
+        // Réinitialiser pour la prochaine série (conserver le dernier tap comme premier)
+        _tapTimes=[now];
+        tapCount.textContent='';
       }
     },{passive:false});
   }
