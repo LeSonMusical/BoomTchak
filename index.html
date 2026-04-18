@@ -42,7 +42,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .temps-bar .section-bar-lbl{color:#4a3d8a}
 .sig-sel{font-size:10px;padding:1px 2px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:48px}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
-.temps-slider{flex:1;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
+.temps-slider{flex:1;min-width:30px;max-width:90px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
@@ -50,7 +50,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* Bouton Métro : pilule on/off (comme les labels de couche) */
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 6px;height:22px;min-width:38px;background:#d8d2e8;color:#6B5FA5;transition:background .15s,color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .btn-metro-main.on{background:#6B5FA5;color:#fff}
-/* Bouton Pulsation (panel toggle) */
+/* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
@@ -522,7 +522,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.9</span>
+      <span class="app-version">v2.7.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -553,7 +553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
-    <button class="btn-metro-volet" id="btn-metro-volet">Pulsation ▶</button>
+    <button class="btn-metro-volet" id="btn-metro-volet">Pulse ▶</button>
   </div>
   <div class="temps-content" id="temps-content">
     <div class="metro-panel">
@@ -3823,14 +3823,15 @@ function attachEvents(){
     // Pas de manipulation AudioContext ici : Play gère le déclenchement/arrêt
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    setMetroGlobal(!metro.muted);
+    // metro.muted=true(OFF) → passer true → setMetroGlobal met muted=false(ON) ✓
+    setMetroGlobal(metro.muted);
   });
-  // ── Bouton Pulsation (panel seul, indépendant du on/off) ──
+  // ── Bouton Pulse (panel seul, indépendant du on/off) ──
   document.getElementById('btn-metro-volet').addEventListener('click',()=>{
     const content=document.getElementById('temps-content');
     const btn=document.getElementById('btn-metro-volet');
     const open=content.classList.toggle('open');
-    btn.textContent=open?'Pulsation ▼':'Pulsation ▶';
+    btn.textContent=open?'Pulse ▼':'Pulse ▶';
     btn.classList.toggle('open',open);
   });
   // ── Signature ──
@@ -3863,24 +3864,36 @@ function attachEvents(){
   });
 
   // ── Tap Tempo ──
-  // Séquence : n coups → calcul du tempo ; coup n+1 → le métronome repart en sync
-  // metro.muted est utilisé (pas metro.globalOn supprimé)
+  // Règles :
+  //   A) N taps → calcul du tempo
+  //   B) 1 temps après le Nième tap → lancement auto (play + metro synchros)
+  //   Silence > 3 temps → reset immédiat du compteur (timer auto, pas besoin de tapper)
   {
     const tapBtn=document.getElementById('btn-tap-tempo');
     const tapNInput=document.getElementById('tap-n-input');
     const tapCount=document.getElementById('tap-count');
-    let _metroSavedMuted=true; // état mute sauvegardé pendant la frappe
-    let _tapCalculated=false;  // true après n coups, en attente du coup n+1
+    let _metroSavedMuted=true;
+    let _tapCalculated=false;
+    let _tapSilenceTimer=null;  // timer auto-reset après silence
+    let _tapLaunchTimer=null;   // timer lancement 1 temps après Nth tap
 
     _tapN=currentSig.beatsPerMeasure;
     tapNInput.value=_tapN;
 
     function _tapReset(){
+      clearTimeout(_tapSilenceTimer); _tapSilenceTimer=null;
+      clearTimeout(_tapLaunchTimer);  _tapLaunchTimer=null;
       metro.muted=_metroSavedMuted;
       const mb=document.getElementById('btn-metro-main');
       if(mb) mb.classList.toggle('on',!_metroSavedMuted);
       _tapTimes=[]; _tapCalculated=false;
       tapCount.textContent='';
+    }
+
+    // Lance un timer : si pas de tap pendant 3 temps → reset visible automatiquement
+    function _scheduleSilenceReset(){
+      clearTimeout(_tapSilenceTimer);
+      _tapSilenceTimer=setTimeout(()=>{ _tapReset(); }, 3*getMetroBeatSec()*1000);
     }
 
     tapNInput.addEventListener('change',function(){
@@ -3892,51 +3905,68 @@ function attachEvents(){
       e.preventDefault();
       const now=performance.now();
 
-      // Reset si silence > 3 temps depuis le dernier tap
-      const silenceMs=3*getMetroBeatSec()*1000;
-      if(_tapTimes.length && now-_tapTimes[_tapTimes.length-1]>silenceMs){
-        _tapReset();
+      // Annuler tout timer en cours
+      clearTimeout(_tapSilenceTimer); _tapSilenceTimer=null;
+      clearTimeout(_tapLaunchTimer);  _tapLaunchTimer=null;
+
+      // Si en attente de lancement (▶) : ce tap repart à 1 dans une nouvelle séquence
+      if(_tapCalculated){
+        _tapTimes=[now];
+        _tapCalculated=false;
+        tapCount.textContent='1/'+_tapN;
+        _scheduleSilenceReset();
+        return;
       }
 
-      // Premier tap : sauvegarder l'état mute et muter le métro
+      // Premier tap de la séquence : sauvegarder l'état metro et le muter
       if(_tapTimes.length===0){
         _metroSavedMuted=metro.muted;
-        metro.muted=true; // couper le son pendant la frappe
+        metro.muted=true;
         const mb=document.getElementById('btn-metro-main');
         if(mb) mb.classList.remove('on');
-        _tapCalculated=false;
       }
 
       _tapTimes.push(now);
       const numTaps=_tapTimes.length;
-
-      // ── Coup n+1 : lancer le métronome au nouveau tempo ──
-      if(_tapCalculated){
-        metro.muted=_metroSavedMuted;
-        const mb=document.getElementById('btn-metro-main');
-        if(mb) mb.classList.toggle('on',!_metroSavedMuted);
-        // Sync : ce coup est le temps 1 du nouveau tempo
-        metroBeatPos=0; metroNextBeatTime=getAC().currentTime;
-        _tapTimes=[now]; _tapCalculated=false;
-        tapCount.textContent='';
-        return;
-      }
-
-      // Afficher compteur : 1/n → n/n
       tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
 
-      // ── n coups atteints : calculer le tempo ──
+      // ── N taps atteints : calculer le tempo ──
       if(numTaps>=_tapN){
-        const recent=_tapTimes.slice(-_tapN);          // n taps = n-1 intervalles
+        const recent=_tapTimes.slice(-_tapN);
         const intervals=[];
         for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
         const spm=Math.round((60000/avgMs)*currentSig.stepsPerBeat);
         document.getElementById('bpm').value=Math.max(40,Math.min(960,spm));
         updateBeatDisplay();
-        _tapCalculated=true;       // en attente du coup n+1 pour lancer le métro
-        tapCount.textContent='▶';  // signal visuel : "tape encore une fois"
+        _tapCalculated=true;
+        tapCount.textContent='▶';
+
+        // ── Lancement auto 1 temps (avgMs) après le Nième tap ──
+        _tapLaunchTimer=setTimeout(()=>{
+          // Restaurer l'état metro
+          metro.muted=_metroSavedMuted;
+          const mb=document.getElementById('btn-metro-main');
+          if(mb) mb.classList.toggle('on',!_metroSavedMuted);
+          // Sync des horloges
+          if(!playing){
+            startPlay(); // startPlay fixe nextStepTime=now et lance le scheduler
+          }
+          const acNow=getAC().currentTime;
+          LAYERS.forEach((_lyr,li)=>{state[li].stepPos=0; state[li].nextStepTime=acNow;});
+          metroBeatPos=0; metroNextBeatTime=acNow;
+          // Mettre à jour le bouton Play si on vient de le lancer
+          if(!document.getElementById('btn-play').classList.contains('active')){
+            document.getElementById('btn-play').textContent='■';
+            document.getElementById('btn-play').classList.add('active');
+          }
+          _tapTimes=[]; _tapCalculated=false;
+          tapCount.textContent='';
+        }, avgMs);
+        return; // pas de silence timer pendant le lancement
       }
+
+      _scheduleSilenceReset();
     },{passive:false});
   }
 
