@@ -1,7 +1,7 @@
 # BoomTchak v2 — Brief de développement (référence complète)
 
 > **Nom de l'appli :** BoomTchak *(anciennement BasicRythm puis PoumTchak)*  
-> **Version courante :** v2.5.0  
+> **Version courante :** v2.5.8  
 > **Fichier :** `/Users/takadimita/Desktop/PoumTchak/index.html` (~3000 lignes)  
 > **Dépôt :** https://github.com/LeSonMusical/BoomTchak  
 > **Déployé :** https://lesonmusical.github.io/BoomTchak/  
@@ -182,11 +182,13 @@ CSS : `flex-wrap:nowrap; overflow:hidden` — la barre ne déborde jamais.
 | Section | TX | SX |
 |---------|----|----|
 | Band | 💾 ≡ | 💾 ≡ |
-| Groove | 💾 ≡ | 💾 ✓ / ≡ grisé si aucun groove perso |
-| Layer | 💾 ≡ | 💾 ✓ / ≡ grisé si aucun pattern perso |
-| Encyclo | 💾 ≡ | 💾 seulement (≡ masqué) |
+| Groove | 💾 ≡ (toujours actif) | 💾 ✓ / ≡ grisé si aucun groove user |
+| Layer | 💾 ≡ (toujours actif) | 💾 ✓ / ≡ grisé si aucun pattern user |
+| Encyclo | 💾 ≡ | 💾 ✓ / ≡ visible si item user existe |
 
 Règle SX : `canOverwrite` protège la sauvegarde des défauts ; les panels ≡ n'affichent que les items `source:'user'`.
+Après toute save créant un item user : `refreshMenuBtnStates()` réactive les boutons ≡ concernés.
+Tag d'item : `source:'user'` (anciennement `'perso'` — **toutes les occurrences UI ont été renommées "user"**).
 
 ### Couleurs des barres
 - **Groove** : fond doré `#faf3e0`, bordure gauche `#C8961A`
@@ -496,7 +498,7 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 
 ---
 
-## État d'avancement v2.5.0
+## État d'avancement v2.5.8
 
 ### ✅ Implémenté
 
@@ -564,6 +566,22 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 - `soundPanelOpen` mémorise l'état ouvert/fermé par couche
 - Suppression des boutons ≡/💾 redondants dans les lignes individuelles (ils restent dans la barre Band)
 
+**Mode sombre (v2.5.x)**
+- Bouton ⚙ Réglages → panel trois états : Clair / = Sys. / Sombre — persisté localStorage
+- `applyColorScheme(scheme)` + `body.dark-mode` — surchargé par ~80 règles CSS
+- Selects preset (Groove, Encyclopédie, Band, Pattern) : fond `#2a2a28` / texte `#e0ddd8` — inline styles écrasés via `!important`
+- Selects famille (`.fam-filter`) : fond sombre + texte coloré (`var(--cc)` sur les couches, teinte section sur Groove/Encyclo)
+- Steps : couleurs restituées — `.step.on` = `var(--cc)`, couches mutées correctement désaturées
+- Bouton Mute actif : fond sombre + bordure/texte `var(--cc)` ; muté : fond neutre gris
+- Sliders paramètres : épaisseur réduite (thumb 12 px, hauteur 20 px)
+
+**Boutons ≡ (v2.5.7–2.5.8)**
+- TX : toujours actif (suppression de la désactivation liée aux items user)
+- SX : grisé uniquement si aucun item `source:'user'`
+- Encyclo SX : visible si au moins un item user (masqué sinon)
+- `refreshMenuBtnStates()` : réactive dynamiquement après toute save créant un item user
+- UI : tag "User" (vert) renomme "Perso" partout (filtres famille, badges lib, titres boutons)
+
 ---
 
 ## Roadmap
@@ -577,16 +595,30 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 - **Liens dans les textes** : liens encyclo vers d'autres items
 - **Section références** : liens vers des morceaux réels
 
-### v3 — Google Suite pour sync élève/prof
+### v3 — Base de données commune + échanges asynchrones élève/prof
 
-**Objectif :** les profs créent du *contenu* pédagogique, l'élève suit un *parcours*.
+**Objectif :** les profs créent du *contenu* pédagogique partagé, l'élève suit un *parcours* et échange avec son prof.
 
-**Architecture technique proposée :**
-- Google Apps Script (stockage JSON Drive + URL publique)
-- `GET /load?id=xxx` → `https://lesonmusical.github.io/BoomTchak/?pack=xxx`
-- Plusieurs profs contributeurs à l'encyclopédie globale (contenu MX)
+**🔜 Prochaine étape de développement : concevoir l'architecture**
 
-**Nouveaux concepts :**
+Deux besoins complémentaires à satisfaire :
+1. **Base de données commune éditable par les enseignants** — plusieurs profs contribuent à un pool partagé de grooves, patterns, familles et contenu encyclopédique ; chaque prof peut personnaliser sa vue sans casser le commun.
+2. **Échanges asynchrones élève↔prof** — un élève peut envoyer un état de l'app (séquence jouée, score, progression de parcours) ; le prof reçoit une notification ou consulte un tableau de bord.
+
+**Architecture technique à concevoir** (candidats à évaluer) :
+- **Option A — Google Apps Script** : JSON stocké sur Google Drive, URL publique via doGet/doPost, sans infrastructure serveur. Simple, gratuit, mais limité en concurrence et en authentification.
+- **Option B — Supabase / Firebase** : base temps-réel avec authentification, permissions fines par rôle (prof/élève/admin). Plus robuste, léger à maintenir, adapté au multi-enseignants.
+- **Option C — Backend minimal** (Node.js/Deno + JSON files ou SQLite) auto-hébergé ou sur service gratuit (Render, Fly.io). Contrôle total, complexité accrue.
+
+**Questions architecturales à trancher avant de coder :**
+- Format d'identité : compte Google ? code classe ? anonyme avec jeton ?
+- Granularité du "commun" : tout le `packCours` est-il partagé, ou seulement certaines sections (grooves, encyclo) ?
+- Résolution de conflits quand deux profs éditent le même contenu
+- Offline-first ou requête à la volée ?
+
+**Concepts fonctionnels à préciser :**
+
+**Nouveaux concepts UI et pédagogiques :**
 
 #### Parcours pédagogiques
 Un *parcours* est une succession d'*étapes*. Chaque étape propose une situation pédagogique = *état* visuel de l'appli (quels items sont visibles, invisibles, lockés) + une *proposition* (description, consignes) + éventuellement un *challenge*.
