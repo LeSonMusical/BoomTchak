@@ -75,7 +75,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-volet-groove{color:#C8961A !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#8B6914 !important}
 /* barre band : bleue */
-.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:flex}
+.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
+.band-bar.visible{display:flex}
 .band-bar .section-bar-lbl{color:#2d5f80}
 .band-bar select{border:1px solid #8ab4d0}
 .band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
@@ -499,7 +500,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.1</span>
+      <span class="app-version">v2.6.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -512,7 +513,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
-  <!-- Section Temps -->
+  <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
+  <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
     <span class="section-bar-lbl">Temps</span>
     <select class="sig-sel" id="sig-sel">
@@ -547,6 +549,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
     </div>
   </div>
+  </div><!-- /temps-wrap -->
   <!-- Panel réglages -->
   <div class="panel2" id="panel-settings">
     <div style="display:flex;flex-direction:column;gap:8px">
@@ -1493,7 +1496,7 @@ function buildBandSection(){
   cont.innerHTML='';
 
   const bar=document.createElement('div');
-  bar.className='section-bar band-bar';
+  bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
   bar.appendChild(lbl);
@@ -1725,6 +1728,11 @@ function buildLayers(){
       buildStepsDOM(li,false);
       setTimeout(()=>checkWrap(li),0);
     });
+    // ≡ gestion bibliothèque patterns (avant le select)
+    const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
+    menuBtnPat.classList.add('menu-btn-pat');
+    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern user';}
+    row1.appendChild(menuBtnPat);
     row1.appendChild(sel);
 
     // 💾 sauvegarde du pattern → popover
@@ -1733,11 +1741,6 @@ function buildLayers(){
     saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
     saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
     row1.appendChild(saveBtn);
-    // ≡ gestion bibliothèque patterns
-    const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
-    menuBtnPat.classList.add('menu-btn-pat');
-    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern user';}
-    row1.appendChild(menuBtnPat);
     // i info
     row1.appendChild(btnI);
     // steps ▼/▶ toggle (row1) + mod ▶ ghost dans row1 pour vue circulaire
@@ -3705,14 +3708,13 @@ function loadFromStorage(){
 }
 
 function attachEvents(){
-  // ── Btn Tempo → toggle métro volet ──
+  // ── Btn Tempo → toggle section Temps (wrapper entier) ──
   document.getElementById('btn-tempo').addEventListener('click',()=>{
-    const content=document.getElementById('temps-content');
-    const btn=document.getElementById('btn-metro-volet');
-    const open=content.classList.toggle('open');
-    if(btn){btn.textContent=open?'Métro ▼':'Métro ▶';btn.classList.toggle('open',open);}
-    document.getElementById('btn-tempo').classList.toggle('active',open);
-    if(open){
+    const wrap=document.getElementById('temps-wrap');
+    const hidden=wrap.style.display==='none';
+    wrap.style.display=hidden?'':'none';
+    document.getElementById('btn-tempo').classList.toggle('active',hidden);
+    if(!hidden){ // on cache → fermer réglages si ouvert
       document.getElementById('panel-settings').classList.remove('open');
       document.getElementById('btn-settings').classList.remove('active');
     }
@@ -3752,10 +3754,7 @@ function attachEvents(){
     panel.classList.toggle('open');
     document.getElementById('btn-settings').classList.toggle('active',panel.classList.contains('open'));
     if(panel.classList.contains('open')){
-      document.getElementById('temps-content').classList.remove('open');
-      document.getElementById('btn-metro-volet').textContent='Métro ▶';
-      document.getElementById('btn-metro-volet').classList.remove('open');
-      document.getElementById('btn-tempo').classList.remove('active');
+      // (settings n'interfère pas avec la section Temps)
     }
   });
   document.querySelectorAll('.btn-theme').forEach(btn=>{
@@ -3788,6 +3787,9 @@ function attachEvents(){
   // ── Sons ──
   document.getElementById('btn-sons').addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
+    const bar=document.querySelector('.band-bar');
+    if(bar)bar.classList.toggle('visible',sonsOuvert);
+    // Quand on ouvre, le volet contenu est toujours ouvert
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
@@ -3968,7 +3970,10 @@ function start(){
 // Lancer l'application
 start();
 attachEvents();
-setView(true); // vue circulaire par défaut
+// États par défaut
+document.getElementById('btn-tempo').classList.add('active'); // Temps visible par défaut
+showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
+setView(true);                                                 // Vue circulaire par défaut
 </script>
 </body>
 </html>
