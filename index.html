@@ -109,17 +109,16 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* Ligne 2 : steps + mod */
 .layer-row2{display:flex;align-items:flex-start;gap:4px;padding:5px 6px 5px;min-width:0;overflow:hidden}
 .layer-row2.collapsed{display:none}
-.layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0}
+.layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0;position:relative}
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:none;align-self:flex-start}
 body.mode-tx .btn-layer-mod{display:inline-block}
 body.mode-tx .btn-layer-mod:hover{opacity:1}
-.step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s}
+.step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
 .step.soft{background:var(--cs);border-color:var(--cc)}
 .step.on{background:var(--cc);border-color:var(--cb)}
 .step.cur{box-shadow:0 0 0 3px var(--cb);border-color:var(--cb)}
-/* Séparateur de temps : barre verticale fine à gauche du premier step de chaque beat */
-.step.beat-start{box-shadow:-4px 0 0 rgba(80,68,55,.18)}
-.step.beat-start.cur{box-shadow:-4px 0 0 rgba(80,68,55,.18),0 0 0 3px var(--cb)}
+/* Séparateur de temps piano-roll : ligne pleine hauteur, sans impact sur le layout */
+.beat-sep-line{position:absolute;top:-80px;height:300px;width:1px;background:rgba(80,65,48,.13);pointer-events:none;z-index:0}
 .layer.muted-layer{opacity:.38;filter:saturate(.25)}
 .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
@@ -463,8 +462,7 @@ body.dark-mode .layer.muted-layer{opacity:.32;filter:saturate(.2)}
 body.dark-mode .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 body.dark-mode .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
-body.dark-mode .step.beat-start{box-shadow:-4px 0 0 rgba(255,255,255,.12)}
-body.dark-mode .step.beat-start.cur{box-shadow:-4px 0 0 rgba(255,255,255,.12),0 0 0 3px rgba(255,255,255,.3)}
+body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .hdivider{background:#333330}
@@ -513,7 +511,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.5</span>
+      <span class="app-version">v2.6.6</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -538,11 +536,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <option value="6/8">6/8</option>
       <option value="9/8">9/8</option>
       <option value="12/8">12/8</option>
-      <option value="3/2">3/2</option>
       <option value="2/2">2/2</option>
+      <option value="3/2">3/2</option>
+      <option value="4/2">4/2</option>
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
-    <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="400" step="1">
+    <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">Métro ▶</button>
   </div>
   <div class="temps-content" id="temps-content">
@@ -1207,18 +1206,20 @@ const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
 // ── Signatures rythmiques ─────────────────────────────────────────────────
 const SIGNATURES=[
   // stepsPerBeat = nombre de steps par unité de temps (beat)
-  // Simple (noire = beat) : step = double croche → 4 steps/beat
-  {id:'2/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:2},
-  {id:'3/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:3},
-  {id:'4/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:4},
-  {id:'5/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:5},
-  // Composé (noire pointée = beat) : step = croche → 3 steps/beat
+  // Les patterns existants utilisent la croche (1/8) comme résolution de base :
+  // Simple (noire = beat) : 1 noire = 2 croches → stepsPerBeat = 2
+  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2},
+  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3},
+  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4},
+  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5},
+  // Composé (noire pointée = beat) : 1 noire. = 3 croches → stepsPerBeat = 3
   {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2},
   {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3},
   {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4},
-  // Alla breve (blanche = beat) : step = croche → 4 steps/beat (blanche = 4 croches)
-  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3},
+  // Alla breve (blanche = beat) : 1 blanche = 4 croches → stepsPerBeat = 4
   {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2},
+  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3},
+  {id:'4/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:4},
 ];
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
@@ -1954,11 +1955,29 @@ function buildStepsDOM(li,wrap){
   div.innerHTML='';
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
-  // Séparateur de temps : interval = pas du pattern / beatsPerMeasure de la signature
-  // Ex : 16 steps en 4/4 (4 beats) → séparateur tous les 4 steps
-  // Ex : 8 steps en 4/4 → séparateur tous les 2 steps  (croches → 2 par noire)
+
+  // Séparateurs de temps piano-roll :
+  // interval = arrondi(pas_du_pattern / beats_par_mesure)  ex: 8 steps en 4/4 → 2 steps/beat
   const beatInterval = currentSig ? Math.round(pat.length / currentSig.beatsPerMeasure) : 0;
   const showBeatSep = beatInterval >= 2;
+  // Largeur d'un step + gap flex (2px) pour le calcul de position
+  const sw = window.innerWidth < 600 ? 20 : 22;
+  const stepPitch = sw + 2; // px par step dans le flux flex
+
+  // Insérer les lignes séparatrices AVANT les steps (position:absolute, hors flux)
+  if(showBeatSep){
+    for(let beat=1; beat*beatInterval < pat.length; beat++){
+      const si = beat * beatInterval;
+      // Décalage si en 2e ligne (wrap) — li.wrapped mis à jour après
+      const rowSi = (ha && si >= ha) ? si - ha : si;
+      const line=document.createElement('div');
+      line.className='beat-sep-line';
+      // Positionné dans le gap avant le step si : si*(sw+2) - 1px
+      line.style.left = (rowSi * stepPitch - 1) + 'px';
+      div.appendChild(line);
+    }
+  }
+
   pat.forEach((p,si)=>{
     if(ha&&si===ha){
       const br=document.createElement('div');
@@ -1966,9 +1985,7 @@ function buildStepsDOM(li,wrap){
       div.appendChild(br);
     }
     const s=document.createElement('div');
-    let cls='step'+(p==='X'?' on':p==='x'?' soft':'');
-    if(showBeatSep && si>0 && si%beatInterval===0) cls+=' beat-start';
-    s.className=cls;
+    s.className='step'+(p==='X'?' on':p==='x'?' soft':'');
     s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
@@ -3832,7 +3849,7 @@ function attachEvents(){
         // avgMs = durée d'un beat → convertir en steps-par-minute (spm)
         const bpmTapped=60000/avgMs;
         const spm=Math.round(bpmTapped*currentSig.stepsPerBeat);
-        const clamped=Math.max(30,Math.min(400,spm));
+        const clamped=Math.max(40,Math.min(960,spm));
         document.getElementById('bpm').value=clamped;
         updateBeatDisplay();
       }
