@@ -57,6 +57,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
+.tap-tempo-row{padding:.2rem .5rem .35rem .5rem;margin-left:4px}
+.btn-tap-tempo{width:100%;padding:5px 12px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
+.btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -114,6 +117,7 @@ body.mode-tx .btn-layer-mod:hover{opacity:1}
 .step.soft{background:var(--cs);border-color:var(--cc)}
 .step.on{background:var(--cc);border-color:var(--cb)}
 .step.cur{box-shadow:0 0 0 3px var(--cb);border-color:var(--cb)}
+.layer.muted-layer{opacity:.38;filter:saturate(.25)}
 .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 .hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
@@ -446,10 +450,13 @@ body.dark-mode .metro-row-lbl{color:#555}
 body.dark-mode .btn-metro-on{background:#252330;color:#8878c8;border-color:#3a3448}
 body.dark-mode .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 body.dark-mode .metro-subdiv-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
+body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3d8a}
+body.dark-mode .btn-tap-tempo:active{background:#3a3448}
 body.dark-mode .instr-sel{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
 body.dark-mode .step.soft{background:var(--cs);border-color:var(--cc)}
+body.dark-mode .layer.muted-layer{opacity:.32;filter:saturate(.2)}
 body.dark-mode .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 body.dark-mode .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
@@ -501,7 +508,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.3</span>
+      <span class="app-version">v2.6.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -548,6 +555,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <option value="4">÷4</option>
       </select>
       <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
+    </div>
+    <div class="tap-tempo-row">
+      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap tempo</button>
     </div>
   </div>
   </div><!-- /temps-wrap -->
@@ -3783,6 +3793,30 @@ function attachEvents(){
     metro.subdivDiv=parseInt(this.value);
   });
 
+  // ── Tap Tempo ──
+  {
+    let _tapTimes=[];
+    document.getElementById('btn-tap-tempo').addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const now=performance.now();
+      _tapTimes.push(now);
+      // Garder les 8 derniers taps, et ignorer les taps trop espacés (> 3 s)
+      _tapTimes=_tapTimes.filter(t=>now-t<3000);
+      if(_tapTimes.length>8) _tapTimes=_tapTimes.slice(-8);
+      if(_tapTimes.length>=2){
+        const intervals=[];
+        for(let i=1;i<_tapTimes.length;i++) intervals.push(_tapTimes[i]-_tapTimes[i-1]);
+        const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+        // avgMs = durée d'un beat → convertir en steps-par-minute (spm)
+        const bpmTapped=60000/avgMs;
+        const spm=Math.round(bpmTapped*currentSig.stepsPerBeat);
+        const clamped=Math.max(30,Math.min(400,spm));
+        document.getElementById('bpm').value=clamped;
+        updateBeatDisplay();
+      }
+    },{passive:false});
+  }
+
   // ── Settings panel ──
   document.getElementById('btn-settings').addEventListener('click',()=>{
     const panel=document.getElementById('panel-settings');
@@ -3805,15 +3839,8 @@ function attachEvents(){
   });
   updateBeatDisplay();
 
-  document.getElementById('btn-global-half').addEventListener('click',()=>{
-    pendingGlobalMult=globalSpeedMult===0.5?1:0.5;
-    if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}
-  });
-
-  document.getElementById('btn-global-double').addEventListener('click',()=>{
-    pendingGlobalMult=globalSpeedMult===2?1:2;
-    if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}
-  });
+  {const bgh=document.getElementById('btn-global-half');if(bgh)bgh.addEventListener('click',()=>{pendingGlobalMult=globalSpeedMult===0.5?1:0.5;if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}});}
+  {const bgd=document.getElementById('btn-global-double');if(bgd)bgd.addEventListener('click',()=>{pendingGlobalMult=globalSpeedMult===2?1:2;if(!playing){globalSpeedMult=pendingGlobalMult;updateGlobalSpeedBtns();updateSpmDisplay();}});}
 
   // ── Vue circulaire / linéaire ──
   document.getElementById('btn-view').addEventListener('click',()=>setView(!circleView));
@@ -4006,7 +4033,8 @@ function start(){
 start();
 attachEvents();
 // États par défaut
-document.getElementById('btn-tempo').classList.add('active'); // Temps visible par défaut
+document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
+document.getElementById('btn-tempo').classList.remove('active');
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
