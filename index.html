@@ -305,8 +305,27 @@ body:not(.mode-tx) .step{cursor:default}
 .lib-overlay.hidden{display:none}
 .lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
 .lib-panel.hidden{display:none}
-.lib-panel-head{display:flex;align-items:center;gap:6px;padding:10px 14px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
-.lib-panel-title{font-size:13px;font-weight:700;color:#1a1a18;flex-shrink:0}
+.lib-panel-head{display:flex;flex-direction:column;gap:5px;padding:9px 14px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.lib-head-row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lib-head-label{font-size:11px;font-weight:600;color:#555;flex:1;min-width:0;line-height:1.3}
+.lib-head-secname{font-weight:800;font-size:12px}
+.lib-head-row2{display:flex;align-items:center}
+/* Familles déplacées en bas — même teinte que l'en-tête */
+.lib-fam-bottom{border-top:none}
+.lib-fam-bottom .lib-fam-summary{border-top:1px solid rgba(0,0,0,.07)}
+/* Couleurs par section */
+#lib-panel-patterns .lib-panel-head,
+#lib-panel-patterns .lib-fam-bottom{background:rgba(107,95,165,.09)}
+#lib-panel-patterns .lib-head-secname{color:#4a3d8a}
+#lib-panel-grooves .lib-panel-head,
+#lib-panel-grooves .lib-fam-bottom{background:rgba(200,150,26,.09)}
+#lib-panel-grooves .lib-head-secname{color:#8B6914}
+body.dark-mode #lib-panel-patterns .lib-panel-head,
+body.dark-mode #lib-panel-patterns .lib-fam-bottom{background:rgba(107,95,165,.15)}
+body.dark-mode #lib-panel-patterns .lib-head-secname{color:#b0a0e0}
+body.dark-mode #lib-panel-grooves .lib-panel-head,
+body.dark-mode #lib-panel-grooves .lib-fam-bottom{background:rgba(200,150,26,.15)}
+body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-filter-sel{font-size:10px;flex:1;min-width:0;padding:2px 4px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer}
 .lib-panel-close{width:26px;height:26px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:13px;color:#666;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .lib-panel-close:hover{background:#e0ddd8}
@@ -460,6 +479,9 @@ body.dark-mode .metro-panel{border-left-color:#3a3448}
 body.dark-mode .metro-row-lbl{color:#555}
 body.dark-mode .btn-metro-on{background:#252330;color:#8878c8;border-color:#3a3448}
 body.dark-mode .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+/* Boutons metro locaux ternis quand Métro global est OFF (metro.muted=true) */
+.metro-off .btn-metro-on.on{background:#b8aed0;border-color:#9888b8;color:#fff}
+body.dark-mode .metro-off .btn-metro-on.on{background:#3a3050;border-color:#4a4068;color:#888}
 body.dark-mode .metro-subdiv-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3d8a}
 body.dark-mode .btn-tap-tempo:active{background:#3a3448}
@@ -476,6 +498,7 @@ body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
+body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .hdivider{background:#333330}
 body.dark-mode .encyclo-wrap{color:#c0bdb7}
 body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
@@ -522,7 +545,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.1</span>
+      <span class="app-version">v2.7.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -569,7 +592,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">Pulse ▶</button>
   </div>
-  <div class="temps-content" id="temps-content">
+  <div class="temps-content metro-off" id="temps-content">
     <div class="metro-panel">
       <span class="metro-row-lbl">Accent ①</span>
       <button class="btn-metro-on" id="btn-metro-accent">OFF</button>
@@ -642,14 +665,22 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-patterns"></div>
 <div class="lib-panel hidden" id="lib-panel-patterns">
   <div class="lib-panel-head">
-    <span class="lib-panel-title">Patterns</span>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
+    <div class="lib-head-row1">
+      <div class="lib-head-label">Éditer les familles de <span class="lib-head-secname">Patterns</span></div>
+      <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
+    </div>
+    <div class="lib-head-row2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
+        <option value="all">Toutes les familles</option>
+      </select>
+    </div>
   </div>
   <div class="lib-list" id="lib-list-patterns"></div>
-  <details class="lib-fam-section" id="lib-fam-details-patterns">
+  <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
+    <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
+  </div>
+  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
     <summary class="lib-fam-summary">Gérer les familles <span id="lib-fam-arrow">▶</span></summary>
     <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
     <div class="lib-fam-add-row">
@@ -657,24 +688,28 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <button id="lib-fam-add-btn">＋</button>
     </div>
   </details>
-  <div class="lib-batch-bar">
-    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
-    <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
-  </div>
 </div>
 
 <!-- Panel ≡ bibliothèque grooves -->
 <div class="lib-overlay hidden" id="lib-overlay-grooves"></div>
 <div class="lib-panel hidden" id="lib-panel-grooves">
   <div class="lib-panel-head">
-    <span class="lib-panel-title">Grooves</span>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
+    <div class="lib-head-row1">
+      <div class="lib-head-label">Éditer les familles de <span class="lib-head-secname">Grooves</span></div>
+      <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
+    </div>
+    <div class="lib-head-row2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
+        <option value="all">Toutes les familles</option>
+      </select>
+    </div>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
-  <details class="lib-fam-section" id="lib-fam-details-grooves">
+  <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
+    <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
+  </div>
+  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
     <summary class="lib-fam-summary">Gérer les familles <span>▶</span></summary>
     <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
     <div class="lib-fam-add-row">
@@ -682,10 +717,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <button id="lib-fam-add-btn-grooves">＋</button>
     </div>
   </details>
-  <div class="lib-batch-bar">
-    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
-    <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
-  </div>
 </div>
 
 <!-- Panel ≡ bibliothèque encyclopédie -->
@@ -1843,7 +1874,7 @@ function buildLayers(){
         if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
         state[li].pendingHalf=true;state[li].pendingClear=false;
       }
-      updateSpeedBtns(); grooveDirty=true; updateGrooveSaveBtn();
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
     });
     bDbl.addEventListener('click',()=>{
       if(state[li].doubleOn||state[li].pendingDouble){
@@ -1852,7 +1883,7 @@ function buildLayers(){
         if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
         state[li].pendingDouble=true;state[li].pendingClear=false;
       }
-      updateSpeedBtns(); grooveDirty=true; updateGrooveSaveBtn();
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
     });
 
     // — Shift ◀ [n] ▶ —
@@ -1977,9 +2008,13 @@ function buildStepsDOM(li,wrap){
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
 
-  // Séparateurs de temps piano-roll : liés à l'unité de temps de la signature (beatSteps)
-  // beatSteps = noire→4, noire pointée→3, blanche→4  (indépendant de la longueur du pattern)
-  const sepInterval = currentSig ? currentSig.beatSteps : 4;
+  // Séparateurs de temps : signature × vitesse de la couche
+  // ×2 → chaque step dure moitié → 1 temps = beatSteps×2 steps visuels
+  // /2 → chaque step dure double → 1 temps = beatSteps/2 steps visuels
+  const _halfA = state[li] && (state[li].halfOn || state[li].pendingHalf);
+  const _dblA  = state[li] && (state[li].doubleOn || state[li].pendingDouble);
+  const _sm    = _dblA ? 2 : _halfA ? 0.5 : 1;
+  const sepInterval = Math.max(1, Math.round((currentSig ? currentSig.beatSteps : 4) * _sm));
   const sw = window.innerWidth < 600 ? 20 : 22;
   const stepPitch = sw + 2; // px par step (largeur + gap flex)
 
@@ -2827,11 +2862,11 @@ function drawCircles(){
         ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
-        // Silence : petit cercle vide — couleur proche du fond (mode sombre = discret)
+        // Silence : petit cercle — en sombre, bord de couleur layer pour le rendre lisible
         const isDark=document.body.classList.contains('dark-mode');
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
-        ctx.fillStyle=isDark?'#222220':'#f0ede8'; ctx.fill();
-        ctx.strokeStyle=isDark?'#353230':'#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0'; ctx.lineWidth=isDark?1:0.75; ctx.stroke();
       }
 
       // Anneau "grossi" sur le step en cours de lecture (remplace le flash jaune)
@@ -3821,6 +3856,8 @@ function attachEvents(){
     metro.muted=!on; // on=true → muted=false (son audible)
     const btn=document.getElementById('btn-metro-main');
     if(btn) btn.classList.toggle('on',on);
+    // Boutons locaux ON ternis quand Métro est OFF
+    document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
     // Pas de manipulation AudioContext ici : Play gère le déclenchement/arrêt
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
