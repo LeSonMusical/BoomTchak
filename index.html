@@ -30,16 +30,32 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
 .btn-view:hover{background:#e8e5e0}
 
-/* ─── PANEL TEMPO ─── */
+/* ─── PANEL RÉGLAGES (panel2 conservé) ─── */
 .panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .22s ease,padding .22s ease;max-height:0;padding:0 .85rem}
 .panel2.open{max-height:130px;padding:.5rem .85rem}
-.t-slider{width:100%;accent-color:#888}
-.t-spm-display{font-size:11px;color:#999;cursor:pointer;text-align:right;min-width:52px}
-.t-spm-display:hover{color:#555}
-.t-equiv{font-size:11px;font-weight:500;color:#1a1a18;white-space:nowrap}
 .btn-sm-tempo{padding:3px 8px;cursor:pointer;font-size:11px;background:#fff;border:1px solid #b0aea7;border-radius:5px;color:#666}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
+/* ─── SECTION TEMPS ─── */
+.temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
+.temps-bar .section-bar-lbl{color:#4a3d8a}
+.sig-sel{font-size:10px;padding:1px 2px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:48px}
+.beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
+.temps-slider{flex:1;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
+.temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
+.temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
+.temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
+.temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
+.btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
+.btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
+.temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
+.temps-content.open{max-height:160px}
+.metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:column;gap:5px}
+.metro-row{display:flex;align-items:center;gap:8px}
+.metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;width:64px;flex-shrink:0}
+.btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
+.btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+.metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -81,9 +97,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
 .layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
 .layer-select{font-size:9px;flex:1;min-width:0;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
-.btn-mute-sq{width:24px;height:24px;flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--cc);padding:0;line-height:1;color:#fff;transition:background .15s}
-.btn-mute-sq:hover{filter:brightness(.9)}
-.btn-mute-sq.muted{background:#c8c5c0}
+.btn-mute-lbl{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;padding:0 5px;height:24px;min-width:42px;background:var(--cc);color:#fff;transition:background .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.btn-mute-lbl:hover{filter:brightness(.9)}
+.btn-mute-lbl.muted{background:#c8c5c0;color:#777}
 .btn-layer-toggle{margin-left:auto;font-size:10px;font-weight:600;background:transparent;border:none;border-radius:4px;color:var(--cb);cursor:pointer;flex-shrink:0;white-space:nowrap;padding:2px 4px;opacity:.6;line-height:1.2}
 .btn-layer-toggle:hover{opacity:1}
 /* Ligne 2 : steps + mod */
@@ -412,8 +428,23 @@ body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
 body.dark-mode .layer-select{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
-body.dark-mode .btn-mute-sq{background:#1c1c1a;border:1.5px solid var(--cc);color:var(--cc)}
-body.dark-mode .btn-mute-sq.muted{background:#2a2a28;border:1.5px solid #444;color:#555}
+body.dark-mode .btn-mute-lbl{background:var(--cc);color:#fff}
+body.dark-mode .btn-mute-lbl.muted{background:#3a3a38;color:#555}
+body.dark-mode .temps-bar{background:#1e1c2a;border-bottom-color:#2a2448}
+body.dark-mode .temps-bar .section-bar-lbl{color:#a89fd0}
+body.dark-mode .sig-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
+body.dark-mode .beat-display{color:#a89fd0}
+body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
+body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
+body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
+body.dark-mode .temps-slider::-moz-range-thumb{background:#8878c8;border-color:#1e1c2a}
+body.dark-mode .btn-metro-volet{color:#6858a8}
+body.dark-mode .btn-metro-volet:hover,.btn-metro-volet.open{color:#a89fd0}
+body.dark-mode .metro-panel{border-left-color:#3a3448}
+body.dark-mode .metro-row-lbl{color:#555}
+body.dark-mode .btn-metro-on{background:#252330;color:#8878c8;border-color:#3a3448}
+body.dark-mode .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+body.dark-mode .metro-subdiv-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .instr-sel{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
@@ -469,7 +500,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.5.8</span>
+      <span class="app-version">v2.6.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -482,18 +513,42 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
-  <!-- Panel tempo (glisse sous la top bar) -->
-  <div class="panel2" id="panel-tempo">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">TEMPO</div>
-      <div style="display:flex;align-items:center;gap:6px;width:100%">
-        <input type="range" class="t-slider" id="bpm" min="30" max="400" value="200" step="1" style="flex:1">
-        <span class="t-spm-display" id="bpm-val">200 spm</span>
+  <!-- Section Temps -->
+  <div class="section-bar temps-bar" id="section-temps">
+    <span class="section-bar-lbl">⏱ Temps</span>
+    <select class="sig-sel" id="sig-sel">
+      <option value="2/4">2/4</option>
+      <option value="3/4">3/4</option>
+      <option value="4/4" selected>4/4</option>
+      <option value="5/4">5/4</option>
+      <option value="6/8">6/8</option>
+      <option value="9/8">9/8</option>
+      <option value="12/8">12/8</option>
+      <option value="3/2">3/2</option>
+      <option value="2/2">2/2</option>
+    </select>
+    <span class="beat-display" id="beat-display">♩= 100</span>
+    <input type="range" class="temps-slider" id="bpm" min="30" max="400" value="200" step="1">
+    <button class="btn-metro-volet" id="btn-metro-volet">Métro ▶</button>
+  </div>
+  <div class="temps-content" id="temps-content">
+    <div class="metro-panel">
+      <div class="metro-row">
+        <span class="metro-row-lbl">Accent ①</span>
+        <button class="btn-metro-on" id="btn-metro-accent">OFF</button>
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <button class="btn-sm-tempo" id="btn-global-half">/2</button>
-        <span class="t-equiv" id="bpm-equiv"></span>
-        <button class="btn-sm-tempo" id="btn-global-double">×2</button>
+      <div class="metro-row">
+        <span class="metro-row-lbl">Temps</span>
+        <button class="btn-metro-on on" id="btn-metro-temps">ON</button>
+      </div>
+      <div class="metro-row">
+        <span class="metro-row-lbl">Subdiv.</span>
+        <select class="metro-subdiv-sel" id="metro-subdiv-sel">
+          <option value="2">÷2</option>
+          <option value="3">÷3</option>
+          <option value="4">÷4</option>
+        </select>
+        <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
       </div>
     </div>
   </div>
@@ -512,7 +567,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
   </div>
   <!-- Section Band (Sons) -->
-  <div id="section-band"></div>
+  <div style="margin-top:4px" id="section-band"></div>
   <div class="band-content" id="band-content">
     <div class="band-sounds-wrap"><div id="sounds"></div></div>
   </div>
@@ -1135,6 +1190,24 @@ let soundStateThumb=[
 ];
 const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
 
+// ── Signatures rythmiques ─────────────────────────────────────────────────
+const SIGNATURES=[
+  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2},
+  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3},
+  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4},
+  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5},
+  {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2},
+  {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3},
+  {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4},
+  {id:'3/2', beatSym:'𝅗𝅥',  stepsPerBeat:4, beatsPerMeasure:3},
+  {id:'2/2', beatSym:'𝅗𝅥',  stepsPerBeat:4, beatsPerMeasure:2},
+];
+let currentSig=SIGNATURES[2]; // 4/4 par défaut
+
+// ── État métronome ────────────────────────────────────────────────────────
+let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2};
+let metroBeatPos=0, metroNextBeatTime=0;
+
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
 let schedTimerID=null, visualRafID=null;
@@ -1180,6 +1253,23 @@ function scheduler(){
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
   });
+  // ── Métronome ────────────────────────────────────────────────────────────
+  if(metro.tempsOn||metro.accentOn||metro.subdivOn){
+    const nowM=getAC().currentTime;
+    const beatSec=getMetroBeatSec();
+    while(metroNextBeatTime<nowM+LOOKAHEAD){
+      const isFirst=metroBeatPos===0;
+      if(isFirst&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
+      else if(metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
+      if(metro.subdivOn){
+        for(let s=1;s<metro.subdivDiv;s++){
+          playMetroClick(metroNextBeatTime+beatSec*s/metro.subdivDiv,'subdiv');
+        }
+      }
+      metroNextBeatTime+=beatSec;
+      metroBeatPos=(metroBeatPos+1)%currentSig.beatsPerMeasure;
+    }
+  }
   schedTimerID=setTimeout(scheduler,SCHED_MS);
 }
 
@@ -1232,6 +1322,7 @@ function startPlay(){
     state[li].nextStepTime=now;
     state[li].startTime=now;
   });
+  metroBeatPos=0; metroNextBeatTime=now;
   scheduler();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -1573,13 +1664,13 @@ function buildLayers(){
 
     // ●/○ mute
     const btnMute=document.createElement('button');
-    btnMute.className='btn-mute-sq'+(state[li].muted?' muted':'');
-    btnMute.textContent=state[li].muted?'🔇':'🔊';
-    btnMute.title=state[li].muted?'Activer':'Muet';
+    btnMute.className='btn-mute-lbl'+(state[li].muted?' muted':'');
+    btnMute.textContent=layer.label;
+    btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
     btnMute.addEventListener('click',()=>{
       state[li].muted=!state[li].muted;
       btnMute.classList.toggle('muted',state[li].muted);
-      btnMute.textContent=state[li].muted?'🔇':'🔊';
+      btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
       layerDiv.classList.toggle('muted-layer',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
     });
@@ -2543,6 +2634,27 @@ function updateSpmDisplay(){
   const half=Math.round(spm/2),third=Math.round(spm/3),quarter=Math.round(spm/4);
   const eq=document.getElementById('bpm-equiv');
   if(eq)eq.innerHTML='<span style="letter-spacing:-.1em">♩♩</span>='+quarter+'&ensp;♩='+half+'&ensp;♩.='+third;
+}
+function updateBeatDisplay(){
+  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const bpm=Math.round(spm/currentSig.stepsPerBeat);
+  const el=document.getElementById('beat-display');
+  if(el) el.textContent=currentSig.beatSym+'= '+bpm;
+}
+function getMetroBeatSec(){
+  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  return(60/spm)*currentSig.stepsPerBeat;
+}
+function playMetroClick(atTime,type){
+  const a=getAC();
+  const osc=a.createOscillator();
+  const gain=a.createGain();
+  osc.connect(gain);gain.connect(a.destination);
+  const cfg={accent:{f:1760,v:0.5,d:0.05},beat:{f:880,v:0.3,d:0.03},subdiv:{f:440,v:0.15,d:0.02}}[type];
+  osc.frequency.value=cfg.f;osc.type='sine';
+  gain.gain.setValueAtTime(cfg.v,atTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,atTime+cfg.d);
+  osc.start(atTime);osc.stop(atTime+cfg.d+0.005);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3598,15 +3710,45 @@ function loadFromStorage(){
 }
 
 function attachEvents(){
-  // ── Tempo panel ──
+  // ── Btn Tempo → toggle métro volet ──
   document.getElementById('btn-tempo').addEventListener('click',()=>{
-    const panel=document.getElementById('panel-tempo');
-    panel.classList.toggle('open');
-    document.getElementById('btn-tempo').classList.toggle('active',panel.classList.contains('open'));
-    if(panel.classList.contains('open')){
+    const content=document.getElementById('temps-content');
+    const btn=document.getElementById('btn-metro-volet');
+    const open=content.classList.toggle('open');
+    if(btn){btn.textContent=open?'Métro ▼':'Métro ▶';btn.classList.toggle('open',open);}
+    document.getElementById('btn-tempo').classList.toggle('active',open);
+    if(open){
       document.getElementById('panel-settings').classList.remove('open');
       document.getElementById('btn-settings').classList.remove('active');
     }
+  });
+  // ── Metro volet toggle (bouton dans la barre) ──
+  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
+    const content=document.getElementById('temps-content');
+    const btn=document.getElementById('btn-metro-volet');
+    const open=content.classList.toggle('open');
+    btn.textContent=open?'Métro ▼':'Métro ▶';
+    btn.classList.toggle('open',open);
+    document.getElementById('btn-tempo').classList.toggle('active',open);
+  });
+  // ── Signature ──
+  document.getElementById('sig-sel').addEventListener('change',function(){
+    currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
+    updateBeatDisplay();
+  });
+  // ── Boutons métronome ──
+  function mkMetroToggle(btnId,prop){
+    document.getElementById(btnId).addEventListener('click',function(){
+      metro[prop]=!metro[prop];
+      this.classList.toggle('on',metro[prop]);
+      this.textContent=metro[prop]?'ON':'OFF';
+    });
+  }
+  mkMetroToggle('btn-metro-accent','accentOn');
+  mkMetroToggle('btn-metro-temps','tempsOn');
+  mkMetroToggle('btn-metro-subdiv','subdivOn');
+  document.getElementById('metro-subdiv-sel').addEventListener('change',function(){
+    metro.subdivDiv=parseInt(this.value);
   });
 
   // ── Settings panel ──
@@ -3615,7 +3757,9 @@ function attachEvents(){
     panel.classList.toggle('open');
     document.getElementById('btn-settings').classList.toggle('active',panel.classList.contains('open'));
     if(panel.classList.contains('open')){
-      document.getElementById('panel-tempo').classList.remove('open');
+      document.getElementById('temps-content').classList.remove('open');
+      document.getElementById('btn-metro-volet').textContent='Métro ▶';
+      document.getElementById('btn-metro-volet').classList.remove('open');
       document.getElementById('btn-tempo').classList.remove('active');
     }
   });
@@ -3628,9 +3772,9 @@ function attachEvents(){
   applyColorScheme(colorScheme);
 
   document.getElementById('bpm').addEventListener('input',function(){
-    document.getElementById('bpm-val').textContent=parseInt(this.value)+' spm';
-    updateSpmDisplay();
+    updateBeatDisplay();
   });
+  updateBeatDisplay();
 
   document.getElementById('btn-global-half').addEventListener('click',()=>{
     pendingGlobalMult=globalSpeedMult===0.5?1:0.5;
@@ -3822,8 +3966,7 @@ function start(){
   updateEncycloSelect(currentGrooveId);
 
   // Mettre à jour l'affichage tempo
-  document.getElementById('bpm-val').textContent='200 spm';
-  updateSpmDisplay();
+  updateBeatDisplay();
   updateGlobalSpeedBtns();
 }
 
