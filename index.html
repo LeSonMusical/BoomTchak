@@ -117,6 +117,9 @@ body.mode-tx .btn-layer-mod:hover{opacity:1}
 .step.soft{background:var(--cs);border-color:var(--cc)}
 .step.on{background:var(--cc);border-color:var(--cb)}
 .step.cur{box-shadow:0 0 0 3px var(--cb);border-color:var(--cb)}
+/* Séparateur de temps : barre verticale fine à gauche du premier step de chaque beat */
+.step.beat-start{box-shadow:-4px 0 0 rgba(80,68,55,.18)}
+.step.beat-start.cur{box-shadow:-4px 0 0 rgba(80,68,55,.18),0 0 0 3px var(--cb)}
 .layer.muted-layer{opacity:.38;filter:saturate(.25)}
 .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
@@ -460,6 +463,8 @@ body.dark-mode .layer.muted-layer{opacity:.32;filter:saturate(.2)}
 body.dark-mode .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 body.dark-mode .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
 body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+body.dark-mode .step.beat-start{box-shadow:-4px 0 0 rgba(255,255,255,.12)}
+body.dark-mode .step.beat-start.cur{box-shadow:-4px 0 0 rgba(255,255,255,.12),0 0 0 3px rgba(255,255,255,.3)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .hdivider{background:#333330}
@@ -508,7 +513,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.6.4</span>
+      <span class="app-version">v2.6.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -537,7 +542,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <option value="2/2">2/2</option>
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
-    <input type="range" class="temps-slider" id="bpm" min="30" max="400" value="200" step="1">
+    <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="400" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">Métro ▶</button>
   </div>
   <div class="temps-content" id="temps-content">
@@ -1201,13 +1206,17 @@ const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
 
 // ── Signatures rythmiques ─────────────────────────────────────────────────
 const SIGNATURES=[
-  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2},
-  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3},
-  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4},
-  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5},
+  // stepsPerBeat = nombre de steps par unité de temps (beat)
+  // Simple (noire = beat) : step = double croche → 4 steps/beat
+  {id:'2/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:2},
+  {id:'3/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:3},
+  {id:'4/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:4},
+  {id:'5/4', beatSym:'♩',  stepsPerBeat:4, beatsPerMeasure:5},
+  // Composé (noire pointée = beat) : step = croche → 3 steps/beat
   {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2},
   {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3},
   {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4},
+  // Alla breve (blanche = beat) : step = croche → 4 steps/beat (blanche = 4 croches)
   {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3},
   {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2},
 ];
@@ -1235,6 +1244,10 @@ function getBeatSec(li){
   return(60/spm)/mult;
 }
 
+// ⚠ BUG CONNU — SYNCHRO TEMPO : quand le slider BPM change en cours de lecture,
+// metroNextBeatTime n'est pas recalculé → décalage du métronome jusqu'au prochain beat.
+// À corriger : recalculer metroNextBeatTime depuis getAC().currentTime + beatSec restant
+// proportionnel à la position dans le beat courant. Priorité haute (v2.7.x).
 function scheduler(){
   if(!playing)return;
   const now=getAC().currentTime;
@@ -1941,6 +1954,11 @@ function buildStepsDOM(li,wrap){
   div.innerHTML='';
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
+  // Séparateur de temps : interval = pas du pattern / beatsPerMeasure de la signature
+  // Ex : 16 steps en 4/4 (4 beats) → séparateur tous les 4 steps
+  // Ex : 8 steps en 4/4 → séparateur tous les 2 steps  (croches → 2 par noire)
+  const beatInterval = currentSig ? Math.round(pat.length / currentSig.beatsPerMeasure) : 0;
+  const showBeatSep = beatInterval >= 2;
   pat.forEach((p,si)=>{
     if(ha&&si===ha){
       const br=document.createElement('div');
@@ -1948,7 +1966,9 @@ function buildStepsDOM(li,wrap){
       div.appendChild(br);
     }
     const s=document.createElement('div');
-    s.className='step'+(p==='X'?' on':p==='x'?' soft':'');
+    let cls='step'+(p==='X'?' on':p==='x'?' soft':'');
+    if(showBeatSep && si>0 && si%beatInterval===0) cls+=' beat-start';
+    s.className=cls;
     s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
@@ -3777,6 +3797,8 @@ function attachEvents(){
   document.getElementById('sig-sel').addEventListener('change',function(){
     currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
     updateBeatDisplay();
+    // Reconstruire les steps pour mettre à jour les séparateurs de temps
+    LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
   });
   // ── Boutons métronome ──
   function mkMetroToggle(btnId,prop){
