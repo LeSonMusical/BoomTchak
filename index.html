@@ -47,9 +47,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
-/* Bouton Métro : pilule on/off (comme les labels de couche) */
-.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 6px;height:22px;min-width:38px;background:#d8d2e8;color:#6B5FA5;transition:background .15s,color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-.btn-metro-main.on{background:#6B5FA5;color:#fff}
+/* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
+.btn-metro-main{flex-shrink:0;border:2px solid #d8d2e8;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 5px;height:22px;min-width:38px;background:#efecf8;color:#6B5FA5;transition:background .15s,color .15s,border-color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
@@ -452,8 +452,8 @@ body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
 body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#8878c8;border-color:#1e1c2a}
-body.dark-mode .btn-metro-main{background:#2e2840;color:#a89fd0}
-body.dark-mode .btn-metro-main.on{background:#6B5FA5;color:#fff}
+body.dark-mode .btn-metro-main{background:#1e1c2a;border-color:#2e2840;color:#a89fd0}
+body.dark-mode .btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
 body.dark-mode .btn-metro-volet{color:#6858a8}
 body.dark-mode .btn-metro-volet:hover,.btn-metro-volet.open{color:#a89fd0}
 body.dark-mode .metro-panel{border-left-color:#3a3448}
@@ -522,7 +522,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.0</span>
+      <span class="app-version">v2.7.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -535,6 +535,20 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
+  <!-- Panel réglages : premier dans le frame → toujours au-dessus des volets -->
+  <div class="panel2" id="panel-settings">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">RÉGLAGES</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
+        <div class="theme-toggle" id="theme-toggle">
+          <button class="btn-theme" data-theme-val="light">Clair</button>
+          <button class="btn-theme" data-theme-val="system">= Sys.</button>
+          <button class="btn-theme" data-theme-val="dark">Sombre</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
@@ -573,26 +587,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
     <div class="tap-tempo-row">
       <span class="tap-n-lbl">n =</span>
-      <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="7" value="4">
-      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap</button>
+      <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
+      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
     </div>
   </div>
   </div><!-- /temps-wrap -->
-  <!-- Panel réglages -->
-  <div class="panel2" id="panel-settings">
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">RÉGLAGES</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
-        <div class="theme-toggle" id="theme-toggle">
-          <button class="btn-theme" data-theme-val="light">Clair</button>
-          <button class="btn-theme" data-theme-val="system">= Sys.</button>
-          <button class="btn-theme" data-theme-val="dark">Sombre</button>
-        </div>
-      </div>
-    </div>
-  </div>
   <!-- Section Band (Sons) -->
   <div style="margin-top:4px" id="section-band"></div>
   <div class="band-content" id="band-content">
@@ -2827,10 +2827,11 @@ function drawCircles(){
         ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
-        // Silence : petit cercle vide
+        // Silence : petit cercle vide — couleur proche du fond (mode sombre = discret)
+        const isDark=document.body.classList.contains('dark-mode');
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
-        ctx.fillStyle='#f0ede8'; ctx.fill();
-        ctx.strokeStyle='#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.fillStyle=isDark?'#222220':'#f0ede8'; ctx.fill();
+        ctx.strokeStyle=isDark?'#353230':'#c8c5c0'; ctx.lineWidth=0.75; ctx.stroke();
       }
 
       // Anneau "grossi" sur le step en cours de lecture (remplace le flash jaune)
@@ -3842,6 +3843,8 @@ function attachEvents(){
     _tapN=currentSig.beatsPerMeasure;
     const ni=document.getElementById('tap-n-input');
     if(ni) ni.value=_tapN;
+    const tb=document.getElementById('btn-tap-tempo');
+    if(tb) tb.textContent='Tap '+_tapN;
     _tapTimes=[];
     const tc=document.getElementById('tap-count');
     if(tc) tc.textContent='';
@@ -3879,6 +3882,7 @@ function attachEvents(){
 
     _tapN=currentSig.beatsPerMeasure;
     tapNInput.value=_tapN;
+    tapBtn.textContent='Tap '+_tapN;
 
     function _tapReset(){
       clearTimeout(_tapSilenceTimer); _tapSilenceTimer=null;
@@ -3897,8 +3901,10 @@ function attachEvents(){
     }
 
     tapNInput.addEventListener('change',function(){
-      _tapN=Math.max(1,Math.min(7,parseInt(this.value)||4));
-      this.value=_tapN; _tapReset();
+      _tapN=Math.max(1,Math.min(16,parseInt(this.value)||4));
+      this.value=_tapN;
+      tapBtn.textContent='Tap '+_tapN;
+      _tapReset();
     });
 
     tapBtn.addEventListener('pointerdown',e=>{
