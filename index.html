@@ -40,7 +40,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* ─── SECTION TEMPS ─── */
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
-.sig-sel{font-size:10px;padding:1px 2px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:48px}
+.sig-sel{font-size:10px;padding:1px 2px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:42px}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
 .temps-slider{flex:1;min-width:30px;max-width:90px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
@@ -48,14 +48,15 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:2px solid #d8d2e8;border-radius:4px;cursor:pointer;font-size:9px;font-weight:700;padding:0 5px;height:22px;min-width:38px;background:#efecf8;color:#6B5FA5;transition:background .15s,color .15s,border-color .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.btn-metro-main{flex-shrink:0;border:2px solid #d8d2e8;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;padding:0 6px;height:22px;min-width:36px;background:#efecf8;color:#6B5FA5;transition:background .15s,color .15s,border-color .15s;letter-spacing:.03em;white-space:nowrap}
 .btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .temps-content.open{max-height:160px}
-.metro-panel{padding:.25rem .5rem .35rem;border-left:2px solid #b0a8d8;margin-left:4px;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px}
+.metro-bloc{border-left:2px solid #b0a8d8;margin-left:4px;padding:.2rem 0 .35rem .5rem;display:flex;flex-direction:column;gap:0}
+.metro-panel{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:.1rem 0}
 .metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
 .metro-sep{color:#c8c0e0;flex-shrink:0;padding:0 2px}
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
@@ -83,11 +84,11 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.btn-volet-groove{color:#C8961A !important}
-.btn-volet-groove:hover,.btn-volet-groove.open{color:#8B6914 !important}
+.btn-volet-groove{color:#ccc !important}
+.btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
-.btn-volet-band{color:#4A7FA5 !important}
-.btn-volet-band:hover,.btn-volet-band.open{color:#2d5f80 !important}
+.btn-volet-band{color:#ccc !important}
+.btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
 .band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
 .band-bar.visible{display:flex}
 .band-bar .section-bar-lbl{color:#2d5f80}
@@ -199,6 +200,11 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sl-row input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--cc,#888);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .instr-sel{font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;color:var(--cb);background:var(--cl);flex-shrink:0;max-width:90px}
 .sound-edit-row{display:flex;align-items:center;gap:4px;padding:3px 8px 5px;background:rgba(0,0,0,.04)}
+.sound-edit-row.hidden{display:none}
+/* Top bar : couleurs volets */
+#btn-sons{color:#4A7FA5;border-color:#8ab4d0}
+#btn-sons.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5}
+#btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
 .sound-edit-row .fam-filter{opacity:.9}
 .sound-edit-row .btn-sec-ico{opacity:.5}
 .sound-edit-row .btn-sec-ico:hover{opacity:1}
@@ -221,9 +227,9 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .btn-play-main{height:44px;padding:0 28px;font-size:22px;font-weight:700;border:2px solid #1a1a18;border-radius:10px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s}
 .btn-play-main:hover{background:#f0ede8}
 .btn-play-main.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
-.btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #1D9E75;border-radius:10px;color:#1D9E75;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.btn-jouer-wrap:hover{background:#ddfff4}
-.btn-jouer-wrap.active{background:#1D9E75;color:#fff}
+.btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #c0bdb7;border-radius:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
+.btn-jouer-wrap:hover{background:#f0ede8}
+.btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
 .hand{font-size:22px;line-height:1}
 
 /* ─── VOLET JOUER ─── */
@@ -577,7 +583,14 @@ body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
 body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#444}
 body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
-body.dark-mode .btn-jouer-wrap{background:#252522}
+body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
+body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+body.dark-mode #btn-sons{color:#5a9fd4;border-color:#4A7FA5}
+body.dark-mode #btn-sons.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5}
+body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
+body.dark-mode .metro-bloc{border-left-color:#3a3448}
+body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
+body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
 body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
@@ -637,7 +650,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.1</span>
+      <span class="app-version">v2.8.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -685,9 +698,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-volet" id="btn-metro-volet">Pulse ▶</button>
   </div>
   <div class="temps-content metro-off" id="temps-content">
+  <div class="metro-bloc">
     <div class="metro-panel">
-      <span class="metro-row-lbl">Accent ①</span>
-      <button class="btn-metro-on" id="btn-metro-accent">OFF</button>
+      <span class="metro-row-lbl">Mesure</span>
+      <button class="btn-metro-on on" id="btn-metro-accent">ON</button>
       <span class="metro-sep">·</span>
       <span class="metro-row-lbl">Temps</span>
       <button class="btn-metro-on on" id="btn-metro-temps">ON</button>
@@ -706,6 +720,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
     </div>
+  </div><!-- /metro-bloc -->
   </div>
   </div><!-- /temps-wrap -->
   <!-- Section Band (Sons) -->
@@ -1401,7 +1416,7 @@ const SIGNATURES=[
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
 // ── État métronome ────────────────────────────────────────────────────────
-let metro={accentOn:false, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true};
+let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true};
 // metro.muted=true  → Métro OFF : timing en sync avec Play, mais aucun son émis
 // metro.muted=false → Métro ON  : les clics sont audibles
 let metroBeatPos=0, metroNextBeatTime=0;
@@ -1726,7 +1741,7 @@ function buildBandSection(){
 
   // Bouton menu ≡
   const menuBtn=document.createElement('button');
-  menuBtn.className='btn-top';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
+  menuBtn.className='btn-sec-ico';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
   menuBtn.textContent='≡';menuBtn.title='Gérer les bands';
   menuBtn.addEventListener('click',()=>openLibPanelBands());
   const hasBandUser=(packCours.bands||[]).some(b=>b.source==='user');
@@ -1760,19 +1775,19 @@ function buildBandSection(){
 
   // Bouton 💾 sauvegarder band
   const saveBtn=document.createElement('button');
-  saveBtn.className='btn-top';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
+  saveBtn.className='btn-sec-ico';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>saveBandState(saveBtn));
   bar.appendChild(saveBtn);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-band'+(sonsOuvert?' open':'');
-  btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+  btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
   btnVolet.addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open',sonsOuvert);
-    btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+    btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
     btnVolet.classList.toggle('open',sonsOuvert);
   });
   bar.appendChild(btnVolet);
@@ -1781,7 +1796,7 @@ function buildBandSection(){
       sonsOuvert=!sonsOuvert;
       const bc=document.getElementById('band-content');
       if(bc)bc.classList.toggle('open',sonsOuvert);
-      btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
+      btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
       btnVolet.classList.toggle('open',sonsOuvert);
     }
   });
@@ -2685,8 +2700,8 @@ function buildSoundRow(key,label,cls,ss){
   volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
   volWrap.addEventListener('click',e=>e.stopPropagation());
 
-  const arrow=document.createElement('button');arrow.className='btn-sec-ico sound-arrow-btn';arrow.textContent='▶';
-  arrow.style.cssText='font-size:11px;opacity:.5;padding:2px 5px;cursor:pointer;flex-shrink:0';
+  const arrow=document.createElement('button');arrow.className='btn-sec-ico sound-arrow-btn';arrow.textContent='sons ▶';
+  arrow.style.cssText='font-size:9px;opacity:.5;padding:2px 5px;cursor:pointer;flex-shrink:0;white-space:nowrap';
   arrow.title='Paramètres sonores';
 
   header.appendChild(lbl);
@@ -2694,7 +2709,7 @@ function buildSoundRow(key,label,cls,ss){
   header.appendChild(arrow);
 
   // ── Ligne 2 : filtre famille + ≡ menu + preset son + 💾 ─────────────────
-  const editRow=document.createElement('div');editRow.className='sound-edit-row';
+  const editRow=document.createElement('div');editRow.className='sound-edit-row hidden';
 
   // Filtre famille (réutilise .fam-filter — même style que volet pattern)
   const famSel=document.createElement('select');
@@ -2742,14 +2757,22 @@ function buildSoundRow(key,label,cls,ss){
   inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
   ctrls.appendChild(inner);
 
-  if(!soundPanelOpen[key])ctrls.classList.add('hidden');
-  else arrow.textContent='▼';
+  if(soundPanelOpen[key]){
+    editRow.classList.remove('hidden');
+    ctrls.classList.remove('hidden');
+    arrow.textContent='sons ▼';
+  }else{
+    editRow.classList.add('hidden');
+    ctrls.classList.add('hidden');
+  }
 
   arrow.addEventListener('click',e=>{
     e.stopPropagation();
-    const nowHidden=ctrls.classList.toggle('hidden');
-    arrow.textContent=nowHidden?'▶':'▼';
-    soundPanelOpen[key]=!nowHidden;
+    const nowOpen=editRow.classList.toggle('hidden');
+    // nowOpen = true → was shown, now hidden
+    ctrls.classList.toggle('hidden',nowOpen);
+    arrow.textContent=nowOpen?'sons ▶':'sons ▼';
+    soundPanelOpen[key]=!nowOpen;
   });
 
   row.appendChild(header);row.appendChild(editRow);row.appendChild(ctrls);
@@ -4545,7 +4568,7 @@ function attachEvents(){
     if(bc)bc.classList.toggle('open',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
     const btnV=document.querySelector('.band-bar .btn-volet');
-    if(btnV){btnV.textContent=sonsOuvert?'Sons ▼':'Sons ▶';btnV.classList.toggle('open',sonsOuvert);}
+    if(btnV){btnV.textContent=sonsOuvert?'Instru ▼':'Instru ▶';btnV.classList.toggle('open',sonsOuvert);}
   });
 
   // ── Titre BoomTchak → encyclo ──
