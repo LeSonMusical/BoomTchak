@@ -305,11 +305,10 @@ body:not(.mode-tx) .step{cursor:default}
 .lib-overlay.hidden{display:none}
 .lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
 .lib-panel.hidden{display:none}
-.lib-panel-head{display:flex;flex-direction:column;gap:5px;padding:9px 14px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
-.lib-head-row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.lib-head-label{font-size:11px;font-weight:600;color:#555;flex:1;min-width:0;line-height:1.3}
+.lib-panel-head{display:flex;align-items:center;gap:6px;padding:9px 12px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.lib-head-label{font-size:11px;font-weight:600;color:#555;flex-shrink:0;white-space:nowrap}
 .lib-head-secname{font-weight:800;font-size:12px}
-.lib-head-row2{display:flex;align-items:center}
+.lib-panel-head .lib-fam-filter-sel{flex:1;min-width:0}
 /* Familles déplacées en bas — même teinte que l'en-tête */
 .lib-fam-bottom{border-top:none}
 .lib-fam-bottom .lib-fam-summary{border-top:1px solid rgba(0,0,0,.07)}
@@ -385,6 +384,22 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
 .lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
 .lib-fam-add-row button{padding:4px 9px;font-size:11px;background:#4A7FA5;color:#fff;border:none;border-radius:5px;cursor:pointer}
+/* Bande FAMILLES toujours visible */
+.lib-fam-band{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 14px;border-top:1px solid rgba(0,0,0,.07)}
+.lib-fam-band-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0;opacity:.75}
+.lib-fam-band-pat{background:rgba(107,95,165,.10);border-color:rgba(107,95,165,.18)}
+.lib-fam-band-pat .lib-fam-band-title{color:#4a3d8a}
+.lib-fam-band-groove{background:rgba(200,150,26,.10);border-color:rgba(200,150,26,.25)}
+.lib-fam-band-groove .lib-fam-band-title{color:#8B6914}
+.lib-fam-new-input{flex:1;min-width:0;font-size:11px;padding:3px 7px;border:1px solid #c0bdb7;border-radius:5px;background:#fff}
+.lib-fam-band-pat .lib-fam-new-input{border-color:rgba(107,95,165,.35)}
+.lib-fam-band-groove .lib-fam-new-input{border-color:rgba(200,150,26,.4)}
+.lib-fam-add-btn-icon{flex-shrink:0;padding:3px 8px;font-size:12px;font-weight:700;border:none;border-radius:5px;cursor:pointer;color:#fff}
+.lib-fam-band-pat .lib-fam-add-btn-icon{background:#6B5FA5}
+.lib-fam-band-groove .lib-fam-add-btn-icon{background:#C8961A}
+/* Couleurs des tags par type */
+.fam-tag-pat{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
+.fam-tag-groove{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
 /* toggle contenu encyclopédie (Tous / Remplis / Vides) */
 .lib-content-toggle{padding:3px 8px;font-size:10px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .lib-content-toggle[data-state="filled"]{border-color:#1D9E75;color:#1D9E75;background:#f0fdf8}
@@ -536,6 +551,12 @@ body.dark-mode .encyclo-bar .fam-filter{background:#202020;color:#888;border-col
 body.dark-mode .save-sheet-box,body.dark-mode .psp-box{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333330}
+body.dark-mode .lib-fam-band{border-color:rgba(255,255,255,.07)}
+body.dark-mode .lib-fam-band-pat{background:rgba(107,95,165,.18)}
+body.dark-mode .lib-fam-band-groove{background:rgba(200,150,26,.15)}
+body.dark-mode .lib-fam-new-input{background:#1e1e1c;color:#e0ddd8;border-color:#444440}
+body.dark-mode .fam-tag-pat{background:#3a2820;border-color:#7A4A30;color:#e0a080}
+body.dark-mode .fam-tag-groove{background:#2e2410;border-color:#8B6914;color:#e0c060}
 body.dark-mode .lib-item{border-bottom-color:#333330}
 body.dark-mode .lib-item-name{color:#e0ddd8}
 body.dark-mode .lib-drag-handle{color:#444440}
@@ -571,7 +592,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.3</span>
+      <span class="app-version">v2.7.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -691,58 +712,50 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-patterns"></div>
 <div class="lib-panel hidden" id="lib-panel-patterns">
   <div class="lib-panel-head">
-    <div class="lib-head-row1">
-      <div class="lib-head-label">Éditer les familles de <span class="lib-head-secname">Patterns</span></div>
-      <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
-    </div>
-    <div class="lib-head-row2">
-      <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
-        <option value="all">Toutes les familles</option>
-      </select>
-    </div>
+    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
+    <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
+      <option value="all">Toutes les familles</option>
+    </select>
+    <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-patterns"></div>
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
   </div>
-  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
-    <summary class="lib-fam-summary">Gérer les familles <span id="lib-fam-arrow">▶</span></summary>
-    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
-    <div class="lib-fam-add-row">
-      <input type="text" id="lib-fam-new-input" placeholder="Nouvelle famille…">
-      <button id="lib-fam-add-btn">＋</button>
+  <div class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
+    <div class="lib-fam-band lib-fam-band-pat">
+      <span class="lib-fam-band-title">Familles</span>
+      <input type="text" class="lib-fam-new-input" id="lib-fam-new-input" placeholder="Nouvelle famille…">
+      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn">＋</button>
     </div>
-  </details>
+    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
+  </div>
 </div>
 
 <!-- Panel ≡ bibliothèque grooves -->
 <div class="lib-overlay hidden" id="lib-overlay-grooves"></div>
 <div class="lib-panel hidden" id="lib-panel-grooves">
   <div class="lib-panel-head">
-    <div class="lib-head-row1">
-      <div class="lib-head-label">Éditer les familles de <span class="lib-head-secname">Grooves</span></div>
-      <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
-    </div>
-    <div class="lib-head-row2">
-      <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
-        <option value="all">Toutes les familles</option>
-      </select>
-    </div>
+    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
+    <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
+      <option value="all">Toutes les familles</option>
+    </select>
+    <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
   </div>
-  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
-    <summary class="lib-fam-summary">Gérer les familles <span>▶</span></summary>
-    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
-    <div class="lib-fam-add-row">
-      <input type="text" id="lib-fam-new-input-grooves" placeholder="Nouvelle famille…">
-      <button id="lib-fam-add-btn-grooves">＋</button>
+  <div class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
+    <div class="lib-fam-band lib-fam-band-groove">
+      <span class="lib-fam-band-title">Familles</span>
+      <input type="text" class="lib-fam-new-input" id="lib-fam-new-input-grooves" placeholder="Nouvelle famille…">
+      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn-grooves">＋</button>
     </div>
-  </details>
+    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
+  </div>
 </div>
 
 <!-- Panel ≡ bibliothèque encyclopédie -->
@@ -3193,7 +3206,7 @@ function libBuildPatternTags(container, pat){
   container.innerHTML = '';
   (pat.familles||[]).forEach(fid=>{
     const fam = getFamille(fid); if(!fam) return;
-    const chip = document.createElement('span'); chip.className = 'fam-tag';
+    const chip = document.createElement('span'); chip.className = 'fam-tag fam-tag-pat';
     chip.textContent = fam.nom;
     const x = document.createElement('button'); x.className = 'fam-tag-x'; x.textContent = '×';
     x.title = 'Retirer cette famille';
@@ -3564,7 +3577,7 @@ function libBuildGrooveTags(container, groove){
   container.innerHTML='';
   (groove.familles||[]).forEach(fid=>{
     const fam=getFamille(fid); if(!fam) return;
-    const chip=document.createElement('span'); chip.className='fam-tag'; chip.textContent=fam.nom;
+    const chip=document.createElement('span'); chip.className='fam-tag fam-tag-groove'; chip.textContent=fam.nom;
     const x=document.createElement('button'); x.className='fam-tag-x'; x.textContent='×';
     x.addEventListener('click',e=>{ e.stopPropagation(); groove.familles=(groove.familles||[]).filter(id=>id!==fid); libBuildGrooveTags(container,groove); saveToStorage(); });
     chip.appendChild(x); container.appendChild(chip);
