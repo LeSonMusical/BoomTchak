@@ -653,7 +653,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.4</span>
+      <span class="app-version">v2.8.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1381,7 +1381,7 @@ let state=LAYERS.map(()=>({
   pattern:['.'],
   patternId:null,
   stepPos:0, nextStepTime:0, startTime:0,
-  muted:false, halfOn:false, doubleOn:false,
+  muted:false, halfOn:false, doubleOn:false, ternOn:false,
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   wrapped:false,
 }));
@@ -1440,7 +1440,8 @@ function getAC(){
 function getBeatSec(li){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
   const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
-  return(60/spm)/mult;
+  const ternFactor=state[li].ternOn?1.5:1; // T : step ×3/2 (croche→croche pointée, noire→noire pointée)
+  return(60/spm)/mult*ternFactor;
 }
 
 // ⚠ BUG CONNU — SYNCHRO TEMPO : quand le slider BPM change en cours de lecture,
@@ -1677,6 +1678,7 @@ function applyGroove(grooveId){
     state[li].muted=gl.mute||false;
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
+    state[li].ternOn=gl.ternOn||false;
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
@@ -2084,9 +2086,16 @@ function buildLayers(){
     // — Vitesse /2 ×2 —
     const bHalf=document.createElement('button');bHalf.className='btn-mod';bHalf.id='mod-half-'+li;bHalf.textContent='/2';bHalf.title='Vitesse ÷2 (appliqué au prochain cycle)';
     const bDbl=document.createElement('button');bDbl.className='btn-mod';bDbl.id='mod-dbl-'+li;bDbl.textContent='×2';bDbl.title='Vitesse ×2 (appliqué au prochain cycle)';
+    let bTern; // déclaré ici, initialisé après (guard dans updateSpeedBtns)
     const updateSpeedBtns=()=>{
-      bHalf.classList.toggle('on', state[li].halfOn||state[li].pendingHalf);
-      bDbl.classList.toggle('on', state[li].doubleOn||state[li].pendingDouble);
+      // Calcul de l'état anticipé (après prochain boundary) — évite le double "on" visuel
+      let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
+      if(state[li].pendingClear){nextHalf=false;nextDbl=false;}
+      if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
+      if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
+      bHalf.classList.toggle('on',nextHalf);
+      bDbl.classList.toggle('on',nextDbl);
+      if(bTern)bTern.classList.toggle('on',state[li].ternOn);
     };
     updateSpeedBtns();
     bHalf.addEventListener('click',()=>{
@@ -2105,6 +2114,13 @@ function buildLayers(){
         if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
         state[li].pendingDouble=true;state[li].pendingClear=false;
       }
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
+    });
+
+    // — Ternaire T (step ×3/2 : croche→croche pointée, noire→noire pointée) —
+    bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Step ternaire ×3/2 (croche pointée / noire pointée)';
+    bTern.addEventListener('click',()=>{
+      state[li].ternOn=!state[li].ternOn;
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
     });
 
@@ -2212,12 +2228,12 @@ function buildLayers(){
       }
       state[li].pattern=arr;
 
-      // ── 5. Vitesse (50% inchangé, 25% /2, 25% ×2) ─────────────────────
+      // ── 5. Vitesse (80% inchangé, 10% /2, 10% ×2) ─────────────────────
       const rv=Math.random();
-      if(rv<0.25){
+      if(rv<0.10){
         if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
         state[li].pendingHalf=true;state[li].pendingClear=false;
-      } else if(rv<0.5){
+      } else if(rv<0.20){
         if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
         state[li].pendingDouble=true;state[li].pendingClear=false;
       }
@@ -2226,9 +2242,11 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);
     });
 
-    // Assemblage : Vitesse | Shift | ⇄ ⇅ ⊙ | 🎲 ✨
+    // Assemblage : Vitesse | T | Shift | ⇄ ⇅ ⊙ | 🎲 ✨
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
     modPanel.appendChild(bHalf); modPanel.appendChild(bDbl);
+    modPanel.appendChild(mkSep());
+    modPanel.appendChild(bTern);
     modPanel.appendChild(mkSep());
     modPanel.appendChild(bShL); modPanel.appendChild(shNum); modPanel.appendChild(bShR);
     modPanel.appendChild(mkSep());
