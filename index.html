@@ -653,7 +653,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.6</span>
+      <span class="app-version">v2.8.7</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1042,16 +1042,71 @@ const ENCYCLO = {
     bullets:[["X — son fort","Volume plein (100%). Le pas est joué avec toute son intensité."],["x — son faible","Volume réduit (33%). Le squelette rythmique est maintenu, la dynamique allégée."],["· — silence","Pas joué. L'absence de son est constitutive du pattern au même titre que les frappes."]]
   },
   misc_tempo:{
-    chapo:"Le tempo (bouton Tempo) règle la vitesse des steps en SPM (Steps Par Minute). Les équivalences en notation traditionnelle sont affichées : ♩♩ (blanche), ♩ (noire), ♩. (noire pointée). Les boutons /2 et ×2 divisent ou doublent le tempo de toutes les couches en restant synchronisés.",
-    bullets:[]
+    chapo:"Le tempo règle la vitesse globale du groove, exprimé en BPM (battements par minute). Le slider et le bouton Tap permettent d'ajuster le tempo en temps réel. La valeur s'affiche aussi en notation musicale (♩ noire, ♩. noire pointée, 𝅗𝅥 blanche) selon la signature courante.",
+    bullets:[
+      ["BPM","Battements par minute — 1 BPM correspond à 1 temps (noire en 4/4). Repères : 60 = lent, 120 = marche, 200 = très rapide."],
+      ["Tap Tempo","Frapper plusieurs fois la zone Tap en suivant le pulse permet d'indiquer le tempo à l'oreille, sans chercher la valeur numérique."],
+      ["×2 / /2 globaux","Doublent ou divisent le tempo de toutes les couches simultanément, en restant synchronisés."],
+      ["Vitesse par couche","Chaque couche peut avoir sa propre vitesse relative indépendante via les boutons /2, ×2 et T du volet Mod — voir article Transformations."]
+    ]
   },
   misc_transformations:{
-    chapo:"Chaque pattern est éditable directement en cliquant sur ses steps. Le volet Mod ▶ donne accès à des transformations globales du pattern.",
-    bullets:[["◀ n ▶  Décalage","Tourne le pattern : déplace le point de départ sans changer les intervalles. Les appuis peuvent devenir des levés et les rapports avec les autres couches sont bouleversés. Le Son 2:3 est un shift du Son 3:2."],["⇄  Intervertir","Échange les deux moitiés du pattern. Sur 8 steps, les steps 1–4 et 5–8 sont permutés."],["⇅  Inversion des accents","Échange forts et faibles : X ↔ x. Les silences restent inchangés. Permet de jouer le même squelette rythmique avec la dynamique inversée."],["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : silence → faible → fort → silence. Transforme progressivement un pattern en version accentuée."],["/ 2 × 2  Vitesse","Divise ou double la vitesse de la couche indépendamment des autres, appliqué au prochain cycle pour rester en phase."],["🎲  Dé","Redistribue aléatoirement les steps (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],["✨  Magie","Applique une combinaison aléatoire de transformations (décalage, intervertir, rotation des accents, /2, ×2). Bon point de départ pour explorer des variations inattendues d'un pattern connu."]]
+    chapo:"Chaque pattern est éditable directement en cliquant sur ses steps (cycle · → X → x). Le volet Mod donne accès à des transformations globales. Les changements de vitesse s'appliquent au prochain cycle pour rester en phase avec les autres couches.",
+    bullets:[
+      ["◀ n ▶  Décalage","Tourne le pattern : déplace le point de départ sans changer les intervalles. Les appuis peuvent devenir des levés. Le Son 2:3 est un shift du Son 3:2."],
+      ["⇄  Intervertir","Échange les deux moitiés du pattern. Sur 8 steps : steps 1–4 ↔ 5–8."],
+      ["⇅  Inversion des accents","Échange forts et faibles : X ↔ x. Les silences restent inchangés."],
+      ["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : · → x → X → ·."],
+      ["/2  ×2  T  Vitesse","Modifient la vitesse de la couche indépendamment des autres. /2 : step = noire (2× plus lent). ×2 : step = double croche (2× plus rapide). T (ternaire) : step = croche ternaire, vitesse ×3/2 — combiner /2+T donne la noire ternaire."],
+      ["🎲  Dé","Redistribue les steps au hasard (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],
+      ["✨  Magie","Génère un nouveau pattern musicalement cohérent via deux phases : placement euclidien des sons forts (répartition régulière sur n steps) puis sons faibles déterminés par une chaîne de Markov (un son faible suit volontiers un son fort). L'intensité algorithmique varie aléatoirement."]
+    ]
   },
   misc_familles:{
-    chapo:"Les familles permettent de regrouper patterns et grooves selon le style, la fonction musicale ou tout autre critère. Un même élément peut appartenir à plusieurs familles. Les familles sont partagées entre patterns et grooves.",
-    bullets:[["Filtrer","Dans les menus déroulants de couche et de groove, sélectionner une famille (ou 'Perso') pour n'afficher que les éléments concernés."],["Perso","Le filtre 'Perso' affiche uniquement les patterns et grooves créés par l'utilisateur (source : perso), indépendamment des familles."],["Créer / renommer","En mode TX, utiliser le bouton ≡ d'une section pour créer, renommer ou supprimer des familles, et les assigner aux éléments."],["Exemples","Référentiel (patterns fondamentaux), 4-on-the-floor, Afro-cubain, Brésilien, Progressif…"]]
+    chapo:"Les familles permettent de regrouper patterns, grooves et bands selon le style, la fonction musicale ou tout autre critère. Un même élément peut appartenir à plusieurs familles. Les familles de bands sont indépendantes des familles de patterns et grooves.",
+    bullets:[
+      ["Filtrer","Dans les menus déroulants, sélectionner une famille pour n'afficher que les éléments concernés. Le filtre 'Tout' remet l'affichage complet."],
+      ["Perso","Le filtre 'Perso' affiche uniquement les éléments créés par l'utilisateur, indépendamment des familles."],
+      ["Créer / gérer","Le bouton ≡ de chaque section ouvre le panneau de gestion des familles : créer, renommer, supprimer, assigner aux éléments."],
+      ["Familles de bands","Les sons de batterie (bands) ont leurs propres familles, distinctes des familles de patterns et grooves. Exemples : Électro, Percussions, Rock, Minimaliste."]
+    ]
+  },
+  misc_metro:{
+    chapo:"Le Métronome émet une pulsation de référence synchronisée avec le groove. Il peut être activé ou coupé à tout moment sans affecter le timing — seul le son est muté. Le volet Pulse permet de choisir quelles subdivisions sont audibles.",
+    bullets:[
+      ["Métro ON / OFF","Active ou coupe le son du métronome. Le timing du groove continue dans tous les cas — 'OFF' signifie 'silencieux', pas 'arrêté'."],
+      ["Mesure","Un clic accentué (son différent) marque le premier temps de chaque mesure — le '1'. Permet de percevoir le début du cycle."],
+      ["Temps","Un clic sur chaque temps de la mesure selon la signature. En 4/4 : quatre clics par mesure. En 3/4 : trois clics."],
+      ["Subdiv","Subdivisions : clic sur chaque demi-temps. En 4/4 : 8 clics par mesure (croches). Utile pour les tempos lents ou pour ancrer les doubles croches."]
+    ]
+  },
+  misc_signature:{
+    chapo:"La signature (ou chiffrage) de mesure définit la structure temporelle du groove : combien de temps par mesure, et quelle valeur de note constitue un temps. Elle s'affiche en fraction dans la barre Metro et conditionne le placement des séparateurs visuels dans la grille de steps.",
+    bullets:[
+      ["Chiffre du haut — nombre de temps","Combien de temps il y a par mesure : 4/4 = 4 temps, 3/4 = 3 temps (valse), 5/4 = 5 temps (asymétrique), 6/8 = 2 temps."],
+      ["Chiffre du bas — valeur du temps","L'unité de temps. 4 = noire ♩ (2 steps), 8 = noire pointée ♩. (3 steps), 2 = blanche 𝅗𝅥 (4 steps). En 4/4, 1 temps = 2 cases à vitesse normale."],
+      ["Séparateurs visuels","Une ligne marque le début de chaque temps dans la grille. Leur espacement change selon la signature et le modificateur de vitesse de la couche (×2, /2, T)."],
+      ["Signatures composées — 6/8, 9/8, 12/8","Le temps est une noire pointée (3 croches). Feel naturellement ternaire. En 6/8 : 2 temps de 3 croches, séparateur toutes les 3 cases. Combinées avec T : séparateur toutes les ~4-5 cases."]
+    ]
+  },
+  misc_mesure:{
+    chapo:"Une mesure (ou bar) est un groupe de temps délimité par deux barres de mesure. Le premier temps — le '1' — porte le poids rythmique le plus fort et déclenche l'accent du métronome. La notion de mesure est universelle en musique : c'est l'unité de répétition qui structure la durée.",
+    bullets:[
+      ["En 4/4","4 temps par mesure, chaque temps = noire. La mesure la plus répandue dans la musique populaire mondiale. 1 mesure = 8 cases (steps) à vitesse normale."],
+      ["En 3/4","3 temps par mesure. Signature de la valse et de nombreuses musiques traditionnelles. 1 mesure = 6 cases à vitesse normale."],
+      ["En 6/8","6 croches regroupées en 2 temps de noire pointée. Feel ternaire — chaque temps 'cloche' en 3. 1 mesure = 6 cases à vitesse normale."],
+      ["Pattern et mesure","Un pattern de 8 cases couvre 1 mesure en 4/4 à vitesse normale. La durée réelle dépend du nombre de steps, de la signature et de la vitesse de la couche (/2, ×2, T)."]
+    ]
+  },
+  misc_step:{
+    chapo:"Un step (pas) est l'unité de temps minimale de BoomTchak : la plus petite case dans la grille de pattern. En vitesse normale, 1 step = 1 croche (♪, 1/8 de ronde). C'est la résolution fondamentale du séquenceur, commune à toutes les couches.",
+    bullets:[
+      ["Normal — croche ♪","1 step = 1/8. En 4/4 à 120 BPM : 1 step = 0,25 s. 2 steps = 1 temps (noire). 8 steps = 1 mesure."],
+      ["×2 — double croche ♬","1 step = 1/16. Chaque step est 2× plus court. La couche joue 2× plus vite à pattern identique."],
+      ["/2 — noire ♩","1 step = 1/4. Chaque step est 2× plus long. 1 step = 1 temps en 4/4."],
+      ["T — croche ternaire","1 step = 2/3 de croche (vitesse ×3/2). En 4/4 : 3 steps T = 1 temps. Produit un feeling de triolet ou de swing. Combiner /2+T pour la noire de triolet."],
+      ["Notations","X = son fort (100% vol), x = son faible (33% vol), · = silence. Cliquer une case fait cycler · → X → x → ·."]
+    ]
   }
 };
 
@@ -1060,6 +1115,10 @@ const ENCYCLO_MISC=[
   {id:'poumtchak',           nom:'★ BoomTchak'},
   {id:'misc_groove',         nom:'Groove'},
   {id:'misc_pattern',        nom:'Pattern'},
+  {id:'misc_step',           nom:'Step / Pas'},
+  {id:'misc_mesure',         nom:'Mesure'},
+  {id:'misc_signature',      nom:'Signature'},
+  {id:'misc_metro',          nom:'Métronome'},
   {id:'misc_sons',           nom:'Sons & instruments'},
   {id:'misc_notations',      nom:'Notations'},
   {id:'misc_tempo',          nom:'Tempo'},
@@ -2120,7 +2179,7 @@ function buildLayers(){
     });
 
     // — Ternaire T (vitesse ×3/2 : step = croche ternaire, durée ×2/3) —
-    bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire (triolet). Combinez /2+T pour noire de triolet.';
+    bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire (triolet). Combinez /2+T pour noire de triolet.';bTern.style.cssText='padding:1px 10px;font-weight:700';
     bTern.addEventListener('click',()=>{
       state[li].ternOn=!state[li].ternOn;
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
@@ -2155,17 +2214,17 @@ function buildLayers(){
       state[li].pattern=[...p.slice(h),...p.slice(0,h)];
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    const bInv=document.createElement('button');bInv.className='btn-mod';bInv.textContent='⇅';bInv.title='Inverser les accents (X↔x, silences inchangés)';
+    const bInv=document.createElement('button');bInv.className='btn-mod btn-mod-sm';bInv.textContent='⇅';bInv.title='Inverser les accents (X↔x, silences inchangés)';
     bInv.addEventListener('click',()=>{
       state[li].pattern=state[li].pattern.map(p=>p==='X'?'x':p==='x'?'X':p);
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    const bRot=document.createElement('button');bRot.className='btn-mod';bRot.textContent='⊙';bRot.title='Rotation des accents (. → x → X → .)';
+    const bRot=document.createElement('button');bRot.className='btn-mod btn-mod-sm';bRot.textContent='⊙';bRot.title='Rotation des accents (. → x → X → .)';
     bRot.addEventListener('click',()=>{
       state[li].pattern=state[li].pattern.map(p=>p==='.'?'x':p==='x'?'X':'.');
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
-    const bDice=document.createElement('button');bDice.className='btn-mod';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
+    const bDice=document.createElement('button');bDice.className='btn-mod btn-mod-sm';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
     bDice.addEventListener('click',()=>{
       // Fisher-Yates shuffle — préserve la proportion exacte de X, x et .
       const arr=[...state[li].pattern];
@@ -2179,7 +2238,7 @@ function buildLayers(){
     });
 
     // — Magie ✨ (Euclide + Markov, intensité aléatoire linéaire) —
-    const bMagic=document.createElement('button');bMagic.className='btn-mod';bMagic.textContent='✨';bMagic.title='Magie : génération musicalement équilibrée';
+    const bMagic=document.createElement('button');bMagic.className='btn-mod btn-mod-sm';bMagic.textContent='✨';bMagic.title='Magie : génération musicalement équilibrée';
     bMagic.addEventListener('click',()=>{
       const n=state[li].pattern.length;
 
@@ -4626,7 +4685,10 @@ function attachEvents(){
     const bar=document.querySelector('.band-bar');
     if(bar)bar.classList.toggle('visible',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
-    // band-content.open et btnVolet mémorisent instrOuvert → ne pas les toucher ici
+    // ON  → restaurer l'état instrOuvert mémorisé
+    // OFF → masquer band-content ET tous ses sous-volets (instrOuvert conservé pour la prochaine ouverture)
+    const bc=document.getElementById('band-content');
+    if(bc)bc.classList.toggle('open', sonsOuvert && instrOuvert);
   });
 
   // ── Titre BoomTchak → encyclo ──
