@@ -340,34 +340,47 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .btn-mod:disabled{opacity:.3;cursor:default}
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
-.lib-item{display:flex;align-items:center;gap:3px;padding:2px 8px 2px 4px;border-bottom:1px solid #f0ede8;min-height:28px;transition:background .1s}
+/* ── Items bibliothèque — layout 2 lignes ── */
+.lib-item{display:flex;align-items:stretch;gap:0;padding:5px 8px 5px 0;border-bottom:1px solid #f0ede8;transition:background .1s}
 .lib-item:last-child{border-bottom:none}
 .lib-item.lib-item-dragging{opacity:.4}
 .lib-item.lib-item-drag-over{background:#e8f2f8;border-top:2px solid #4A7FA5}
-.lib-item-check{flex-shrink:0;width:16px;height:16px;cursor:pointer}
-.lib-drag-handle{flex-shrink:0;cursor:grab;padding:1px 3px;font-size:13px;color:#c0bdb7;line-height:1;touch-action:none;user-select:none;-webkit-user-select:none}
+/* Checkbox aligné au centre des 2 lignes */
+.lib-item-check{flex-shrink:0;align-self:center;width:16px;height:16px;cursor:pointer;margin:0 4px}
+/* Poignée grande zone tactile, toute hauteur */
+.lib-drag-handle{flex-shrink:0;cursor:grab;padding:0 10px;font-size:17px;color:#d0cdc8;display:flex;align-items:center;align-self:stretch;touch-action:none;user-select:none;-webkit-user-select:none}
 .lib-drag-handle:hover{color:#888}
 .lib-drag-handle:active{cursor:grabbing}
-.lib-item-name{flex:1;font-size:11px;font-weight:500;color:#1a1a18;cursor:pointer;border-radius:3px;padding:1px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lib-item-name:hover{background:#f5f4f0}
+/* Colonne principale : 2 lignes empilées */
+.lib-item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:1px}
+.lib-item-row1{display:flex;align-items:center;gap:2px}
+.lib-item-name{flex:1;font-size:11px;font-weight:500;color:#1a1a18;border-radius:3px;padding:1px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lib-item-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1);box-shadow:0 0 0 2px rgba(74,127,165,.3);white-space:normal}
-.lib-item-tags{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
-.lib-item-del{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:#e8b0a0;line-height:1;transition:color .12s}
+.lib-item-rename{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:12px;padding:2px 5px;color:#c8c5c0;line-height:1;transition:color .12s}
+.lib-item-rename:hover{color:#4A7FA5}
+.lib-item-del{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;color:#e8b0a0;line-height:1;transition:color .12s}
 .lib-item-del:hover{color:#D85A30}
-.lib-item-del.confirming{color:#D85A30}
-.lib-source-badge{font-size:8px;padding:1px 4px;border-radius:3px;background:#f0ede8;color:#888;flex-shrink:0}
-.lib-source-badge-user{background:#ddfff4;color:#0F6E56}
+/* Tags : 2e ligne, espace plein */
+.lib-item-tags{display:flex;flex-wrap:wrap;gap:3px}
+/* Badges source masqués (TX = tout, SX = filtre user) */
+.lib-source-badge{display:none}
 /* section familles dans le panel */
 .lib-fam-section{border-top:1px solid #e8e5e0;flex-shrink:0}
 .lib-fam-summary{font-size:11px;font-weight:600;color:#555;padding:8px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
 .lib-fam-summary:hover{background:#f5f4f0}
 .lib-fam-list{padding:4px 14px 8px;display:flex;flex-direction:column;gap:4px}
-.lib-fam-item{display:flex;align-items:center;gap:6px;font-size:11px}
-.lib-fam-name{flex:1;cursor:pointer;padding:2px 4px;border-radius:3px}
-.lib-fam-name:hover{background:#f5f4f0}
-.lib-fam-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1)}
-.lib-fam-count{font-size:9px;color:#aaa}
-.lib-fam-del{background:none;border:none;cursor:pointer;font-size:12px;color:#ccc;padding:2px 4px}
+.lib-fam-item{display:flex;align-items:center;gap:3px;padding:2px 0;font-size:11px;cursor:default}
+.lib-fam-item.lib-fam-dragging{opacity:.4}
+.lib-fam-item.lib-fam-drag-over{background:#e8f2f8;border-top:2px solid #4A7FA5}
+.lib-fam-handle{flex-shrink:0;cursor:grab;padding:2px 8px;font-size:14px;color:#d0cdc8;touch-action:none;user-select:none;-webkit-user-select:none;line-height:1}
+.lib-fam-handle:hover{color:#888}
+.lib-fam-handle:active{cursor:grabbing}
+.lib-fam-name{flex:1;padding:2px 4px;border-radius:3px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-fam-name[contenteditable="true"]{outline:none;background:rgba(74,127,165,.1);white-space:normal}
+.lib-fam-rename{background:none;border:none;cursor:pointer;font-size:11px;padding:2px 5px;color:#c8c5c0;flex-shrink:0}
+.lib-fam-rename:hover{color:#4A7FA5}
+.lib-fam-count{font-size:9px;color:#bbb;flex-shrink:0;min-width:28px;text-align:right}
+.lib-fam-del{background:none;border:none;cursor:pointer;font-size:12px;color:#ddd;padding:2px 6px;flex-shrink:0}
 .lib-fam-del:hover{color:#D85A30}
 .lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
 .lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
@@ -525,6 +538,19 @@ body.dark-mode .lib-panel{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333330}
 body.dark-mode .lib-item{border-bottom-color:#333330}
 body.dark-mode .lib-item-name{color:#e0ddd8}
+body.dark-mode .lib-drag-handle{color:#444440}
+body.dark-mode .lib-drag-handle:hover{color:#888}
+body.dark-mode .lib-item-rename{color:#444440}
+body.dark-mode .lib-item-rename:hover{color:#8ab4d0}
+body.dark-mode .lib-item-del{color:#5a3028}
+body.dark-mode .lib-item-del:hover{color:#D85A30}
+body.dark-mode .lib-fam-handle{color:#444440}
+body.dark-mode .lib-fam-handle:hover{color:#888}
+body.dark-mode .lib-fam-name{color:#e0ddd8}
+body.dark-mode .lib-fam-rename{color:#444440}
+body.dark-mode .lib-fam-rename:hover{color:#8ab4d0}
+body.dark-mode .lib-fam-del:hover{color:#D85A30}
+body.dark-mode .lib-fam-item.lib-fam-drag-over{background:#1e3040;border-top-color:#4A7FA5}
 body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 /* ─── RESPONSIVE ─── */
@@ -545,7 +571,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.2</span>
+      <span class="app-version">v2.7.3</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3072,49 +3098,45 @@ function buildLibListPatterns(){
     item.dataset.patId = pat.id;
     item.setAttribute('draggable', 'true');
 
-    // Checkbox sélection batch
+    // Checkbox
     const chk = document.createElement('input');
     chk.type = 'checkbox'; chk.className = 'lib-item-check';
     chk.addEventListener('change', updateLibBatchBar);
     item.appendChild(chk);
 
-    // Poignée de drag ⠿
+    // Poignée drag — grande zone tactile, toute hauteur
     const handle = document.createElement('span');
     handle.className = 'lib-drag-handle';
-    handle.textContent = '⠿';
-    handle.title = 'Glisser pour réordonner';
+    handle.textContent = '⠿'; handle.title = 'Glisser pour réordonner';
     item.appendChild(handle);
 
-    // Nom (cliquable → rename inline)
+    // Colonne principale 2 lignes
+    const main = document.createElement('div'); main.className = 'lib-item-main';
+
+    // Ligne 1 : nom + ✎ + 🗑
+    const row1 = document.createElement('div'); row1.className = 'lib-item-row1';
     const nameEl = document.createElement('span');
     nameEl.className = 'lib-item-name';
     nameEl.textContent = pat.nom.replace(/^● modifié /,'');
-    nameEl.title = 'Cliquer pour renommer';
-    nameEl.addEventListener('click', ()=>libStartRenamePattern(nameEl, pat.id));
-    item.appendChild(nameEl);
-
-    // Tags famille
-    const tagsWrap = document.createElement('div'); tagsWrap.className = 'lib-item-tags';
-    libBuildPatternTags(tagsWrap, pat);
-    item.appendChild(tagsWrap);
-
-    // Badge source
-    if(pat.source === 'default'){
-      const badge = document.createElement('span'); badge.className = 'lib-source-badge';
-      badge.textContent = 'défaut'; item.appendChild(badge);
-    } else if(pat.source === 'user'){
-      const badge = document.createElement('span'); badge.className = 'lib-source-badge lib-source-badge-user';
-      badge.textContent = 'user'; item.appendChild(badge);
-    }
-
-    // Bouton supprimer 🗑
+    row1.appendChild(nameEl);
+    const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
+    renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
+    renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
+    row1.appendChild(renameBtn);
     const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer ce pattern';
+    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
     delBtn.addEventListener('click', ()=>{
       if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
       libDeletePattern(pat.id);
     });
-    item.appendChild(delBtn);
+    row1.appendChild(delBtn);
+    main.appendChild(row1);
+
+    // Ligne 2 : tags famille
+    const tagsWrap = document.createElement('div'); tagsWrap.className = 'lib-item-tags';
+    libBuildPatternTags(tagsWrap, pat);
+    main.appendChild(tagsWrap);
+    item.appendChild(main);
 
     // ── Drag HTML5 (souris) ───────────────────────────────────────────────
     item.addEventListener('dragstart', e=>{
@@ -3283,34 +3305,65 @@ function updateLibBatchBar(){
 function buildLibFamListPatterns(){
   const list = document.getElementById('lib-fam-list-patterns');
   list.innerHTML = '';
+  let _famDragSrc = null;
   packCours.familles.forEach(fam=>{
     const count = packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
-    const row = document.createElement('div'); row.className = 'lib-fam-item';
+    const row = document.createElement('div'); row.className = 'lib-fam-item'; row.dataset.famId = fam.id;
+    // Poignée drag
+    const hdl = document.createElement('span'); hdl.className = 'lib-fam-handle'; hdl.textContent = '⠿'; hdl.title = 'Réordonner';
+    hdl.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrc=fam.id;row.classList.add('lib-fam-dragging');},{passive:false});
+    hdl.addEventListener('touchmove',e=>{e.preventDefault();if(!_famDragSrc)return;const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tgt=el?el.closest('.lib-fam-item'):null;list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(tgt&&tgt.dataset.famId!==_famDragSrc)tgt.classList.add('lib-fam-drag-over');},{passive:false});
+    hdl.addEventListener('touchend',e=>{e.preventDefault();const over=list.querySelector('.lib-fam-drag-over');row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(over&&_famDragSrc&&over.dataset.famId!==_famDragSrc)libDropFamille(_famDragSrc,over.dataset.famId);_famDragSrc=null;},{passive:false});
+    row.appendChild(hdl);
+    // Nom (lecture seule, rename via bouton)
     const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
-    nameEl.textContent = fam.nom; nameEl.title = 'Cliquer pour renommer';
-    nameEl.addEventListener('click', ()=>{
-      nameEl.contentEditable = 'true'; nameEl.focus();
-      nameEl.dataset.orig = nameEl.textContent;
-      nameEl.addEventListener('blur', ()=>{
-        nameEl.contentEditable = 'false';
-        const newNom = nameEl.textContent.trim();
-        if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
-        fam.nom = newNom; saveToStorage();
-        buildLibListPatterns(); buildLibFamListPatterns(); rebuildAllFamFilters();
-      }, {once:true});
-      nameEl.addEventListener('keydown', e=>{
-        if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
-        if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
-      });
-    });
-    const cntEl = document.createElement('span'); cntEl.className = 'lib-fam-count';
-    cntEl.textContent = count + ' pattern'+(count!==1?'s':'');
-    const delBtn = document.createElement('button'); delBtn.className = 'lib-fam-del';
-    delBtn.textContent = '×'; delBtn.title = 'Supprimer cette famille';
+    nameEl.textContent = fam.nom;
+    row.appendChild(nameEl);
+    // Bouton ✎ renommer
+    const renBtn = document.createElement('button'); renBtn.className = 'lib-fam-rename'; renBtn.textContent = '✎'; renBtn.title = 'Renommer';
+    renBtn.addEventListener('click', ()=>libStartRenameFamille(nameEl, fam, buildLibFamListPatterns));
+    row.appendChild(renBtn);
+    // Compteur
+    const cntEl = document.createElement('span'); cntEl.className = 'lib-fam-count'; cntEl.textContent = count+'P';
+    row.appendChild(cntEl);
+    // Supprimer
+    const delBtn = document.createElement('button'); delBtn.className = 'lib-fam-del'; delBtn.textContent = '×'; delBtn.title = 'Supprimer';
     delBtn.addEventListener('click', ()=>libDeleteFamille(fam.id, count));
-    row.appendChild(nameEl); row.appendChild(cntEl); row.appendChild(delBtn);
+    row.appendChild(delBtn);
+    // Drag HTML5 souris
+    row.setAttribute('draggable','true');
+    row.addEventListener('dragstart',e=>{_famDragSrc=fam.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('lib-fam-dragging'),0);});
+    row.addEventListener('dragend',()=>{row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));_famDragSrc=null;});
+    row.addEventListener('dragover',e=>{e.preventDefault();list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(fam.id!==_famDragSrc)row.classList.add('lib-fam-drag-over');});
+    row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrc&&_famDragSrc!==fam.id)libDropFamille(_famDragSrc,fam.id);});
     list.appendChild(row);
   });
+}
+
+function libStartRenameFamille(nameEl, fam, afterSave){
+  nameEl.contentEditable = 'true'; nameEl.focus();
+  const range=document.createRange(); range.selectNodeContents(nameEl);
+  const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  nameEl.dataset.orig = nameEl.textContent;
+  const commit = ()=>{
+    nameEl.contentEditable = 'false';
+    const newNom = nameEl.textContent.trim();
+    if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
+    if(newNom !== nameEl.dataset.orig){ fam.nom = newNom; saveToStorage(); afterSave(); rebuildAllFamFilters(); }
+  };
+  nameEl.addEventListener('blur', commit, {once:true});
+  nameEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
+}
+
+function libDropFamille(srcId, tgtId){
+  const arr = packCours.familles;
+  const si = arr.findIndex(f=>f.id===srcId), ti = arr.findIndex(f=>f.id===tgtId);
+  if(si<0||ti<0||si===ti) return;
+  const [moved] = arr.splice(si,1);
+  const nt = arr.findIndex(f=>f.id===tgtId);
+  arr.splice(nt,0,moved);
+  saveToStorage(); rebuildAllFamFilters();
+  buildLibFamListPatterns(); buildLibFamListGrooves();
 }
 
 function libDeleteFamille(famId, count){
@@ -3400,28 +3453,31 @@ function openLibPanelGrooves(){
 function buildLibFamListGrooves(){
   const list=document.getElementById('lib-fam-list-grooves'); if(!list) return;
   list.innerHTML='';
+  let _famDragSrc=null;
   packCours.familles.forEach(fam=>{
     const pCnt=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
     const gCnt=packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
-    const row=document.createElement('div'); row.className='lib-fam-item';
-    const nameEl=document.createElement('span'); nameEl.className='lib-fam-name';
-    nameEl.textContent=fam.nom; nameEl.title='Cliquer pour renommer';
-    nameEl.addEventListener('click',()=>{
-      nameEl.contentEditable='true'; nameEl.focus();
-      nameEl.dataset.orig=nameEl.textContent;
-      nameEl.addEventListener('blur',()=>{
-        nameEl.contentEditable='false';
-        const newNom=nameEl.textContent.trim();
-        if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
-        fam.nom=newNom; saveToStorage(); buildLibListGrooves(); buildLibFamListGrooves(); rebuildAllFamFilters();
-      },{once:true});
-      nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
-    });
-    const cntEl=document.createElement('span'); cntEl.className='lib-fam-count';
-    cntEl.textContent=gCnt+'G · '+pCnt+'P';
+    const row=document.createElement('div'); row.className='lib-fam-item'; row.dataset.famId=fam.id;
+    const hdl=document.createElement('span'); hdl.className='lib-fam-handle'; hdl.textContent='⠿'; hdl.title='Réordonner';
+    hdl.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrc=fam.id;row.classList.add('lib-fam-dragging');},{passive:false});
+    hdl.addEventListener('touchmove',e=>{e.preventDefault();if(!_famDragSrc)return;const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tgt=el?el.closest('.lib-fam-item'):null;list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(tgt&&tgt.dataset.famId!==_famDragSrc)tgt.classList.add('lib-fam-drag-over');},{passive:false});
+    hdl.addEventListener('touchend',e=>{e.preventDefault();const over=list.querySelector('.lib-fam-drag-over');row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(over&&_famDragSrc&&over.dataset.famId!==_famDragSrc)libDropFamille(_famDragSrc,over.dataset.famId);_famDragSrc=null;},{passive:false});
+    row.appendChild(hdl);
+    const nameEl=document.createElement('span'); nameEl.className='lib-fam-name'; nameEl.textContent=fam.nom;
+    row.appendChild(nameEl);
+    const renBtn=document.createElement('button'); renBtn.className='lib-fam-rename'; renBtn.textContent='✎'; renBtn.title='Renommer';
+    renBtn.addEventListener('click',()=>libStartRenameFamille(nameEl,fam,buildLibFamListGrooves));
+    row.appendChild(renBtn);
+    const cntEl=document.createElement('span'); cntEl.className='lib-fam-count'; cntEl.textContent=gCnt+'G '+pCnt+'P';
+    row.appendChild(cntEl);
     const delBtn=document.createElement('button'); delBtn.className='lib-fam-del'; delBtn.textContent='×';
-    delBtn.addEventListener('click',()=>libDeleteFamille(fam.id, pCnt+gCnt));
-    row.appendChild(nameEl); row.appendChild(cntEl); row.appendChild(delBtn);
+    delBtn.addEventListener('click',()=>libDeleteFamille(fam.id,pCnt+gCnt));
+    row.appendChild(delBtn);
+    row.setAttribute('draggable','true');
+    row.addEventListener('dragstart',e=>{_famDragSrc=fam.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('lib-fam-dragging'),0);});
+    row.addEventListener('dragend',()=>{row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));_famDragSrc=null;});
+    row.addEventListener('dragover',e=>{e.preventDefault();list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(fam.id!==_famDragSrc)row.classList.add('lib-fam-drag-over');});
+    row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrc&&_famDragSrc!==fam.id)libDropFamille(_famDragSrc,fam.id);});
     list.appendChild(row);
   });
 }
@@ -3468,26 +3524,26 @@ function buildLibListGrooves(){
     const handle = document.createElement('span'); handle.className='lib-drag-handle'; handle.textContent='⠿';
     handle.title='Glisser pour réordonner'; item.appendChild(handle);
 
+    // Colonne principale 2 lignes
+    const main = document.createElement('div'); main.className='lib-item-main';
+    const row1 = document.createElement('div'); row1.className='lib-item-row1';
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
-    nameEl.textContent = groove.nom.replace(/^● modifié /,''); nameEl.title='Cliquer pour renommer';
-    nameEl.addEventListener('click', ()=>libStartRenameGroove(nameEl, groove.id));
-    item.appendChild(nameEl);
-
-    const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
-    libBuildGrooveTags(tagsWrap, groove); item.appendChild(tagsWrap);
-
-    if(groove.source==='default'||!groove.source){
-      const badge=document.createElement('span');badge.className='lib-source-badge';badge.textContent='défaut';item.appendChild(badge);
-    } else if(groove.source==='user'){
-      const badge=document.createElement('span');badge.className='lib-source-badge lib-source-badge-user';badge.textContent='user';item.appendChild(badge);
-    }
-
+    nameEl.textContent = groove.nom.replace(/^● modifié /,'');
+    row1.appendChild(nameEl);
+    const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
+    renameBtn.textContent='✎'; renameBtn.title='Renommer';
+    renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
+    row1.appendChild(renameBtn);
     const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
     delBtn.addEventListener('click',()=>{
       if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
       libDeleteGroove(groove.id);
     });
-    item.appendChild(delBtn);
+    row1.appendChild(delBtn);
+    main.appendChild(row1);
+    const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
+    libBuildGrooveTags(tagsWrap,groove); main.appendChild(tagsWrap);
+    item.appendChild(main);
 
     // Drag HTML5
     item.addEventListener('dragstart',e=>{ _libDragSrcId=groove.id; e.dataTransfer.effectAllowed='move'; setTimeout(()=>item.classList.add('lib-item-dragging'),0); });
