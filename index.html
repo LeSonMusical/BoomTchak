@@ -413,6 +413,26 @@ details[open]>.lib-fam-band .lib-fam-band-chevron{transform:rotate(90deg)}
 /* Select filtre famille : fond = couleur des tags de la section */
 #lib-panel-patterns .lib-fam-filter-sel{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
 #lib-panel-grooves .lib-fam-filter-sel{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
+/* Band lib panel — bleu */
+#lib-panel-bands .lib-panel-head,
+#lib-panel-bands .lib-fam-bottom{background:rgba(74,127,165,.09)}
+#lib-panel-bands .lib-head-secname{color:#2d5f80}
+.lib-fam-band-band{background:rgba(74,127,165,.10);border-color:rgba(74,127,165,.18)}
+.lib-fam-band-band .lib-fam-band-secname{color:#2d5f80}
+.lib-fam-band-band .lib-fam-add-btn-icon{background:#4A7FA5}
+#lib-panel-bands .lib-fam-filter-sel{background:#eef4f8;border-color:#8ab4d0;color:#2d5f80}
+#lib-fam-create-ok-bands{background:#4A7FA5}
+.fam-tag-band{background:#eef4f8;border-color:#8ab4d0;color:#2d5f80}
+/* Dark mode band */
+body.dark-mode #lib-panel-bands .lib-panel-head,
+body.dark-mode #lib-panel-bands .lib-fam-bottom{background:rgba(74,127,165,.15)}
+body.dark-mode #lib-panel-bands .lib-head-secname{color:#8ab4d0}
+body.dark-mode .lib-fam-band-band{background:rgba(74,127,165,.18)}
+body.dark-mode #lib-panel-bands .lib-fam-filter-sel{background:#1e2830;border-color:#4A7FA5;color:#8ab4d0}
+body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4d0}
+/* Filtre famille dans sound-row */
+.sound-fam-sel{font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;color:var(--cb);width:54px;flex-shrink:0}
+.sound-fam-sel:focus{outline:none}
 /* toggle contenu encyclopédie (Tous / Remplis / Vides) */
 .lib-content-toggle{padding:3px 8px;font-size:10px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .lib-content-toggle[data-state="filled"]{border-color:#1D9E75;color:#1D9E75;background:#f0fdf8}
@@ -490,7 +510,7 @@ body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
 body.dark-mode .groove-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
 body.dark-mode .band-bar .section-bar-lbl{color:#7ab0cc}
-body.dark-mode .band-bar select,body.dark-mode #band-style-sel{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
+body.dark-mode .band-bar select,body.dark-mode #band-sel{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-sounds-wrap{border-left-color:#3a5a70}
 body.dark-mode .encyclo-bar{background:#252522;border-left-color:#555}
 body.dark-mode .encyclo-bar .section-bar-lbl{color:#888}
@@ -610,7 +630,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.5</span>
+      <span class="app-version">v2.8.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -724,6 +744,38 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="psp-confirm" id="psp-confirm">Sauvegarder</button>
   </div>
   <button class="psp-cancel" id="psp-cancel">Annuler</button>
+</div>
+
+<!-- Panel ≡ bibliothèque bands -->
+<div class="lib-overlay hidden" id="lib-overlay-bands"></div>
+<div class="lib-panel hidden" id="lib-panel-bands">
+  <div class="lib-panel-head">
+    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Bands</span></div>
+    <select class="lib-fam-filter-sel" id="lib-fam-filter-bands">
+      <option value="all">Toutes les familles</option>
+    </select>
+    <button class="lib-panel-close" id="lib-panel-bands-close">✕</button>
+  </div>
+  <div class="lib-list" id="lib-list-bands"></div>
+  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-bands">
+    <summary class="lib-fam-band lib-fam-band-band">
+      <span class="lib-fam-band-chevron">▶</span>
+      <span class="lib-fam-band-title">Organiser les Familles de <span class="lib-fam-band-secname">Bands</span></span>
+      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn-bands">＋</button>
+    </summary>
+    <div class="lib-fam-create-box hidden" id="lib-fam-create-box-bands">
+      <input type="text" class="lib-fam-create-input" id="lib-fam-new-input-bands" placeholder="Nom de la famille…">
+      <div class="lib-fam-create-actions">
+        <button class="lib-fam-create-cancel" id="lib-fam-create-cancel-bands">Annuler</button>
+        <button class="lib-fam-create-ok" id="lib-fam-create-ok-bands">Créer</button>
+      </div>
+    </div>
+    <div class="lib-fam-list" id="lib-fam-list-bands"></div>
+  </details>
+  <div class="lib-batch-bar">
+    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-bands"> Tout sélectionner</label>
+    <button class="lib-batch-del" id="lib-batch-del-bands" disabled>🗑 Supprimer</button>
+  </div>
 </div>
 
 <!-- Panel ≡ bibliothèque patterns -->
@@ -1003,6 +1055,26 @@ const PTK_DEFAULT = {
     {id:'fam_caraibe',    nom:'Caraïbe'},
     {id:'fam_flamenco',   nom:'Flamenco'},
   ],
+  bandFamilles:[
+    {id:'bf_electro', nom:'Électro'},
+    {id:'bf_perc',    nom:'Percussions'},
+    {id:'bf_rock',    nom:'Rock'},
+    {id:'bf_minimal', nom:'Minimaliste'},
+  ],
+  bands:[
+    {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'default',
+     low:'kick',        lowPitch:80,   high:'snare',       highPitch:220,  noise:'hihat_f',   noisePitch:6000,
+     thumbL:'bell',     thumbLPitch:698, thumbR:'clap',    thumbRPitch:600},
+    {id:'band_perc',    nom:'Percussions', familles:['bf_perc'],    source:'default',
+     low:'tambour',     lowPitch:82,   high:'clave',       highPitch:1760, noise:'shaker',    noisePitch:3000,
+     thumbL:'conga_b',  thumbLPitch:110, thumbR:'bongo',   thumbRPitch:220},
+    {id:'band_rock',    nom:'Rock',        familles:['bf_rock'],    source:'default',
+     low:'gros_caisse', lowPitch:65,   high:'caisse_claire',highPitch:220, noise:'charleston',noisePitch:5000,
+     thumbL:'tom_bas',  thumbLPitch:110, thumbR:'rimshot', thumbRPitch:440},
+    {id:'band_minimal', nom:'Minimaliste', familles:['bf_minimal'], source:'default',
+     low:'tom_bas',     lowPitch:110,  high:'clave',       highPitch:1760, noise:'charleston',noisePitch:5000,
+     thumbL:'triangle_p',thumbLPitch:880, thumbR:'triangle_p',thumbRPitch:1532},
+  ],
   patterns:[
     {id:'pulse1', nom:'Pulse',                   familles:['fam_base'],                              sequence:'X',                pas:1,  unite_temps:'1/4', pas_par_mesure:4},
     {id:'bin2',   nom:'Bin (1:2)',               familles:['fam_base'],                              sequence:'X.',               pas:2,  unite_temps:'1/4', pas_par_mesure:2},
@@ -1034,31 +1106,31 @@ const PTK_DEFAULT = {
   grooves:[
     // vitesse_mult: multiplicateur de vitesse global (1=normal, 2=double)
     // halfOn/doubleOn par layer : vitesse relative de la couche (simplifié Phase 1, futur: unite_temps)
-    {id:'salsa32',   nom:'Salsa 3:2',  familles:['fam_afrocubain'], band_defaut:'perc',   tempo:{min:80,max:360,defaut:200}, vitesse_mult:2,
+    {id:'salsa32',   nom:'Salsa 3:2',  familles:['fam_afrocubain'], band_defaut:'band_perc',   tempo:{min:80,max:360,defaut:200}, vitesse_mult:2,
      layers:[
        {id:'grave', patternId:'tres',    mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'son32',   mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'noise', patternId:'cascara', mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'bossanova', nom:'Bossa Nova', familles:['fam_bresilien'],   band_defaut:'minimal',tempo:{min:60,max:200,defaut:160}, vitesse_mult:1,
+    {id:'bossanova', nom:'Bossa Nova', familles:['fam_bresilien'],   band_defaut:'band_minimal',tempo:{min:60,max:200,defaut:160}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'sync4',  mute:false, shift:1, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'bossa',  mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'techno',    nom:'Techno',     familles:[],                  band_defaut:'electro',tempo:{min:80,max:400,defaut:260}, vitesse_mult:1,
+    {id:'techno',    nom:'Techno',     familles:[],                  band_defaut:'band_electro',tempo:{min:80,max:400,defaut:260}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'fl4',    mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'tres',   mute:true,  shift:0, halfOn:false, doubleOn:true},
        {id:'noise', patternId:'offbeat',mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'reggae',    nom:'Reggae',     familles:['fam_caraibe'],     band_defaut:'rock',   tempo:{min:60,max:220,defaut:200}, vitesse_mult:1,
+    {id:'reggae',    nom:'Reggae',     familles:['fam_caraibe'],     band_defaut:'band_rock',   tempo:{min:60,max:220,defaut:200}, vitesse_mult:1,
      layers:[
        {id:'grave', patternId:'reggae', mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
        {id:'noise', patternId:'sync4',  mute:false, shift:0, halfOn:false, doubleOn:false},
      ]},
-    {id:'dancehall', nom:'Dancehall',  familles:['fam_caraibe'],     band_defaut:'perc',   tempo:{min:80,max:320,defaut:200}, vitesse_mult:2,
+    {id:'dancehall', nom:'Dancehall',  familles:['fam_caraibe'],     band_defaut:'band_perc',   tempo:{min:80,max:320,defaut:200}, vitesse_mult:2,
      layers:[
        {id:'grave', patternId:'tres',   mute:false, shift:0, halfOn:false, doubleOn:false},
        {id:'aigu',  patternId:'offbeat',mute:false, shift:0, halfOn:true,  doubleOn:false},
@@ -1076,6 +1148,8 @@ let packCours = null;
 // Raccourcis DATA
 function getPattern(id){return packCours.patterns.find(p=>p.id===id);}
 function getGroove(id){return packCours.grooves.find(g=>g.id===id);}
+function getBand(id){return (packCours.bands||[]).find(b=>b.id===id);}
+function getBandFam(id){return (packCours.bandFamilles||[]).find(f=>f.id===id);}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MODULE AUDIO — Moteur scheduler + synthèse (copié depuis v1.6, stable)
@@ -1262,32 +1336,12 @@ const SOUND_DEFS={
     }},
 };
 
-// ── Styles de band (presets sons) ─────────────────────────────────────────
-const BAND_STYLES=[
-  {id:'electro',  label:'Électro',
-    low:'kick',       lowPitch:80,
-    high:'snare',     highPitch:220,
-    noise:'hihat_f',  noisePitch:6000,
-    thumbL:'bell',    thumbLPitch:698,
-    thumbR:'clap',    thumbRPitch:600},
-  {id:'perc',     label:'Percussions',
-    low:'tambour',    lowPitch:82,
-    high:'clave',     highPitch:1760,
-    noise:'shaker',   noisePitch:3000,
-    thumbL:'conga_b', thumbLPitch:110,
-    thumbR:'bongo',   thumbRPitch:220},
-  {id:'rock',     label:'Rock',
-    low:'gros_caisse',lowPitch:65,
-    high:'caisse_claire',highPitch:220,
-    noise:'charleston',noisePitch:5000,
-    thumbL:'tom_bas', thumbLPitch:110,
-    thumbR:'rimshot', thumbRPitch:440},
-  {id:'minimal',  label:'Minimaliste',
-    low:'tom_bas',    lowPitch:110,
-    high:'clave',     highPitch:1760,
-    noise:'charleston',noisePitch:5000,
-    thumbL:'triangle_p',thumbLPitch:880,
-    thumbR:'triangle_p',thumbRPitch:1532},
+// BAND_STYLES remplacé par packCours.bands (éditable)
+const INSTR_FAMILLES=[
+  {id:'low',   label:'Grave'},
+  {id:'high',  label:'Aigu'},
+  {id:'noise', label:'Noise'},
+  {id:'thumb', label:'Touch'},
 ];
 
 // ── Couches rythmiques (positions fixes) ──────────────────────────────────
@@ -1317,7 +1371,7 @@ let soundStateThumb=[
   defaultSoundState('conga_b',150),
   defaultSoundState('clap',800),
 ];
-const soundPanelOpen={low:false,high:false,noise:false,tl:false,tr:false};
+const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
 
 // ── Signatures rythmiques ─────────────────────────────────────────────────
 const SIGNATURES=[
@@ -1449,13 +1503,15 @@ function playConga(isRight){
   const a=getAC();if(!a)return;
   playSound(soundStateThumb[isRight?1:0],a.currentTime);
 }
-function applyBandStyle(styleId){
-  const s=BAND_STYLES.find(b=>b.id===styleId);if(!s)return;
-  soundState[0]={soundId:s.low,  pitch:s.lowPitch,   env:.3,vol:soundState[0].vol};
-  soundState[1]={soundId:s.high, pitch:s.highPitch,  env:.3,vol:soundState[1].vol};
-  soundState[2]={soundId:s.noise,pitch:s.noisePitch, env:.3,vol:soundState[2].vol};
-  soundStateThumb[0]={soundId:s.thumbL,pitch:s.thumbLPitch,env:.3,vol:soundStateThumb[0].vol};
-  soundStateThumb[1]={soundId:s.thumbR,pitch:s.thumbRPitch,env:.3,vol:soundStateThumb[1].vol};
+function applyBand(id){
+  const b=getBand(id); if(!b) return;
+  currentBandId=id;
+  soundState[0]={soundId:b.low,   pitch:b.lowPitch,   env:.3,vol:soundState[0].vol};
+  soundState[1]={soundId:b.high,  pitch:b.highPitch,  env:.3,vol:soundState[1].vol};
+  soundState[2]={soundId:b.noise, pitch:b.noisePitch, env:.3,vol:soundState[2].vol};
+  soundStateThumb[0]={soundId:b.thumbL, pitch:b.thumbLPitch, env:.3,vol:soundStateThumb[0].vol};
+  soundStateThumb[1]={soundId:b.thumbR, pitch:b.thumbRPitch, env:.3,vol:soundStateThumb[1].vol};
+  buildSoundPanel();
 }
 
 // ── Playback ──────────────────────────────────────────────────────────────
@@ -1559,6 +1615,8 @@ function refreshMenuBtnStates(){
   });
 }
 let sonsOuvert = false;
+let currentBandId = 'band_electro';
+const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
 
 function applyColorScheme(scheme){
@@ -1600,7 +1658,7 @@ function applyGroove(grooveId){
   });
 
   // Appliquer le band
-  applyBandStyle(groove.band_defaut);
+  if(groove.band_defaut&&getBand(groove.band_defaut)){applyBand(groove.band_defaut);}
 
   // Appliquer le multiplicateur de vitesse global
   const newMult=groove.vitesse_mult||1;
@@ -1622,7 +1680,7 @@ function applyGroove(grooveId){
 
   // Reconstruire le DOM des couches et sons
   buildLayers();
-  buildSoundPanel();
+  buildBandSection();
   updateGrooveSelect();
   updateEncycloSelect(grooveId);
   updateSpmDisplay();
@@ -1649,21 +1707,56 @@ function buildBandSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
   bar.appendChild(lbl);
 
-  // Select style de band
-  const sel=document.createElement('select');
-  sel.id='band-style-sel';
-  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #8ab4d0;border-radius:4px;background:#fff;color:#1a1a18';
-  BAND_STYLES.forEach(bs=>{
-    const o=document.createElement('option');o.value=bs.id;o.textContent=bs.label;sel.appendChild(o);
+  // Filtre famille band
+  const famSel=document.createElement('select');
+  famSel.className='fam-filter';famSel.title='Filtrer par famille';
+  famSel.style.cssText='border-color:#8ab4d0;background:#eef4f8;color:#2d5f80';
+  const fAll=document.createElement('option');fAll.value='all';fAll.textContent='Tout';famSel.appendChild(fAll);
+  (packCours.bandFamilles||[]).forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
   });
-  // Sélectionner le band du groove courant
-  const groove=getGroove(currentGrooveId);
-  if(groove)sel.value=groove.band_defaut;
-  sel.addEventListener('change',()=>{applyBandStyle(sel.value);buildSoundPanel();});
+  bar.appendChild(famSel);
+
+  // Bouton menu ≡
+  const menuBtn=document.createElement('button');
+  menuBtn.className='btn-top';menuBtn.style.cssText='font-size:15px;padding:2px 7px;border-color:#8ab4d0;color:#2d5f80';
+  menuBtn.textContent='≡';menuBtn.title='Gérer les bands';
+  menuBtn.addEventListener('click',()=>openLibPanelBands());
+  const hasBandUser=(packCours.bands||[]).some(b=>b.source==='user');
+  if(!hasBandUser){menuBtn.disabled=true;menuBtn.style.opacity='0.25';menuBtn.title='Aucun band user';}
+  bar.appendChild(menuBtn);
+
+  // Select band (filtré)
+  const sel=document.createElement('select');
+  sel.id='band-sel';
+  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #8ab4d0;border-radius:4px;background:#fff;color:#1a1a18';
+
+  function buildBandOpts(filtreId){
+    sel.innerHTML='';
+    const bands=filtreId&&filtreId!=='all'
+      ?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(filtreId))
+      :(packCours.bands||[]);
+    bands.forEach(b=>{
+      const o=document.createElement('option');o.value=b.id;
+      o.textContent=b.nom+(b.source==='user'?' ✎':'');
+      sel.appendChild(o);
+    });
+  }
+  buildBandOpts('all');
+  if(currentBandId)sel.value=currentBandId;
+  famSel.addEventListener('change',()=>{
+    const prev=sel.value;buildBandOpts(famSel.value);
+    if([...sel.options].some(o=>o.value===prev))sel.value=prev;
+  });
+  sel.addEventListener('change',()=>{if(sel.value){applyBand(sel.value);}});
   bar.appendChild(sel);
 
-  bar.appendChild(mkBtnSave(()=>saveToStorage()));
-  bar.appendChild(mkBtnMenu());
+  // Bouton 💾 sauvegarder band
+  const saveBtn=document.createElement('button');
+  saveBtn.className='btn-top';saveBtn.style.cssText='font-size:13px;padding:2px 6px;border-color:#8ab4d0;color:#2d5f80';
+  saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
+  saveBtn.addEventListener('click',()=>saveBandState(saveBtn));
+  bar.appendChild(saveBtn);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(sonsOuvert?' open':'');
@@ -1687,9 +1780,41 @@ function buildBandSection(){
   });
   cont.appendChild(bar);
 
-  // Initialiser l'état du contenu
   const bc=document.getElementById('band-content');
   if(bc)bc.classList.toggle('open',sonsOuvert);
+}
+
+function saveBandState(btn){
+  const b=getBand(currentBandId);
+  if(!b) return;
+  if(b.source==='default'){
+    // Créer un nouveau band user
+    const nom=prompt('Nom du nouveau band :');
+    if(!nom||!nom.trim()) return;
+    const newId='band_user_'+Date.now();
+    const nb={
+      id:newId, nom:nom.trim(), familles:[...( b.familles||[])], source:'user',
+      low:soundState[0].soundId, lowPitch:soundState[0].pitch,
+      high:soundState[1].soundId, highPitch:soundState[1].pitch,
+      noise:soundState[2].soundId, noisePitch:soundState[2].pitch,
+      thumbL:soundStateThumb[0].soundId, thumbLPitch:soundStateThumb[0].pitch,
+      thumbR:soundStateThumb[1].soundId, thumbRPitch:soundStateThumb[1].pitch,
+    };
+    packCours.bands.push(nb);
+    currentBandId=newId;
+    saveToStorage();
+    buildBandSection();
+    if(btn)flashSave(btn);
+    return;
+  }
+  // Mettre à jour band user existant
+  b.low=soundState[0].soundId; b.lowPitch=soundState[0].pitch;
+  b.high=soundState[1].soundId; b.highPitch=soundState[1].pitch;
+  b.noise=soundState[2].soundId; b.noisePitch=soundState[2].pitch;
+  b.thumbL=soundStateThumb[0].soundId; b.thumbLPitch=soundStateThumb[0].pitch;
+  b.thumbR=soundStateThumb[1].soundId; b.thumbRPitch=soundStateThumb[1].pitch;
+  saveToStorage();
+  if(btn)flashSave(btn);
 }
 
 // ── Section Groove ────────────────────────────────────────────────────────
@@ -2519,42 +2644,54 @@ function rebuildAllFamFilters(){
 function buildSoundPanel(){
   const cont=document.getElementById('sounds');if(!cont)return;
   cont.innerHTML='';
-  const grooveKeys=['low','high','noise'];
-  soundState.forEach((ss,li)=>{
-    cont.appendChild(buildSoundRow(LAYERS[li].label,LAYERS[li].cls,LAYERS[li].id.replace('low','low').replace('high','high').replace('noise','noise'),ss,grooveKeys[li]));
-  });
+  const rows=[
+    {key:'low',    label:'Grave',    cls:LAYERS[0].cls, ss:soundState[0]},
+    {key:'high',   label:'Aigu',     cls:LAYERS[1].cls, ss:soundState[1]},
+    {key:'noise',  label:'Noise',    cls:LAYERS[2].cls, ss:soundState[2]},
+  ];
+  rows.forEach(r=>cont.appendChild(buildSoundRow(r.key,r.label,r.cls,r.ss)));
   const sep=document.createElement('div');sep.className='sound-sep';cont.appendChild(sep);
-  const thumbLabels=['Main gauche','Main droite'];
-  const thumbCls=['c-thumb-l','c-thumb-r'];
-  soundStateThumb.forEach((ss,ti)=>{
-    cont.appendChild(buildSoundRow(thumbLabels[ti],thumbCls[ti],'thumb',ss,ti===0?'tl':'tr'));
-  });
+  cont.appendChild(buildSoundRow('thumbL','Main G','c-thumb-l',soundStateThumb[0]));
+  cont.appendChild(buildSoundRow('thumbR','Main D','c-thumb-r',soundStateThumb[1]));
 }
 
-function buildSoundRow(label,cls,cat,ss,openKey){
+function buildSoundRow(key,label,cls,ss){
+  const naturalCat=key==='thumbL'||key==='thumbR'?'thumb':key;
   const row=document.createElement('div');row.className='sound-layer '+cls;
   const header=document.createElement('div');header.className='sound-header';
 
-  // Flèche toggle volet
   const arrow=document.createElement('span');arrow.className='sound-arrow';arrow.textContent='▶';
-
-  // Label
   const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
 
-  // Select instrument
+  // Filtre famille instrument
+  const famSel=document.createElement('select');
+  famSel.className='sound-fam-sel';
+  famSel.title='Famille de sons';
+  INSTR_FAMILLES.forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.label;famSel.appendChild(o);
+  });
+  famSel.value=soundFamFilter[key]||naturalCat;
+
+  // Select instrument (filtré par famille)
   const instrSel=document.createElement('select');
   instrSel.className='instr-sel';
-  instrSel.style.cssText='font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;color:var(--cb);width:80px;flex-shrink:0';
-  Object.entries(SOUND_DEFS)
-    .filter(([,d])=>cat==='thumb'?d.cat==='thumb':d.cat===cat)
-    .forEach(([id,d])=>{
+
+  function rebuildInstrSel(){
+    instrSel.innerHTML='';
+    Object.entries(SOUND_DEFS).filter(([,d])=>d.cat===famSel.value).forEach(([id,d])=>{
       const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
     });
-  instrSel.value=ss.soundId;
+    instrSel.value=ss.soundId;
+    if(!instrSel.value&&instrSel.options.length)instrSel.selectedIndex=0;
+  }
+  rebuildInstrSel();
+
+  famSel.addEventListener('change',e=>{e.stopPropagation();soundFamFilter[key]=famSel.value;rebuildInstrSel();});
+  famSel.addEventListener('pointerdown',e=>e.stopPropagation());
   instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
   instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
 
-  // Slider volume horizontal (header)
+  // Slider volume
   const volWrap=document.createElement('div');volWrap.className='vol-h-wrap';
   const volLbl=document.createElement('span');volLbl.className='vol-h-lbl';volLbl.textContent='vol';
   const volTrack=document.createElement('div');volTrack.className='vol-h-track';
@@ -2570,29 +2707,26 @@ function buildSoundRow(label,cls,cat,ss,openKey){
 
   header.appendChild(arrow);
   header.appendChild(lbl);
+  header.appendChild(famSel);
   header.appendChild(instrSel);
   header.appendChild(volWrap);
 
-  // Volet collapsible : Hauteur + Enveloppe
   const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
   const inner=document.createElement('div');inner.className='sound-ctrls-inner';
   inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
   inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
   ctrls.appendChild(inner);
 
-  // État initial
-  if(!soundPanelOpen[openKey]) ctrls.classList.add('hidden');
+  if(!soundPanelOpen[key])ctrls.classList.add('hidden');
   else arrow.classList.add('open');
 
-  // Toggle volet
   header.addEventListener('click',()=>{
     const nowHidden=ctrls.classList.toggle('hidden');
     arrow.classList.toggle('open',!nowHidden);
-    soundPanelOpen[openKey]=!nowHidden;
+    soundPanelOpen[key]=!nowHidden;
   });
 
-  row.appendChild(header);
-  row.appendChild(ctrls);
+  row.appendChild(header);row.appendChild(ctrls);
   return row;
 }
 
@@ -3432,6 +3566,197 @@ function libDeleteFamille(famId, count){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULE LIB — Bands (panel ≡)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openLibPanelBands(){
+  rebuildBandFamFilter();
+  buildLibListBands();
+  buildLibFamListBands();
+  document.getElementById('lib-overlay-bands').classList.remove('hidden');
+  document.getElementById('lib-panel-bands').classList.remove('hidden');
+}
+
+function rebuildBandFamFilter(){
+  const sel=document.getElementById('lib-fam-filter-bands');if(!sel)return;
+  const prev=sel.value;
+  sel.innerHTML='<option value="all">Toutes les familles</option>';
+  (packCours.bandFamilles||[]).forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
+  });
+  if([...sel.options].some(o=>o.value===prev))sel.value=prev;
+}
+
+function buildLibListBands(){
+  const list=document.getElementById('lib-list-bands');if(!list)return;
+  list.innerHTML='';
+  const filtreId=document.getElementById('lib-fam-filter-bands')?.value||'all';
+  const bands=filtreId==='all'?(packCours.bands||[]):(packCours.bands||[]).filter(b=>(b.familles||[]).includes(filtreId));
+  if(!bands.length){
+    const empty=document.createElement('div');empty.className='lib-empty';empty.textContent='Aucun band dans cette famille.';list.appendChild(empty);return;
+  }
+  bands.forEach(band=>{
+    const item=document.createElement('div');item.className='lib-item';item.dataset.bandId=band.id;
+    if(band.id===currentBandId)item.classList.add('lib-item-active');
+
+    const drag=document.createElement('div');drag.className='lib-drag-handle';drag.textContent='⠿';drag.title='Réordonner';
+    item.appendChild(drag);
+
+    const main=document.createElement('div');main.className='lib-item-main';
+    const row1=document.createElement('div');row1.className='lib-item-row1';
+    const nameEl=document.createElement('span');nameEl.className='lib-item-name';nameEl.textContent=band.nom;
+    const renBtn=document.createElement('button');renBtn.className='lib-item-rename';renBtn.textContent='✎';renBtn.title='Renommer';
+    renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameBand(nameEl,band);});
+    const delBtn=document.createElement('button');delBtn.className='lib-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer';
+    if(band.source==='default'){delBtn.disabled=true;delBtn.style.opacity='0.25';}
+    else{
+      delBtn.addEventListener('click',e=>{e.stopPropagation();
+        if(confirm('Supprimer le band "'+band.nom+'" ?')){
+          packCours.bands=packCours.bands.filter(b=>b.id!==band.id);
+          if(currentBandId===band.id&&packCours.bands.length){
+            applyBand(packCours.bands[0].id);buildBandSection();
+          }
+          saveToStorage();buildLibListBands();
+        }
+      });
+    }
+    const chk=document.createElement('input');chk.type='checkbox';chk.className='lib-item-check';
+    if(band.source==='default')chk.disabled=true;
+    chk.addEventListener('change',updateLibBandBatchBar);
+    row1.appendChild(drag);row1.appendChild(nameEl);row1.appendChild(renBtn);row1.appendChild(delBtn);row1.appendChild(chk);
+    main.appendChild(row1);
+    // Tags famille
+    const tagsWrap=document.createElement('div');tagsWrap.className='lib-item-tags';
+    libBuildBandTags(tagsWrap,band);
+    main.appendChild(tagsWrap);
+    item.appendChild(main);
+
+    item.addEventListener('click',()=>{applyBand(band.id);buildBandSection();buildLibListBands();});
+    list.appendChild(item);
+  });
+}
+
+function libBuildBandTags(container,band){
+  container.innerHTML='';
+  (band.familles||[]).forEach(fid=>{
+    const fam=getBandFam(fid);if(!fam)return;
+    const chip=document.createElement('span');chip.className='fam-tag fam-tag-band';chip.textContent=fam.nom;
+    const x=document.createElement('button');x.className='fam-tag-x';x.textContent='×';
+    x.addEventListener('click',e=>{e.stopPropagation();band.familles=(band.familles||[]).filter(id=>id!==fid);libBuildBandTags(container,band);saveToStorage();});
+    chip.appendChild(x);container.appendChild(chip);
+  });
+  const addBtn=document.createElement('span');addBtn.className='fam-tag-add';addBtn.textContent='＋';
+  addBtn.addEventListener('click',e=>{e.stopPropagation();
+    const available=(packCours.bandFamilles||[]).filter(f=>!(band.familles||[]).includes(f.id));if(!available.length)return;
+    const sel=document.createElement('select');sel.className='psp-fam-sel';sel.style.cssText='font-size:9px;max-width:100px';
+    sel.innerHTML='<option value="">— Famille —</option>';
+    available.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);});
+    sel.addEventListener('change',()=>{if(!sel.value)return;if(!band.familles)band.familles=[];band.familles.push(sel.value);libBuildBandTags(container,band);saveToStorage();});
+    sel.addEventListener('blur',()=>{if(sel.parentNode)sel.parentNode.removeChild(sel);});
+    addBtn.parentNode.insertBefore(sel,addBtn);sel.focus();
+  });
+  container.appendChild(addBtn);
+}
+
+function libStartRenameBand(nameEl,band){
+  nameEl.contentEditable='true';nameEl.focus();
+  const range=document.createRange();range.selectNodeContents(nameEl);
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+  function done(){
+    nameEl.contentEditable='false';
+    const newNom=nameEl.textContent.trim();
+    if(newNom&&newNom!==band.nom){band.nom=newNom;saveToStorage();buildBandSection();}
+    else nameEl.textContent=band.nom;
+  }
+  nameEl.addEventListener('blur',done,{once:true});
+  nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape'){nameEl.textContent=band.nom;nameEl.blur();}},{once:true});
+}
+
+function updateLibBandBatchBar(){
+  const checked=document.querySelectorAll('#lib-list-bands .lib-item-check:checked').length;
+  const btn=document.getElementById('lib-batch-del-bands');
+  if(btn){btn.disabled=!checked;btn.textContent='🗑 Supprimer'+(checked?' ('+checked+')':'');}
+}
+
+function buildLibFamListBands(){
+  const list=document.getElementById('lib-fam-list-bands');if(!list)return;
+  list.innerHTML='';
+  (packCours.bandFamilles||[]).forEach(fam=>{
+    const cnt=(packCours.bands||[]).filter(b=>(b.familles||[]).includes(fam.id)).length;
+    const row=document.createElement('div');row.className='lib-fam-item';row.dataset.famId=fam.id;
+    const hdl=document.createElement('span');hdl.className='lib-fam-handle';hdl.textContent='⠿';hdl.title='Réordonner';
+    row.appendChild(hdl);
+    const nameEl=document.createElement('span');nameEl.className='lib-fam-name';nameEl.textContent=fam.nom;
+    row.appendChild(nameEl);
+    const renBtn=document.createElement('button');renBtn.className='lib-fam-rename';renBtn.textContent='✎';renBtn.title='Renommer';
+    renBtn.addEventListener('click',()=>libStartRenameFamille(nameEl,fam,buildLibFamListBands));
+    row.appendChild(renBtn);
+    const cntEl=document.createElement('span');cntEl.className='lib-fam-count';cntEl.textContent=cnt+'B';
+    row.appendChild(cntEl);
+    const delBtn=document.createElement('button');delBtn.className='lib-fam-del';delBtn.textContent='🗑';
+    delBtn.addEventListener('click',()=>{
+      if(confirm('Supprimer la famille "'+fam.nom+'" ? (les bands garderont leurs données)')){
+        packCours.bandFamilles=(packCours.bandFamilles||[]).filter(f=>f.id!==fam.id);
+        saveToStorage();rebuildBandFamFilter();buildLibFamListBands();buildLibListBands();
+      }
+    });
+    row.appendChild(delBtn);
+    list.appendChild(row);
+  });
+}
+
+function initLibPanelBands(){
+  document.getElementById('lib-overlay-bands').addEventListener('click',()=>{
+    document.getElementById('lib-panel-bands').classList.add('hidden');
+    document.getElementById('lib-overlay-bands').classList.add('hidden');
+  });
+  document.getElementById('lib-panel-bands-close').addEventListener('click',()=>{
+    document.getElementById('lib-panel-bands').classList.add('hidden');
+    document.getElementById('lib-overlay-bands').classList.add('hidden');
+  });
+  document.getElementById('lib-fam-filter-bands').addEventListener('change',buildLibListBands);
+  document.getElementById('lib-select-all-bands').addEventListener('change',e=>{
+    document.querySelectorAll('#lib-list-bands .lib-item-check:not(:disabled)').forEach(c=>{c.checked=e.target.checked;});
+    updateLibBandBatchBar();
+  });
+  document.getElementById('lib-batch-del-bands').addEventListener('click',()=>{
+    const toDelete=[...document.querySelectorAll('#lib-list-bands .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.bandId);
+    if(!toDelete.length)return;
+    if(!confirm('Supprimer '+toDelete.length+' band'+(toDelete.length!==1?'s':'')+' ?'))return;
+    toDelete.forEach(id=>{packCours.bands=packCours.bands.filter(b=>b.id!==id);});
+    if(!getBand(currentBandId)&&packCours.bands.length)applyBand(packCours.bands[0].id);
+    saveToStorage();buildLibListBands();buildBandSection();
+  });
+  // ＋ famille band
+  document.getElementById('lib-fam-add-btn-bands').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('lib-fam-create-box-bands').classList.remove('hidden');
+    document.getElementById('lib-fam-details-bands').open=true;
+    document.getElementById('lib-fam-new-input-bands').focus();
+  });
+  function _doCreateBandFam(){
+    const input=document.getElementById('lib-fam-new-input-bands');
+    const nom=input.value.trim();if(!nom)return;
+    if(!packCours.bandFamilles)packCours.bandFamilles=[];
+    packCours.bandFamilles.push({id:'bf_user_'+Date.now(),nom});
+    saveToStorage();input.value='';
+    document.getElementById('lib-fam-create-box-bands').classList.add('hidden');
+    rebuildBandFamFilter();buildLibFamListBands();
+    // Rebuild band section familles select
+    buildBandSection();
+  }
+  document.getElementById('lib-fam-create-ok-bands').addEventListener('click',_doCreateBandFam);
+  document.getElementById('lib-fam-new-input-bands').addEventListener('keydown',e=>{
+    if(e.key==='Enter')_doCreateBandFam();
+    if(e.key==='Escape')document.getElementById('lib-fam-create-cancel-bands').click();
+  });
+  document.getElementById('lib-fam-create-cancel-bands').addEventListener('click',()=>{
+    document.getElementById('lib-fam-new-input-bands').value='';
+    document.getElementById('lib-fam-create-box-bands').classList.add('hidden');
+  });
+}
+
 // ── Events panel ≡ (attachés une seule fois dans attachEvents) ────────────
 function attachLibPanelEvents(){
   document.getElementById('lib-overlay-patterns').addEventListener('click', closeLibPanelPatterns);
@@ -3937,6 +4262,18 @@ function loadFromStorage(){
   if(!packCours.familles || !packCours.familles.length){
     packCours.familles = JSON.parse(JSON.stringify(PTK_DEFAULT.familles));
   }
+  // Migration → bands éditables
+  if(!packCours.bands||!packCours.bands.length){
+    packCours.bands=JSON.parse(JSON.stringify(PTK_DEFAULT.bands));
+  }
+  if(!packCours.bandFamilles||!packCours.bandFamilles.length){
+    packCours.bandFamilles=JSON.parse(JSON.stringify(PTK_DEFAULT.bandFamilles));
+  }
+  // Migration band_defaut : anciens IDs courts → nouveaux IDs longs
+  const _bandIdMap={electro:'band_electro',perc:'band_perc',rock:'band_rock',minimal:'band_minimal'};
+  packCours.grooves.forEach(g=>{
+    if(g.band_defaut&&_bandIdMap[g.band_defaut]) g.band_defaut=_bandIdMap[g.band_defaut];
+  });
 }
 
 function attachEvents(){
@@ -4307,6 +4644,8 @@ function attachEvents(){
   // ── Panel ≡ grooves + encyclopédie ──
   attachGrooveLibEvents();
   attachEncycloLibEvents();
+  // ── Panel ≡ bibliothèque bands ──
+  initLibPanelBands();
 
   // ── Raccourci clavier ──
   document.addEventListener('keydown',e=>{
@@ -4340,7 +4679,7 @@ function start(){
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
   });
-  applyBandStyle(randomGroove.band_defaut);
+  if(randomGroove.band_defaut&&getBand(randomGroove.band_defaut)){applyBand(randomGroove.band_defaut);}
   globalSpeedMult=randomGroove.vitesse_mult||1;
   pendingGlobalMult=globalSpeedMult;
 
