@@ -653,7 +653,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.3</span>
+      <span class="app-version">v2.8.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2160,23 +2160,59 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
 
-    // — Magie ✨ (tout au hasard : densité, accents, vitesse) —
-    const bMagic=document.createElement('button');bMagic.className='btn-mod';bMagic.textContent='✨';bMagic.title='Magie : tout au hasard (densité, accents, vitesse)';
+    // — Magie ✨ (Euclide + Markov, intensité aléatoire linéaire) —
+    const bMagic=document.createElement('button');bMagic.className='btn-mod';bMagic.textContent='✨';bMagic.title='Magie : génération musicalement équilibrée';
     bMagic.addEventListener('click',()=>{
       const n=state[li].pattern.length;
-      // densité : entre 1 et n-1 frappes
-      const nBeats=Math.floor(Math.random()*(n-1))+1;
-      // proportion x/X aléatoire parmi les frappes
-      const nSoft=Math.floor(Math.random()*(nBeats+1)); // 0..nBeats accents faibles
-      const nHard=nBeats-nSoft;
+
+      // ── alpha : intensité algorithmique, distribution linéaire PDF∝2α → E[α]=2/3
+      // Forte probabilité d'être proche de 1 (très algo), faible d'être proche de 0 (pur hasard)
+      const alpha=Math.sqrt(Math.random());
+
+      // ── 1. Densité sons forts (k) ──────────────────────────────────────
+      // Algo : triangulaire [10%..60%] centrée ~35%  |  Rand : uniforme
+      const densAlgo=0.10+0.50*(Math.random()+Math.random())*0.5;
+      const densRand=(1+Math.random()*(n-2))/n;
+      const k=Math.max(1,Math.min(n-1,Math.round(n*(densAlgo*alpha+densRand*(1-alpha)))));
+
+      // ── 2. Intensité sons faibles (inverse proportionnel à densité forts) ──
+      const wI=Math.max(0.05,0.85-(k/n)*1.2);
+
+      // ── 3. Placement sons forts : euclidien blendé avec aléatoire ──────
+      // Euclide : distribue k sons régulièrement sur n steps (style Bjorklund/Bresenham)
+      // Rotation libre pour éviter de toujours démarrer sur le 1
+      const rot=Math.floor(Math.random()*n);
+      const placed=new Set();
+      for(let i=0;i<k;i++){
+        const euclPos=(Math.floor(i*n/k)+rot)%n;
+        // alpha=1 → position euclidienne ; alpha=0 → position aléatoire
+        placed.add(Math.random()<alpha ? euclPos : Math.floor(Math.random()*n));
+      }
+      // Sécurité : compléter si collisions ont réduit le compteur
+      let safety=0;
+      while(placed.size<k&&safety++<200) placed.add(Math.floor(Math.random()*n));
+
+      // ── 4. Construire tableau + Markov pour sons faibles ────────────────
       const arr=Array(n).fill('.');
-      let hPlaced=0,sPlaced=0;
-      // Placer les X
-      while(hPlaced<nHard){const i=Math.floor(Math.random()*n);if(arr[i]==='.'){arr[i]='X';hPlaced++;}}
-      // Placer les x
-      while(sPlaced<nSoft){const i=Math.floor(Math.random()*n);if(arr[i]==='.'){arr[i]='x';sPlaced++;}}
+      placed.forEach(i=>{arr[i]='X';});
+
+      // Init contexte cyclique : dernier step du tour précédent
+      let prev=arr[n-1];
+      for(let i=0;i<n;i++){
+        if(arr[i]==='X'){prev='X';continue;}
+        // Matrice Markov : P(faible | contexte)
+        // Après X : forte prob de faible (rôle de rebond)
+        // Après x : prob moyenne (enchaînement)
+        // Après . : faible (les silences se regroupent)
+        const pMarkov=prev==='X'?0.70:prev==='x'?0.35:0.15;
+        const pUnif=0.40; // baseline aléatoire pure
+        const p=wI*(pMarkov*alpha+pUnif*(1-alpha));
+        if(Math.random()<p){arr[i]='x';prev='x';}
+        else prev='.';
+      }
       state[li].pattern=arr;
-      // vitesse aléatoire (50% inchangé, 25% /2, 25% ×2)
+
+      // ── 5. Vitesse (50% inchangé, 25% /2, 25% ×2) ─────────────────────
       const rv=Math.random();
       if(rv<0.25){
         if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
@@ -2187,7 +2223,7 @@ function buildLayers(){
       }
       shNum.textContent='0';
       updateSpeedBtns();
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);
     });
 
     // Assemblage : Vitesse | Shift | ⇄ ⇅ ⊙ | 🎲 ✨
