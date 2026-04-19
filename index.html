@@ -653,7 +653,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.5</span>
+      <span class="app-version">v2.8.6</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1400,15 +1400,17 @@ const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false
 
 // ── Signatures rythmiques ─────────────────────────────────────────────────
 const SIGNATURES=[
-  // stepsPerBeat  : utilisé pour tap tempo et métronome (base croche = résolution des patterns)
-  // beatSteps     : intervalle VISUEL du séparateur, lié à l'unité de temps de la signature
-  //   ♩ (bas=4)  : step=double croche → 1 temps = 4 steps (beatSteps=4)
-  //   ♩.(bas=8)  : step=croche        → 1 temps = 3 steps (beatSteps=3)
-  //   𝅗𝅥 (bas=2) : step=croche        → 1 temps = 4 steps (beatSteps=4)
-  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2, beatSteps:4},
-  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3, beatSteps:4},
-  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4, beatSteps:4},
-  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5, beatSteps:4},
+  // 1 step = 1 croche (1/8) — résolution de base des patterns
+  // stepsPerBeat  : steps par temps (utilisé pour tap tempo et métronome)
+  // beatSteps     : intervalle VISUEL du séparateur de temps dans la grille
+  //   ♩  (bas=4) : 1 temps=noire=2 croches     → beatSteps=2
+  //   ♩. (bas=8) : 1 temps=noire pointée=3 cr. → beatSteps=3
+  //   𝅗𝅥  (bas=2) : 1 temps=blanche=4 croches   → beatSteps=4
+  // Avec modificateur ×2, /2 ou T : sepInterval = beatSteps × speedFactor (calculé dans buildStepsDOM)
+  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2, beatSteps:2},
+  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3, beatSteps:2},
+  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4, beatSteps:2},
+  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5, beatSteps:2},
   {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2, beatSteps:3},
   {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3, beatSteps:3},
   {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4, beatSteps:3},
@@ -1440,7 +1442,7 @@ function getAC(){
 function getBeatSec(li){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
   const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
-  const ternFactor=state[li].ternOn?1.5:1; // T : step ×3/2 (croche→croche pointée, noire→noire pointée)
+  const ternFactor=state[li].ternOn?(2/3):1; // T : vitesse ×3/2 → durée ×2/3 (croche ternaire)
   return(60/spm)/mult*ternFactor;
 }
 
@@ -2117,8 +2119,8 @@ function buildLayers(){
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
     });
 
-    // — Ternaire T (step ×3/2 : croche→croche pointée, noire→noire pointée) —
-    bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Step ternaire ×3/2 (croche pointée / noire pointée)';
+    // — Ternaire T (vitesse ×3/2 : step = croche ternaire, durée ×2/3) —
+    bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire (triolet). Combinez /2+T pour noire de triolet.';
     bTern.addEventListener('click',()=>{
       state[li].ternOn=!state[li].ternOn;
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
@@ -2284,13 +2286,15 @@ function buildStepsDOM(li,wrap){
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
 
-  // Séparateurs de temps : signature × vitesse de la couche
-  // ×2 → chaque step dure moitié → 1 temps = beatSteps×2 steps visuels
-  // /2 → chaque step dure double → 1 temps = beatSteps/2 steps visuels
+  // Séparateurs de temps : beatSteps (steps par temps) × facteur de vitesse de la couche
+  // ×2 → step 2× plus court → 2× plus de steps par temps → sepInterval ×2
+  // /2 → step 2× plus long  → 2× moins de steps par temps → sepInterval ×0.5
+  // T  → vitesse ×3/2        → 3/2 plus de steps par temps → sepInterval ×1.5
   const _halfA = state[li] && (state[li].halfOn || state[li].pendingHalf);
   const _dblA  = state[li] && (state[li].doubleOn || state[li].pendingDouble);
-  const _sm    = _dblA ? 2 : _halfA ? 0.5 : 1;
-  const sepInterval = Math.max(1, Math.round((currentSig ? currentSig.beatSteps : 4) * _sm));
+  const _ternA = state[li] && state[li].ternOn;
+  const _sm    = (_dblA ? 2 : _halfA ? 0.5 : 1) * (_ternA ? 1.5 : 1);
+  const sepInterval = Math.max(1, Math.round((currentSig ? currentSig.beatSteps : 2) * _sm));
   const sw = window.innerWidth < 600 ? 20 : 22;
   const stepPitch = sw + 2; // px par step (largeur + gap flex)
 
