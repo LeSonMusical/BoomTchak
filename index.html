@@ -84,7 +84,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.btn-volet-groove{color:#ccc !important}
+.btn-volet-groove{color:#C8961A !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
@@ -213,7 +213,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-sep{height:1px;background:#d0cec7;margin:4px 0}
 
 /* ─── ENCYCLOPÉDIE ─── */
-.encyclo-wrap{padding:6px 0 4px}
+.encyclo-wrap{padding:6px 0 4px 8px;border-left:2px solid #bbb;margin-left:4px}
 .encyclo-chapo{font-size:12px;line-height:1.65;color:#2a2a28;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e8e6e2}
 .encyclo-bullets{list-style:none;display:flex;flex-direction:column;gap:8px}
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
@@ -249,11 +249,10 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 
 /* ─── MODE TX ─── */
 body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
-/* Steps éditables en mode TX */
-body.mode-tx .step{cursor:pointer}
-body.mode-tx .step:not(.on):not(.soft):hover{background:var(--cl);border-color:var(--cc)}
-body.mode-tx .step.on:hover,body.mode-tx .step.soft:hover{filter:brightness(.85)}
-body:not(.mode-tx) .step{cursor:default}
+/* Steps éditables dans tous les modes */
+.step{cursor:pointer}
+.step:not(.on):not(.soft):hover{background:var(--cl);border-color:var(--cc)}
+.step.on:hover,.step.soft:hover{filter:brightness(.85)}
 
 /* ─── BOUTONS DE SECTION (💾 et ≡) ─── */
 .btn-sec-save{cursor:pointer;font-size:12px;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.6;flex-shrink:0;color:inherit}
@@ -576,7 +575,7 @@ body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .hdivider{background:#333330}
-body.dark-mode .encyclo-wrap{color:#c0bdb7}
+body.dark-mode .encyclo-wrap{color:#c0bdb7;border-left-color:#444}
 body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
 body.dark-mode .encyclo-bkey{color:#e0ddd8}
 body.dark-mode .encyclo-bval{color:#888}
@@ -598,7 +597,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .btn-volet-groove{color:#555 !important}
+body.dark-mode .btn-volet-groove{color:#C8961A !important}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -653,7 +652,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.7</span>
+      <span class="app-version">v2.8.8</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1651,7 +1650,7 @@ function togglePlay(){
 
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
 let currentGrooveId = null;
-let currentMode = new URLSearchParams(location.search).get('mode')==='tx'?'tx':'sx';
+let currentMode = new URLSearchParams(location.search).get('mode')==='sx'?'sx':'tx';
 let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let encycloDir = false;
@@ -1689,16 +1688,12 @@ function updateEncycloSaveBtn(){
   setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
 }
 function refreshMenuBtnStates(){
-  if(currentMode==='tx') return; // TX : toujours actif, rien à faire
-  const hasGrooveUser=packCours.grooves.some(g=>g.source==='user');
+  // Tous les menus restent actifs en permanence (TX et SX)
   document.querySelectorAll('.menu-btn-groove').forEach(b=>{
-    b.disabled=!hasGrooveUser;b.style.opacity=hasGrooveUser?'':'0.25';
-    b.title=hasGrooveUser?'Gérer le menu':'Aucun groove user';
+    b.disabled=false;b.style.opacity='';b.title='Gérer le menu';
   });
-  const hasPatUser=packCours.patterns.some(p=>p.source==='user');
   document.querySelectorAll('.menu-btn-pat').forEach(b=>{
-    b.disabled=!hasPatUser;b.style.opacity=hasPatUser?'':'0.25';
-    b.title=hasPatUser?'Gérer le menu':'Aucun pattern user';
+    b.disabled=false;b.style.opacity='';b.title='Gérer le menu';
   });
 }
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
@@ -1811,8 +1806,6 @@ function buildBandSection(){
   menuBtn.className='btn-sec-ico';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
   menuBtn.textContent='≡';menuBtn.title='Gérer les bands';
   menuBtn.addEventListener('click',()=>openLibPanelBands());
-  const hasBandUser=(packCours.bands||[]).some(b=>b.source==='user');
-  if(!hasBandUser){menuBtn.disabled=true;menuBtn.style.opacity='0.25';menuBtn.title='Aucun band user';}
   bar.appendChild(menuBtn);
 
   // Select band (filtré)
@@ -1853,7 +1846,7 @@ function buildBandSection(){
   btnVolet.addEventListener('click',()=>{
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open',instrOuvert);
+    if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
     btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
     btnVolet.classList.toggle('open',instrOuvert);
   });
@@ -1862,7 +1855,7 @@ function buildBandSection(){
     if(e.target===bar||e.target===lbl){
       instrOuvert=!instrOuvert;
       const bc=document.getElementById('band-content');
-      if(bc)bc.classList.toggle('open',instrOuvert);
+      if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
       btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
       btnVolet.classList.toggle('open',instrOuvert);
     }
@@ -1870,7 +1863,7 @@ function buildBandSection(){
   cont.appendChild(bar);
 
   const bc=document.getElementById('band-content');
-  if(bc)bc.classList.toggle('open',instrOuvert);
+  if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
 }
 
 function saveBandState(btn){
@@ -1935,7 +1928,6 @@ function buildGrooveSection(){
   // ≡ avant le select groove
   const menuBtnGrooveEarly=mkBtnMenu(()=>openLibPanelGrooves());
   menuBtnGrooveEarly.classList.add('menu-btn-groove');
-  if(currentMode!=='tx'&&!packCours.grooves.some(g=>g.source==='user')){menuBtnGrooveEarly.disabled=true;menuBtnGrooveEarly.style.opacity='0.25';menuBtnGrooveEarly.title='Aucun groove user';}
   bar.appendChild(menuBtnGrooveEarly);
 
   const sel=document.createElement('select');
@@ -2822,7 +2814,7 @@ function buildSoundRow(key,label,cls,ss){
   volWrap.addEventListener('click',e=>e.stopPropagation());
 
   const arrow=document.createElement('button');arrow.className='btn-sec-ico sound-arrow-btn';arrow.textContent='sons ▶';
-  arrow.style.cssText='font-size:9px;opacity:.5;padding:2px 5px;cursor:pointer;flex-shrink:0;white-space:nowrap';
+  arrow.style.cssText='font-size:9px;opacity:.65;padding:2px 5px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc)';
   arrow.title='Paramètres sonores';
 
   header.appendChild(lbl);
@@ -4683,7 +4675,12 @@ function attachEvents(){
   document.getElementById('btn-sons').addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
     const bar=document.querySelector('.band-bar');
-    if(bar)bar.classList.toggle('visible',sonsOuvert);
+    if(bar){
+      bar.classList.toggle('visible',sonsOuvert);
+      // Forcer la couleur du bouton Instru (évite le flash blanc lors de l'apparition)
+      const btnInstr=bar.querySelector('.btn-volet-band');
+      if(btnInstr)btnInstr.classList.toggle('open',instrOuvert);
+    }
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
     // ON  → restaurer l'état instrOuvert mémorisé
     // OFF → masquer band-content ET tous ses sous-volets (instrOuvert conservé pour la prochaine ouverture)
