@@ -40,7 +40,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 /* ─── SECTION TEMPS ─── */
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
-.sig-sel{font-size:10px;padding:1px 2px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:42px}
+.sig-sel{font-size:10px;padding:1px 1px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:28px;appearance:none;-webkit-appearance:none;text-align:center}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
 .temps-slider{flex:1;min-width:30px;max-width:90px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
@@ -202,8 +202,10 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-edit-row{display:flex;align-items:center;gap:4px;padding:3px 8px 5px;background:rgba(0,0,0,.04)}
 .sound-edit-row.hidden{display:none}
 /* Top bar : couleurs volets */
-#btn-sons{color:#4A7FA5;border-color:#8ab4d0}
+/* Top bar Sons/Tempo : off = bord coloré + texte neutre ; active = fond + texte colorés */
+#btn-sons{color:#999;border-color:#8ab4d0}
 #btn-sons.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5}
+#btn-tempo{color:#999;border-color:#b0a8d8}
 #btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
 .sound-edit-row .fam-filter{opacity:.9}
 .sound-edit-row .btn-sec-ico{opacity:.5}
@@ -585,8 +587,9 @@ body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
 body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-body.dark-mode #btn-sons{color:#5a9fd4;border-color:#4A7FA5}
+body.dark-mode #btn-sons{color:#777;border-color:#4A7FA5}
 body.dark-mode #btn-sons.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5}
+body.dark-mode #btn-tempo{color:#777;border-color:#6B5FA5}
 body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
@@ -595,7 +598,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .btn-volet-groove{color:#C8961A !important}
+body.dark-mode .btn-volet-groove{color:#555 !important}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -650,7 +653,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.2</span>
+      <span class="app-version">v2.8.3</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1636,7 +1639,8 @@ function refreshMenuBtnStates(){
     b.title=hasPatUser?'Gérer le menu':'Aucun pattern user';
   });
 }
-let sonsOuvert = false;
+let sonsOuvert = false;   // Section Band visible (btn top-bar)
+let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
@@ -1781,29 +1785,29 @@ function buildBandSection(){
   bar.appendChild(saveBtn);
 
   const btnVolet=document.createElement('button');
-  btnVolet.className='btn-volet btn-volet-band'+(sonsOuvert?' open':'');
-  btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
+  btnVolet.className='btn-volet btn-volet-band'+(instrOuvert?' open':'');
+  btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
   btnVolet.addEventListener('click',()=>{
-    sonsOuvert=!sonsOuvert;
+    instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open',sonsOuvert);
-    btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
-    btnVolet.classList.toggle('open',sonsOuvert);
+    if(bc)bc.classList.toggle('open',instrOuvert);
+    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+    btnVolet.classList.toggle('open',instrOuvert);
   });
   bar.appendChild(btnVolet);
   bar.addEventListener('click',e=>{
     if(e.target===bar||e.target===lbl){
-      sonsOuvert=!sonsOuvert;
+      instrOuvert=!instrOuvert;
       const bc=document.getElementById('band-content');
-      if(bc)bc.classList.toggle('open',sonsOuvert);
-      btnVolet.textContent=sonsOuvert?'Instru ▼':'Instru ▶';
-      btnVolet.classList.toggle('open',sonsOuvert);
+      if(bc)bc.classList.toggle('open',instrOuvert);
+      btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+      btnVolet.classList.toggle('open',instrOuvert);
     }
   });
   cont.appendChild(bar);
 
   const bc=document.getElementById('band-content');
-  if(bc)bc.classList.toggle('open',sonsOuvert);
+  if(bc)bc.classList.toggle('open',instrOuvert);
 }
 
 function saveBandState(btn){
@@ -4563,12 +4567,8 @@ function attachEvents(){
     sonsOuvert=!sonsOuvert;
     const bar=document.querySelector('.band-bar');
     if(bar)bar.classList.toggle('visible',sonsOuvert);
-    // Quand on ouvre, le volet contenu est toujours ouvert
-    const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open',sonsOuvert);
     document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
-    const btnV=document.querySelector('.band-bar .btn-volet');
-    if(btnV){btnV.textContent=sonsOuvert?'Instru ▼':'Instru ▶';btnV.classList.toggle('open',sonsOuvert);}
+    // band-content.open et btnVolet mémorisent instrOuvert → ne pas les toucher ici
   });
 
   // ── Titre BoomTchak → encyclo ──
