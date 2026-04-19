@@ -86,6 +86,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-volet-groove{color:#C8961A !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#8B6914 !important}
 /* barre band : bleue */
+.btn-volet-band{color:#4A7FA5 !important}
+.btn-volet-band:hover,.btn-volet-band.open{color:#2d5f80 !important}
 .band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
 .band-bar.visible{display:flex}
 .band-bar .section-bar-lbl{color:#2d5f80}
@@ -195,7 +197,11 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sl-row input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--cs,#ccc);border-radius:2px}
 .sl-row input[type=range]::-moz-range-track{height:2px;background:var(--cs,#ccc);border-radius:2px}
 .sl-row input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--cc,#888);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.instr-sel{background:#fff}
+.instr-sel{font-size:9px;padding:1px 2px;border:1px solid var(--cs);border-radius:3px;color:var(--cb);background:var(--cl);flex-shrink:0;max-width:90px}
+.sound-edit-row{display:flex;align-items:center;gap:4px;padding:3px 8px 5px;background:rgba(0,0,0,.04)}
+.sound-edit-row .fam-filter{opacity:.9}
+.sound-edit-row .btn-sec-ico{opacity:.5}
+.sound-edit-row .btn-sec-ico:hover{opacity:1}
 .sound-sep{height:1px;background:#d0cec7;margin:4px 0}
 
 /* ─── ENCYCLOPÉDIE ─── */
@@ -548,7 +554,8 @@ body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3
 body.dark-mode .btn-tap-tempo:active{background:#3a3448}
 body.dark-mode .tap-n-input{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .tap-count{color:#a89fd0}
-body.dark-mode .instr-sel{background:#2a2a28;color:#e0ddd8;border-color:rgba(255,255,255,.15)}
+body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
+body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
 body.dark-mode .step.soft{background:var(--cs);border-color:var(--cc)}
@@ -630,7 +637,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.0</span>
+      <span class="app-version">v2.8.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1719,7 +1726,7 @@ function buildBandSection(){
 
   // Bouton menu ≡
   const menuBtn=document.createElement('button');
-  menuBtn.className='btn-top';menuBtn.style.cssText='font-size:15px;padding:2px 7px;border-color:#8ab4d0;color:#2d5f80';
+  menuBtn.className='btn-top';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
   menuBtn.textContent='≡';menuBtn.title='Gérer les bands';
   menuBtn.addEventListener('click',()=>openLibPanelBands());
   const hasBandUser=(packCours.bands||[]).some(b=>b.source==='user');
@@ -1753,13 +1760,13 @@ function buildBandSection(){
 
   // Bouton 💾 sauvegarder band
   const saveBtn=document.createElement('button');
-  saveBtn.className='btn-top';saveBtn.style.cssText='font-size:13px;padding:2px 6px;border-color:#8ab4d0;color:#2d5f80';
+  saveBtn.className='btn-top';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>saveBandState(saveBtn));
   bar.appendChild(saveBtn);
 
   const btnVolet=document.createElement('button');
-  btnVolet.className='btn-volet'+(sonsOuvert?' open':'');
+  btnVolet.className='btn-volet btn-volet-band'+(sonsOuvert?' open':'');
   btnVolet.textContent=sonsOuvert?'Sons ▼':'Sons ▶';
   btnVolet.addEventListener('click',()=>{
     sonsOuvert=!sonsOuvert;
@@ -2658,40 +2665,13 @@ function buildSoundPanel(){
 function buildSoundRow(key,label,cls,ss){
   const naturalCat=key==='thumbL'||key==='thumbR'?'thumb':key;
   const row=document.createElement('div');row.className='sound-layer '+cls;
-  const header=document.createElement('div');header.className='sound-header';
 
-  const arrow=document.createElement('span');arrow.className='sound-arrow';arrow.textContent='▶';
+  // ── Ligne 1 : label + volume (large) + toggle ▶ ──────────────────────────
+  const header=document.createElement('div');header.className='sound-header';
+  header.style.cursor='default'; // clic géré uniquement sur arrow
+
   const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
 
-  // Filtre famille instrument
-  const famSel=document.createElement('select');
-  famSel.className='sound-fam-sel';
-  famSel.title='Famille de sons';
-  INSTR_FAMILLES.forEach(f=>{
-    const o=document.createElement('option');o.value=f.id;o.textContent=f.label;famSel.appendChild(o);
-  });
-  famSel.value=soundFamFilter[key]||naturalCat;
-
-  // Select instrument (filtré par famille)
-  const instrSel=document.createElement('select');
-  instrSel.className='instr-sel';
-
-  function rebuildInstrSel(){
-    instrSel.innerHTML='';
-    Object.entries(SOUND_DEFS).filter(([,d])=>d.cat===famSel.value).forEach(([id,d])=>{
-      const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
-    });
-    instrSel.value=ss.soundId;
-    if(!instrSel.value&&instrSel.options.length)instrSel.selectedIndex=0;
-  }
-  rebuildInstrSel();
-
-  famSel.addEventListener('change',e=>{e.stopPropagation();soundFamFilter[key]=famSel.value;rebuildInstrSel();});
-  famSel.addEventListener('pointerdown',e=>e.stopPropagation());
-  instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
-  instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
-
-  // Slider volume
   const volWrap=document.createElement('div');volWrap.className='vol-h-wrap';
   const volLbl=document.createElement('span');volLbl.className='vol-h-lbl';volLbl.textContent='vol';
   const volTrack=document.createElement('div');volTrack.className='vol-h-track';
@@ -2705,12 +2685,57 @@ function buildSoundRow(key,label,cls,ss){
   volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
   volWrap.addEventListener('click',e=>e.stopPropagation());
 
-  header.appendChild(arrow);
-  header.appendChild(lbl);
-  header.appendChild(famSel);
-  header.appendChild(instrSel);
-  header.appendChild(volWrap);
+  const arrow=document.createElement('button');arrow.className='btn-sec-ico sound-arrow-btn';arrow.textContent='▶';
+  arrow.style.cssText='font-size:11px;opacity:.5;padding:2px 5px;cursor:pointer;flex-shrink:0';
+  arrow.title='Paramètres sonores';
 
+  header.appendChild(lbl);
+  header.appendChild(volWrap);
+  header.appendChild(arrow);
+
+  // ── Ligne 2 : filtre famille + ≡ menu + preset son + 💾 ─────────────────
+  const editRow=document.createElement('div');editRow.className='sound-edit-row';
+
+  // Filtre famille (réutilise .fam-filter — même style que volet pattern)
+  const famSel=document.createElement('select');
+  famSel.className='fam-filter';famSel.title='Famille de sons';
+  INSTR_FAMILLES.forEach(f=>{
+    const o=document.createElement('option');o.value=f.id;o.textContent=f.label;famSel.appendChild(o);
+  });
+  famSel.value=soundFamFilter[key]||naturalCat;
+  famSel.addEventListener('pointerdown',e=>e.stopPropagation());
+
+  // Bouton ≡ édition menu band
+  const menuIco=document.createElement('button');menuIco.className='btn-sec-ico';menuIco.textContent='≡';
+  menuIco.title='Gérer les bands';menuIco.style.cssText='font-size:13px;padding:1px 4px';
+  menuIco.addEventListener('click',e=>{e.stopPropagation();openLibPanelBands();});
+
+  // Select instrument filtré
+  const instrSel=document.createElement('select');
+  instrSel.className='instr-sel';instrSel.style.flex='1';
+
+  function rebuildInstrSel(){
+    instrSel.innerHTML='';
+    Object.entries(SOUND_DEFS).filter(([,d])=>d.cat===famSel.value).forEach(([id,d])=>{
+      const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
+    });
+    instrSel.value=ss.soundId;
+    if(!instrSel.value&&instrSel.options.length)instrSel.selectedIndex=0;
+  }
+  rebuildInstrSel();
+
+  famSel.addEventListener('change',e=>{e.stopPropagation();soundFamFilter[key]=famSel.value;rebuildInstrSel();});
+  instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
+  instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
+
+  // Bouton 💾 save band
+  const saveIco=document.createElement('button');saveIco.className='btn-sec-ico';saveIco.textContent='💾';
+  saveIco.title='Sauvegarder le band';saveIco.style.cssText='font-size:11px;padding:1px 4px';
+  saveIco.addEventListener('click',e=>{e.stopPropagation();saveBandState(saveIco);});
+
+  editRow.appendChild(famSel);editRow.appendChild(menuIco);editRow.appendChild(instrSel);editRow.appendChild(saveIco);
+
+  // ── Collapsible : Hauteur + Enveloppe ────────────────────────────────────
   const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
   const inner=document.createElement('div');inner.className='sound-ctrls-inner';
   inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
@@ -2718,15 +2743,16 @@ function buildSoundRow(key,label,cls,ss){
   ctrls.appendChild(inner);
 
   if(!soundPanelOpen[key])ctrls.classList.add('hidden');
-  else arrow.classList.add('open');
+  else arrow.textContent='▼';
 
-  header.addEventListener('click',()=>{
+  arrow.addEventListener('click',e=>{
+    e.stopPropagation();
     const nowHidden=ctrls.classList.toggle('hidden');
-    arrow.classList.toggle('open',!nowHidden);
+    arrow.textContent=nowHidden?'▶':'▼';
     soundPanelOpen[key]=!nowHidden;
   });
 
-  row.appendChild(header);row.appendChild(ctrls);
+  row.appendChild(header);row.appendChild(editRow);row.appendChild(ctrls);
   return row;
 }
 
