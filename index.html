@@ -384,22 +384,35 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
 .lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
 .lib-fam-add-row button{padding:4px 9px;font-size:11px;background:#4A7FA5;color:#fff;border:none;border-radius:5px;cursor:pointer}
-/* Bande FAMILLES toujours visible */
-.lib-fam-band{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 14px;border-top:1px solid rgba(0,0,0,.07)}
-.lib-fam-band-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0;opacity:.75}
+/* Volet Familles — summary/bande */
+.lib-fam-band{display:flex;align-items:center;gap:6px;padding:9px 12px 9px 14px;border-top:1px solid rgba(0,0,0,.07);cursor:pointer;list-style:none}
+.lib-fam-band::-webkit-details-marker{display:none}
+.lib-fam-band-chevron{font-size:9px;flex-shrink:0;opacity:.5;transition:transform .18s;display:inline-block}
+details[open]>.lib-fam-band .lib-fam-band-chevron{transform:rotate(90deg)}
+.lib-fam-band-title{flex:1;font-size:11px;font-weight:600;color:#555;min-width:0}
+.lib-fam-band-secname{font-weight:800}
 .lib-fam-band-pat{background:rgba(107,95,165,.10);border-color:rgba(107,95,165,.18)}
-.lib-fam-band-pat .lib-fam-band-title{color:#4a3d8a}
+.lib-fam-band-pat .lib-fam-band-secname{color:#4a3d8a}
 .lib-fam-band-groove{background:rgba(200,150,26,.10);border-color:rgba(200,150,26,.25)}
-.lib-fam-band-groove .lib-fam-band-title{color:#8B6914}
-.lib-fam-new-input{flex:1;min-width:0;font-size:11px;padding:3px 7px;border:1px solid #c0bdb7;border-radius:5px;background:#fff}
-.lib-fam-band-pat .lib-fam-new-input{border-color:rgba(107,95,165,.35)}
-.lib-fam-band-groove .lib-fam-new-input{border-color:rgba(200,150,26,.4)}
-.lib-fam-add-btn-icon{flex-shrink:0;padding:3px 8px;font-size:12px;font-weight:700;border:none;border-radius:5px;cursor:pointer;color:#fff}
+.lib-fam-band-groove .lib-fam-band-secname{color:#8B6914}
+.lib-fam-add-btn-icon{flex-shrink:0;padding:2px 8px;font-size:13px;font-weight:700;border:none;border-radius:5px;cursor:pointer;color:#fff;line-height:1.5}
 .lib-fam-band-pat .lib-fam-add-btn-icon{background:#6B5FA5}
 .lib-fam-band-groove .lib-fam-add-btn-icon{background:#C8961A}
+/* Mini formulaire "Créer une famille" */
+.lib-fam-create-box{padding:8px 14px 10px;background:#f5f4f0;border-bottom:1px solid #e8e5e0;display:flex;flex-direction:column;gap:6px}
+.lib-fam-create-box.hidden{display:none}
+.lib-fam-create-input{width:100%;font-size:11px;padding:5px 8px;border:1px solid #c0bdb7;border-radius:5px;background:#fff}
+.lib-fam-create-actions{display:flex;gap:6px;justify-content:flex-end}
+.lib-fam-create-cancel{padding:4px 10px;font-size:11px;background:#fff;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;color:#666}
+.lib-fam-create-ok{padding:4px 10px;font-size:11px;border:none;border-radius:5px;cursor:pointer;color:#fff}
+#lib-fam-create-ok-patterns{background:#6B5FA5}
+#lib-fam-create-ok-grooves{background:#C8961A}
 /* Couleurs des tags par type */
 .fam-tag-pat{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
 .fam-tag-groove{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
+/* Select filtre famille : fond = couleur des tags de la section */
+#lib-panel-patterns .lib-fam-filter-sel{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
+#lib-panel-grooves .lib-fam-filter-sel{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
 /* toggle contenu encyclopédie (Tous / Remplis / Vides) */
 .lib-content-toggle{padding:3px 8px;font-size:10px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .lib-content-toggle[data-state="filled"]{border-color:#1D9E75;color:#1D9E75;background:#f0fdf8}
@@ -554,9 +567,14 @@ body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333
 body.dark-mode .lib-fam-band{border-color:rgba(255,255,255,.07)}
 body.dark-mode .lib-fam-band-pat{background:rgba(107,95,165,.18)}
 body.dark-mode .lib-fam-band-groove{background:rgba(200,150,26,.15)}
-body.dark-mode .lib-fam-new-input{background:#1e1e1c;color:#e0ddd8;border-color:#444440}
+body.dark-mode .lib-fam-band-title{color:#aaa}
+body.dark-mode .lib-fam-create-box{background:#1e1e1c;border-color:#333330}
+body.dark-mode .lib-fam-create-input{background:#2a2a28;color:#e0ddd8;border-color:#444440}
+body.dark-mode .lib-fam-create-cancel{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .fam-tag-pat{background:#3a2820;border-color:#7A4A30;color:#e0a080}
 body.dark-mode .fam-tag-groove{background:#2e2410;border-color:#8B6914;color:#e0c060}
+body.dark-mode #lib-panel-patterns .lib-fam-filter-sel{background:#3a2820;border-color:#7A4A30;color:#e0a080}
+body.dark-mode #lib-panel-grooves .lib-fam-filter-sel{background:#2e2410;border-color:#8B6914;color:#e0c060}
 body.dark-mode .lib-item{border-bottom-color:#333330}
 body.dark-mode .lib-item-name{color:#e0ddd8}
 body.dark-mode .lib-drag-handle{color:#444440}
@@ -592,7 +610,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.7.4</span>
+      <span class="app-version">v2.7.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -719,17 +737,24 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-patterns"></div>
+  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
+    <summary class="lib-fam-band lib-fam-band-pat">
+      <span class="lib-fam-band-chevron">▶</span>
+      <span class="lib-fam-band-title">Organiser les Familles de <span class="lib-fam-band-secname">Patterns</span></span>
+      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn">＋</button>
+    </summary>
+    <div class="lib-fam-create-box hidden" id="lib-fam-create-box-patterns">
+      <input type="text" class="lib-fam-create-input" id="lib-fam-new-input" placeholder="Nom de la famille…">
+      <div class="lib-fam-create-actions">
+        <button class="lib-fam-create-cancel" id="lib-fam-create-cancel-patterns">Annuler</button>
+        <button class="lib-fam-create-ok" id="lib-fam-create-ok-patterns">Créer</button>
+      </div>
+    </div>
+    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
+  </details>
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
-  </div>
-  <div class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
-    <div class="lib-fam-band lib-fam-band-pat">
-      <span class="lib-fam-band-title">Familles</span>
-      <input type="text" class="lib-fam-new-input" id="lib-fam-new-input" placeholder="Nouvelle famille…">
-      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn">＋</button>
-    </div>
-    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
   </div>
 </div>
 
@@ -744,17 +769,24 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
+  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
+    <summary class="lib-fam-band lib-fam-band-groove">
+      <span class="lib-fam-band-chevron">▶</span>
+      <span class="lib-fam-band-title">Organiser les Familles de <span class="lib-fam-band-secname">Grooves</span></span>
+      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn-grooves">＋</button>
+    </summary>
+    <div class="lib-fam-create-box hidden" id="lib-fam-create-box-grooves">
+      <input type="text" class="lib-fam-create-input" id="lib-fam-new-input-grooves" placeholder="Nom de la famille…">
+      <div class="lib-fam-create-actions">
+        <button class="lib-fam-create-cancel" id="lib-fam-create-cancel-grooves">Annuler</button>
+        <button class="lib-fam-create-ok" id="lib-fam-create-ok-grooves">Créer</button>
+      </div>
+    </div>
+    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
+  </details>
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
-  </div>
-  <div class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
-    <div class="lib-fam-band lib-fam-band-groove">
-      <span class="lib-fam-band-title">Familles</span>
-      <input type="text" class="lib-fam-new-input" id="lib-fam-new-input-grooves" placeholder="Nouvelle famille…">
-      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn-grooves">＋</button>
-    </div>
-    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
   </div>
 </div>
 
@@ -3435,19 +3467,32 @@ function attachLibPanelEvents(){
     });
   });
 
-  // Ajouter une nouvelle famille
-  document.getElementById('lib-fam-add-btn').addEventListener('click', ()=>{
+  // ＋ → affiche le mini formulaire de création
+  document.getElementById('lib-fam-add-btn').addEventListener('click', e=>{
+    e.stopPropagation(); // ne pas toggler le <details>
+    const box = document.getElementById('lib-fam-create-box-patterns');
+    const details = document.getElementById('lib-fam-details-patterns');
+    box.classList.remove('hidden');
+    details.open = true;
+    document.getElementById('lib-fam-new-input').focus();
+  });
+  // Créer
+  function _doCreateFamPattern(){
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
-    const newFam = {id:'fam_user_'+Date.now(), nom};
-    packCours.familles.push(newFam);
-    saveToStorage();
-    input.value = '';
-    buildLibFamListPatterns();
-    rebuildAllFamFilters();
-  });
+    packCours.familles.push({id:'fam_user_'+Date.now(), nom});
+    saveToStorage(); input.value='';
+    document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
+    buildLibFamListPatterns(); rebuildAllFamFilters();
+  }
+  document.getElementById('lib-fam-create-ok-patterns').addEventListener('click', _doCreateFamPattern);
   document.getElementById('lib-fam-new-input').addEventListener('keydown', e=>{
-    if(e.key==='Enter') document.getElementById('lib-fam-add-btn').click();
+    if(e.key==='Enter') _doCreateFamPattern();
+    if(e.key==='Escape') document.getElementById('lib-fam-create-cancel-patterns').click();
+  });
+  document.getElementById('lib-fam-create-cancel-patterns').addEventListener('click', ()=>{
+    document.getElementById('lib-fam-new-input').value='';
+    document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
   });
 }
 
@@ -3658,16 +3703,32 @@ function attachGrooveLibEvents(){
     if(!confirm('Supprimer '+toDelete.length+' groove'+(toDelete.length!==1?'s':'')+' ?')) return;
     toDelete.forEach(id=>libDeleteGroove(id));
   });
-  // Gérer les familles (partagées avec patterns)
-  document.getElementById('lib-fam-add-btn-grooves').addEventListener('click',()=>{
+  // ＋ → affiche le mini formulaire de création
+  document.getElementById('lib-fam-add-btn-grooves').addEventListener('click',e=>{
+    e.stopPropagation();
+    const box=document.getElementById('lib-fam-create-box-grooves');
+    const details=document.getElementById('lib-fam-details-grooves');
+    box.classList.remove('hidden');
+    details.open=true;
+    document.getElementById('lib-fam-new-input-grooves').focus();
+  });
+  // Créer
+  function _doCreateFamGroove(){
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
     packCours.familles.push({id:'fam_user_'+Date.now(),nom});
     saveToStorage(); input.value='';
+    document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
     buildLibFamListGrooves(); rebuildAllFamFilters();
-  });
+  }
+  document.getElementById('lib-fam-create-ok-grooves').addEventListener('click',_doCreateFamGroove);
   document.getElementById('lib-fam-new-input-grooves').addEventListener('keydown',e=>{
-    if(e.key==='Enter') document.getElementById('lib-fam-add-btn-grooves').click();
+    if(e.key==='Enter') _doCreateFamGroove();
+    if(e.key==='Escape') document.getElementById('lib-fam-create-cancel-grooves').click();
+  });
+  document.getElementById('lib-fam-create-cancel-grooves').addEventListener('click',()=>{
+    document.getElementById('lib-fam-new-input-grooves').value='';
+    document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
   });
 }
 
