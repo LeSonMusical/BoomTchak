@@ -1,8 +1,8 @@
 # BoomTchak v2 — Brief de développement (référence complète)
 
 > **Nom de l'appli :** BoomTchak *(anciennement BasicRythm puis PoumTchak)*  
-> **Version courante :** v2.5.8  
-> **Fichier :** `/Users/takadimita/Desktop/PoumTchak/index.html` (~3000 lignes)  
+> **Version courante :** v2.8.9  
+> **Fichier :** `/Users/takadimita/Desktop/PoumTchak/index.html` (~4500 lignes)  
 > **Dépôt :** https://github.com/LeSonMusical/BoomTchak  
 > **Déployé :** https://lesonmusical.github.io/BoomTchak/  
 > **Dev local :** `npx serve /Users/takadimita/Desktop/PoumTchak -p 3000 --no-clipboard`
@@ -91,9 +91,9 @@ index.html
       "tempo": { "min": 80, "max": 360, "defaut": 200 },
       "vitesse_mult": 2,
       "layers": [
-        { "id": "grave", "patternId": "tres",    "mute": false, "shift": 0, "halfOn": false, "doubleOn": false },
-        { "id": "aigu",  "patternId": "son32",   "mute": false, "shift": 0, "halfOn": false, "doubleOn": false },
-        { "id": "noise", "patternId": "cascara", "mute": false, "shift": 0, "halfOn": false, "doubleOn": false }
+        { "id": "grave", "patternId": "tres",    "mute": false, "shift": 0, "halfOn": false, "doubleOn": false, "ternOn": false },
+        { "id": "aigu",  "patternId": "son32",   "mute": false, "shift": 0, "halfOn": false, "doubleOn": false, "ternOn": false },
+        { "id": "noise", "patternId": "cascara", "mute": false, "shift": 0, "halfOn": false, "doubleOn": false, "ternOn": false }
       ]
     }
   ],
@@ -136,7 +136,7 @@ index.html
 - `encyclo_ref` sur les patterns : clé vers `packCours.encyclo`. Si absent, la clé est `pattern.id`
 - **Clé encyclopédie** : toujours `p.encyclo_ref || p.id` pour un pattern, `g.id` pour un groove
 - Toutes les entrées encyclo (patterns ET grooves) sont **auto-créées vides** au chargement si absentes
-- `halfOn`/`doubleOn` par layer : vitesse relative de la couche (×0.5 / ×2)
+- `halfOn`/`doubleOn`/`ternOn` par layer : vitesse relative de la couche (×0.5 / ×2 / ×1.5 ternaire)
 - `vitesse_mult` sur groove : multiplicateur global tempo
 - `visibilite` : champ présent mais **ENDORMI en v2** (logique absente)
 
@@ -182,12 +182,11 @@ CSS : `flex-wrap:nowrap; overflow:hidden` — la barre ne déborde jamais.
 | Section | TX | SX |
 |---------|----|----|
 | Band | 💾 ≡ | 💾 ≡ |
-| Groove | 💾 ≡ (toujours actif) | 💾 ✓ / ≡ grisé si aucun groove user |
-| Layer | 💾 ≡ (toujours actif) | 💾 ✓ / ≡ grisé si aucun pattern user |
-| Encyclo | 💾 ≡ | 💾 ✓ / ≡ visible si item user existe |
+| Groove | 💾 ≡ | 💾 ≡ |
+| Layer | 💾 ≡ | 💾 ≡ |
+| Encyclo | 💾 ≡ | 💾 ≡ |
 
 Règle SX : `canOverwrite` protège la sauvegarde des défauts ; les panels ≡ n'affichent que les items `source:'user'`.
-Après toute save créant un item user : `refreshMenuBtnStates()` réactive les boutons ≡ concernés.
 Tag d'item : `source:'user'` (anciennement `'perso'` — **toutes les occurrences UI ont été renommées "user"**).
 
 ### Couleurs des barres
@@ -205,15 +204,14 @@ Tag d'item : `source:'user'` (anciennement `'perso'` — **toutes les occurrence
 
 ## Modes TX / SX / MX
 
-- **SX** (défaut) : mode élève
-- **TX** : mode enseignant — accès complet édition + sauvegarde + création de contenu pédagogique (parcours, étapes, consignes)
+- **TX** (défaut depuis v2.8.8) : mode enseignant — accès complet édition + sauvegarde + création de contenu pédagogique (parcours, étapes, consignes)
+- **SX** : mode élève — URL `?mode=sx` pour forcer le mode SX au démarrage
 - **MX** *(v3)* : mode Master — droits supplémentaires : édition contenu encyclopédique global + gestion des familles de parcours
-- Bascule : bouton `SX/TX` top bar gauche + raccourci `Tab`
-- URL `?mode=tx` démarre en TX
-- En TX : boutons 💾 + ≡ visibles sur toutes les sections
-- En SX : 💾 toujours visible (protection par `canOverwrite`) ; ≡ visible mais grisé si aucun item perso pour Groove/Layer, masqué pour Encyclo
+- Bascule : bouton `TX/SX` top bar gauche + raccourci `Tab`
+- En TX : boutons 💾 + ≡ visibles et actifs sur toutes les sections
+- En SX : 💾 toujours visible (protection par `canOverwrite`) ; ≡ actifs sur toutes les sections (restriction SX supprimée v2.8.8)
 - Panels ≡ en SX : liste filtrée sur `source:'user'` uniquement (force `__perso__`)
-- Step editing : disponible en SX (canEdit retiré) — `canOverwrite` protège la surcharge des défauts
+- Step editing : disponible en SX et TX — `canOverwrite` protège la surcharge des défauts
 
 ---
 
@@ -311,8 +309,10 @@ function halfAt(len){ if(len<=4) return null; return Math.ceil(len/2); }
 - Const `ENCYCLO` : dictionnaire de référence (chapo + bullets) — ne jamais modifier
 - Const `ENCYCLO_MISC` : tableau des entrées "Misc" (catégorie M) — ordre du select
   ```js
+  // 12 entrées (v2.8.7) — toujours resynchronisées depuis ENCYCLO au chargement
   [{id:'poumtchak',nom:'★ BoomTchak'},{id:'misc_groove',nom:'Groove'},{id:'misc_pattern',nom:'Pattern'},
-   {id:'misc_sons',nom:'Sons & instruments'},{id:'misc_notations',nom:'Notations'},
+   {id:'misc_step',nom:'Step / Pas'},{id:'misc_mesure',nom:'Mesure'},{id:'misc_signature',nom:'Signature'},
+   {id:'misc_metro',nom:'Métronome'},{id:'misc_sons',nom:'Sons & instruments'},{id:'misc_notations',nom:'Notations'},
    {id:'misc_tempo',nom:'Tempo'},{id:'misc_transformations',nom:'Transformations'},{id:'misc_familles',nom:'Familles'}]
   ```
 - `packCours.encyclo` : copie éditable + entrées vides auto-créées pour tous items
@@ -370,11 +370,24 @@ Panel Encyclopédie : 3 filtres cumulatifs :
 
 ## Moteur audio
 
-Scheduler lookahead : `setTimeout` 25ms / lookahead 100ms (pattern Chris Wilson)
-SPM : Steps Par Minute (pas BPM)
-3 layers indépendants avec `halfOn` / `doubleOn` par couche.
+Scheduler lookahead : `setTimeout` 25ms / lookahead 100ms (pattern Chris Wilson)  
+SPM : Steps Par Minute. **1 step = 1 croche (1/8)** — résolution de base universelle.  
+3 layers indépendants avec `halfOn` / `doubleOn` / `ternOn` par couche.
 
-iOS 18 : `ac.resume()` synchrone dans le handler de clic.
+**Vitesse par couche :**
+```
+getBeatSec(li) = (60 / (BPM × globalSpeedMult)) / mult × ternFactor
+  mult       = doubleOn ? 2 : halfOn ? 0.5 : 1
+  ternFactor = ternOn ? (2/3) : 1     → vitesse ×3/2 (croche ternaire)
+```
+
+**Signatures (SIGNATURES array) — beatSteps = steps par temps (séparateur piano-roll) :**
+```
+4/4 → beatSteps 2 | 6/8 → beatSteps 3 | 2/2 → beatSteps 4 | 3/4 → beatSteps 2
+```
+⚠ 1 step = 1 croche (pas 1 double-croche) : les beatSteps pour les signatures à noire = 2 (corrigé v2.8.6).
+
+iOS 18 : `ac.resume()` synchrone dans le handler de clic.  
 Visualisation : RAF loop séparée du scheduler (`visualLoop()`).
 
 ---
@@ -498,21 +511,27 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 
 ---
 
-## État d'avancement v2.5.8
+## État d'avancement v2.8.9
 
 ### ✅ Implémenté
 
 **Infrastructure**
-- Modes TX/SX — toggle + URL `?mode=tx`
+- Modes TX/SX — toggle + URL `?mode=sx` (TX est le défaut depuis v2.8.8)
 - Lecture audio 3 couches + scheduler lookahead
 - Version affichée top bar
 - Renommage BoomTchak (v2.3.5)
 
 **Sections**
 - Band, Groove, Layers, Encyclopédie avec barres uniformes
-- Boutons 💾 + ≡ avec règles de visibilité SX/TX (voir tableau ci-dessus)
-- Filtres famille (chips) dans barres Groove et Layers
-- Option "Perso" (fond vert `#ddfff4`, texte `#0F6E56`) dans tous les menus famille
+- Boutons 💾 + ≡ toujours actifs en TX et SX (v2.8.8)
+- Filtres famille (chips) dans barres Band, Groove et Layers
+- Option "Perso" / "User" dans tous les menus famille
+
+**Top bar — Sons et Tempo (v2.8.x)**
+- **Sons** : ON/OFF barre Band (OFF = bordure colorée + texte neutre, ON = fond teinté + texte coloré)
+- **Tempo** : ON/OFF volet métronome (même logique couleur)
+- `sonsOuvert` et `instrOuvert` : deux variables **indépendantes** — instrOuvert mémorise l'état du volet Instru entre ouvertures de Sons
+- `band-content` visible seulement si `instrOuvert && sonsOuvert`
 
 **Dirty state**
 - Système unifié `setDirtyUI` : 💾 rouge + `!` + `● modifié Nom` dans select
@@ -523,7 +542,7 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 - Popover psp-box shared (patterns + grooves) via `_pspContext`
 - Save sheet 2 choix : Écraser / Sauvegarder comme nouveau
 - Dialog "pattern partagé" entre grooves
-- localStorage `ptk_content_v2`
+- localStorage `boomtchak_pack`
 
 **Familles (v2.1+)**
 - Pool plat partagé patterns + grooves
@@ -535,11 +554,13 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 - Texte éditable en TX, détection vrai changement focus/blur
 - Entrées auto-créées vides pour tous patterns ET grooves
 - Auto-select à chaque changement de groove ou pattern de couche
-- Panel ≡ encyclo avec 4 filtres cumulatifs : famille + M/G/P + Tous/Remplis/Vides — v2.3.2 + v2.4.5
-- Catégorie Misc (M) : `ENCYCLO_MISC` (8 entrées) + migration always-sync
+- Panel ≡ encyclo avec 4 filtres cumulatifs : famille + M/G/P + Tous/Remplis/Vides
+- Catégorie Misc (M) : `ENCYCLO_MISC` (12 entrées depuis v2.8.7) + migration always-sync
+- Bordure verticale gauche grise sur le contenu ouvert (v2.8.8)
 
-**Steps (v2.2.4)**
+**Steps (v2.2.4 + v2.8.8)**
 - Wrap conditionnel + césure au milieu + ResizeObserver
+- Éditables dans tous les modes TX et SX
 
 **Bottom bar (v2.3.5)**
 - Play : sobriété neutre `#1a1a18`, actif fond noir + texte blanc
@@ -548,50 +569,61 @@ Toutes ont `{ chapo, bullets[[titre,texte],...] }` :
 **Accents (v2.4.x)**
 - 3 états : `X` (forte, vol 100%), `x` (faible, vol ~33%), `.` (silence)
 - Cycle au clic : `. → X → x → .`
-- Steps éditables en SX également (sans restriction `canEdit`)
-- Mod panel : `/2 ×2` | `◀ n ▶` (shift compact) | `⇄ ⇅ ⊙` | `🎲 ✨`
+- Mod panel (TX uniquement) : `/2 ×2 T` | `◀ n ▶` (shift compact) | `⇄ ⇅ ⊙` | `🎲 ✨`
 - Transformations tenant compte des accents (×2, /2, reverse, invert, shuffle, magic)
 
+**Vitesse de couche (v2.8.x)**
+- `/2` et `×2` : **pending** — appliqué à la prochaine frontière de mesure ; affichage anticipé via `updateSpeedBtns()`
+- **T (ternaire)** : vitesse ×3/2 (step = croche ternaire, durée ×2/3) — appliqué **immédiatement** (pas de pending)
+- Combinaison /2+T → noire ternaire (triolet de noires)
+- Séparateurs de temps (piano-roll) : `sepInterval = beatSteps × facteur_vitesse_couche`
+
 **Source badges (v2.4.5)**
-- Badge "perso" (vert) et "défaut" (gris) dans les panels ≡ lib
-- Classe CSS `.section-perso` sur `layerDiv` et `#groove-bar` selon `source:'user'`
+- Badge "user" (vert, ex-"perso") dans les panels ≡ lib
+- `source:'user'` détermine les permissions SX d'édition
 
-**Mode SX (v2.4.6 → v2.4.8)**
-- Panels ≡ en SX forcés sur filtre `__perso__` (ne montrent que les items `source:'user'`)
-- ≡ Groove/Pattern grisé si aucun item perso (disabled + opacity 0.25)
-- ≡ Encyclo masqué en SX
-
-**Section Band — volet sons (v2.5.0)**
-- Volet collapsible par instrument : flèche ▶/▼ + sliders Hauteur + Enveloppe
+**Section Band — volet sons (v2.5.0+)**
+- Volet collapsible par instrument : bouton "sons ▶/▼" en couleur `var(--cc)` du layer (v2.8.8)
 - `soundPanelOpen` mémorise l'état ouvert/fermé par couche
-- Suppression des boutons ≡/💾 redondants dans les lignes individuelles (ils restent dans la barre Band)
+- Barre Band : filtre famille, ≡ menu (toujours actif), select band, 💾, bouton "Instru ▶/▼"
+- Bouton "Instru" : bleu ouvert (`#4A7FA5`), gris fermé
 
 **Mode sombre (v2.5.x)**
 - Bouton ⚙ Réglages → panel trois états : Clair / = Sys. / Sombre — persisté localStorage
-- `applyColorScheme(scheme)` + `body.dark-mode` — surchargé par ~80 règles CSS
-- Selects preset (Groove, Encyclopédie, Band, Pattern) : fond `#2a2a28` / texte `#e0ddd8` — inline styles écrasés via `!important`
-- Selects famille (`.fam-filter`) : fond sombre + texte coloré (`var(--cc)` sur les couches, teinte section sur Groove/Encyclo)
-- Steps : couleurs restituées — `.step.on` = `var(--cc)`, couches mutées correctement désaturées
+- `applyColorScheme(scheme)` + `body.dark-mode` — ~80 règles CSS dédiées
+- Selects preset : fond `#2a2a28` / texte `#e0ddd8` — inline styles écrasés via `!important`
+- Steps `.step.on` = `var(--cc)`, couches mutées désaturées
 - Bouton Mute actif : fond sombre + bordure/texte `var(--cc)` ; muté : fond neutre gris
-- Sliders paramètres : épaisseur réduite (thumb 12 px, hauteur 20 px)
 
-**Boutons ≡ (v2.5.7–2.5.8)**
-- TX : toujours actif (suppression de la désactivation liée aux items user)
-- SX : grisé uniquement si aucun item `source:'user'`
-- Encyclo SX : visible si au moins un item user (masqué sinon)
-- `refreshMenuBtnStates()` : réactive dynamiquement après toute save créant un item user
-- UI : tag "User" (vert) renomme "Perso" partout (filtres famille, badges lib, titres boutons)
+**Boutons ≡ (v2.8.8)**
+- Toujours actifs en TX et SX, sans restriction liée aux items user
+- Panels ≡ en SX : liste filtrée sur `source:'user'` uniquement
+- UI : tag "User" (vert) remplace "Perso" partout
+
+**Bouton Patterns (v2.8.8)**
+- Toujours doré (`#C8961A`) — indépendant de l'état ouvert/fermé du volet
+
+**✨ Magie — génération algorithmique (v2.8.4+)**
+- **Pattern** : Euclide + Markov, intensité `alpha = √(random)` (distribution linéaire, E[α]=2/3)
+  1. Densité sons forts (k) : blend triangulaire [10..60%] × alpha + uniforme × (1-alpha)
+  2. Placement euclidien (Bresenham) + rotation aléatoire, blendé avec aléatoire selon alpha
+  3. Sons faibles : chaîne de Markov — P(x|X)=0.70, P(x|x)=0.35, P(x|.)=0.15 — blendée uniforme
+- **Vitesse (v2.8.9)** :
+  - 2/3 → pas de changement
+  - 1/3 → /2 ou ×2 à 50/50 (pending boundary)
+  - + 20 % de chance de basculer T (indépendant, immédiat)
 
 ---
 
 ## Roadmap
 
-### v2 — Suite (ajouts d'édition et de contenu)
+### v2 — Suite (reste à faire)
 
-- **Section Band** : création avec paramètres sonores par instrument (enveloppe, pitch/filtre, volume), notion d'instruments par famille (Low, High, Noise → Bass, Pad, etc.)
-- **Gestion des accents** : entrée manuelle (X x .) et rendu sonore différencié
-- **Mode sombre** : thème dark/light (bottom bar drawer déjà préparé)
-- **Mode visuel bis** : cercle à vitesse-cycle uniforme (vs vitesse-step actuel)
+*(Accents, mode sombre, section Band de base : ✅ déjà implémentés)*
+
+- **UX Métronome** : décision ouverte — press long = volet tempo, press court = ON/OFF (avis Claude : option la plus naturelle sur mobile)
+- **Mode visuel bis** : cercle à vitesse-cycle uniforme (toutes aiguilles même vitesse angulaire — vs vitesse-step actuel)
+- **Section Band — paramètres avancés** : enveloppe, pitch/filtre, volume par instrument ; familles d'instruments élargies (Bass, Pad, Lead…)
 - **Liens dans les textes** : liens encyclo vers d'autres items
 - **Section références** : liens vers des morceaux réels
 
@@ -672,7 +704,6 @@ En mode EditVisibility :
 - Export MIDI
 - Mode multi-utilisateur
 - Rythmes impairs
-- *(Potentiellement v2 fin)* Mode sombre
 
 ---
 
