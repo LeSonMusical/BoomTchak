@@ -3429,15 +3429,26 @@ function sbLoginWithGoogle() {
 
 async function sbLogout() {
   if (!authSession) return;
-  try { await sbFetch('/auth/v1/logout', { method: 'POST' }); } catch(e) {}
+  // Effacer immédiatement (synchrone) avant toute opération réseau :
+  // si l'utilisateur recharge avant la fin de l'appel API,
+  // sb_session est déjà absent → pas de reconnexion automatique.
+  const tokenToInvalidate = authSession?.access_token;
   authSession = null;
   authProfile = null;
   localStorage.removeItem('sb_session');
-  // Ne pas effacer les items école : ce sont des données publiques partagées,
-  // disponibles hors-connexion. Ils seront mis à jour au prochain login.
-  // Effacer uniquement les items personnels de l'enseignant connecté.
   renderAuthUI();
   buildPublishSection();
+  // Invalider le token côté serveur en arrière-plan (best-effort)
+  if (tokenToInvalidate) {
+    fetch(SUPABASE_URL + '/auth/v1/logout', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + tokenToInvalidate,
+        'Content-Type': 'application/json',
+      },
+    }).catch(() => {});
+  }
 }
 
 // ── Gestion session ───────────────────────────────────────────────────────────
