@@ -32,8 +32,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-view:hover{background:#e8e5e0}
 
 /* ─── PANEL RÉGLAGES (panel2 conservé) ─── */
-.panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .22s ease,padding .22s ease;max-height:0;padding:0 .85rem}
-.panel2.open{max-height:130px;padding:.5rem .85rem}
+.panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .28s ease,padding .28s ease;max-height:0;padding:0 .85rem}
+.panel2.open{max-height:500px;padding:.5rem .85rem;overflow-y:auto}
 .btn-sm-tempo{padding:3px 8px;cursor:pointer;font-size:11px;background:#fff;border:1px solid #b0aea7;border-radius:5px;color:#666}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
@@ -659,7 +659,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-top btn-tempo-display" id="btn-tempo">♩= 100</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
-    <button class="btn-top" id="btn-settings" title="Réglages">⚙</button>
+    <button class="btn-top" id="btn-settings" title="Menu">···</button>
   </div>
 </div>
 
@@ -667,8 +667,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="frame">
   <!-- Panel réglages : premier dans le frame → toujours au-dessus des volets -->
   <div class="panel2" id="panel-settings">
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">RÉGLAGES</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <!-- Thème -->
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
         <div class="theme-toggle" id="theme-toggle">
@@ -677,10 +678,21 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="btn-theme" data-theme-val="dark">Sombre</button>
         </div>
       </div>
-      <div style="border-top:1px solid #e0ddd8;padding-top:10px">
-        <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em;margin-bottom:8px">BASE ÉCOLE</div>
+
+      <!-- Connexion / Déconnexion -->
+      <div style="border-top:1px solid #e0ddd8;padding-top:8px">
         <div id="auth-section"></div>
       </div>
+
+      <!-- Publier -->
+      <div style="border-top:1px solid #e0ddd8;padding-top:8px" id="publish-section-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" id="publish-toggle">
+          <span style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">PUBLIER</span>
+          <span id="publish-toggle-arrow" style="font-size:10px;color:#888">▶</span>
+        </div>
+        <div id="publish-section" style="display:none;margin-top:8px"></div>
+      </div>
+
     </div>
   </div>
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
@@ -3420,11 +3432,20 @@ async function sbHandleOAuthCallback() {
   return true;
 }
 
+function sbGetUserId() {
+  try {
+    const payload = JSON.parse(atob(authSession.access_token.split('.')[1]));
+    return payload.sub;
+  } catch(e) { return null; }
+}
+
 async function sbFetchProfile() {
   if (!authSession) return;
+  const userId = sbGetUserId();
+  if (!userId) return;
   try {
     const data = await sbFetch(
-      '/rest/v1/profiles?select=*&limit=1',
+      '/rest/v1/profiles?select=*&id=eq.' + userId,
       { headers: { 'Accept': 'application/vnd.pgrst.object+json' } }
     );
     authProfile = data;
@@ -3488,49 +3509,132 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   });
 }
 
-// ── Publication vers le pool école (depuis TX) ────────────────────────────────
+// ── Publication vers le pool école ───────────────────────────────────────────
+// MX : scope='school', approved=true (direct)
+// TX : scope='teacher', approved=false (en attente d'approbation MX)
 async function sbPublishPattern(patId) {
   const pat = packCours.patterns.find(p => p.id === patId);
   if (!pat || !authSession) return;
+  const isMX = authProfile?.role === 'mx';
   try {
     await sbFetch('/rest/v1/patterns', {
       method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         id: pat.id, nom: pat.nom, sequence: pat.sequence, pas: pat.pas,
         unite_temps: pat.unite_temps, pas_par_mesure: pat.pas_par_mesure,
         familles_ids: pat.familles || [],
         encyclo_ref: pat.encyclo_ref || null,
-        scope: 'teacher', approved: false,
+        scope: isMX ? 'school' : 'teacher',
+        approved: isMX,
         owner_id: authProfile?.id
       })
     });
-    alert('Pattern "' + pat.nom + '" envoyé pour approbation MX.');
+    if (isMX) {
+      pat.source = 'school';
+      saveToStorage();
+    }
+    return true;
   } catch(e) {
-    alert('Erreur publication : ' + e.message);
+    console.error('Erreur publication pattern :', e);
+    return false;
   }
 }
 
 async function sbPublishGroove(grooveId) {
   const g = packCours.grooves.find(x => x.id === grooveId);
   if (!g || !authSession) return;
+  const isMX = authProfile?.role === 'mx';
   try {
     await sbFetch('/rest/v1/grooves', {
       method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         id: g.id, nom: g.nom, familles_ids: g.familles || [],
         band_defaut: g.band_defaut, vitesse_mult: g.vitesse_mult || 1,
         tempo_min: g.tempo?.min, tempo_max: g.tempo?.max, tempo_defaut: g.tempo?.defaut,
         layers: g.layers,
-        scope: 'teacher', approved: false,
+        scope: isMX ? 'school' : 'teacher',
+        approved: isMX,
         owner_id: authProfile?.id
       })
     });
-    alert('Groove "' + g.nom + '" envoyé pour approbation MX.');
+    if (isMX) {
+      g.source = 'school';
+      saveToStorage();
+    }
+    return true;
   } catch(e) {
-    alert('Erreur publication : ' + e.message);
+    console.error('Erreur publication groove :', e);
+    return false;
   }
+}
+
+// ── Section Publier ───────────────────────────────────────────────────────────
+function buildPublishSection() {
+  const container = document.getElementById('publish-section');
+  const wrap = document.getElementById('publish-section-wrap');
+  if (!container) return;
+
+  // Masquer la section si pas connecté
+  if (!authSession) { if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='';
+
+  const isMX = authProfile?.role === 'mx';
+  const teacherPats  = packCours.patterns.filter(p => p.source === 'teacher');
+  const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher');
+
+  if (!teacherPats.length && !teacherGrooves.length) {
+    container.innerHTML =
+      '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu à publier</div>';
+    return;
+  }
+
+  const btnLabel = isMX ? '↑ École' : '↑ Envoyer';
+  let html = '';
+
+  if (teacherPats.length) {
+    html += '<div style="font-size:10px;font-weight:600;color:#888;margin-bottom:4px">Patterns</div>';
+    teacherPats.forEach(p => {
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0">' +
+        '<span style="font-size:11px">' + p.nom + '</span>' +
+        '<button class="btn-pub-item" data-type="pattern" data-id="' + p.id + '" ' +
+        'style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">' +
+        btnLabel + '</button></div>';
+    });
+  }
+
+  if (teacherGrooves.length) {
+    html += '<div style="font-size:10px;font-weight:600;color:#888;margin-top:6px;margin-bottom:4px">Grooves</div>';
+    teacherGrooves.forEach(g => {
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0">' +
+        '<span style="font-size:11px">' + g.nom + '</span>' +
+        '<button class="btn-pub-item" data-type="groove" data-id="' + g.id + '" ' +
+        'style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">' +
+        btnLabel + '</button></div>';
+    });
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.btn-pub-item').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '…';
+      const ok = btn.dataset.type === 'pattern'
+        ? await sbPublishPattern(btn.dataset.id)
+        : await sbPublishGroove(btn.dataset.id);
+      if (ok) {
+        btn.textContent = '✓';
+        btn.style.background = '#d4f5e6';
+        setTimeout(() => buildPublishSection(), 800);
+      } else {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
+    });
+  });
 }
 
 // ── UI Auth ───────────────────────────────────────────────────────────────────
@@ -4921,9 +5025,17 @@ function attachEvents(){
     const panel=document.getElementById('panel-settings');
     panel.classList.toggle('open');
     document.getElementById('btn-settings').classList.toggle('active',panel.classList.contains('open'));
-    if(panel.classList.contains('open')){
-      // (settings n'interfère pas avec la section Temps)
-    }
+    if(panel.classList.contains('open')) buildPublishSection();
+  });
+
+  // Toggle section Publier (accordéon)
+  document.getElementById('publish-toggle').addEventListener('click',()=>{
+    const sec = document.getElementById('publish-section');
+    const arrow = document.getElementById('publish-toggle-arrow');
+    const open = sec.style.display === 'none';
+    sec.style.display = open ? '' : 'none';
+    arrow.textContent = open ? '▼' : '▶';
+    if(open) buildPublishSection();
   });
   document.querySelectorAll('.btn-theme').forEach(btn=>{
     btn.addEventListener('click',()=>applyColorScheme(btn.dataset.themeVal));
