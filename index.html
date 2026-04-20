@@ -671,6 +671,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
       <button class="btn-top" id="btn-settings" title="Menu">···</button>
+      <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
       <div class="settings-menu" id="panel-settings">
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
@@ -690,9 +691,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
           <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
         </div>
-        <!-- Ligne 4 : Publier (visible si connecté) -->
+        <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
         <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
-          <span>↑ Publier</span>
+          <span id="smenu-pub-label">↑ Soumettre</span>
           <span id="smenu-pub-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
         <div id="publish-section" class="smenu-sub" style="display:none"></div>
@@ -1748,6 +1749,13 @@ function updateSmenuTheme(){
   const lbl = document.getElementById('smenu-theme-lbl');
   if(ico) ico.textContent = isDark ? '☀️' : '🌙';
   if(lbl) lbl.textContent = isDark ? 'Passer en clair' : 'Passer en sombre';
+}
+
+let _localPendingCount = 0;
+let _remotePendingCount = 0;
+function updateSettingsBadge(){
+  const badge = document.getElementById('settings-badge');
+  if(badge) badge.style.display = (_localPendingCount + _remotePendingCount) > 0 ? '' : 'none';
 }
 let layersOuverts = true;
 let encycloOuvert = true;
@@ -3607,10 +3615,12 @@ async function sbFetchPendingApprovals() {
     _pendingItems = { patterns: [], grooves: [] };
   }
   const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+  _remotePendingCount = total;
   const toggle = document.getElementById('smenu-appro-toggle');
   const badge  = document.getElementById('smenu-appro-count');
-  if (toggle) toggle.style.display = '';
+  if (toggle) toggle.style.display = total ? '' : 'none';
   if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+  updateSettingsBadge();
 }
 
 async function sbApproveItem(type, id) {
@@ -3718,8 +3728,11 @@ function buildApprobationsSection() {
         else
           _pendingItems.grooves = _pendingItems.grooves.filter(x => x.id !== btn.dataset.id);
         const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+        _remotePendingCount = total; updateSettingsBadge();
         const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
         if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
         buildApprobationsSection();
         await sbSyncSchoolPool();
       } else {
@@ -3729,27 +3742,29 @@ function buildApprobationsSection() {
   });
 }
 
-// ── Section Publier ───────────────────────────────────────────────────────────
+// ── Section Publier/Soumettre ─────────────────────────────────────────────────
 function buildPublishSection() {
   const container = document.getElementById('publish-section');
   const pubToggle = document.getElementById('smenu-pub-toggle');
+  const pubLabel  = document.getElementById('smenu-pub-label');
   if (!container) return;
 
-  // Masquer la ligne Publier si pas connecté
-  if (!authSession) { if(pubToggle) pubToggle.style.display='none'; return; }
-  if(pubToggle) pubToggle.style.display='';
-
   const isMX = authProfile?.role === 'mx';
-  const teacherPats  = packCours.patterns.filter(p => p.source === 'teacher');
+  const teacherPats    = packCours.patterns.filter(p => p.source === 'teacher');
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher');
+  const hasItems = teacherPats.length + teacherGrooves.length;
 
-  if (!teacherPats.length && !teacherGrooves.length) {
-    container.innerHTML =
-      '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu à publier</div>';
+  // Masquer ligne si pas connecté ou rien à soumettre
+  if (!authSession || !hasItems) {
+    if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
+    _localPendingCount = 0; updateSettingsBadge();
     return;
   }
+  _localPendingCount = hasItems; updateSettingsBadge();
+  if(pubToggle) pubToggle.style.display='';
+  if(pubLabel) pubLabel.textContent = isMX ? '↑ Publier' : '→ Soumettre';
 
-  const btnLabel = isMX ? '↑ École' : '↑ Envoyer';
+  const btnLabel = isMX ? '↑ École' : '→ Envoyer';
   let html = '';
 
   if (teacherPats.length) {
