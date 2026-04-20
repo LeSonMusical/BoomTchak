@@ -652,7 +652,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.8</span>
+      <span class="app-version">v2.8.9</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1058,7 +1058,7 @@ const ENCYCLO = {
       ["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : · → x → X → ·."],
       ["/2  ×2  T  Vitesse","Modifient la vitesse de la couche indépendamment des autres. /2 : step = noire (2× plus lent). ×2 : step = double croche (2× plus rapide). T (ternaire) : step = croche ternaire, vitesse ×3/2 — combiner /2+T donne la noire ternaire."],
       ["🎲  Dé","Redistribue les steps au hasard (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],
-      ["✨  Magie","Génère un nouveau pattern musicalement cohérent via deux phases : placement euclidien des sons forts (répartition régulière sur n steps) puis sons faibles déterminés par une chaîne de Markov (un son faible suit volontiers un son fort). L'intensité algorithmique varie aléatoirement."]
+      ["✨  Magie","Génère un nouveau pattern musicalement cohérent via deux phases : placement euclidien des sons forts (répartition régulière sur n steps) puis sons faibles déterminés par une chaîne de Markov (un son faible suit volontiers un son fort). L'intensité algorithmique varie aléatoirement. La vitesse de la couche peut aussi changer : 1 chance sur 3 de basculer en /2 ou ×2, avec 20 % de chance supplémentaire d'activer le mode T."]
     ]
   },
   misc_familles:{
@@ -2281,14 +2281,15 @@ function buildLayers(){
       }
       state[li].pattern=arr;
 
-      // ── 5. Vitesse (80% inchangé, 10% /2, 10% ×2) ─────────────────────
+      // ── 5. Vitesse : 2/3 inchangé ; 1/3 → /2 ou ×2 (50/50) ; dans ce cas 20% T bascule aussi ──
       const rv=Math.random();
-      if(rv<0.10){
-        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
-        state[li].pendingHalf=true;state[li].pendingClear=false;
-      } else if(rv<0.20){
-        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
-        state[li].pendingDouble=true;state[li].pendingClear=false;
+      if(rv<1/3){
+        if(Math.random()<0.5){
+          state[li].pendingHalf=true; state[li].pendingDouble=false; state[li].pendingClear=false;
+        } else {
+          state[li].pendingDouble=true; state[li].pendingHalf=false; state[li].pendingClear=false;
+        }
+        if(Math.random()<0.20) state[li].ternOn=!state[li].ternOn;
       }
       shNum.textContent='0';
       updateSpeedBtns();
