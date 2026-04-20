@@ -3420,11 +3420,20 @@ async function sbHandleOAuthCallback() {
   return true;
 }
 
+function sbGetUserId() {
+  try {
+    const payload = JSON.parse(atob(authSession.access_token.split('.')[1]));
+    return payload.sub;
+  } catch(e) { return null; }
+}
+
 async function sbFetchProfile() {
   if (!authSession) return;
+  const userId = sbGetUserId();
+  if (!userId) return;
   try {
     const data = await sbFetch(
-      '/rest/v1/profiles?select=*&limit=1',
+      '/rest/v1/profiles?select=*&id=eq.' + userId,
       { headers: { 'Accept': 'application/vnd.pgrst.object+json' } }
     );
     authProfile = data;
