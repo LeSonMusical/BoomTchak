@@ -3433,13 +3433,11 @@ async function sbLogout() {
   authSession = null;
   authProfile = null;
   localStorage.removeItem('sb_session');
-  // Retirer les items école (ils seront re-synchronisés au prochain login)
-  packCours.patterns  = packCours.patterns.filter(p => p.source !== 'school');
-  packCours.grooves   = packCours.grooves.filter(g => g.source !== 'school');
-  packCours.familles  = packCours.familles.filter(f => f.source !== 'school');
-  saveToStorage();
-  render();
+  // Ne pas effacer les items école : ce sont des données publiques partagées,
+  // disponibles hors-connexion. Ils seront mis à jour au prochain login.
+  // Effacer uniquement les items personnels de l'enseignant connecté.
   renderAuthUI();
+  buildPublishSection();
 }
 
 // ── Gestion session ───────────────────────────────────────────────────────────
@@ -4957,6 +4955,13 @@ function loadFromStorage(){
   if(!packCours.familles || !packCours.familles.length){
     packCours.familles = JSON.parse(JSON.stringify(PTK_DEFAULT.familles));
   }
+  // Fallback sécurité : si grooves/patterns vides (ex: après bug de déco), restaurer PTK_DEFAULT
+  if(!packCours.grooves||!packCours.grooves.length){
+    packCours.grooves=JSON.parse(JSON.stringify(PTK_DEFAULT.grooves));
+  }
+  if(!packCours.patterns||!packCours.patterns.length){
+    packCours.patterns=JSON.parse(JSON.stringify(PTK_DEFAULT.patterns));
+  }
   // Migration → bands éditables
   if(!packCours.bands||!packCours.bands.length){
     packCours.bands=JSON.parse(JSON.stringify(PTK_DEFAULT.bands));
@@ -5437,9 +5442,10 @@ function start(){
     document.getElementById('btn-sx-tx').textContent='TX';
   }
 
-  // Groove aléatoire au démarrage
-  const grooves=packCours.grooves;
-  const randomGroove=grooves[Math.floor(Math.random()*grooves.length)];
+  // Groove aléatoire au démarrage (fallback PTK_DEFAULT si packCours vide)
+  const grooves=packCours.grooves.length ? packCours.grooves : PTK_DEFAULT.grooves;
+  const randomGroove=grooves[Math.floor(Math.random()*grooves.length)]||grooves[0];
+  if(!randomGroove){console.error('BoomTchak: aucun groove disponible');return;}
   currentGrooveId=randomGroove.id;
 
   // Initialiser le state audio depuis le groove
