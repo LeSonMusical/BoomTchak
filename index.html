@@ -31,9 +31,20 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
 .btn-view:hover{background:#e8e5e0}
 
-/* ─── PANEL RÉGLAGES (panel2 conservé) ─── */
-.panel2{background:#e8e5e0;border-bottom:1px solid #c8c5c0;overflow:hidden;transition:max-height .28s ease,padding .28s ease;max-height:0;padding:0 .85rem}
-.panel2.open{max-height:500px;padding:.5rem .85rem;overflow-y:auto}
+/* ─── MENU SETTINGS DROPDOWN ─── */
+.settings-menu-wrap{position:relative}
+.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:230px;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
+.settings-menu.open{display:block}
+.smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
+.smenu-row:first-child{border-top:none}
+.smenu-row-btn{cursor:pointer}
+.smenu-row-btn:hover{background:#d8d5d0}
+.smenu-sub{padding:6px 14px 10px;background:#dddad5;border-top:1px solid #e0ddd8}
+.smenu-pref-lbl{display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer;padding:3px 0}
+body.dark-mode .settings-menu{background:#252522;border-color:#333330}
+body.dark-mode .smenu-row{border-color:rgba(255,255,255,.08)}
+body.dark-mode .smenu-row-btn:hover{background:#333330}
+body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-sm-tempo{padding:3px 8px;cursor:pointer;font-size:11px;background:#fff;border:1px solid #b0aea7;border-radius:5px;color:#666}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
@@ -506,7 +517,6 @@ body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#66
 body.dark-mode .btn-view{background:#2a2a28;border-color:#444;color:#888}
 body.dark-mode .btn-view:hover{background:#333330}
 body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
-body.dark-mode .panel2{background:#252522;border-bottom-color:#333330}
 body.dark-mode .t-spm-display{color:#666}
 body.dark-mode .t-spm-display:hover{color:#aaa}
 body.dark-mode .t-equiv{color:#e0ddd8}
@@ -659,55 +669,40 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-top btn-tempo-display" id="btn-tempo">♩= 100</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
-    <button class="btn-top" id="btn-settings" title="Menu">···</button>
+    <div class="settings-menu-wrap">
+      <button class="btn-top" id="btn-settings" title="Menu">···</button>
+      <div class="settings-menu" id="panel-settings">
+        <!-- Ligne 1 : Thème -->
+        <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
+          <span id="smenu-theme-ico">🌙</span>
+          <span id="smenu-theme-lbl" style="flex:1;margin-left:6px">Passer en sombre</span>
+        </div>
+        <!-- Ligne 2 : Connexion -->
+        <div class="smenu-row" style="display:block">
+          <div id="auth-section"></div>
+        </div>
+        <!-- Ligne 3 : Préférences -->
+        <div class="smenu-row smenu-row-btn" id="smenu-prefs-toggle">
+          <span>⚙ Préférences</span>
+          <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
+        </div>
+        <div id="smenu-prefs-body" class="smenu-sub" style="display:none">
+          <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
+          <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
+        </div>
+        <!-- Ligne 4 : Publier (visible si connecté) -->
+        <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
+          <span>↑ Publier</span>
+          <span id="smenu-pub-arrow" style="font-size:10px;color:#888">▶</span>
+        </div>
+        <div id="publish-section" class="smenu-sub" style="display:none"></div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
-  <!-- Panel réglages : premier dans le frame → toujours au-dessus des volets -->
-  <div class="panel2" id="panel-settings">
-    <div style="display:flex;flex-direction:column;gap:10px">
-
-      <!-- Thème -->
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
-        <div class="theme-toggle" id="theme-toggle">
-          <button class="btn-theme" data-theme-val="light">Clair</button>
-          <button class="btn-theme" data-theme-val="system">= Sys.</button>
-          <button class="btn-theme" data-theme-val="dark">Sombre</button>
-        </div>
-      </div>
-
-      <!-- Connexion / Déconnexion -->
-      <div style="border-top:1px solid #e0ddd8;padding-top:8px">
-        <div id="auth-section"></div>
-      </div>
-
-      <!-- Préférences groove -->
-      <div style="border-top:1px solid #e0ddd8;padding-top:8px">
-        <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em;margin-bottom:6px">GROOVE</div>
-        <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
-          <input type="checkbox" id="pref-apply-sig" style="width:13px;height:13px">
-          Appliquer la signature
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;margin-top:4px">
-          <input type="checkbox" id="pref-apply-band" style="width:13px;height:13px">
-          Appliquer le band
-        </label>
-      </div>
-
-      <!-- Publier -->
-      <div style="border-top:1px solid #e0ddd8;padding-top:8px" id="publish-section-wrap">
-        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" id="publish-toggle">
-          <span style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">PUBLIER</span>
-          <span id="publish-toggle-arrow" style="font-size:10px;color:#888">▶</span>
-        </div>
-        <div id="publish-section" style="display:none;margin-top:8px"></div>
-      </div>
-
-    </div>
-  </div>
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
@@ -1739,7 +1734,13 @@ function applyColorScheme(scheme){
   else if(scheme==='light') dark=false;
   else dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('dark-mode', dark);
-  document.querySelectorAll('.btn-theme').forEach(b=>b.classList.toggle('active', b.dataset.themeVal===scheme));
+}
+function updateSmenuTheme(){
+  const isDark = document.body.classList.contains('dark-mode');
+  const ico = document.getElementById('smenu-theme-ico');
+  const lbl = document.getElementById('smenu-theme-lbl');
+  if(ico) ico.textContent = isDark ? '☀️' : '🌙';
+  if(lbl) lbl.textContent = isDark ? 'Passer en clair' : 'Passer en sombre';
 }
 let layersOuverts = true;
 let encycloOuvert = true;
@@ -3586,12 +3587,12 @@ async function sbPublishGroove(grooveId) {
 // ── Section Publier ───────────────────────────────────────────────────────────
 function buildPublishSection() {
   const container = document.getElementById('publish-section');
-  const wrap = document.getElementById('publish-section-wrap');
+  const pubToggle = document.getElementById('smenu-pub-toggle');
   if (!container) return;
 
-  // Masquer la section si pas connecté
-  if (!authSession) { if(wrap) wrap.style.display='none'; return; }
-  if(wrap) wrap.style.display='';
+  // Masquer la ligne Publier si pas connecté
+  if (!authSession) { if(pubToggle) pubToggle.style.display='none'; return; }
+  if(pubToggle) pubToggle.style.display='';
 
   const isMX = authProfile?.role === 'mx';
   const teacherPats  = packCours.patterns.filter(p => p.source === 'teacher');
@@ -5044,38 +5045,60 @@ function attachEvents(){
     },{passive:false});
   }
 
-  // ── Settings panel ──
-  document.getElementById('btn-settings').addEventListener('click',()=>{
-    const panel=document.getElementById('panel-settings');
-    panel.classList.toggle('open');
-    document.getElementById('btn-settings').classList.toggle('active',panel.classList.contains('open'));
-    if(panel.classList.contains('open')) buildPublishSection();
+  // ── Settings menu dropdown ──
+  document.getElementById('btn-settings').addEventListener('click', e => {
+    e.stopPropagation();
+    const menu = document.getElementById('panel-settings');
+    const open = menu.classList.toggle('open');
+    document.getElementById('btn-settings').classList.toggle('active', open);
+    if (open) { buildPublishSection(); updateSmenuTheme(); }
+  });
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('panel-settings');
+    if (menu.classList.contains('open') && !e.target.closest('.settings-menu-wrap')) {
+      menu.classList.remove('open');
+      document.getElementById('btn-settings').classList.remove('active');
+    }
   });
 
-  // Préférences groove
+  // Ligne 1 : toggle thème clair/sombre
+  document.getElementById('smenu-theme-row').addEventListener('click', () => {
+    applyColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
+    updateSmenuTheme();
+  });
+
+  // Ligne 3 : accordéon Préférences
+  document.getElementById('smenu-prefs-toggle').addEventListener('click', () => {
+    const body = document.getElementById('smenu-prefs-body');
+    const arrow = document.getElementById('smenu-prefs-arrow');
+    const open = body.style.display === 'none';
+    body.style.display = open ? '' : 'none';
+    arrow.textContent = open ? '▼' : '▶';
+  });
+
+  // Ligne 4 : accordéon Publier
+  document.getElementById('smenu-pub-toggle').addEventListener('click', () => {
+    const sec = document.getElementById('publish-section');
+    const arrow = document.getElementById('smenu-pub-arrow');
+    const open = sec.style.display === 'none';
+    sec.style.display = open ? '' : 'none';
+    arrow.textContent = open ? '▼' : '▶';
+    if (open) buildPublishSection();
+  });
+
+  // Préférences groove (checkboxes)
   {
-    const pSig=document.getElementById('pref-apply-sig');
-    const pBand=document.getElementById('pref-apply-band');
+    const pSig = document.getElementById('pref-apply-sig');
+    const pBand = document.getElementById('pref-apply-band');
     if(pSig){pSig.checked=prefs.applyGrooveSig;pSig.addEventListener('change',()=>{prefs.applyGrooveSig=pSig.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
     if(pBand){pBand.checked=prefs.applyGrooveBand;pBand.addEventListener('change',()=>{prefs.applyGrooveBand=pBand.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
   }
 
-  // Toggle section Publier (accordéon)
-  document.getElementById('publish-toggle').addEventListener('click',()=>{
-    const sec = document.getElementById('publish-section');
-    const arrow = document.getElementById('publish-toggle-arrow');
-    const open = sec.style.display === 'none';
-    sec.style.display = open ? '' : 'none';
-    arrow.textContent = open ? '▼' : '▶';
-    if(open) buildPublishSection();
-  });
-  document.querySelectorAll('.btn-theme').forEach(btn=>{
-    btn.addEventListener('click',()=>applyColorScheme(btn.dataset.themeVal));
-  });
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
-    if(colorScheme==='system') applyColorScheme('system');
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (colorScheme === 'system') { applyColorScheme('system'); updateSmenuTheme(); }
   });
   applyColorScheme(colorScheme);
+  updateSmenuTheme();
 
   document.getElementById('bpm').addEventListener('input',function(){
     updateBeatDisplay();
