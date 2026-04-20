@@ -652,7 +652,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v2.8.9</span>
+      <span class="app-version">v3.0.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -667,7 +667,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="frame">
   <!-- Panel réglages : premier dans le frame → toujours au-dessus des volets -->
   <div class="panel2" id="panel-settings">
-    <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;flex-direction:column;gap:12px">
       <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em">RÉGLAGES</div>
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:10px;color:#888;flex-shrink:0">Thème</span>
@@ -676,6 +676,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="btn-theme" data-theme-val="system">= Sys.</button>
           <button class="btn-theme" data-theme-val="dark">Sombre</button>
         </div>
+      </div>
+      <div style="border-top:1px solid #e0ddd8;padding-top:10px">
+        <div style="font-size:10px;font-weight:700;color:#555;letter-spacing:.06em;margin-bottom:8px">BASE ÉCOLE</div>
+        <div id="auth-section"></div>
       </div>
     </div>
   </div>
@@ -1145,16 +1149,16 @@ const PTK_DEFAULT = {
     {id:'bf_minimal', nom:'Minimaliste'},
   ],
   bands:[
-    {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'default',
+    {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'school',
      low:'kick',        lowPitch:80,   high:'snare',       highPitch:220,  noise:'hihat_f',   noisePitch:6000,
      thumbL:'bell',     thumbLPitch:698, thumbR:'clap',    thumbRPitch:600},
-    {id:'band_perc',    nom:'Percussions', familles:['bf_perc'],    source:'default',
+    {id:'band_perc',    nom:'Percussions', familles:['bf_perc'],    source:'school',
      low:'tambour',     lowPitch:82,   high:'clave',       highPitch:1760, noise:'shaker',    noisePitch:3000,
      thumbL:'conga_b',  thumbLPitch:110, thumbR:'bongo',   thumbRPitch:220},
-    {id:'band_rock',    nom:'Rock',        familles:['bf_rock'],    source:'default',
+    {id:'band_rock',    nom:'Rock',        familles:['bf_rock'],    source:'school',
      low:'gros_caisse', lowPitch:65,   high:'caisse_claire',highPitch:220, noise:'charleston',noisePitch:5000,
      thumbL:'tom_bas',  thumbLPitch:110, thumbR:'rimshot', thumbRPitch:440},
-    {id:'band_minimal', nom:'Minimaliste', familles:['bf_minimal'], source:'default',
+    {id:'band_minimal', nom:'Minimaliste', familles:['bf_minimal'], source:'school',
      low:'tom_bas',     lowPitch:110,  high:'clave',       highPitch:1760, noise:'charleston',noisePitch:5000,
      thumbL:'triangle_p',thumbLPitch:880, thumbR:'triangle_p',thumbRPitch:1532},
   ],
@@ -1222,8 +1226,8 @@ const PTK_DEFAULT = {
   ],
 };
 
-// Marquer les patterns du dictionnaire comme source 'default'
-PTK_DEFAULT.patterns.forEach(p=>{if(!p.source)p.source='default';});
+// Marquer les patterns du dictionnaire comme source 'school'
+PTK_DEFAULT.patterns.forEach(p=>{if(!p.source)p.source='school';});
 
 // Données courantes du cours (clonées depuis PTK_DEFAULT, modifiables en TX)
 let packCours = null;
@@ -1820,7 +1824,7 @@ function buildBandSection(){
       :(packCours.bands||[]);
     bands.forEach(b=>{
       const o=document.createElement('option');o.value=b.id;
-      o.textContent=b.nom+(b.source==='user'?' ✎':'');
+      o.textContent=b.nom+(b.source==='teacher'?' ✎':'');
       sel.appendChild(o);
     });
   }
@@ -1869,13 +1873,13 @@ function buildBandSection(){
 function saveBandState(btn){
   const b=getBand(currentBandId);
   if(!b) return;
-  if(b.source==='default'){
+  if(b.source==='school'){
     // Créer un nouveau band user
     const nom=prompt('Nom du nouveau band :');
     if(!nom||!nom.trim()) return;
     const newId='band_user_'+Date.now();
     const nb={
-      id:newId, nom:nom.trim(), familles:[...( b.familles||[])], source:'user',
+      id:newId, nom:nom.trim(), familles:[...( b.familles||[])], source:'teacher',
       low:soundState[0].soundId, lowPitch:soundState[0].pitch,
       high:soundState[1].soundId, highPitch:soundState[1].pitch,
       noise:soundState[2].soundId, noisePitch:soundState[2].pitch,
@@ -1910,7 +1914,7 @@ function buildGrooveSection(){
   bar.id='groove-bar';
   function refreshGrooveClass(){
     const g=getGroove(currentGrooveId);
-    bar.classList.toggle('section-perso',!!(g&&g.source==='user'));
+    bar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));
   }
   refreshGrooveClass();
 
@@ -1922,7 +1926,7 @@ function buildGrooveSection(){
   grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
   grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
   const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
-  const gfPerso=document.createElement('option');gfPerso.value='__perso__';gfPerso.textContent='User';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
+  const gfPerso=document.createElement('option');gfPerso.value='__teacher__';gfPerso.textContent='Enseignant';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
   packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
   bar.appendChild(grooveFamSel);
   // ≡ avant le select groove
@@ -1935,7 +1939,7 @@ function buildGrooveSection(){
   sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
   function buildGrooveSelectOpts(filtreId){
     sel.innerHTML='';
-    const grooves=filtreId==='__perso__'?packCours.grooves.filter(g=>g.source==='user'):filtreId&&filtreId!=='all'?packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId)):packCours.grooves;
+    const grooves=filtreId==='__teacher__'?packCours.grooves.filter(g=>g.source==='teacher'):filtreId&&filtreId!=='all'?packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId)):packCours.grooves;
     grooves.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);});
   }
   buildGrooveSelectOpts('all');
@@ -2005,10 +2009,10 @@ function buildLayers(){
   LAYERS.forEach((layer,li)=>{
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
-    // Marquer section-perso si le pattern courant est source:'user'
+    // Marquer section-teacher si le pattern courant est source:'teacher'
     function refreshLayerClass(){
       const p=state[li].patternId?getPattern(state[li].patternId):null;
-      layerDiv.classList.toggle('section-perso',!!(p&&p.source==='user'));
+      layerDiv.classList.toggle('section-teacher',!!(p&&p.source==='teacher'));
     }
     refreshLayerClass();
 
@@ -2033,7 +2037,7 @@ function buildLayers(){
     const famSel=document.createElement('select');
     famSel.className='fam-filter';famSel.title='Filtrer par famille';
     const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
-    const optPersoFam=document.createElement('option');optPersoFam.value='__perso__';optPersoFam.textContent='User';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
+    const optPersoFam=document.createElement('option');optPersoFam.value='__teacher__';optPersoFam.textContent='Enseignant';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
     });
@@ -2086,7 +2090,7 @@ function buildLayers(){
     // ≡ gestion bibliothèque patterns (avant le select)
     const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
     menuBtnPat.classList.add('menu-btn-pat');
-    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='user')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern user';}
+    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='teacher')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern enseignant';}
     row1.appendChild(menuBtnPat);
     row1.appendChild(sel);
 
@@ -2405,7 +2409,7 @@ function saveLayerPattern(li, btn){
 function openPatSavePop(li, btn, srcPat){
   _pspLi = li; _pspBtn = btn;
   const nom = srcPat ? srcPat.nom : 'Pattern';
-  const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='user');
+  const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='teacher');
 
   // Bouton écraser
   const ovBtn = document.getElementById('psp-btn-overwrite');
@@ -2518,7 +2522,7 @@ function pspDoSaveNewPattern(){
     pas: state[li].pattern.length,
     unite_temps: srcPat ? srcPat.unite_temps : '1/8',
     pas_par_mesure: srcPat ? srcPat.pas_par_mesure : 8,
-    source: 'user',
+    source: 'teacher',
   };
   packCours.patterns.push(newPat);
 
@@ -2540,7 +2544,7 @@ function openGrooveSavePop(btn){
   const groove = getGroove(currentGrooveId); if(!groove) return;
   _pspContext = 'groove'; _pspGrooveId = groove.id; _pspBtn = btn;
   const nom = groove.nom;
-  const canOverwrite = currentMode==='tx' || (groove.source && groove.source==='user');
+  const canOverwrite = currentMode==='tx' || (groove.source && groove.source==='teacher');
 
   const ovBtn = document.getElementById('psp-btn-overwrite');
   document.getElementById('psp-overwrite-name').textContent = nom;
@@ -2578,7 +2582,7 @@ function pspDoSaveNewGroove(){
   const newGroove = JSON.parse(JSON.stringify(groove));
   newGroove.id = 'user_groove_' + Date.now();
   newGroove.nom = nom;
-  newGroove.source = 'user';
+  newGroove.source = 'teacher';
   newGroove.familles = [..._pspNewFamIds];
   LAYERS.forEach((_,li)=>{
     if(newGroove.layers[li] && state[li].patternId) newGroove.layers[li].patternId = state[li].patternId;
@@ -2640,7 +2644,7 @@ function saveGroovePattern(btn){
 
 function showGrooveSaveSheet(groove){
   const nom=groove.nom;
-  const canOverwrite=currentMode==='tx'||(groove.source&&groove.source==='user');
+  const canOverwrite=currentMode==='tx'||(groove.source&&groove.source==='teacher');
 
   document.getElementById('ss-title').textContent='« '+nom+' » modifié';
   document.getElementById('ss-overwrite-name').textContent=nom;
@@ -2680,7 +2684,7 @@ function doSaveNewGroove(){
   const newGroove=JSON.parse(JSON.stringify(groove));
   newGroove.id='user_groove_'+Date.now();
   newGroove.nom=nom;
-  newGroove.source='user';
+  newGroove.source='teacher';
   if(bandSel)newGroove.band_defaut=bandSel.value;
   LAYERS.forEach((_,li)=>{
     if(newGroove.layers[li]&&state[li].patternId)newGroove.layers[li].patternId=state[li].patternId;
@@ -2726,8 +2730,8 @@ function attachLayerObserver(li){
 // filtreId : id de famille ('all' ou null = tout afficher)
 function buildPatternSelect(sel, filtreId){
   sel.innerHTML='';
-  const patterns = filtreId === '__perso__'
-    ? packCours.patterns.filter(p => p.source === 'user')
+  const patterns = filtreId === '__teacher__'
+    ? packCours.patterns.filter(p => p.source === 'teacher')
     : filtreId && filtreId !== 'all'
       ? packCours.patterns.filter(p => p.familles && p.familles.includes(filtreId))
       : packCours.patterns;
@@ -2756,7 +2760,7 @@ function rebuildAllFamFilters(){
   document.querySelectorAll('.fam-filter').forEach(sel=>{
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
-    const _rp=document.createElement('option');_rp.value='__perso__';_rp.textContent='User';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
+    const _rp=document.createElement('option');_rp.value='__teacher__';_rp.textContent='Enseignant';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
@@ -2768,7 +2772,7 @@ function rebuildAllFamFilters(){
     if(!panelFil) return;
     const prev = panelFil.value;
     panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
-    const _pp=document.createElement('option');_pp.value='__perso__';_pp.textContent='— User —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
+    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
     packCours.familles.forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
     });
@@ -2970,7 +2974,7 @@ function buildEncycloSection(){
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
   bar.appendChild(saveBtnEnc);
-  if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='user')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
+  if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -3072,7 +3076,7 @@ function updateGrooveSelect(){
   if(sel&&currentGrooveId)sel.value=currentGrooveId;
   // Mettre à jour le marquage perso sur la barre groove
   const grooveBar=document.getElementById('groove-bar');
-  if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-perso',!!(g&&g.source==='user'));}
+  if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));}
 }
 
 // Sélectionne automatiquement une entrée dans le menu Encyclopédie (sans ouvrir la section)
@@ -3342,6 +3346,258 @@ function visualLoopCircle(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MODULE SUPABASE — Auth Google + Synchronisation base école
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Config ── Remplacer par vos valeurs depuis le tableau de bord Supabase ──
+const SUPABASE_URL     = 'VOTRE_URL_SUPABASE';   // ex: https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = 'VOTRE_ANON_KEY';       // clé publique anon
+
+// ── État auth ────────────────────────────────────────────────────────────────
+let authSession = null;   // { access_token, refresh_token }
+let authProfile = null;   // { id, email, role, display_name }
+
+// ── API helper ───────────────────────────────────────────────────────────────
+async function sbFetch(path, options = {}) {
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  if (authSession?.access_token) {
+    headers['Authorization'] = 'Bearer ' + authSession.access_token;
+  }
+  const res = await fetch(SUPABASE_URL + path, { ...options, headers });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error('Supabase ' + res.status + ': ' + txt);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── Auth Google OAuth ─────────────────────────────────────────────────────────
+function sbLoginWithGoogle() {
+  const redirectTo = window.location.origin + window.location.pathname;
+  window.location.href =
+    SUPABASE_URL + '/auth/v1/authorize?provider=google&redirect_to=' +
+    encodeURIComponent(redirectTo);
+}
+
+async function sbLogout() {
+  if (!authSession) return;
+  try { await sbFetch('/auth/v1/logout', { method: 'POST' }); } catch(e) {}
+  authSession = null;
+  authProfile = null;
+  localStorage.removeItem('sb_session');
+  // Retirer les items école (ils seront re-synchronisés au prochain login)
+  packCours.patterns  = packCours.patterns.filter(p => p.source !== 'school');
+  packCours.grooves   = packCours.grooves.filter(g => g.source !== 'school');
+  packCours.familles  = packCours.familles.filter(f => f.source !== 'school');
+  saveToStorage();
+  render();
+  renderAuthUI();
+}
+
+// ── Gestion session ───────────────────────────────────────────────────────────
+function sbLoadSavedSession() {
+  try {
+    const saved = localStorage.getItem('sb_session');
+    if (saved) authSession = JSON.parse(saved);
+  } catch(e) {}
+}
+
+async function sbHandleOAuthCallback() {
+  const hash = window.location.hash;
+  if (!hash.includes('access_token')) return false;
+  const params = new URLSearchParams(hash.substring(1));
+  const access_token  = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  if (!access_token) return false;
+  authSession = { access_token, refresh_token };
+  localStorage.setItem('sb_session', JSON.stringify(authSession));
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+  return true;
+}
+
+async function sbFetchProfile() {
+  if (!authSession) return;
+  try {
+    const data = await sbFetch(
+      '/rest/v1/profiles?select=*&limit=1',
+      { headers: { 'Accept': 'application/vnd.pgrst.object+json' } }
+    );
+    authProfile = data;
+  } catch(e) {
+    console.warn('BoomTchak: profil Supabase introuvable', e);
+  }
+}
+
+// ── Synchronisation pool école ────────────────────────────────────────────────
+async function sbSyncSchoolPool() {
+  if (!authSession) return;
+  updateSyncStatus('Synchronisation…');
+  try {
+    const [patterns, grooves, familles, encyclo] = await Promise.all([
+      sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*'),
+      sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*'),
+      sbFetch('/rest/v1/familles?scope=eq.school&select=*'),
+      sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
+    ]);
+    sbMergeSchoolData({ patterns, grooves, familles, encyclo });
+    saveToStorage();
+    render();
+    updateSyncStatus('Synchronisé ✓');
+  } catch(e) {
+    console.error('BoomTchak: sync école échouée', e);
+    updateSyncStatus('Erreur de synchronisation');
+  }
+}
+
+function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
+  // Remplacer les items école existants par les nouvelles données
+  packCours.patterns = packCours.patterns.filter(p => p.source !== 'school');
+  packCours.grooves  = packCours.grooves.filter(g => g.source !== 'school');
+  packCours.familles = packCours.familles.filter(f => f.source !== 'school');
+
+  (patterns || []).forEach(p => {
+    packCours.patterns.push({
+      id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
+      unite_temps: p.unite_temps, pas_par_mesure: p.pas_par_mesure,
+      familles: p.familles_ids || [],
+      encyclo_ref: p.encyclo_ref || null,
+      source: 'school'
+    });
+  });
+  (grooves || []).forEach(g => {
+    packCours.grooves.push({
+      id: g.id, nom: g.nom, familles: g.familles_ids || [],
+      band_defaut: g.band_defaut, vitesse_mult: g.vitesse_mult || 1,
+      tempo: { min: g.tempo_min, max: g.tempo_max, defaut: g.tempo_defaut },
+      layers: g.layers || [],
+      source: 'school'
+    });
+  });
+  (familles || []).forEach(f => {
+    if (!packCours.familles.find(x => x.id === f.id)) {
+      packCours.familles.push({ id: f.id, nom: f.nom, source: 'school' });
+    }
+  });
+  (encyclo || []).forEach(e => {
+    packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
+  });
+}
+
+// ── Publication vers le pool école (depuis TX) ────────────────────────────────
+async function sbPublishPattern(patId) {
+  const pat = packCours.patterns.find(p => p.id === patId);
+  if (!pat || !authSession) return;
+  try {
+    await sbFetch('/rest/v1/patterns', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        id: pat.id, nom: pat.nom, sequence: pat.sequence, pas: pat.pas,
+        unite_temps: pat.unite_temps, pas_par_mesure: pat.pas_par_mesure,
+        familles_ids: pat.familles || [],
+        encyclo_ref: pat.encyclo_ref || null,
+        scope: 'teacher', approved: false,
+        owner_id: authProfile?.id
+      })
+    });
+    alert('Pattern "' + pat.nom + '" envoyé pour approbation MX.');
+  } catch(e) {
+    alert('Erreur publication : ' + e.message);
+  }
+}
+
+async function sbPublishGroove(grooveId) {
+  const g = packCours.grooves.find(x => x.id === grooveId);
+  if (!g || !authSession) return;
+  try {
+    await sbFetch('/rest/v1/grooves', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        id: g.id, nom: g.nom, familles_ids: g.familles || [],
+        band_defaut: g.band_defaut, vitesse_mult: g.vitesse_mult || 1,
+        tempo_min: g.tempo?.min, tempo_max: g.tempo?.max, tempo_defaut: g.tempo?.defaut,
+        layers: g.layers,
+        scope: 'teacher', approved: false,
+        owner_id: authProfile?.id
+      })
+    });
+    alert('Groove "' + g.nom + '" envoyé pour approbation MX.');
+  } catch(e) {
+    alert('Erreur publication : ' + e.message);
+  }
+}
+
+// ── UI Auth ───────────────────────────────────────────────────────────────────
+function updateSyncStatus(msg) {
+  const el = document.getElementById('auth-sync-status');
+  if (el) el.textContent = msg;
+}
+
+function renderAuthUI() {
+  const container = document.getElementById('auth-section');
+  if (!container) return;
+
+  if (authSession && authProfile) {
+    const roleLabel = authProfile.role === 'mx' ? '👑 Admin MX'
+                    : authProfile.role === 'tx' ? '✏️ Enseignant'
+                    : '🎵 Élève';
+    container.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+        '<div>' +
+          '<div style="font-size:11px;font-weight:600;color:var(--txt)">' +
+            (authProfile.display_name || authProfile.email) +
+          '</div>' +
+          '<div style="font-size:10px;color:#888">' + roleLabel + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button id="auth-btn-sync" style="font-size:10px;padding:4px 8px;border:1px solid #4A7FA5;border-radius:5px;background:#eef4f8;cursor:pointer;color:#2d5f80">↻ Sync</button>' +
+          '<button id="auth-btn-logout" style="font-size:10px;padding:4px 8px;border:1px solid #ccc;border-radius:5px;background:#fff;cursor:pointer;color:#666">Déco.</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="auth-sync-status" style="font-size:10px;color:#888;margin-top:2px"></div>';
+    document.getElementById('auth-btn-logout').addEventListener('click', sbLogout);
+    document.getElementById('auth-btn-sync').addEventListener('click', sbSyncSchoolPool);
+  } else if (authSession) {
+    container.innerHTML = '<div style="font-size:10px;color:#888">Connexion en cours…</div>';
+  } else {
+    container.innerHTML =
+      '<button id="auth-btn-login" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:#333">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0">' +
+          '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>' +
+          '<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>' +
+          '<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>' +
+          '<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>' +
+        '</svg>' +
+        'Se connecter avec Google' +
+      '</button>' +
+      '<div style="font-size:10px;color:#aaa;text-align:center;margin-top:4px">Compte Google de l\'école pour synchroniser la base</div>';
+    document.getElementById('auth-btn-login').addEventListener('click', sbLoginWithGoogle);
+  }
+}
+
+// ── Initialisation auth (appelée depuis start()) ───────────────────────────────
+async function initAuth() {
+  sbLoadSavedSession();
+  const wasCallback = await sbHandleOAuthCallback();
+  renderAuthUI();
+  if (authSession) {
+    await sbFetchProfile();
+    renderAuthUI();
+    if (wasCallback || !packCours.patterns.some(p => p.source === 'school')) {
+      await sbSyncSchoolPool();
+    } else {
+      updateSyncStatus('Base école chargée depuis le cache local');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MODULE TX — Mode enseignant (édition, sauvegarde)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -3391,7 +3647,7 @@ function createUserPattern(seq,sourcePat){
     pas:seq.length,
     unite_temps:sourcePat?sourcePat.unite_temps:'1/8',
     pas_par_mesure:sourcePat?sourcePat.pas_par_mesure:8,
-    source:'user',
+    source:'teacher',
   };
   packCours.patterns.push(newPat);
   return newPat;
@@ -3427,9 +3683,9 @@ function buildLibListPatterns(){
 
   // Filtre famille courant (sélect en tête du panel) — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-patterns');
-  const filtreId = currentMode !== 'tx' ? '__perso__' : (filtreEl ? filtreEl.value : 'all');
-  const patterns = filtreId === '__perso__'
-    ? packCours.patterns.filter(p=>p.source==='user')
+  const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
+  const patterns = filtreId === '__teacher__'
+    ? packCours.patterns.filter(p=>p.source==='teacher')
     : filtreId && filtreId !== 'all'
       ? packCours.patterns.filter(p=>(p.familles||[]).includes(filtreId))
       : packCours.patterns;
@@ -3772,7 +4028,7 @@ function buildLibListBands(){
     const renBtn=document.createElement('button');renBtn.className='lib-item-rename';renBtn.textContent='✎';renBtn.title='Renommer';
     renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameBand(nameEl,band);});
     const delBtn=document.createElement('button');delBtn.className='lib-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer';
-    if(band.source==='default'){delBtn.disabled=true;delBtn.style.opacity='0.25';}
+    if(band.source==='school'){delBtn.disabled=true;delBtn.style.opacity='0.25';}
     else{
       delBtn.addEventListener('click',e=>{e.stopPropagation();
         if(confirm('Supprimer le band "'+band.nom+'" ?')){
@@ -3785,7 +4041,7 @@ function buildLibListBands(){
       });
     }
     const chk=document.createElement('input');chk.type='checkbox';chk.className='lib-item-check';
-    if(band.source==='default')chk.disabled=true;
+    if(band.source==='school')chk.disabled=true;
     chk.addEventListener('change',updateLibBandBatchBar);
     row1.appendChild(drag);row1.appendChild(nameEl);row1.appendChild(renBtn);row1.appendChild(delBtn);row1.appendChild(chk);
     main.appendChild(row1);
@@ -4037,7 +4293,7 @@ function rebuildGrooveFamFilter(){
   const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="all">Toutes les familles</option>';
-  const _gp=document.createElement('option');_gp.value='__perso__';_gp.textContent='— User —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
+  const _gp=document.createElement('option');_gp.value='__teacher__';_gp.textContent='— Enseignant —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
   packCours.familles.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
   });
@@ -4051,9 +4307,9 @@ function buildLibListGrooves(){
 
   // Filtre famille courant — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-grooves');
-  const filtreId = currentMode !== 'tx' ? '__perso__' : (filtreEl ? filtreEl.value : 'all');
-  const grooves = filtreId === '__perso__'
-    ? packCours.grooves.filter(g=>g.source==='user')
+  const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
+  const grooves = filtreId === '__teacher__'
+    ? packCours.grooves.filter(g=>g.source==='teacher')
     : filtreId && filtreId !== 'all'
       ? packCours.grooves.filter(g=>(g.familles||[]).includes(filtreId))
       : packCours.grooves;
@@ -4436,6 +4692,23 @@ function loadFromStorage(){
   const _bandIdMap={electro:'band_electro',perc:'band_perc',rock:'band_rock',minimal:'band_minimal'};
   packCours.grooves.forEach(g=>{
     if(g.band_defaut&&_bandIdMap[g.band_defaut]) g.band_defaut=_bandIdMap[g.band_defaut];
+  });
+  // Migration v3 : source:'default' → 'school', source:'user' → 'teacher'
+  packCours.patterns.forEach(p=>{
+    if(p.source==='default') p.source='school';
+    else if(p.source==='user') p.source='teacher';
+  });
+  packCours.grooves.forEach(g=>{
+    if(g.source==='default') g.source='school';
+    else if(g.source==='user') g.source='teacher';
+  });
+  (packCours.bands||[]).forEach(b=>{
+    if(b.source==='default') b.source='school';
+    else if(b.source==='user') b.source='teacher';
+  });
+  (packCours.familles||[]).forEach(f=>{
+    if(f.source==='default') f.source='school';
+    else if(f.source==='user') f.source='teacher';
   });
 }
 
@@ -4859,6 +5132,9 @@ function start(){
   // Mettre à jour l'affichage tempo
   updateBeatDisplay();
   updateGlobalSpeedBtns();
+
+  // Auth Supabase (async, n'attend pas la fin pour ne pas bloquer l'UI)
+  initAuth().catch(e => console.warn('BoomTchak: initAuth échouée', e));
 }
 
 // Lancer l'application
