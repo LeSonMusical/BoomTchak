@@ -22,8 +22,6 @@ returns trigger language plpgsql security definer as $$
 declare
   _role text := 'tx';
 begin
-  -- Les emails du domaine scolaire reçoivent le rôle tx par défaut.
-  -- Le MX peut ensuite changer le rôle manuellement.
   insert into public.profiles (id, email, role, display_name)
   values (
     new.id,
@@ -42,7 +40,7 @@ create trigger on_auth_user_created
 
 -- ── Familles ─────────────────────────────────────────────────────────────────
 create table public.familles (
-  id          text primary key,          -- ex: 'fam_afrocubain'
+  id          text primary key,
   nom         text not null,
   scope       text not null default 'school' check (scope in ('school','teacher')),
   owner_id    uuid references public.profiles(id) on delete cascade,
@@ -53,11 +51,9 @@ create table public.familles (
 create table public.patterns (
   id              text primary key,
   nom             text not null,
-  sequence        text not null,         -- ex: 'X..X..X.'
+  sequence        text not null,
   pas             int not null,
-  unite_temps     text not null default '1/8',
-  pas_par_mesure  int not null default 8,
-  familles_ids    text[] default '{}',   -- tableau d'IDs de familles
+  familles_ids    text[] default '{}',
   encyclo_ref     text,
   scope           text not null default 'teacher' check (scope in ('school','teacher')),
   approved        boolean default false,
@@ -75,8 +71,8 @@ create table public.grooves (
   tempo_min     int default 60,
   tempo_max     int default 300,
   tempo_defaut  int default 120,
-  vitesse_mult  numeric default 1,
-  layers        jsonb not null default '[]', -- tableau de {id,patternId,mute,shift,halfOn,doubleOn,ternOn}
+  signature     text not null default '4/4',
+  layers        jsonb not null default '[]',
   scope         text not null default 'teacher' check (scope in ('school','teacher')),
   approved      boolean default false,
   owner_id      uuid references public.profiles(id) on delete cascade,
@@ -86,9 +82,9 @@ create table public.grooves (
 
 -- ── Encyclopédie ─────────────────────────────────────────────────────────────
 create table public.encyclo (
-  key         text primary key,           -- ex: 'tres', 'salsa32'
+  key         text primary key,
   chapo       text default '',
-  bullets     jsonb default '[]',         -- [["Titre","Texte"], ...]
+  bullets     jsonb default '[]',
   scope       text not null default 'school' check (scope in ('school','teacher')),
   approved    boolean default true,
   owner_id    uuid references public.profiles(id) on delete cascade,
@@ -110,7 +106,7 @@ create table public.student_data (
   id          uuid primary key default uuid_generate_v4(),
   sx_id       uuid not null references public.profiles(id) on delete cascade,
   tx_id       uuid references public.profiles(id),
-  type        text not null,             -- 'pattern','response','score'
+  type        text not null,
   payload     jsonb not null default '{}',
   created_at  timestamptz default now()
 );
@@ -141,7 +137,6 @@ create policy "Mise à jour profil propre ou MX" on public.profiles for update
   using (id = auth.uid() or public.current_role_name() = 'mx');
 
 -- ── Familles ─────────────────────────────────────────────────────────────────
--- Lecture : tout le monde (authentifié) voit les familles école + les siennes
 create policy "Lecture familles" on public.familles for select
   using (
     auth.uid() is not null and
@@ -229,7 +224,19 @@ create policy "Insert student_data" on public.student_data for insert
   with check (sx_id = auth.uid());
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- SEED INITIAL — À exécuter après avoir activé le login MX
--- Copier le contenu PTK_DEFAULT de l'app dans le pool école.
--- Utiliser le script seed_school_pool.js (voir README).
+-- MIGRATION — Pour bases existantes créées avant v3.1
+-- Exécuter ce bloc séparément si vous avez déjà une base :
+-- ═══════════════════════════════════════════════════════════════════════════
+/*
+alter table public.patterns
+  drop column if exists unite_temps,
+  drop column if exists pas_par_mesure;
+
+alter table public.grooves
+  drop column if exists vitesse_mult,
+  add column if not exists signature text not null default '4/4';
+*/
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════
