@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.0.0</span>
+      <span class="app-version">v3.1.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -696,6 +696,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <span id="smenu-pub-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
         <div id="publish-section" class="smenu-sub" style="display:none"></div>
+        <!-- Ligne 5 : Approbations (MX uniquement) -->
+        <div class="smenu-row smenu-row-btn" id="smenu-appro-toggle" style="display:none">
+          <span>✅ Approbations</span>
+          <span id="smenu-appro-count" style="font-size:10px;font-weight:700;color:#c07000;background:#fff5e0;border-radius:10px;padding:1px 6px;display:none">0</span>
+          <span id="smenu-appro-arrow" style="font-size:10px;color:#888">▶</span>
+        </div>
+        <div id="appro-section" class="smenu-sub" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -3584,6 +3591,144 @@ async function sbPublishGroove(grooveId) {
   }
 }
 
+// ── Approbations MX ──────────────────────────────────────────────────────────
+let _pendingItems = { patterns: [], grooves: [] };
+
+async function sbFetchPendingApprovals() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  try {
+    const [pats, grvs] = await Promise.all([
+      sbFetch('/rest/v1/patterns?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
+      sbFetch('/rest/v1/grooves?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
+    ]);
+    _pendingItems.patterns = Array.isArray(pats) ? pats : [];
+    _pendingItems.grooves  = Array.isArray(grvs) ? grvs : [];
+  } catch(e) {
+    _pendingItems = { patterns: [], grooves: [] };
+  }
+  const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+  const toggle = document.getElementById('smenu-appro-toggle');
+  const badge  = document.getElementById('smenu-appro-count');
+  if (toggle) toggle.style.display = '';
+  if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+}
+
+async function sbApproveItem(type, id) {
+  try {
+    await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ scope: 'school', approved: true }),
+    });
+    return true;
+  } catch(e) { console.error('Approbation échouée :', e); return false; }
+}
+
+function loadPendingPattern(p) {
+  const exists = packCours.patterns.find(x => x.id === p.id);
+  if (!exists) {
+    packCours.patterns.push({
+      id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
+      familles: p.familles_ids || [], encyclo_ref: p.encyclo_ref || null,
+      source: 'pending',
+    });
+  }
+  // Charger dans la couche grave courante
+  const groove = getGroove(currentGrooveId);
+  if (groove && groove.layers[0]) {
+    groove.layers[0].patternId = p.id;
+    state[0].patternId = p.id;
+    state[0].pattern = p.sequence.split('');
+    state[0].stepPos = 0;
+    buildLayers();
+  }
+}
+
+function loadPendingGroove(g) {
+  const exists = packCours.grooves.find(x => x.id === g.id);
+  if (!exists) {
+    packCours.grooves.push({
+      id: g.id, nom: g.nom, familles: g.familles_ids || [],
+      band_defaut: g.band_defaut, signature: g.signature || '4/4',
+      tempo: { min: g.tempo_min, max: g.tempo_max, defaut: g.tempo_defaut },
+      layers: typeof g.layers === 'string' ? JSON.parse(g.layers) : (g.layers || []),
+      source: 'pending',
+    });
+  }
+  loadGroove(g.id);
+}
+
+function buildApprobationsSection() {
+  const container = document.getElementById('appro-section');
+  if (!container) return;
+  const pats  = _pendingItems.patterns;
+  const grvs  = _pendingItems.grooves;
+  if (!pats.length && !grvs.length) {
+    container.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu en attente</div>';
+    return;
+  }
+  const row = (type, item, preview) =>
+    `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+      `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${item.nom}</div>` +
+      `<div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">${preview}</div>` +
+      `<div style="display:flex;gap:5px">` +
+        `<button class="btn-appro-load" data-type="${type}" data-id="${item.id}" ` +
+          `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
+          `▶ Charger</button>` +
+        `<button class="btn-appro-ok" data-type="${type}" data-id="${item.id}" ` +
+          `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
+          `✅ Approuver</button>` +
+      `</div>` +
+    `</div>`;
+
+  let html = '';
+  if (pats.length) {
+    html += `<div style="font-size:10px;font-weight:700;color:#777;margin-bottom:4px">Patterns (${pats.length})</div>`;
+    pats.forEach(p => { html += row('pattern', p, p.sequence || ''); });
+  }
+  if (grvs.length) {
+    html += `<div style="font-size:10px;font-weight:700;color:#777;margin:6px 0 4px">Grooves (${grvs.length})</div>`;
+    grvs.forEach(g => { html += row('groove', g, (g.layers||[]).map(l=>l.patternId||'?').join(' / ')); });
+  }
+  container.innerHTML = html;
+
+  container.querySelectorAll('.btn-appro-load').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.dataset.type === 'pattern'
+        ? _pendingItems.patterns.find(x => x.id === btn.dataset.id)
+        : _pendingItems.grooves.find(x => x.id === btn.dataset.id);
+      if (!item) return;
+      if (btn.dataset.type === 'pattern') loadPendingPattern(item);
+      else loadPendingGroove(item);
+      // Fermer le menu après chargement
+      document.getElementById('panel-settings')?.classList.remove('open');
+      document.getElementById('btn-settings')?.classList.remove('active');
+    });
+  });
+
+  container.querySelectorAll('.btn-appro-ok').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbApproveItem(btn.dataset.type, btn.dataset.id);
+      if (ok) {
+        // Retirer du cache local et rafraîchir
+        if (btn.dataset.type === 'pattern')
+          _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);
+        else
+          _pendingItems.grooves = _pendingItems.grooves.filter(x => x.id !== btn.dataset.id);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+        const badge = document.getElementById('smenu-appro-count');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        buildApprobationsSection();
+        await sbSyncSchoolPool();
+      } else {
+        btn.textContent = origText; btn.disabled = false;
+      }
+    });
+  });
+}
+
 // ── Section Publier ───────────────────────────────────────────────────────────
 function buildPublishSection() {
   const container = document.getElementById('publish-section');
@@ -5051,7 +5196,7 @@ function attachEvents(){
     const menu = document.getElementById('panel-settings');
     const open = menu.classList.toggle('open');
     document.getElementById('btn-settings').classList.toggle('active', open);
-    if (open) { buildPublishSection(); updateSmenuTheme(); }
+    if (open) { buildPublishSection(); sbFetchPendingApprovals(); updateSmenuTheme(); }
   });
   document.addEventListener('click', e => {
     const menu = document.getElementById('panel-settings');
@@ -5084,6 +5229,16 @@ function attachEvents(){
     sec.style.display = open ? '' : 'none';
     arrow.textContent = open ? '▼' : '▶';
     if (open) buildPublishSection();
+  });
+
+  // Ligne 5 : accordéon Approbations (MX)
+  document.getElementById('smenu-appro-toggle').addEventListener('click', () => {
+    const sec = document.getElementById('appro-section');
+    const arrow = document.getElementById('smenu-appro-arrow');
+    const open = sec.style.display === 'none';
+    sec.style.display = open ? '' : 'none';
+    arrow.textContent = open ? '▼' : '▶';
+    if (open) buildApprobationsSection();
   });
 
   // Préférences groove (checkboxes)
