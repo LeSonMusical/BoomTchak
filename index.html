@@ -1249,8 +1249,9 @@ const PTK_DEFAULT = {
   ],
 };
 
-// Marquer les patterns du dictionnaire comme source 'school'
+// Marquer les éléments du dictionnaire comme source 'school'
 PTK_DEFAULT.patterns.forEach(p=>{if(!p.source)p.source='school';});
+PTK_DEFAULT.grooves.forEach(g=>{if(!g.source)g.source='school';});
 
 // Données courantes du cours (clonées depuis PTK_DEFAULT, modifiables en TX)
 let packCours = null;
