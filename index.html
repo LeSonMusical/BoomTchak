@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.2.0</span>
+      <span class="app-version">v3.2.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4008,6 +4008,14 @@ async function initAuth() {
   renderAuthUI();
   if (authSession) {
     await sbFetchProfile();
+    // Si le profil est introuvable (token expiré, erreur réseau, user absent),
+    // invalider la session pour ne pas rester bloqué sur "Connexion en cours…"
+    if (!authProfile) {
+      authSession = null;
+      localStorage.removeItem('sb_session');
+      renderAuthUI();
+      return;
+    }
     renderAuthUI();
     if (wasCallback || !packCours.patterns.some(p => p.source === 'school')) {
       await sbSyncSchoolPool();
