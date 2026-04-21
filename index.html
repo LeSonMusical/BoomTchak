@@ -4187,23 +4187,30 @@ function buildLibListPatterns(){
     // Colonne principale 2 lignes
     const main = document.createElement('div'); main.className = 'lib-item-main';
 
-    // Ligne 1 : nom + ✎ + 🗑
+    // Ligne 1 : nom + ✎ + 🗑 (ou bouton Fork pour items école en mode TX)
     const row1 = document.createElement('div'); row1.className = 'lib-item-row1';
     const nameEl = document.createElement('span');
     nameEl.className = 'lib-item-name';
     nameEl.textContent = pat.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
-    renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
-    renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-    delBtn.addEventListener('click', ()=>{
-      if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
-      libDeletePattern(pat.id);
-    });
-    row1.appendChild(delBtn);
+    if (pat.source === 'school' && currentMode === 'tx') {
+      const forkBtn = document.createElement('button'); forkBtn.className = 'lib-item-rename';
+      forkBtn.textContent = '✏️'; forkBtn.title = 'Créer une variante personnelle (fork)';
+      forkBtn.addEventListener('click', e=>{ e.stopPropagation(); libForkPattern(pat); });
+      row1.appendChild(forkBtn);
+    } else {
+      const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
+      renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
+      renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
+      row1.appendChild(renameBtn);
+      const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
+      delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
+      delBtn.addEventListener('click', ()=>{
+        if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
+        libDeletePattern(pat.id);
+      });
+      row1.appendChild(delBtn);
+    }
     main.appendChild(row1);
 
     // Ligne 2 : tags famille
@@ -4333,6 +4340,25 @@ function libStartRenamePattern(nameEl, patId){
     if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
     if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
   });
+}
+
+// Crée une copie locale (fork) d'un pattern école — TX uniquement
+function libForkPattern(srcPat) {
+  const forkId = 'fork_' + srcPat.id + '_' + Date.now();
+  const fork = {
+    id: forkId,
+    nom: srcPat.nom + ' (variante)',
+    sequence: srcPat.sequence,
+    pas: srcPat.pas,
+    familles: [...(srcPat.familles || [])],
+    encyclo_ref: srcPat.encyclo_ref || null,
+    source: 'teacher',
+  };
+  packCours.patterns.push(fork);
+  if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+  saveToStorage();
+  buildLibListPatterns();
+  showToast('Variante « ' + fork.nom + ' » créée — modifiez-la puis soumettez-la.', 'info');
 }
 
 // Dépose srcId devant tgtId dans le tableau global (drag-and-drop)
@@ -4811,16 +4837,23 @@ function buildLibListGrooves(){
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
     nameEl.textContent = groove.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
-    renameBtn.textContent='✎'; renameBtn.title='Renommer';
-    renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-    delBtn.addEventListener('click',()=>{
-      if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
-      libDeleteGroove(groove.id);
-    });
-    row1.appendChild(delBtn);
+    if (groove.source === 'school' && currentMode === 'tx') {
+      const forkBtn = document.createElement('button'); forkBtn.className='lib-item-rename';
+      forkBtn.textContent='✏️'; forkBtn.title='Créer une variante personnelle (fork)';
+      forkBtn.addEventListener('click',e=>{ e.stopPropagation(); libForkGroove(groove); });
+      row1.appendChild(forkBtn);
+    } else {
+      const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
+      renameBtn.textContent='✎'; renameBtn.title='Renommer';
+      renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
+      row1.appendChild(renameBtn);
+      const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
+      delBtn.addEventListener('click',()=>{
+        if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
+        libDeleteGroove(groove.id);
+      });
+      row1.appendChild(delBtn);
+    }
     main.appendChild(row1);
     const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
     libBuildGrooveTags(tagsWrap,groove); main.appendChild(tagsWrap);
@@ -4882,6 +4915,26 @@ function libStartRenameGroove(nameEl, grooveId){
   };
   nameEl.addEventListener('blur',commit,{once:true});
   nameEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
+}
+
+// Crée une copie locale (fork) d'un groove école — TX uniquement
+function libForkGroove(srcGroove) {
+  const forkId = 'fork_' + srcGroove.id + '_' + Date.now();
+  const fork = {
+    id: forkId,
+    nom: srcGroove.nom + ' (variante)',
+    familles: [...(srcGroove.familles || [])],
+    band_defaut: srcGroove.band_defaut,
+    signature: srcGroove.signature || '4/4',
+    tempo: { ...srcGroove.tempo },
+    layers: (srcGroove.layers || []).map(l => ({ ...l })),
+    source: 'teacher',
+  };
+  packCours.grooves.push(fork);
+  if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+  saveToStorage();
+  buildLibListGrooves();
+  showToast('Variante « ' + fork.nom + ' » créée — modifiez-la puis soumettez-la.', 'info');
 }
 
 function libDropGroove(srcId, tgtId){
