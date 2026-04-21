@@ -3015,7 +3015,15 @@ function buildEncycloSection(){
 
   const saveBtnEnc=document.createElement('button');
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
-  saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
+  saveBtnEnc.addEventListener('click', async () => {
+    saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
+    if (authProfile?.role === 'mx' && currentEncycloId) {
+      saveBtnEnc.textContent = '…'; saveBtnEnc.disabled = true;
+      await sbSaveEncycloEntry(currentEncycloId);
+      saveBtnEnc.textContent = '💾'; saveBtnEnc.disabled = false;
+      showToast('Entrée encyclopédique publiée en DB', 'info');
+    }
+  });
   bar.appendChild(saveBtnEnc);
   if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
@@ -3709,6 +3717,27 @@ async function sbDeleteFamille(famId) {
   try {
     await sbFetch(`/rest/v1/familles?id=eq.${famId}`, { method: 'DELETE' });
   } catch(e) { console.error('Suppression famille échouée :', e); }
+}
+
+// MX uniquement — publie une entrée encyclopédique en DB (scope:'school', approved:true)
+async function sbSaveEncycloEntry(key) {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const entry = packCours.encyclo?.[key];
+  if (!entry) return;
+  try {
+    await sbFetch('/rest/v1/encyclo', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        key,
+        chapo:   entry.chapo   || '',
+        bullets: entry.bullets || [],
+        scope:   'school',
+        approved: true,
+        owner_id: authProfile.id,
+      }),
+    });
+  } catch(e) { console.error('Sauvegarde encyclo échouée :', e); }
 }
 
 // ── Détection refus TX ────────────────────────────────────────────────────────
