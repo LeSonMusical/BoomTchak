@@ -3566,6 +3566,7 @@ async function sbPublishPattern(patId) {
   if (!pat || !authSession) return;
   const isMX = authProfile?.role === 'mx';
   try {
+    await sbPushTeacherFamilles(pat.familles);
     await sbFetch('/rest/v1/patterns', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -3596,6 +3597,7 @@ async function sbPublishGroove(grooveId) {
   if (!g || !authSession) return;
   const isMX = authProfile?.role === 'mx';
   try {
+    await sbPushTeacherFamilles(g.familles);
     await sbFetch('/rest/v1/grooves', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -3672,6 +3674,25 @@ async function sbCancelSubmission(type, id) {
 }
 
 // ── Familles MX → Supabase ────────────────────────────────────────────────────
+// Pousse en DB les familles TX référencées par un item soumis (scope:'teacher')
+// Idempotent (upsert). Appelé automatiquement avant sbPublishPattern/Groove.
+async function sbPushTeacherFamilles(familleIds) {
+  if (!authSession || !familleIds?.length) return;
+  const toPush = (familleIds)
+    .map(id => packCours.familles.find(f => f.id === id))
+    .filter(f => f && f.source !== 'school');
+  if (!toPush.length) return;
+  try {
+    await sbFetch('/rest/v1/familles', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(toPush.map(f => ({
+        id: f.id, nom: f.nom, scope: 'teacher', owner_id: authProfile?.id
+      }))),
+    });
+  } catch(e) { console.error('Push familles TX échoué :', e); }
+}
+
 async function sbSaveFamille(fam) {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
