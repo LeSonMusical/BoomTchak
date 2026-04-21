@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.1.0</span>
+      <span class="app-version">v3.2.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3506,6 +3506,16 @@ async function sbSyncSchoolPool() {
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
     ]);
     sbMergeSchoolData({ patterns, grooves, familles, encyclo });
+    // Vérifier les refus TX (fire-and-forget, non bloquant)
+    if (authProfile?.role !== 'mx') {
+      sbCheckRejections().then(n => {
+        if (n > 0) {
+          saveToStorage();
+          buildPublishSection();
+          showToast(n === 1 ? '1 soumission refusée' : n + ' soumissions refusées', 'warn');
+        }
+      });
+    }
     saveToStorage();
     render();
     updateSyncStatus('Synchronisé ✓');
@@ -3570,8 +3580,10 @@ async function sbPublishPattern(patId) {
     });
     if (isMX) {
       pat.source = 'school';
-      saveToStorage();
+    } else {
+      pat.localStatus = 'submitted';
     }
+    saveToStorage();
     return true;
   } catch(e) {
     console.error('Erreur publication pattern :', e);
@@ -3599,8 +3611,10 @@ async function sbPublishGroove(grooveId) {
     });
     if (isMX) {
       g.source = 'school';
-      saveToStorage();
+    } else {
+      g.localStatus = 'submitted';
     }
+    saveToStorage();
     return true;
   } catch(e) {
     console.error('Erreur publication groove :', e);
@@ -3637,10 +3651,70 @@ async function sbApproveItem(type, id) {
     await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ scope: 'school', approved: true }),
+      body: JSON.stringify({ scope: 'school', approved: true, owner_id: null }),
     });
     return true;
   } catch(e) { console.error('Approbation échouée :', e); return false; }
+}
+
+async function sbRejectItem(type, id) {
+  try {
+    await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Rejet échoué :', e); return false; }
+}
+
+async function sbCancelSubmission(type, id) {
+  try {
+    await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Annulation échouée :', e); return false; }
+}
+
+// ── Familles MX → Supabase ────────────────────────────────────────────────────
+async function sbSaveFamille(fam) {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  try {
+    await sbFetch('/rest/v1/familles', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ id: fam.id, nom: fam.nom, scope: 'school', owner_id: authProfile.id }),
+    });
+  } catch(e) { console.error('Sauvegarde famille échouée :', e); }
+}
+
+async function sbDeleteFamille(famId) {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  try {
+    await sbFetch(`/rest/v1/familles?id=eq.${famId}`, { method: 'DELETE' });
+  } catch(e) { console.error('Suppression famille échouée :', e); }
+}
+
+// ── Détection refus TX ────────────────────────────────────────────────────────
+async function sbCheckRejections() {
+  if (!authSession || authProfile?.role === 'mx') return 0;
+  const uid = authProfile?.id;
+  if (!uid) return 0;
+  try {
+    const [pats, grvs] = await Promise.all([
+      sbFetch(`/rest/v1/patterns?owner_id=eq.${uid}&approved=eq.false&select=id`),
+      sbFetch(`/rest/v1/grooves?owner_id=eq.${uid}&approved=eq.false&select=id`),
+    ]);
+    const dbPatIds = new Set((Array.isArray(pats) ? pats : []).map(p => p.id));
+    const dbGrvIds = new Set((Array.isArray(grvs) ? grvs : []).map(g => g.id));
+    let rejected = 0;
+    packCours.patterns.forEach(p => {
+      if (p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIds.has(p.id)) {
+        delete p.localStatus; rejected++;
+      }
+    });
+    packCours.grooves.forEach(g => {
+      if (g.source === 'teacher' && g.localStatus === 'submitted' && !dbGrvIds.has(g.id)) {
+        delete g.localStatus; rejected++;
+      }
+    });
+    return rejected;
+  } catch(e) { return 0; }
 }
 
 function loadPendingPattern(p) {
@@ -3697,6 +3771,9 @@ function buildApprobationsSection() {
         `<button class="btn-appro-ok" data-type="${type}" data-id="${item.id}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
           `✅ Approuver</button>` +
+        `<button class="btn-appro-reject" data-type="${type}" data-id="${item.id}" ` +
+          `title="Refuser et supprimer" style="font-size:10px;padding:3px 7px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
+          `🗑</button>` +
       `</div>` +
     `</div>`;
 
@@ -3749,6 +3826,29 @@ function buildApprobationsSection() {
       }
     });
   });
+
+  container.querySelectorAll('.btn-appro-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Refuser et supprimer cette soumission ?')) return;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbRejectItem(btn.dataset.type, btn.dataset.id);
+      if (ok) {
+        if (btn.dataset.type === 'pattern')
+          _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);
+        else
+          _pendingItems.grooves = _pendingItems.grooves.filter(x => x.id !== btn.dataset.id);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+        _remotePendingCount = total; updateSettingsBadge();
+        const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
+        buildApprobationsSection();
+      } else {
+        btn.textContent = '🗑'; btn.disabled = false;
+      }
+    });
+  });
 }
 
 // ── Section Publier/Soumettre ─────────────────────────────────────────────────
@@ -3763,58 +3863,76 @@ function buildPublishSection() {
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher');
   const hasItems = teacherPats.length + teacherGrooves.length;
 
-  // Masquer ligne si pas connecté ou rien à soumettre
   if (!authSession || !hasItems) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
   }
-  _localPendingCount = hasItems; updateSettingsBadge();
+
+  // Badge: seulement les items draft (action TX requise)
+  const draftPats  = teacherPats.filter(p => p.localStatus !== 'submitted');
+  const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
+  _localPendingCount = draftPats.length + draftGrvs.length;
+  updateSettingsBadge();
+
   if(pubToggle) pubToggle.style.display='';
   if(pubLabel) pubLabel.textContent = isMX ? '↑ Publier' : '→ Soumettre';
 
-  const btnLabel = isMX ? '↑ École' : '→ Envoyer';
-  let html = '';
+  const sendLabel = isMX ? '↑ École' : '→ Envoyer';
 
+  const itemRow = (type, item) => {
+    const isSubmitted = !isMX && item.localStatus === 'submitted';
+    const btnSend = isSubmitted
+      ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
+      : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
+        `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
+    const btnCancel = isSubmitted
+      ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" `+
+        `title="Annuler la soumission" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>`
+      : '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;padding:3px 0">` +
+      `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+      `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div>`;
+  };
+
+  let html = '';
   if (teacherPats.length) {
     html += '<div style="font-size:10px;font-weight:600;color:#888;margin-bottom:4px">Patterns</div>';
-    teacherPats.forEach(p => {
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0">' +
-        '<span style="font-size:11px">' + p.nom + '</span>' +
-        '<button class="btn-pub-item" data-type="pattern" data-id="' + p.id + '" ' +
-        'style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">' +
-        btnLabel + '</button></div>';
-    });
+    teacherPats.forEach(p => { html += itemRow('pattern', p); });
   }
-
   if (teacherGrooves.length) {
     html += '<div style="font-size:10px;font-weight:600;color:#888;margin-top:6px;margin-bottom:4px">Grooves</div>';
-    teacherGrooves.forEach(g => {
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0">' +
-        '<span style="font-size:11px">' + g.nom + '</span>' +
-        '<button class="btn-pub-item" data-type="groove" data-id="' + g.id + '" ' +
-        'style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">' +
-        btnLabel + '</button></div>';
-    });
+    teacherGrooves.forEach(g => { html += itemRow('groove', g); });
   }
-
   container.innerHTML = html;
 
   container.querySelectorAll('.btn-pub-item').forEach(btn => {
     btn.addEventListener('click', async () => {
       const origText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = '…';
+      btn.disabled = true; btn.textContent = '…';
       const ok = btn.dataset.type === 'pattern'
         ? await sbPublishPattern(btn.dataset.id)
         : await sbPublishGroove(btn.dataset.id);
       if (ok) {
-        btn.textContent = '✓';
-        btn.style.background = '#d4f5e6';
-        setTimeout(() => buildPublishSection(), 800);
+        btn.textContent = '✓'; btn.style.background = '#d4f5e6';
+        setTimeout(() => buildPublishSection(), 700);
       } else {
-        btn.textContent = origText;
-        btn.disabled = false;
+        btn.textContent = origText; btn.disabled = false;
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-cancel').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbCancelSubmission(btn.dataset.type, btn.dataset.id);
+      if (ok) {
+        const arr = btn.dataset.type === 'pattern' ? packCours.patterns : packCours.grooves;
+        const item = arr.find(x => x.id === btn.dataset.id);
+        if (item) delete item.localStatus;
+        saveToStorage(); buildPublishSection();
+      } else {
+        btn.textContent = '✕'; btn.disabled = false;
       }
     });
   });
@@ -3824,6 +3942,21 @@ function buildPublishSection() {
 function updateSyncStatus(msg) {
   const el = document.getElementById('auth-sync-status');
   if (el) el.textContent = msg;
+}
+
+function showToast(msg, type='info') {
+  const colors = { info:'#2d5f80', warn:'#a06010', error:'#c04040' };
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed', bottom:'70px', left:'50%', transform:'translateX(-50%)',
+    background: colors[type]||colors.info, color:'#fff',
+    padding:'8px 16px', borderRadius:'20px', fontSize:'12px',
+    boxShadow:'0 2px 8px rgba(0,0,0,.25)', zIndex:'9999',
+    opacity:'1', transition:'opacity .4s'
+  });
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 400); }, 3000);
 }
 
 function renderAuthUI() {
@@ -4232,7 +4365,7 @@ function libStartRenameFamille(nameEl, fam, afterSave){
     nameEl.contentEditable = 'false';
     const newNom = nameEl.textContent.trim();
     if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
-    if(newNom !== nameEl.dataset.orig){ fam.nom = newNom; saveToStorage(); afterSave(); rebuildAllFamFilters(); }
+    if(newNom !== nameEl.dataset.orig){ fam.nom = newNom; saveToStorage(); afterSave(); rebuildAllFamFilters(); sbSaveFamille(fam); }
   };
   nameEl.addEventListener('blur', commit, {once:true});
   nameEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
@@ -4261,6 +4394,7 @@ function libDeleteFamille(famId, count){
   }
   packCours.familles = packCours.familles.filter(f=>f.id!==famId);
   saveToStorage();
+  sbDeleteFamille(famId);
   rebuildAllFamFilters();
   buildLibFamListPatterns();
   buildLibListPatterns();
@@ -4509,10 +4643,12 @@ function attachLibPanelEvents(){
   function _doCreateFamPattern(){
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
-    packCours.familles.push({id:'fam_user_'+Date.now(), nom});
+    const fam = {id:'fam_user_'+Date.now(), nom};
+    packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
     buildLibFamListPatterns(); rebuildAllFamFilters();
+    sbSaveFamille(fam);
   }
   document.getElementById('lib-fam-create-ok-patterns').addEventListener('click', _doCreateFamPattern);
   document.getElementById('lib-fam-new-input').addEventListener('keydown', e=>{
@@ -4745,10 +4881,12 @@ function attachGrooveLibEvents(){
   function _doCreateFamGroove(){
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
-    packCours.familles.push({id:'fam_user_'+Date.now(),nom});
+    const fam={id:'fam_user_'+Date.now(),nom};
+    packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
     buildLibFamListGrooves(); rebuildAllFamFilters();
+    sbSaveFamille(fam);
   }
   document.getElementById('lib-fam-create-ok-grooves').addEventListener('click',_doCreateFamGroove);
   document.getElementById('lib-fam-new-input-grooves').addEventListener('keydown',e=>{
