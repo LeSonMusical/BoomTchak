@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.2.0</span>
+      <span class="app-version">v3.2.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3015,7 +3015,15 @@ function buildEncycloSection(){
 
   const saveBtnEnc=document.createElement('button');
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
-  saveBtnEnc.addEventListener('click',()=>{saveToStorage();encycloDir=false;updateEncycloSaveBtn();flashSave(saveBtnEnc);});
+  saveBtnEnc.addEventListener('click', async () => {
+    saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
+    if (authProfile?.role === 'mx' && currentEncycloId) {
+      saveBtnEnc.textContent = '…'; saveBtnEnc.disabled = true;
+      await sbSaveEncycloEntry(currentEncycloId);
+      saveBtnEnc.textContent = '💾'; saveBtnEnc.disabled = false;
+      showToast('Entrée encyclopédique publiée en DB', 'info');
+    }
+  });
   bar.appendChild(saveBtnEnc);
   if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
 
@@ -3566,6 +3574,7 @@ async function sbPublishPattern(patId) {
   if (!pat || !authSession) return;
   const isMX = authProfile?.role === 'mx';
   try {
+    await sbPushTeacherFamilles(pat.familles);
     await sbFetch('/rest/v1/patterns', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -3596,6 +3605,7 @@ async function sbPublishGroove(grooveId) {
   if (!g || !authSession) return;
   const isMX = authProfile?.role === 'mx';
   try {
+    await sbPushTeacherFamilles(g.familles);
     await sbFetch('/rest/v1/grooves', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -3672,6 +3682,25 @@ async function sbCancelSubmission(type, id) {
 }
 
 // ── Familles MX → Supabase ────────────────────────────────────────────────────
+// Pousse en DB les familles TX référencées par un item soumis (scope:'teacher')
+// Idempotent (upsert). Appelé automatiquement avant sbPublishPattern/Groove.
+async function sbPushTeacherFamilles(familleIds) {
+  if (!authSession || !familleIds?.length) return;
+  const toPush = (familleIds)
+    .map(id => packCours.familles.find(f => f.id === id))
+    .filter(f => f && f.source !== 'school');
+  if (!toPush.length) return;
+  try {
+    await sbFetch('/rest/v1/familles', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(toPush.map(f => ({
+        id: f.id, nom: f.nom, scope: 'teacher', owner_id: authProfile?.id
+      }))),
+    });
+  } catch(e) { console.error('Push familles TX échoué :', e); }
+}
+
 async function sbSaveFamille(fam) {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
@@ -3688,6 +3717,27 @@ async function sbDeleteFamille(famId) {
   try {
     await sbFetch(`/rest/v1/familles?id=eq.${famId}`, { method: 'DELETE' });
   } catch(e) { console.error('Suppression famille échouée :', e); }
+}
+
+// MX uniquement — publie une entrée encyclopédique en DB (scope:'school', approved:true)
+async function sbSaveEncycloEntry(key) {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const entry = packCours.encyclo?.[key];
+  if (!entry) return;
+  try {
+    await sbFetch('/rest/v1/encyclo', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        key,
+        chapo:   entry.chapo   || '',
+        bullets: entry.bullets || [],
+        scope:   'school',
+        approved: true,
+        owner_id: authProfile.id,
+      }),
+    });
+  } catch(e) { console.error('Sauvegarde encyclo échouée :', e); }
 }
 
 // ── Détection refus TX ────────────────────────────────────────────────────────
@@ -4008,6 +4058,14 @@ async function initAuth() {
   renderAuthUI();
   if (authSession) {
     await sbFetchProfile();
+    // Si le profil est introuvable (token expiré, erreur réseau, user absent),
+    // invalider la session pour ne pas rester bloqué sur "Connexion en cours…"
+    if (!authProfile) {
+      authSession = null;
+      localStorage.removeItem('sb_session');
+      renderAuthUI();
+      return;
+    }
     renderAuthUI();
     if (wasCallback || !packCours.patterns.some(p => p.source === 'school')) {
       await sbSyncSchoolPool();
@@ -4129,23 +4187,30 @@ function buildLibListPatterns(){
     // Colonne principale 2 lignes
     const main = document.createElement('div'); main.className = 'lib-item-main';
 
-    // Ligne 1 : nom + ✎ + 🗑
+    // Ligne 1 : nom + ✎ + 🗑 (ou bouton Fork pour items école en mode TX)
     const row1 = document.createElement('div'); row1.className = 'lib-item-row1';
     const nameEl = document.createElement('span');
     nameEl.className = 'lib-item-name';
     nameEl.textContent = pat.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
-    renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
-    renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-    delBtn.addEventListener('click', ()=>{
-      if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
-      libDeletePattern(pat.id);
-    });
-    row1.appendChild(delBtn);
+    if (pat.source === 'school' && currentMode === 'tx') {
+      const forkBtn = document.createElement('button'); forkBtn.className = 'lib-item-rename';
+      forkBtn.textContent = '✏️'; forkBtn.title = 'Créer une variante personnelle (fork)';
+      forkBtn.addEventListener('click', e=>{ e.stopPropagation(); libForkPattern(pat); });
+      row1.appendChild(forkBtn);
+    } else {
+      const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
+      renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
+      renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
+      row1.appendChild(renameBtn);
+      const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
+      delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
+      delBtn.addEventListener('click', ()=>{
+        if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
+        libDeletePattern(pat.id);
+      });
+      row1.appendChild(delBtn);
+    }
     main.appendChild(row1);
 
     // Ligne 2 : tags famille
@@ -4275,6 +4340,25 @@ function libStartRenamePattern(nameEl, patId){
     if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
     if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
   });
+}
+
+// Crée une copie locale (fork) d'un pattern école — TX uniquement
+function libForkPattern(srcPat) {
+  const forkId = 'fork_' + srcPat.id + '_' + Date.now();
+  const fork = {
+    id: forkId,
+    nom: srcPat.nom + ' (variante)',
+    sequence: srcPat.sequence,
+    pas: srcPat.pas,
+    familles: [...(srcPat.familles || [])],
+    encyclo_ref: srcPat.encyclo_ref || null,
+    source: 'teacher',
+  };
+  packCours.patterns.push(fork);
+  if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+  saveToStorage();
+  buildLibListPatterns();
+  showToast('Variante « ' + fork.nom + ' » créée — modifiez-la puis soumettez-la.', 'info');
 }
 
 // Dépose srcId devant tgtId dans le tableau global (drag-and-drop)
@@ -4753,16 +4837,23 @@ function buildLibListGrooves(){
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
     nameEl.textContent = groove.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
-    renameBtn.textContent='✎'; renameBtn.title='Renommer';
-    renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-    delBtn.addEventListener('click',()=>{
-      if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
-      libDeleteGroove(groove.id);
-    });
-    row1.appendChild(delBtn);
+    if (groove.source === 'school' && currentMode === 'tx') {
+      const forkBtn = document.createElement('button'); forkBtn.className='lib-item-rename';
+      forkBtn.textContent='✏️'; forkBtn.title='Créer une variante personnelle (fork)';
+      forkBtn.addEventListener('click',e=>{ e.stopPropagation(); libForkGroove(groove); });
+      row1.appendChild(forkBtn);
+    } else {
+      const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
+      renameBtn.textContent='✎'; renameBtn.title='Renommer';
+      renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
+      row1.appendChild(renameBtn);
+      const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
+      delBtn.addEventListener('click',()=>{
+        if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
+        libDeleteGroove(groove.id);
+      });
+      row1.appendChild(delBtn);
+    }
     main.appendChild(row1);
     const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
     libBuildGrooveTags(tagsWrap,groove); main.appendChild(tagsWrap);
@@ -4824,6 +4915,26 @@ function libStartRenameGroove(nameEl, grooveId){
   };
   nameEl.addEventListener('blur',commit,{once:true});
   nameEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
+}
+
+// Crée une copie locale (fork) d'un groove école — TX uniquement
+function libForkGroove(srcGroove) {
+  const forkId = 'fork_' + srcGroove.id + '_' + Date.now();
+  const fork = {
+    id: forkId,
+    nom: srcGroove.nom + ' (variante)',
+    familles: [...(srcGroove.familles || [])],
+    band_defaut: srcGroove.band_defaut,
+    signature: srcGroove.signature || '4/4',
+    tempo: { ...srcGroove.tempo },
+    layers: (srcGroove.layers || []).map(l => ({ ...l })),
+    source: 'teacher',
+  };
+  packCours.grooves.push(fork);
+  if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+  saveToStorage();
+  buildLibListGrooves();
+  showToast('Variante « ' + fork.nom + ' » créée — modifiez-la puis soumettez-la.', 'info');
 }
 
 function libDropGroove(srcId, tgtId){
