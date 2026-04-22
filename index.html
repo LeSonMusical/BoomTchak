@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.2</span>
+      <span class="app-version">v3.4.3</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2790,7 +2790,42 @@ function showGrooveSaveSheet(groove){
 
 function doOverwriteGroove(){
   const btn=_saveSheetBtn;
+  const groove=getGroove(currentGrooveId);
   closeSaveSheet();
+
+  // TX qui écrase un groove école → fork implicite (source:'teacher', soumettable)
+  if(groove && groove.source==='school' && authProfile?.role!=='mx'){
+    const schoolId=groove.id;
+    const fork=txForkItem('groove', groove);
+    // Appliquer l'état courant au fork
+    LAYERS.forEach((_,li)=>{
+      if(!fork.layers[li])return;
+      if(state[li].patternId)fork.layers[li].patternId=state[li].patternId;
+      fork.layers[li].mute=state[li].muted;
+      fork.layers[li].halfOn=state[li].halfOn;
+      fork.layers[li].doubleOn=state[li].doubleOn;
+      fork.layers[li].ternOn=state[li].ternOn||false;
+      fork.layers[li].shift=state[li].shiftN||0;
+    });
+    const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+    if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
+    currentGrooveId=fork.id;
+    saveToStorage();
+    grooveDirty=false; updateGrooveSaveBtn();
+    // Mettre à jour le select groove : retirer l'école, ajouter le fork
+    const grooveSel=document.getElementById('groove-select');
+    if(grooveSel){
+      [...grooveSel.options].forEach(o=>{if(o.value===schoolId)grooveSel.removeChild(o);});
+      const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
+      grooveSel.appendChild(o);
+      grooveSel.value=fork.id;
+    }
+    buildLibListGrooves(); buildPublishSection();
+    showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+    if(btn)flashSave(btn);
+    return;
+  }
+
   saveGroove();
   grooveDirty=false;
   updateGrooveSaveBtn();
@@ -3867,16 +3902,18 @@ async function sbCheckRejections() {
     const dbPatIds = new Set((Array.isArray(pats) ? pats : []).map(p => p.id));
     const dbGrvIds = new Set((Array.isArray(grvs) ? grvs : []).map(g => g.id));
     let rejected = 0;
-    packCours.patterns.forEach(p => {
-      if (p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIds.has(p.id)) {
-        delete p.localStatus; rejected++;
-      }
-    });
-    packCours.grooves.forEach(g => {
-      if (g.source === 'teacher' && g.localStatus === 'submitted' && !dbGrvIds.has(g.id)) {
-        delete g.localStatus; rejected++;
-      }
-    });
+    // Supprimer complètement les items refusés (ne plus les laisser en draft)
+    const rejPatIds = packCours.patterns
+      .filter(p => p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIds.has(p.id))
+      .map(p => p.id);
+    rejected += rejPatIds.length;
+    packCours.patterns = packCours.patterns.filter(p => !rejPatIds.includes(p.id));
+
+    const rejGrvIds = packCours.grooves
+      .filter(g => g.source === 'teacher' && g.localStatus === 'submitted' && !dbGrvIds.has(g.id))
+      .map(g => g.id);
+    rejected += rejGrvIds.length;
+    packCours.grooves = packCours.grooves.filter(g => !rejGrvIds.includes(g.id));
     return rejected;
   } catch(e) { return 0; }
 }
@@ -3911,8 +3948,15 @@ function loadPendingGroove(g) {
       layers: typeof g.layers === 'string' ? JSON.parse(g.layers) : (g.layers || []),
       source: 'pending',
     });
+    // Ajouter l'option dans le select groove si absent
+    const grooveSel = document.getElementById('groove-select');
+    if (grooveSel && ![...grooveSel.options].some(o => o.value === g.id)) {
+      const o = document.createElement('option');
+      o.value = g.id; o.textContent = g.nom;
+      grooveSel.appendChild(o);
+    }
   }
-  loadGroove(g.id);
+  applyGroove(g.id);
 }
 
 function buildApprobationsSection() {
@@ -3934,7 +3978,7 @@ function buildApprobationsSection() {
           `▶ Charger</button>` +
         `<button class="btn-appro-ok" data-type="${type}" data-id="${item.id}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
-          `✅ Approuver</button>` +
+          `✅ Approuver & Publier</button>` +
         `<button class="btn-appro-reject" data-type="${type}" data-id="${item.id}" ` +
           `title="Refuser et supprimer" style="font-size:10px;padding:3px 7px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
           `🗑</button>` +
@@ -4497,21 +4541,14 @@ function buildLibListPatterns(){
     nameEl.className = 'lib-item-name';
     nameEl.textContent = pat.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    if (pat.source === 'school' && currentMode === 'tx' && authProfile?.role !== 'mx') {
-      const forkBtn = document.createElement('button'); forkBtn.className = 'lib-item-rename';
-      forkBtn.textContent = '✏️'; forkBtn.title = 'Créer une variante personnelle (fork)';
-      forkBtn.addEventListener('click', e=>{ e.stopPropagation(); libForkPattern(pat); });
-      row1.appendChild(forkBtn);
-    } else {
-      const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
-      renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
-      renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
-      row1.appendChild(renameBtn);
-      const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-      delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-      delBtn.addEventListener('click', ()=>libDeletePattern(pat.id));
-      row1.appendChild(delBtn);
-    }
+    const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
+    renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
+    renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
+    row1.appendChild(renameBtn);
+    const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
+    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
+    delBtn.addEventListener('click', ()=>libDeletePattern(pat.id));
+    row1.appendChild(delBtn);
     main.appendChild(row1);
 
     // Ligne 2 : tags famille
@@ -4580,10 +4617,18 @@ function libBuildPatternTags(container, pat){
     const x = document.createElement('button'); x.className = 'fam-tag-x'; x.textContent = '×';
     x.title = 'Retirer cette famille';
     x.addEventListener('click', e=>{ e.stopPropagation();
-      pat.familles = (pat.familles||[]).filter(id=>id!==fid);
-      markItemDirty(pat, 'famille');
-      libBuildPatternTags(container, pat);
-      saveToStorage(); buildPublishSection();
+      if(pat.source==='school' && authProfile?.role!=='mx'){
+        const fork=txForkItem('pattern', pat);
+        fork.familles=(fork.familles||[]).filter(id=>id!==fid);
+        saveToStorage(); buildLibListPatterns(); buildPublishSection();
+        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        pat.familles = (pat.familles||[]).filter(id=>id!==fid);
+        markItemDirty(pat, 'famille');
+        libBuildPatternTags(container, pat);
+        saveToStorage(); buildPublishSection();
+      }
     });
     chip.appendChild(x); container.appendChild(chip);
   });
@@ -4603,11 +4648,20 @@ function libBuildPatternTags(container, pat){
     });
     sel.addEventListener('change', ()=>{
       if(!sel.value) return;
-      if(!pat.familles) pat.familles = [];
-      pat.familles.push(sel.value);
-      markItemDirty(pat, 'famille');
-      libBuildPatternTags(container, pat);
-      saveToStorage(); buildPublishSection();
+      if(pat.source==='school' && authProfile?.role!=='mx'){
+        const fork=txForkItem('pattern', pat);
+        if(!fork.familles)fork.familles=[];
+        fork.familles.push(sel.value);
+        saveToStorage(); buildLibListPatterns(); buildPublishSection();
+        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        if(!pat.familles) pat.familles = [];
+        pat.familles.push(sel.value);
+        markItemDirty(pat, 'famille');
+        libBuildPatternTags(container, pat);
+        saveToStorage(); buildPublishSection();
+      }
     });
     sel.addEventListener('blur', ()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
     addBtn.parentNode.insertBefore(sel, addBtn);
@@ -4629,14 +4683,22 @@ function libStartRenamePattern(nameEl, patId){
     if(!newNom){ nameEl.textContent = nameEl.dataset.orig; return; }
     const pat = packCours.patterns.find(p=>p.id===patId);
     if(pat && newNom !== nameEl.dataset.orig){
-      pat.nom = newNom;
-      markItemDirty(pat, 'nom');
-      saveToStorage(); buildPublishSection();
-      // Mettre à jour les selects ouverts
-      LAYERS.forEach((_,li)=>{
-        const s = document.getElementById('sel-'+LAYERS[li].id);
-        if(s) [...s.options].forEach(o=>{ if(o.value===patId) o.textContent=newNom; });
-      });
+      if(pat.source==='school' && authProfile?.role!=='mx'){
+        // TX renomme un item école → fork implicite
+        const fork=txForkItem('pattern', pat);
+        fork.nom=newNom;
+        saveToStorage(); buildLibListPatterns(); buildPublishSection();
+        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        pat.nom = newNom;
+        markItemDirty(pat, 'nom');
+        saveToStorage(); buildPublishSection();
+        LAYERS.forEach((_,li)=>{
+          const s = document.getElementById('sel-'+LAYERS[li].id);
+          if(s) [...s.options].forEach(o=>{ if(o.value===patId) o.textContent=newNom; });
+        });
+      }
     }
   };
   nameEl.addEventListener('blur', commit, {once:true});
@@ -4644,6 +4706,35 @@ function libStartRenamePattern(nameEl, patId){
     if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
     if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
   });
+}
+
+// Forke un item école pour TX : crée une copie source:'teacher' et supprime l'original local
+// L'original école sera rechargé au prochain sync — le fork apparaît dans la section soumission
+function txForkItem(type, item) {
+  const forkId = 'tx_mod_' + item.id + '_' + Date.now();
+  if (type === 'pattern') {
+    const fork = {
+      id: forkId, nom: item.nom, sequence: item.sequence, pas: item.pas,
+      familles: [...(item.familles || [])], encyclo_ref: item.encyclo_ref || null,
+      source: 'teacher', localChangeType: 'update', sourceRef: item.id,
+    };
+    packCours.patterns = packCours.patterns.filter(p => p.id !== item.id);
+    packCours.patterns.push(fork);
+    if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+    return fork;
+  } else {
+    const fork = {
+      id: forkId, nom: item.nom, familles: [...(item.familles || [])],
+      band_defaut: item.band_defaut, signature: item.signature || '4/4',
+      tempo: item.tempo ? { ...item.tempo } : {},
+      layers: (item.layers || []).map(l => ({ ...l })),
+      source: 'teacher', localChangeType: 'update', sourceRef: item.id,
+    };
+    packCours.grooves = packCours.grooves.filter(g => g.id !== item.id);
+    packCours.grooves.push(fork);
+    if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
+    return fork;
+  }
 }
 
 // Crée une copie locale (fork) d'un pattern école — TX uniquement
@@ -4693,7 +4784,11 @@ function libDeletePattern(patId){
     return;
   }
   if(pat.source === 'school'){
-    // Items école → suppression différée via section Publier
+    if(authProfile?.role !== 'mx'){
+      alert('Les items école ne peuvent pas être supprimés par un enseignant.\nSignalez-le à MX si nécessaire.');
+      return;
+    }
+    // MX : suppression différée via section Publier
     if(!confirm('Marquer le pattern « '+pat.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
     pat.localDeletePending = true;
     pat.localChangeType = 'delete';
@@ -5164,20 +5259,13 @@ function buildLibListGrooves(){
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
     nameEl.textContent = groove.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    if (groove.source === 'school' && currentMode === 'tx' && authProfile?.role !== 'mx') {
-      const forkBtn = document.createElement('button'); forkBtn.className='lib-item-rename';
-      forkBtn.textContent='✏️'; forkBtn.title='Créer une variante personnelle (fork)';
-      forkBtn.addEventListener('click',e=>{ e.stopPropagation(); libForkGroove(groove); });
-      row1.appendChild(forkBtn);
-    } else {
-      const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
-      renameBtn.textContent='✎'; renameBtn.title='Renommer';
-      renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
-      row1.appendChild(renameBtn);
-      const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-      delBtn.addEventListener('click',()=>libDeleteGroove(groove.id));
-      row1.appendChild(delBtn);
-    }
+    const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
+    renameBtn.textContent='✎'; renameBtn.title='Renommer';
+    renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
+    row1.appendChild(renameBtn);
+    const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
+    delBtn.addEventListener('click',()=>libDeleteGroove(groove.id));
+    row1.appendChild(delBtn);
     main.appendChild(row1);
     const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
     libBuildGrooveTags(tagsWrap,groove); main.appendChild(tagsWrap);
@@ -5204,7 +5292,16 @@ function libBuildGrooveTags(container, groove){
     const fam=getFamille(fid); if(!fam) return;
     const chip=document.createElement('span'); chip.className='fam-tag fam-tag-groove'; chip.textContent=fam.nom;
     const x=document.createElement('button'); x.className='fam-tag-x'; x.textContent='×';
-    x.addEventListener('click',e=>{ e.stopPropagation(); groove.familles=(groove.familles||[]).filter(id=>id!==fid); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection(); });
+    x.addEventListener('click',e=>{ e.stopPropagation();
+      if(groove.source==='school' && authProfile?.role!=='mx'){
+        const fork=txForkItem('groove', groove);
+        fork.familles=(fork.familles||[]).filter(id=>id!==fid);
+        saveToStorage(); buildLibListGrooves(); buildPublishSection();
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        groove.familles=(groove.familles||[]).filter(id=>id!==fid); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
+      }
+    });
     chip.appendChild(x); container.appendChild(chip);
   });
   const addBtn=document.createElement('span'); addBtn.className='fam-tag-add'; addBtn.textContent='＋';
@@ -5213,7 +5310,17 @@ function libBuildGrooveTags(container, groove){
     const sel=document.createElement('select'); sel.className='psp-fam-sel'; sel.style.cssText='font-size:9px;max-width:100px';
     sel.innerHTML='<option value="">— Famille —</option>';
     available.forEach(f=>{ const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ if(!sel.value) return; if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection(); });
+    sel.addEventListener('change',()=>{ if(!sel.value) return;
+      if(groove.source==='school' && authProfile?.role!=='mx'){
+        const fork=txForkItem('groove', groove);
+        if(!fork.familles)fork.familles=[];
+        fork.familles.push(sel.value);
+        saveToStorage(); buildLibListGrooves(); buildPublishSection();
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
+      }
+    });
     sel.addEventListener('blur',()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
     addBtn.parentNode.insertBefore(sel,addBtn); sel.focus();
   });
@@ -5231,10 +5338,24 @@ function libStartRenameGroove(nameEl, grooveId){
     if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
     const g=packCours.grooves.find(g=>g.id===grooveId);
     if(g&&newNom!==nameEl.dataset.orig){
-      g.nom=newNom; markItemDirty(g,'nom'); saveToStorage(); buildPublishSection();
-      // Mettre à jour le select groove
-      const s=document.getElementById('groove-select');
-      if(s) [...s.options].forEach(o=>{ if(o.value===grooveId)o.textContent=newNom; });
+      if(g.source==='school' && authProfile?.role!=='mx'){
+        // TX renomme un groove école → fork implicite
+        const fork=txForkItem('groove', g);
+        fork.nom=newNom;
+        saveToStorage(); buildLibListGrooves(); buildPublishSection();
+        const s=document.getElementById('groove-select');
+        if(s){
+          [...s.options].forEach(o=>{if(o.value===grooveId)s.removeChild(o);});
+          const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
+          s.appendChild(o);
+          if(currentGrooveId===grooveId){currentGrooveId=fork.id;s.value=fork.id;}
+        }
+        showToast('Modification sauvegardée — soumettez-la via ···', 'info');
+      } else {
+        g.nom=newNom; markItemDirty(g,'nom'); saveToStorage(); buildPublishSection();
+        const s=document.getElementById('groove-select');
+        if(s) [...s.options].forEach(o=>{ if(o.value===grooveId)o.textContent=newNom; });
+      }
     }
   };
   nameEl.addEventListener('blur',commit,{once:true});
@@ -5279,7 +5400,11 @@ function libDeleteGroove(grooveId){
   const groove = packCours.grooves.find(g=>g.id===grooveId);
   if(!groove) return;
   if(groove.source === 'school'){
-    // Items école → suppression différée via section Publier
+    if(authProfile?.role !== 'mx'){
+      alert('Les items école ne peuvent pas être supprimés par un enseignant.\nSignalez-le à MX si nécessaire.');
+      return;
+    }
+    // MX : suppression différée via section Publier
     if(!confirm('Marquer le groove « '+groove.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
     groove.localDeletePending = true;
     groove.localChangeType = 'delete';
