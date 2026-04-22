@@ -222,11 +222,18 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-edit-row{display:flex;align-items:center;gap:4px;padding:3px 8px 5px;background:rgba(0,0,0,.04)}
 .sound-edit-row.hidden{display:none}
 /* Top bar : couleurs volets */
-/* Top bar Sons/Tempo : off = bord coloré + texte neutre ; active = fond + texte colorés */
-#btn-sons{color:#999;border-color:#8ab4d0}
-#btn-sons.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5}
-#btn-tempo{color:#999;border-color:#b0a8d8}
+/* Top bar VOL / Metro */
+#btn-vol{color:#999;border-color:#8ab4d0;min-width:28px;padding:3px 7px;font-size:14px;line-height:1}
+#btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5}
+#btn-vol.muted{color:#ccc;border-color:#ccc;background:#f8f8f8}
+#btn-tempo{color:#999;border-color:#b0a8d8;display:flex;align-items:center;gap:3px;padding:3px 7px}
+#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em}
+#btn-tempo .metro-state{font-size:10px;opacity:.6}
+#btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
+#btn-tempo.metro-on .metro-state{opacity:1}
 #btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
+/* Overlay de valeur lors du drag (tempo/vol) */
+.drag-value-overlay{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-edit-row .fam-filter{opacity:.9}
 .sound-edit-row .btn-sec-ico{opacity:.5}
 .sound-edit-row .btn-sec-ico:hover{opacity:1}
@@ -608,9 +615,11 @@ body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
 body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-body.dark-mode #btn-sons{color:#777;border-color:#4A7FA5}
-body.dark-mode #btn-sons.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5}
+body.dark-mode #btn-vol{color:#777;border-color:#4A7FA5}
+body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5}
+body.dark-mode #btn-vol.muted{color:#555;border-color:#555;background:#1c1c1a}
 body.dark-mode #btn-tempo{color:#777;border-color:#6B5FA5}
+body.dark-mode #btn-tempo.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
 body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
@@ -674,12 +683,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.3.3</span>
+      <span class="app-version">v3.4.0</span>
     </div>
   </div>
   <div class="top-bar-right">
-    <button class="btn-top btn-tempo-display" id="btn-tempo">♩= 100</button>
-    <button class="btn-top" id="btn-sons">Sons</button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-state">🔇</span><span class="metro-bpm">♩100</span></button>
+    <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
       <button class="btn-top" id="btn-settings" title="Menu">···</button>
@@ -1623,11 +1632,12 @@ function halfAt(len){if(len<=4)return null;return Math.ceil(len/2);}
 
 // ── Son ───────────────────────────────────────────────────────────────────
 function playSound(ss,atTime,velMult){
+  if(bandMuted) return;
   const a=getAC();if(!a)return;
   const lat=latencyMs/1000;
   const t=Math.max(a.currentTime,atTime+lat);
   const def=SOUND_DEFS[ss.soundId];if(!def)return;
-  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol*(velMult??1)});
+  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol*(velMult??1)*(bandVolume/100)});
 }
 function scheduleNote(li,atTime,velMult){playSound(soundState[li],atTime,velMult??1);}
 function playConga(isRight){
@@ -1745,6 +1755,8 @@ function refreshMenuBtnStates(){
 }
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
 let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
+let bandMuted = false;    // Mute global band (btn-vol court)
+let bandVolume = 100;     // Volume band 0-100 (btn-vol long+drag)
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
@@ -3224,8 +3236,20 @@ function updateBeatDisplay(){
   const txt=currentSig.beatSym+'= '+bpm;
   const el=document.getElementById('beat-display');
   if(el) el.textContent=txt;
-  const btn=document.getElementById('btn-tempo');
-  if(btn) btn.textContent=txt;
+  const bpmSpan=document.querySelector('#btn-tempo .metro-bpm');
+  if(bpmSpan) bpmSpan.textContent=txt;
+}
+function setMetroGlobal(on){
+  metro.muted=!on;
+  const btnMain=document.getElementById('btn-metro-main');
+  if(btnMain) btnMain.classList.toggle('on',on);
+  const btnTop=document.getElementById('btn-tempo');
+  if(btnTop){
+    btnTop.classList.toggle('metro-on',on);
+    const ico=btnTop.querySelector('.metro-state');
+    if(ico) ico.textContent=on?'🔔':'🔕';
+  }
+  document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
 function getMetroBeatSec(){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
@@ -3622,7 +3646,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   });
   (familles || []).forEach(f => {
     if (!packCours.familles.find(x => x.id === f.id)) {
-      packCours.familles.push({ id: f.id, nom: f.nom, source: 'school' });
+      packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school' });
     }
   });
   (encyclo || []).forEach(e => {
@@ -3764,7 +3788,7 @@ async function sbPushTeacherFamilles(familleIds) {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(toPush.map(f => ({
-        id: f.id, nom: f.nom, scope: 'teacher', owner_id: authProfile?.id
+        id: f.id, nom: f.nom, category: f.category||'rytm', scope: 'teacher', owner_id: authProfile?.id
       }))),
     });
   } catch(e) { console.error('Push familles TX échoué :', e); }
@@ -3776,7 +3800,7 @@ async function sbSaveFamille(fam) {
     await sbFetch('/rest/v1/familles', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ id: fam.id, nom: fam.nom, scope: 'school', owner_id: authProfile.id }),
+      body: JSON.stringify({ id: fam.id, nom: fam.nom, category: fam.category||'rytm', scope: 'school', owner_id: authProfile.id }),
     });
   } catch(e) { console.error('Sauvegarde famille échouée :', e); }
 }
@@ -5024,7 +5048,7 @@ function attachLibPanelEvents(){
   function _doCreateFamPattern(){
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
-    const fam = {id:'fam_user_'+Date.now(), nom};
+    const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm'};
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
@@ -5306,7 +5330,7 @@ function attachGrooveLibEvents(){
   function _doCreateFamGroove(){
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
-    const fam={id:'fam_user_'+Date.now(),nom};
+    const fam={id:'fam_user_'+Date.now(),nom,category:'rytm'};
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
@@ -5581,13 +5605,12 @@ function loadFromStorage(){
 }
 
 function attachEvents(){
-  // ── Btn Tempo : tap = toggle section Temps, drag horizontal = changer le tempo ──
+  // ── Btn Metro (top bar) : court=mute métro, long sans drag=section Temps, long+drag=BPM ──
   {
     const btnT=document.getElementById('btn-tempo');
     const bpmSlider=document.getElementById('bpm');
-    let _startX=0,_startVal=0,_dragging=false,_dragMoved=false;
-    const DRAG_THRESHOLD=4; // px avant de passer en mode drag
-    const SPM_PER_PX=1;     // 1 spm par pixel
+    const LONG_MS=350, DRAG_PX=6, SPM_PER_PX=1;
+    let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null;
 
     function toggleTempsWrap(){
       const wrap=document.getElementById('temps-wrap');
@@ -5597,39 +5620,85 @@ function attachEvents(){
     }
 
     btnT.addEventListener('pointerdown',e=>{
-      _startX=e.clientX;
-      _startVal=parseInt(bpmSlider.value);
-      _dragging=true; _dragMoved=false;
+      _startX=e.clientX; _startVal=parseInt(bpmSlider.value);
+      _down=true; _dragMoved=false; _longFired=false;
       btnT.setPointerCapture(e.pointerId);
       e.preventDefault();
+      _longTimer=setTimeout(()=>{ _longFired=true; },LONG_MS);
     },{passive:false});
 
     btnT.addEventListener('pointermove',e=>{
-      if(!_dragging)return;
+      if(!_down)return;
       const dx=e.clientX-_startX;
-      if(!_dragMoved&&Math.abs(dx)<DRAG_THRESHOLD)return;
+      if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
       _dragMoved=true;
-      const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
-      bpmSlider.value=newVal;
-      updateBeatDisplay();
+      if(_longFired){
+        const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
+        bpmSlider.value=newVal; updateBeatDisplay();
+        _dragOverlay.show('♩= '+Math.round(parseInt(bpmSlider.value)*globalSpeedMult/currentSig.stepsPerBeat));
+      }
     });
 
-    btnT.addEventListener('pointerup',e=>{
-      if(!_dragging)return;
-      _dragging=false;
-      if(!_dragMoved) toggleTempsWrap(); // tap simple → toggle section
+    btnT.addEventListener('pointerup',()=>{
+      clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
+      if(_longFired&&_dragMoved){ /* BPM changé pendant le drag */ }
+      else if(_longFired&&!_dragMoved){ toggleTempsWrap(); }
+      else { setMetroGlobal(metro.muted); } // court tap → toggle mute
     });
 
-    btnT.addEventListener('pointercancel',()=>{_dragging=false;});
+    btnT.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
-  // ── Bouton Métro (on/off global) ──
-  function setMetroGlobal(on){
-    metro.muted=!on; // on=true → muted=false (son audible)
-    const btn=document.getElementById('btn-metro-main');
-    if(btn) btn.classList.toggle('on',on);
-    // Boutons locaux ON ternis quand Métro est OFF
-    document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
-    // Pas de manipulation AudioContext ici : Play gère le déclenchement/arrêt
+  // ── Btn Vol (top bar) : court=mute band, long sans drag=section Band, long+drag=volume ──
+  {
+    const btnV=document.getElementById('btn-vol');
+    const LONG_MS=350, DRAG_PX=6;
+    let _startX=0,_startVol=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null;
+
+    function setBandMuted(muted){
+      bandMuted=muted;
+      btnV.classList.toggle('muted',muted);
+    }
+    function toggleBandSection(){
+      sonsOuvert=!sonsOuvert;
+      const bar=document.querySelector('.band-bar');
+      if(bar){
+        bar.classList.toggle('visible',sonsOuvert);
+        const btnInstr=bar.querySelector('.btn-volet-band');
+        if(btnInstr)btnInstr.classList.toggle('open',instrOuvert);
+      }
+      btnV.classList.toggle('active',sonsOuvert);
+      const bc=document.getElementById('band-content');
+      if(bc)bc.classList.toggle('open', sonsOuvert&&instrOuvert);
+    }
+
+    btnV.addEventListener('pointerdown',e=>{
+      _startX=e.clientX; _startVol=bandVolume;
+      _down=true; _dragMoved=false; _longFired=false;
+      btnV.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      _longTimer=setTimeout(()=>{ _longFired=true; },LONG_MS);
+    },{passive:false});
+
+    btnV.addEventListener('pointermove',e=>{
+      if(!_down)return;
+      const dx=e.clientX-_startX;
+      if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
+      _dragMoved=true;
+      if(_longFired){
+        bandVolume=Math.max(0,Math.min(100,Math.round(_startVol+dx*0.5)));
+        _dragOverlay.show('🔊 '+bandVolume+'%');
+        if(bandMuted&&bandVolume>0){ setBandMuted(false); }
+      }
+    });
+
+    btnV.addEventListener('pointerup',()=>{
+      clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
+      if(_longFired&&_dragMoved){ /* volume changé */ }
+      else if(_longFired&&!_dragMoved){ toggleBandSection(); }
+      else { setBandMuted(!bandMuted); } // court tap → toggle mute
+    });
+
+    btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     // metro.muted=true(OFF) → passer true → setMetroGlobal met muted=false(ON) ✓
@@ -5868,22 +5937,7 @@ function attachEvents(){
   document.getElementById('btn-view').addEventListener('click',()=>setView(!circleView));
   window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); });
 
-  // ── Sons ──
-  document.getElementById('btn-sons').addEventListener('click',()=>{
-    sonsOuvert=!sonsOuvert;
-    const bar=document.querySelector('.band-bar');
-    if(bar){
-      bar.classList.toggle('visible',sonsOuvert);
-      // Forcer la couleur du bouton Instru (évite le flash blanc lors de l'apparition)
-      const btnInstr=bar.querySelector('.btn-volet-band');
-      if(btnInstr)btnInstr.classList.toggle('open',instrOuvert);
-    }
-    document.getElementById('btn-sons').classList.toggle('active',sonsOuvert);
-    // ON  → restaurer l'état instrOuvert mémorisé
-    // OFF → masquer band-content ET tous ses sous-volets (instrOuvert conservé pour la prochaine ouverture)
-    const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open', sonsOuvert && instrOuvert);
-  });
+  // btn-sons remplacé par btn-vol (géré dans le bloc Btn Vol ci-dessus)
 
   // ── Titre BoomTchak → encyclo ──
   document.getElementById('btn-app-title').addEventListener('click',()=>{
@@ -5978,7 +6032,7 @@ function attachEvents(){
     // → ouvrir un prompt simple
     const nomFam = prompt('Nom de la nouvelle famille :');
     if(!nomFam || !nomFam.trim()) return;
-    const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim()};
+    const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim(), category:'rytm'};
     packCours.familles.push(newFam);
     saveToStorage();
     _pspNewFamIds.push(newFam.id);
@@ -6067,12 +6121,19 @@ function start(){
   initAuth().catch(e => console.warn('BoomTchak: initAuth échouée', e));
 }
 
+// Overlay glisser (tempo / volume)
+const _dragOverlay=(()=>{
+  const el=document.createElement('div');el.className='drag-value-overlay';document.body.appendChild(el);
+  return{show(txt){el.textContent=txt;el.style.display='block';},hide(){el.style.display='none';}};
+})();
+
 // Lancer l'application
 start();
 attachEvents();
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
-document.getElementById('btn-tempo').classList.remove('active');
+// metro.muted=true par défaut → état initial bouton top bar
+setMetroGlobal(!metro.muted);
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
