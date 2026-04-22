@@ -18,7 +18,6 @@ Après chaque push de branche feature :
 Ne jamais laisser `main` en retard sur la branche de travail.
 
 ## Branche de travail
-Développer sur : `claude/boomtchak-v3-planning-PxL9F`
 Merger vers : `main` après chaque session
 
 ## Stack
@@ -34,11 +33,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Prochaines tâches prioritaires (session suivante)
-1. **G0 BUG CRITIQUE** — `initAuth()` bloque sur "Connexion en cours…" si token expiré
-   - Fix : si `authProfile` null après `sbFetchProfile()` → vider `authSession` + localStorage
-2. **G4 MX → DB** — MX doit pouvoir publier patterns/grooves/encyclo directement en école
-3. **G8 Ordre persisté** — colonne `ordre` en DB pour familles/patterns/grooves
-4. **G2 Famille TX** — pousser les familles TX en DB au moment de la soumission pattern/groove
+
 
 ## Conventions
 - Commentaires en français, code en anglais
