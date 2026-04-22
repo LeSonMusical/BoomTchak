@@ -11,6 +11,15 @@
 .encyclo-chapo,.encyclo-bval{user-select:text;-webkit-user-select:text}
 input,textarea{user-select:text;-webkit-user-select:text}
 
+/* ─── COULEURS PAR SECTION ─── */
+:root{
+  --c-pattern:#4a3d8a;--c-pattern-bg:rgba(107,95,165,.10);--c-pattern-border:rgba(107,95,165,.25);
+  --c-groove:#8B6914;  --c-groove-bg:rgba(200,150,26,.10);  --c-groove-border:rgba(200,150,26,.25);
+  --c-band:#2d5f80;    --c-band-bg:rgba(74,127,165,.10);    --c-band-border:rgba(74,127,165,.25);
+  --c-metro:#4a3d8a;   --c-metro-bg:rgba(107,95,165,.08);
+  --c-encyclo:#444;    --c-encyclo-bg:rgba(80,80,80,.06);
+}
+
 /* ─── LAYOUT GLOBAL ─── */
 body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;width:100%}
 .frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:.5rem .85rem}
@@ -302,8 +311,11 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 /* ─── POPOVER SAVE PATTERN ─── */
 .psp-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.25)}
 .psp-overlay.hidden{display:none}
-.psp-box{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:186;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12px 14px 14px;width:min(340px,96vw);display:flex;flex-direction:column;gap:8px}
+.psp-box{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);z-index:186;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12px 14px 14px;width:min(340px,96vw);display:flex;flex-direction:column;gap:8px;border-top:4px solid #888}
 .psp-box.hidden{display:none}
+.psp-box.psp-pattern{border-top-color:var(--c-pattern)}
+.psp-box.psp-groove{border-top-color:var(--c-groove)}
+.psp-type-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:-2px}
 .psp-overwrite{padding:10px 14px;border-radius:8px;border:1.5px solid #D85A30;background:#fff5f2;font-size:12px;font-weight:600;cursor:pointer;color:#D85A30;text-align:left;width:100%}
 .psp-overwrite:hover{background:#ffe8e2}
 .psp-overwrite:disabled{opacity:.35;cursor:default;background:#fff}
@@ -403,7 +415,7 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-rename{background:none;border:none;cursor:pointer;font-size:11px;padding:2px 5px;color:#c8c5c0;flex-shrink:0}
 .lib-fam-rename:hover{color:#4A7FA5}
 .lib-fam-count{font-size:9px;color:#bbb;flex-shrink:0;min-width:28px;text-align:right}
-.lib-fam-del{background:none;border:none;cursor:pointer;font-size:12px;color:#ddd;padding:2px 6px;flex-shrink:0}
+.lib-fam-del{background:none;border:none;cursor:pointer;font-size:12px;color:#bbb;padding:2px 6px;flex-shrink:0}
 .lib-fam-del:hover{color:#D85A30}
 .lib-fam-add-row{display:flex;gap:5px;padding:4px 14px 8px}
 .lib-fam-add-row input{flex:1;font-size:11px;padding:4px 7px;border:1px solid #c0bdb7;border-radius:5px}
@@ -662,7 +674,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.3.1</span>
+      <span class="app-version">v3.3.2</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2224,6 +2236,7 @@ function buildLayers(){
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
     };
     updateSpeedBtns();
+    const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); const _sg=getGroove(currentGrooveId); if(_sg){markItemDirty(_sg,'layers'); buildPublishSection();} };
     bHalf.addEventListener('click',()=>{
       if(state[li].halfOn||state[li].pendingHalf){
         state[li].pendingHalf=false;state[li].pendingClear=true;
@@ -2231,7 +2244,7 @@ function buildLayers(){
         if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
         state[li].pendingHalf=true;state[li].pendingClear=false;
       }
-      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
     bDbl.addEventListener('click',()=>{
       if(state[li].doubleOn||state[li].pendingDouble){
@@ -2240,31 +2253,35 @@ function buildLayers(){
         if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
         state[li].pendingDouble=true;state[li].pendingClear=false;
       }
-      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
 
     // — Ternaire T (vitesse ×3/2 : step = croche ternaire, durée ×2/3) —
     bTern=document.createElement('button');bTern.className='btn-mod';bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire (triolet). Combinez /2+T pour noire de triolet.';bTern.style.cssText='padding:1px 10px;font-weight:700';
     bTern.addEventListener('click',()=>{
       state[li].ternOn=!state[li].ternOn;
-      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); grooveDirty=true; updateGrooveSaveBtn();
+      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
 
     // — Shift ◀ [n] ▶ —
     const bShL=document.createElement('button');bShL.className='btn-mod btn-mod-sm';bShL.textContent='◀';bShL.title='Décaler gauche';
     const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent=String(state[li].shiftN||0);
     const bShR=document.createElement('button');bShR.className='btn-mod btn-mod-sm';bShR.textContent='▶';bShR.title='Décaler droite';
+    const _shiftMark=()=>{
+      grooveDirty=true; updateGrooveSaveBtn();
+      const _sg=getGroove(currentGrooveId); if(_sg){markItemDirty(_sg,'layers'); buildPublishSection();}
+    };
     bShL.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,1);
       state[li].shiftN=((state[li].shiftN||0)-1+state[li].pattern.length)%state[li].pattern.length;
       shNum.textContent=String(state[li].shiftN);
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); _shiftMark();
     });
     bShR.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
       state[li].shiftN=((state[li].shiftN||0)+1)%state[li].pattern.length;
       shNum.textContent=String(state[li].shiftN);
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); _shiftMark();
     });
 
     // — Inverser ⇄ (swap moitiés) + Inversion accents ⇅ + Rotation accents ⊙ —
@@ -2480,25 +2497,27 @@ function openPatSavePop(li, btn, srcPat){
   const nom = srcPat ? srcPat.nom : 'Pattern';
   const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='teacher');
 
-  // Bouton écraser
+  const box = document.getElementById('psp-box');
+  box.className = 'psp-box psp-pattern';
+  let lbl = box.querySelector('.psp-type-label');
+  if(!lbl){ lbl=document.createElement('div'); lbl.className='psp-type-label'; lbl.style.color='var(--c-pattern)'; box.prepend(lbl); }
+  lbl.textContent = 'Pattern';
+
   const ovBtn = document.getElementById('psp-btn-overwrite');
-  document.getElementById('psp-overwrite-name').textContent = nom;
+  ovBtn.textContent = '✓ Écraser Pattern « ' + nom + ' »';
   ovBtn.disabled = !canOverwrite;
 
-  // Pré-remplir nom
   document.getElementById('psp-name-input').value = nom + ' (copie)';
 
-  // Familles initiales = celles du pattern source
   _pspNewFamIds = srcPat && srcPat.familles ? [...srcPat.familles] : [];
   buildPspFamTags();
   buildPspFamSel();
 
-  // Réinitialiser le formulaire nouveau
   document.getElementById('psp-new-form').classList.add('hidden');
-  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau ▶';
+  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau Pattern ▶';
 
   document.getElementById('psp-overlay').classList.remove('hidden');
-  document.getElementById('psp-box').classList.remove('hidden');
+  box.classList.remove('hidden');
 }
 
 function closePatSavePop(){
@@ -2617,8 +2636,15 @@ function openGrooveSavePop(btn){
   const nom = groove.nom;
   const canOverwrite = currentMode==='tx' || (groove.source && groove.source==='teacher');
 
+  const box = document.getElementById('psp-box');
+  box.className = 'psp-box psp-groove';
+  let lbl = box.querySelector('.psp-type-label');
+  if(!lbl){ lbl=document.createElement('div'); lbl.className='psp-type-label'; box.prepend(lbl); }
+  lbl.style.color='var(--c-groove)';
+  lbl.textContent = 'Groove';
+
   const ovBtn = document.getElementById('psp-btn-overwrite');
-  document.getElementById('psp-overwrite-name').textContent = nom;
+  ovBtn.textContent = '✓ Écraser Groove « ' + nom + ' »';
   ovBtn.disabled = !canOverwrite;
   ovBtn.style.display = '';
 
@@ -2629,10 +2655,10 @@ function openGrooveSavePop(btn){
   buildPspFamTags(); buildPspFamSel();
 
   document.getElementById('psp-new-form').classList.add('hidden');
-  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau ▶';
+  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau Groove ▶';
 
   document.getElementById('psp-overlay').classList.remove('hidden');
-  document.getElementById('psp-box').classList.remove('hidden');
+  box.classList.remove('hidden');
 }
 
 function pspDoOverwriteGroove(){
@@ -3051,14 +3077,13 @@ function buildEncycloSection(){
 
   const saveBtnEnc=document.createElement('button');
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
-  saveBtnEnc.addEventListener('click', async () => {
-    saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
-    if (authProfile?.role === 'mx' && currentEncycloId) {
-      saveBtnEnc.textContent = '…'; saveBtnEnc.disabled = true;
-      await sbSaveEncycloEntry(currentEncycloId);
-      saveBtnEnc.textContent = '💾'; saveBtnEnc.disabled = false;
-      showToast('Entrée encyclopédique publiée en DB', 'info');
+  saveBtnEnc.addEventListener('click', () => {
+    // Sauvegarde locale uniquement — la publication DB passe par le panel ···
+    if (authProfile?.role === 'mx' && currentEncycloId && packCours.encyclo?.[currentEncycloId]) {
+      packCours.encyclo[currentEncycloId]._pendingDB = true;
     }
+    saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
+    if (authProfile?.role === 'mx') { buildPublishSection(); showToast('Modifications locales enregistrées — publiez via ···', 'info'); }
   });
   bar.appendChild(saveBtnEnc);
   if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
@@ -3989,23 +4014,23 @@ function buildPublishSection() {
   const isMX = authProfile?.role === 'mx';
   const teacherPats    = packCours.patterns.filter(p => p.source === 'teacher');
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher');
-  // MX : inclure aussi les items école modifiés localement (localDirty)
   const dirtySchoolPats    = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDirty) : [];
   const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty) : [];
   const allPats    = [...teacherPats, ...dirtySchoolPats];
   const allGrooves = [...teacherGrooves, ...dirtySchoolGrooves];
-  const hasItems = allPats.length + allGrooves.length;
+  const pendingEncyclo = isMX && packCours.encyclo
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:key}))
+    : [];
 
-  if (!authSession || !hasItems) {
+  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
   }
 
-  // Badge + count: items en attente d'action (draft TX ou school dirty MX)
   const draftPats  = teacherPats.filter(p => p.localStatus !== 'submitted');
   const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
-  _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length;
+  _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length + pendingEncyclo.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -4019,11 +4044,8 @@ function buildPublishSection() {
   const changeTypeBadge = (item) => {
     if (!item.localChangeType && item.source === 'teacher') return '';
     const type = item.localChangeType || 'create';
-    const styles = {
-      create: 'background:#d4f5e6;color:#0F6E56',
-      update: 'background:#fff3cd;color:#856404',
-    };
-    const labels = { create: 'Nouveau', update: 'Modif.' };
+    const styles = { create:'background:#d4f5e6;color:#0F6E56', update:'background:#fff3cd;color:#856404' };
+    const labels = { create:'Nouveau', update:'Modif.' };
     const details = item.localChangedFields?.length ? ' · ' + changeFieldLabel(item.localChangedFields) : '';
     return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;${styles[type]||styles.update};flex-shrink:0">`
       + (labels[type]||'Modif.') + details + '</span>';
@@ -4031,13 +4053,18 @@ function buildPublishSection() {
 
   const itemRow = (type, item) => {
     const isSubmitted = !isMX && item.localStatus === 'submitted';
+    const isDirtySchool = isMX && item.source === 'school' && item.localDirty;
+    const isDraft = !isSubmitted;
     const btnSend = isSubmitted
       ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
       : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
         `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
-    const btnCancel = isSubmitted
-      ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" `+
-        `title="Annuler la soumission" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>`
+    const cancelTitle = isSubmitted ? 'Annuler la soumission'
+      : isDirtySchool ? 'Annuler les modifications (ne pas publier)'
+      : 'Ne pas soumettre (supprimer localement)';
+    const btnCancel = (isSubmitted || isDraft)
+      ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" data-cancel-mode="${isSubmitted?'submitted':isDirtySchool?'school':'draft'}" `+
+        `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>`
       : '';
     return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
       `<div style="display:flex;align-items:center;gap:4px">` +
@@ -4048,12 +4075,24 @@ function buildPublishSection() {
 
   let html = '';
   if (allPats.length) {
-    html += '<div style="font-size:10px;font-weight:600;color:#888;margin-bottom:4px">Patterns</div>';
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-pattern);margin-bottom:4px">Patterns</div>`;
     allPats.forEach(p => { html += itemRow('pattern', p); });
   }
   if (allGrooves.length) {
-    html += '<div style="font-size:10px;font-weight:600;color:#888;margin-top:6px;margin-bottom:4px">Grooves</div>';
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-groove);margin-top:6px;margin-bottom:4px">Grooves</div>`;
     allGrooves.forEach(g => { html += itemRow('groove', g); });
+  }
+  if (pendingEncyclo.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
+    pendingEncyclo.forEach(e => {
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
+        `<div style="display:flex;gap:4px;flex-shrink:0">` +
+        `<button class="btn-pub-encyclo" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
+        `<button class="btn-pub-encyclo-cancel" data-key="${e.key}" title="Ne pas publier" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `</div></div>`;
+    });
   }
   container.innerHTML = html;
 
@@ -4075,16 +4114,52 @@ function buildPublishSection() {
 
   container.querySelectorAll('.btn-pub-cancel').forEach(btn => {
     btn.addEventListener('click', async () => {
-      btn.disabled = true; btn.textContent = '…';
-      const ok = await sbCancelSubmission(btn.dataset.type, btn.dataset.id);
-      if (ok) {
-        const arr = btn.dataset.type === 'pattern' ? packCours.patterns : packCours.grooves;
-        const item = arr.find(x => x.id === btn.dataset.id);
-        if (item) delete item.localStatus;
+      const mode = btn.dataset.cancelMode;
+      const arr = btn.dataset.type === 'pattern' ? packCours.patterns : packCours.grooves;
+      const item = arr.find(x => x.id === btn.dataset.id);
+      if (mode === 'submitted') {
+        btn.disabled = true; btn.textContent = '…';
+        const ok = await sbCancelSubmission(btn.dataset.type, btn.dataset.id);
+        if (ok) {
+          if (item) delete item.localStatus;
+          saveToStorage(); buildPublishSection();
+        } else { btn.textContent = '✕'; btn.disabled = false; }
+      } else if (mode === 'school') {
+        // MX: annuler les modifications locales d'un item école
+        if (item) { item.localDirty = false; delete item.localChangeType; delete item.localChangedFields; }
         saveToStorage(); buildPublishSection();
       } else {
-        btn.textContent = '✕'; btn.disabled = false;
+        // TX: draft teacher item → supprimer localement
+        if (!confirm('Annuler et supprimer « '+(item?.nom||btn.dataset.id)+' » ?')) return;
+        if (btn.dataset.type === 'pattern') {
+          packCours.patterns = packCours.patterns.filter(p => p.id !== btn.dataset.id);
+          buildLibListPatterns();
+        } else {
+          packCours.grooves = packCours.grooves.filter(g => g.id !== btn.dataset.id);
+          buildLibListGrooves();
+        }
+        saveToStorage(); buildPublishSection();
       }
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-encyclo').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      await sbSaveEncycloEntry(btn.dataset.key);
+      const entry = packCours.encyclo?.[btn.dataset.key];
+      if (entry) delete entry._pendingDB;
+      saveToStorage();
+      showToast('Encyclopédie publiée en DB', 'info');
+      buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-encyclo-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const entry = packCours.encyclo?.[btn.dataset.key];
+      if (entry) delete entry._pendingDB;
+      saveToStorage(); buildPublishSection();
     });
   });
 }
@@ -4305,10 +4380,7 @@ function buildLibListPatterns(){
       row1.appendChild(renameBtn);
       const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
       delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-      delBtn.addEventListener('click', ()=>{
-        if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
-        libDeletePattern(pat.id);
-      });
+      delBtn.addEventListener('click', ()=>libDeletePattern(pat.id));
       row1.appendChild(delBtn);
     }
     main.appendChild(row1);
@@ -4492,6 +4564,10 @@ function libDeletePattern(patId){
     return;
   }
   const needsDbDelete = pat.source==='school' || pat.localStatus==='submitted';
+  const msg = needsDbDelete
+    ? 'Supprimer le pattern « '+pat.nom+' » du pool école ?\nCette action sera répercutée en base de données.'
+    : 'Supprimer le pattern « '+pat.nom+' » ?';
+  if(!confirm(msg)) return;
   packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
   saveToStorage();
   buildLibListPatterns();
@@ -4576,22 +4652,25 @@ function libDropFamille(srcId, tgtId){
 }
 
 function libDeleteFamille(famId, count){
+  const fam = packCours.familles.find(f=>f.id===famId);
+  const famNom = fam?.nom || famId;
+  const isSchoolFam = fam?.source === 'school' || authProfile?.role === 'mx';
   if(count > 0){
     const pats = packCours.patterns.filter(p=>(p.familles||[]).includes(famId)).map(p=>p.nom);
     const grvs = packCours.grooves.filter(g=>(g.familles||[]).includes(famId)).map(g=>g.nom);
     const all = [...pats.map(n=>'P: '+n), ...grvs.map(n=>'G: '+n)];
-    const ok = confirm('Cette famille est utilisée par '+count+' élément'+(count!==1?'s':'')+':\n'+all.join(', ')+'\n\nLa supprimer quand même ?');
-    if(!ok) return;
+    if(!confirm('Famille « '+famNom+' » utilisée par '+count+' élément'+(count!==1?'s':'')+':\n'+all.join(', ')+'\n\nSupprimer quand même ?')) return;
     packCours.patterns.forEach(p=>{ p.familles=(p.familles||[]).filter(id=>id!==famId); });
     packCours.grooves.forEach(g=>{ g.familles=(g.familles||[]).filter(id=>id!==famId); });
+  } else {
+    if(!confirm('Supprimer la famille « '+famNom+' » ?')) return;
   }
   packCours.familles = packCours.familles.filter(f=>f.id!==famId);
   saveToStorage();
-  sbDeleteFamille(famId);
+  if(isSchoolFam) sbDeleteFamille(famId);
   rebuildAllFamFilters();
   buildLibFamListPatterns();
   buildLibListPatterns();
-  // Rafraîchir aussi le panel grooves s'il est ouvert
   if(!document.getElementById('lib-panel-grooves').classList.contains('hidden')){
     buildLibFamListGrooves(); buildLibListGrooves();
   }
@@ -4957,10 +5036,7 @@ function buildLibListGrooves(){
       renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
       row1.appendChild(renameBtn);
       const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-      delBtn.addEventListener('click',()=>{
-        if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
-        libDeleteGroove(groove.id);
-      });
+      delBtn.addEventListener('click',()=>libDeleteGroove(groove.id));
       row1.appendChild(delBtn);
     }
     main.appendChild(row1);
@@ -5063,6 +5139,10 @@ function libDeleteGroove(grooveId){
   if(packCours.grooves.length<=1){ alert('Impossible de supprimer le dernier groove.'); return; }
   const groove = packCours.grooves.find(g=>g.id===grooveId);
   const needsDbDelete = groove && (groove.source==='school' || groove.localStatus==='submitted');
+  const msg = needsDbDelete
+    ? 'Supprimer le groove « '+(groove?.nom||grooveId)+' » du pool école ?\nCette action sera répercutée en base de données.'
+    : 'Supprimer le groove « '+(groove?.nom||grooveId)+' » ?';
+  if(!confirm(msg)) return;
   packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
   saveToStorage(); buildLibListGrooves();
   if(currentGrooveId===grooveId){ applyGroove(packCours.grooves[0].id); buildGrooveSection(); }
