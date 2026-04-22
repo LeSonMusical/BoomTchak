@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.2.1</span>
+      <span class="app-version">v3.3.0</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1780,6 +1780,7 @@ function applyGroove(grooveId){
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
     state[li].ternOn=gl.ternOn||false;
+    state[li].shiftN=gl.shift||0;
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
@@ -2228,18 +2229,18 @@ function buildLayers(){
 
     // — Shift ◀ [n] ▶ —
     const bShL=document.createElement('button');bShL.className='btn-mod btn-mod-sm';bShL.textContent='◀';bShL.title='Décaler gauche';
-    const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent='0';
+    const shNum=document.createElement('span');shNum.className='shift-num';shNum.textContent=String(state[li].shiftN||0);
     const bShR=document.createElement('button');bShR.className='btn-mod btn-mod-sm';bShR.textContent='▶';bShR.title='Décaler droite';
     bShL.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,1);
-      const n=parseInt(shNum.textContent);
-      shNum.textContent=((n-1+state[li].pattern.length)%state[li].pattern.length).toString();
+      state[li].shiftN=((state[li].shiftN||0)-1+state[li].pattern.length)%state[li].pattern.length;
+      shNum.textContent=String(state[li].shiftN);
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
     bShR.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
-      const n=parseInt(shNum.textContent);
-      shNum.textContent=((n+1)%state[li].pattern.length).toString();
+      state[li].shiftN=((state[li].shiftN||0)+1)%state[li].pattern.length;
+      shNum.textContent=String(state[li].shiftN);
       buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
     });
 
@@ -2534,8 +2535,10 @@ function pspDoOverwritePattern(){
 
   const persist = ()=>{
     srcPat.sequence = currentSeq;
+    markItemDirty(srcPat, 'sequence');
     saveToStorage(); setLayerDirty(li,false);
     if(btn)flashSave(btn); closePatSavePop();
+    buildPublishSection();
   };
 
   closePatSavePop();
@@ -2566,6 +2569,7 @@ function pspDoSaveNewPattern(){
     sequence: state[li].pattern.join(''),
     pas: state[li].pattern.length,
     source: 'teacher',
+    localChangeType: 'create',
   };
   packCours.patterns.push(newPat);
 
@@ -2578,6 +2582,7 @@ function pspDoSaveNewPattern(){
 
   saveToStorage(); setLayerDirty(li,false);
   refreshMenuBtnStates();
+  buildPublishSection();
   if(btn) flashSave(btn);
   closePatSavePop();
 }
@@ -2613,7 +2618,9 @@ function pspDoOverwriteGroove(){
   closePatSavePop();
   saveGroove();
   groove.familles = [..._pspNewFamIds];
+  markItemDirty(groove, 'layers');
   grooveDirty = false; updateGrooveSaveBtn();
+  saveToStorage(); buildPublishSection();
   if(btn) flashSave(btn);
 }
 
@@ -2630,6 +2637,9 @@ function pspDoSaveNewGroove(){
   LAYERS.forEach((_,li)=>{
     if(newGroove.layers[li] && state[li].patternId) newGroove.layers[li].patternId = state[li].patternId;
   });
+  newGroove.source = 'teacher';
+  newGroove.localChangeType = 'create';
+  delete newGroove.localDirty; delete newGroove.localChangedFields;
   packCours.grooves.push(newGroove);
 
   // Auto-créer une entrée encyclo vide pour ce nouveau groove
@@ -2646,6 +2656,7 @@ function pspDoSaveNewGroove(){
   saveToStorage();
   grooveDirty = false; updateGrooveSaveBtn();
   refreshMenuBtnStates();
+  buildPublishSection();
   if(btn) flashSave(btn);
   closePatSavePop();
   // Rebuild l'encyclo pour inclure la nouvelle entrée
@@ -2666,6 +2677,8 @@ function saveGroove(){
     groove.layers[li].mute=state[li].muted;
     groove.layers[li].halfOn=state[li].halfOn;
     groove.layers[li].doubleOn=state[li].doubleOn;
+    groove.layers[li].ternOn=state[li].ternOn||false;
+    groove.layers[li].shift=state[li].shiftN||0;
   });
   saveToStorage();
 }
@@ -3589,6 +3602,8 @@ async function sbPublishPattern(patId) {
     });
     if (isMX) {
       pat.source = 'school';
+      pat.localDirty = false;
+      delete pat.localChangeType; delete pat.localChangedFields;
     } else {
       pat.localStatus = 'submitted';
     }
@@ -3621,6 +3636,8 @@ async function sbPublishGroove(grooveId) {
     });
     if (isMX) {
       g.source = 'school';
+      g.localDirty = false;
+      delete g.localChangeType; delete g.localChangedFields;
     } else {
       g.localStatus = 'submitted';
     }
@@ -3901,6 +3918,27 @@ function buildApprobationsSection() {
   });
 }
 
+// ── Tracking modifications locales ────────────────────────────────────────────
+// Marque un item comme modifié localement (pour affichage dans la section publier)
+function markItemDirty(item, changeField) {
+  if (!item) return;
+  if (item.source === 'school') {
+    if (authProfile?.role !== 'mx') return; // TX ne peut pas marquer un item école
+    item.localDirty = true;
+  }
+  item.localChangeType = item.localChangeType || 'update';
+  if (!item.localChangedFields) item.localChangedFields = [];
+  if (changeField && !item.localChangedFields.includes(changeField)) {
+    item.localChangedFields.push(changeField);
+  }
+}
+
+// Libelle lisible pour les champs modifiés
+function changeFieldLabel(fields) {
+  const labels = { sequence:'steps', layers:'couches', nom:'nom', famille:'famille', tempo:'tempo' };
+  return (fields||[]).map(f=>labels[f]||f).join(', ');
+}
+
 // ── Section Publier/Soumettre ─────────────────────────────────────────────────
 function buildPublishSection() {
   const container = document.getElementById('publish-section');
@@ -3911,7 +3949,12 @@ function buildPublishSection() {
   const isMX = authProfile?.role === 'mx';
   const teacherPats    = packCours.patterns.filter(p => p.source === 'teacher');
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher');
-  const hasItems = teacherPats.length + teacherGrooves.length;
+  // MX : inclure aussi les items école modifiés localement (localDirty)
+  const dirtySchoolPats    = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDirty) : [];
+  const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty) : [];
+  const allPats    = [...teacherPats, ...dirtySchoolPats];
+  const allGrooves = [...teacherGrooves, ...dirtySchoolGrooves];
+  const hasItems = allPats.length + allGrooves.length;
 
   if (!authSession || !hasItems) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
@@ -3919,16 +3962,32 @@ function buildPublishSection() {
     return;
   }
 
-  // Badge: seulement les items draft (action TX requise)
+  // Badge + count: items en attente d'action (draft TX ou school dirty MX)
   const draftPats  = teacherPats.filter(p => p.localStatus !== 'submitted');
   const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
-  _localPendingCount = draftPats.length + draftGrvs.length;
+  _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
-  if(pubLabel) pubLabel.textContent = isMX ? '↑ Publier' : '→ Soumettre';
+  const baseLabel = isMX ? '↑ Publier' : '→ Soumettre';
+  if(pubLabel) pubLabel.textContent = _localPendingCount > 0
+    ? baseLabel + ' (' + _localPendingCount + ')'
+    : baseLabel;
 
   const sendLabel = isMX ? '↑ École' : '→ Envoyer';
+
+  const changeTypeBadge = (item) => {
+    if (!item.localChangeType && item.source === 'teacher') return '';
+    const type = item.localChangeType || 'create';
+    const styles = {
+      create: 'background:#d4f5e6;color:#0F6E56',
+      update: 'background:#fff3cd;color:#856404',
+    };
+    const labels = { create: 'Nouveau', update: 'Modif.' };
+    const details = item.localChangedFields?.length ? ' · ' + changeFieldLabel(item.localChangedFields) : '';
+    return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;${styles[type]||styles.update};flex-shrink:0">`
+      + (labels[type]||'Modif.') + details + '</span>';
+  };
 
   const itemRow = (type, item) => {
     const isSubmitted = !isMX && item.localStatus === 'submitted';
@@ -3940,19 +3999,21 @@ function buildPublishSection() {
       ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" `+
         `title="Annuler la soumission" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>`
       : '';
-    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;padding:3px 0">` +
+    return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+      `<div style="display:flex;align-items:center;gap:4px">` +
       `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
-      `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div>`;
+      changeTypeBadge(item) +
+      `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div></div>`;
   };
 
   let html = '';
-  if (teacherPats.length) {
+  if (allPats.length) {
     html += '<div style="font-size:10px;font-weight:600;color:#888;margin-bottom:4px">Patterns</div>';
-    teacherPats.forEach(p => { html += itemRow('pattern', p); });
+    allPats.forEach(p => { html += itemRow('pattern', p); });
   }
-  if (teacherGrooves.length) {
+  if (allGrooves.length) {
     html += '<div style="font-size:10px;font-weight:600;color:#888;margin-top:6px;margin-bottom:4px">Grooves</div>';
-    teacherGrooves.forEach(g => { html += itemRow('groove', g); });
+    allGrooves.forEach(g => { html += itemRow('groove', g); });
   }
   container.innerHTML = html;
 
@@ -4193,7 +4254,7 @@ function buildLibListPatterns(){
     nameEl.className = 'lib-item-name';
     nameEl.textContent = pat.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    if (pat.source === 'school' && currentMode === 'tx') {
+    if (pat.source === 'school' && currentMode === 'tx' && authProfile?.role !== 'mx') {
       const forkBtn = document.createElement('button'); forkBtn.className = 'lib-item-rename';
       forkBtn.textContent = '✏️'; forkBtn.title = 'Créer une variante personnelle (fork)';
       forkBtn.addEventListener('click', e=>{ e.stopPropagation(); libForkPattern(pat); });
@@ -4280,8 +4341,9 @@ function libBuildPatternTags(container, pat){
     x.title = 'Retirer cette famille';
     x.addEventListener('click', e=>{ e.stopPropagation();
       pat.familles = (pat.familles||[]).filter(id=>id!==fid);
+      markItemDirty(pat, 'famille');
       libBuildPatternTags(container, pat);
-      saveToStorage();
+      saveToStorage(); buildPublishSection();
     });
     chip.appendChild(x); container.appendChild(chip);
   });
@@ -4303,8 +4365,9 @@ function libBuildPatternTags(container, pat){
       if(!sel.value) return;
       if(!pat.familles) pat.familles = [];
       pat.familles.push(sel.value);
+      markItemDirty(pat, 'famille');
       libBuildPatternTags(container, pat);
-      saveToStorage();
+      saveToStorage(); buildPublishSection();
     });
     sel.addEventListener('blur', ()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
     addBtn.parentNode.insertBefore(sel, addBtn);
@@ -4327,7 +4390,8 @@ function libStartRenamePattern(nameEl, patId){
     const pat = packCours.patterns.find(p=>p.id===patId);
     if(pat && newNom !== nameEl.dataset.orig){
       pat.nom = newNom;
-      saveToStorage();
+      markItemDirty(pat, 'nom');
+      saveToStorage(); buildPublishSection();
       // Mettre à jour les selects ouverts
       LAYERS.forEach((_,li)=>{
         const s = document.getElementById('sel-'+LAYERS[li].id);
@@ -4353,6 +4417,7 @@ function libForkPattern(srcPat) {
     familles: [...(srcPat.familles || [])],
     encyclo_ref: srcPat.encyclo_ref || null,
     source: 'teacher',
+    localChangeType: 'create',
   };
   packCours.patterns.push(fork);
   if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
@@ -4837,7 +4902,7 @@ function buildLibListGrooves(){
     const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
     nameEl.textContent = groove.nom.replace(/^● modifié /,'');
     row1.appendChild(nameEl);
-    if (groove.source === 'school' && currentMode === 'tx') {
+    if (groove.source === 'school' && currentMode === 'tx' && authProfile?.role !== 'mx') {
       const forkBtn = document.createElement('button'); forkBtn.className='lib-item-rename';
       forkBtn.textContent='✏️'; forkBtn.title='Créer une variante personnelle (fork)';
       forkBtn.addEventListener('click',e=>{ e.stopPropagation(); libForkGroove(groove); });
@@ -4880,7 +4945,7 @@ function libBuildGrooveTags(container, groove){
     const fam=getFamille(fid); if(!fam) return;
     const chip=document.createElement('span'); chip.className='fam-tag fam-tag-groove'; chip.textContent=fam.nom;
     const x=document.createElement('button'); x.className='fam-tag-x'; x.textContent='×';
-    x.addEventListener('click',e=>{ e.stopPropagation(); groove.familles=(groove.familles||[]).filter(id=>id!==fid); libBuildGrooveTags(container,groove); saveToStorage(); });
+    x.addEventListener('click',e=>{ e.stopPropagation(); groove.familles=(groove.familles||[]).filter(id=>id!==fid); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection(); });
     chip.appendChild(x); container.appendChild(chip);
   });
   const addBtn=document.createElement('span'); addBtn.className='fam-tag-add'; addBtn.textContent='＋';
@@ -4889,7 +4954,7 @@ function libBuildGrooveTags(container, groove){
     const sel=document.createElement('select'); sel.className='psp-fam-sel'; sel.style.cssText='font-size:9px;max-width:100px';
     sel.innerHTML='<option value="">— Famille —</option>';
     available.forEach(f=>{ const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ if(!sel.value) return; if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); libBuildGrooveTags(container,groove); saveToStorage(); });
+    sel.addEventListener('change',()=>{ if(!sel.value) return; if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection(); });
     sel.addEventListener('blur',()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
     addBtn.parentNode.insertBefore(sel,addBtn); sel.focus();
   });
@@ -4907,7 +4972,7 @@ function libStartRenameGroove(nameEl, grooveId){
     if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
     const g=packCours.grooves.find(g=>g.id===grooveId);
     if(g&&newNom!==nameEl.dataset.orig){
-      g.nom=newNom; saveToStorage();
+      g.nom=newNom; markItemDirty(g,'nom'); saveToStorage(); buildPublishSection();
       // Mettre à jour le select groove
       const s=document.getElementById('groove-select');
       if(s) [...s.options].forEach(o=>{ if(o.value===grooveId)o.textContent=newNom; });
@@ -4929,6 +4994,7 @@ function libForkGroove(srcGroove) {
     tempo: { ...srcGroove.tempo },
     layers: (srcGroove.layers || []).map(l => ({ ...l })),
     source: 'teacher',
+    localChangeType: 'create',
   };
   packCours.grooves.push(fork);
   if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
@@ -5635,8 +5701,10 @@ function attachEvents(){
     const nowHidden = form.classList.toggle('hidden');
     document.getElementById('psp-new-toggle').textContent =
       nowHidden ? '＋ Sauvegarder comme nouveau ▶' : '＋ Sauvegarder comme nouveau ▼';
-    // Pré-sélectionner le champ nom à l'ouverture
     if(!nowHidden){
+      // Partir avec familles vides pour un nouvel item
+      _pspNewFamIds = [];
+      buildPspFamTags(); buildPspFamSel();
       const inp = document.getElementById('psp-name-input');
       setTimeout(()=>{ inp.focus(); inp.select(); }, 60);
     }
