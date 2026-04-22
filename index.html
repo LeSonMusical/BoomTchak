@@ -662,11 +662,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.2.0</span>
+      <span class="app-version">v3.2.1</span>
     </div>
   </div>
   <div class="top-bar-right">
-    <button class="btn-top btn-tempo-display" id="btn-tempo">♩= 100</button>
+    <button class="btn-top btn-tempo-display" id="btn-tempo">🔔 ♩= 100</button>
     <button class="btn-top" id="btn-sons">Sons</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
@@ -3153,7 +3153,7 @@ function updateBeatDisplay(){
   const el=document.getElementById('beat-display');
   if(el) el.textContent=txt;
   const btn=document.getElementById('btn-tempo');
-  if(btn) btn.textContent=txt;
+  if(btn) btn.textContent='🔔 '+txt;
 }
 function getMetroBeatSec(){
   const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;

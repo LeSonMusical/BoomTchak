@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.2.0
+> Mis à jour au fil du développement — v3.2.1
 
 ---
 
@@ -16,7 +16,7 @@ Toute la logique, les styles et le HTML sont dans ce seul fichier (~6000 lignes)
 - **Backend** : Supabase (Postgres + Auth + REST API)
 - **Auth** : Google OAuth via Supabase (implicit flow, pas de SDK)
 - **Persistance locale** : `localStorage` (clé `ptk_content_v2`)
-- **Déploiement** : fichier statique (GitHub Pages ou équivalent)
+- **Déploiement** : fichier statique (GitHub Pages)
 
 ### Objet central : `packCours`
 Clone runtime de `PTK_DEFAULT`, stocké en localStorage. Contient :
@@ -248,32 +248,46 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 8. Gaps identifiés — Backlog priorisé
+## 8. Règle de déploiement (ajoutée v3.2.1)
 
-### Priorité haute
+**Le développeur (Claude) doit, après chaque push de branche feature :**
+1. Créer une PR draft si elle n'existe pas encore
+2. Merger la PR vers `main` (fast-forward ou merge commit)
+3. Vérifier que `main` est à jour sur `origin`
+
+→ L'utilisateur peut ainsi tester directement depuis GitHub Pages sans action manuelle.
+→ Cette règle est inscrite dans `CLAUDE.md`.
+
+---
+
+## 9. Gaps identifiés — Backlog priorisé
+
+### Priorité haute (prochaine session)
 | # | Description | Impact |
 |---|-------------|--------|
+| G0 | **Bug initAuth() bloquant** : app parfois figée sur "Connexion en cours…" si sbFetchProfile() échoue silencieusement (token expiré → authProfile=null mais authSession reste) | Bloquant au démarrage |
 | G1 | **Fork item école** : TX modifie un item école → copie automatique en source:'teacher' pour soumission | TX ne peut pas proposer d'amélioration d'un item école |
 | G2 | **Famille TX transmise à la soumission** : push les familles TX (scope:'teacher') au moment du submit pattern/groove | MX voit des IDs de famille inconnus |
 | G3 | **Suppression locale → annulation Supabase auto** : si item localStatus:'submitted', DELETE Supabase avant supprimer localement | Orphelins en DB |
+| G4 | **MX → Tout sauver en DB** : patterns/grooves/encyclo/familles MX doivent pouvoir être publiés directement en école | Perte de données si localStorage vidé |
 
 ### Priorité moyenne
 | # | Description | Impact |
 |---|-------------|--------|
-| G4 | **Encyclo MX → DB** : bouton "Publier en DB" dans la section encyclopédie pour MX | Éditions MX perdues si localStorage vidé |
-| G5 | **Édition tempo/signature post-création** | Groove figé après création |
-| G6 | **Raison de refus** : MX peut saisir un message lors du rejet, TX le voit dans le toast | UX de communication TX/MX |
+| G5 | **Encyclo MX → DB** : bouton "Publier en DB" dans la section encyclopédie pour MX | Éditions MX perdues si localStorage vidé |
+| G6 | **Édition tempo/signature post-création** | Groove figé après création |
+| G7 | **Raison de refus** : MX peut saisir un message lors du rejet, TX le voit dans le toast | UX de communication TX/MX |
+| G8 | **Ordre familles/patterns/grooves persisté** : colonne `ordre int` en DB, sync à la sauvegarde MX | Ordre MX perdu après sync |
 
 ### Priorité basse
 | # | Description | Impact |
 |---|-------------|--------|
-| G7 | **Ordre familles persisté** : colonne `ordre int` en DB, sync à la sauvegarde MX | Ordre MX perdu après sync |
-| G8 | **Suppression item école depuis l'UI MX** | MX doit passer par le dashboard Supabase |
-| G9 | **Historique des soumissions** | Traçabilité TX/MX |
+| G9 | **Suppression item école depuis l'UI MX** | MX doit passer par le dashboard Supabase |
+| G10 | **Historique des soumissions** | Traçabilité TX/MX |
 
 ---
 
-## 9. Fonctions Supabase clés
+## 10. Fonctions Supabase clés
 
 | Fonction | Endpoint | Rôle |
 |----------|----------|------|
@@ -290,11 +304,14 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 10. Fichiers du projet
+## 11. Fichiers du projet
 
 | Fichier | Rôle |
 |---------|------|
 | `index.html` | Application complète (HTML + CSS + JS) |
+| `BoomTchak_Explain.md` | Document de référence complet (pédagogie + UX + technique + roadmap) |
+| `BoomTchak_v3_bible.md` | Ce fichier — référence technique v3 |
+| `CLAUDE.md` | Instructions pour les sessions Claude Code |
 | `supabase/schema.sql` | Schéma DB à exécuter sur nouvelle instance |
 | `supabase/seed_school_pool.sql` | Seed complet : familles + patterns + grooves + encyclo (32 entrées) |
 | `supabase/generate_encyclo_seed.js` | Script Node.js qui regénère la section encyclo du seed depuis `index.html` |
@@ -302,10 +319,11 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 11. Versions
+## 12. Historique des versions
 
 | Version | Changements principaux |
 |---------|----------------------|
 | v3.0.0 | Refonte v3 : Supabase, rôles TX/MX, pool école |
 | v3.1.0 | Workflow approbation, pastille ···, statuts |
 | v3.2.0 | localStatus draft/submitted, bouton Annuler TX, bouton Rejeter MX, familles MX → Supabase, correction RLS owner_id, feedback refus (toast) |
+| v3.2.1 | Icône cloche bouton métronome, bump docs, règle de déploiement auto main |
