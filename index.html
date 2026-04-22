@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.4</span>
+      <span class="app-version">v3.4.5</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3187,11 +3187,18 @@ function buildEncycloSection(){
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click', () => {
     // Sauvegarde locale uniquement — la publication DB passe par le panel ···
-    if (authProfile?.role === 'mx' && currentEncycloId && packCours.encyclo?.[currentEncycloId]) {
-      packCours.encyclo[currentEncycloId]._pendingDB = true;
+    if (currentEncycloId && packCours.encyclo?.[currentEncycloId]) {
+      if (authProfile?.role === 'mx') {
+        packCours.encyclo[currentEncycloId]._pendingDB = true;
+      } else {
+        // TX : marquer pour affichage dans panel ··· (pas de push DB direct)
+        packCours.encyclo[currentEncycloId]._pendingTX = true;
+      }
     }
     saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
-    if (authProfile?.role === 'mx') { buildPublishSection(); showToast('Modifications locales enregistrées — publiez via ···', 'info'); }
+    buildPublishSection();
+    if (authProfile?.role === 'mx') showToast('Modifications locales enregistrées — publiez via ···', 'info');
+    else showToast('Encyclopédie sauvegardée localement — soumettez via ···', 'info');
   });
   bar.appendChild(saveBtnEnc);
   if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
@@ -3721,9 +3728,13 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   packCours.grooves  = packCours.grooves.filter(g => g.source !== 'school');
   packCours.familles = packCours.familles.filter(f => f.source !== 'school');
 
+  // IDs école ayant un fork TX actif → ne pas réimporter (évite doublon fork+original)
+  const schoolIdsWithForkP = new Set(packCours.patterns.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
+  const schoolIdsWithForkG = new Set(packCours.grooves.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
+
   (patterns || []).forEach(p => {
-    // Supprimer tout item local (teacher soumis+approuvé) qui aurait le même ID
     packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
+    if (schoolIdsWithForkP.has(p.id)) return; // fork TX actif — ne pas réimporter l'original
     packCours.patterns.push({
       id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
       familles: p.familles_ids || [],
@@ -3732,8 +3743,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     });
   });
   (grooves || []).forEach(g => {
-    // Supprimer tout item local (teacher soumis+approuvé) qui aurait le même ID
     packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
+    if (schoolIdsWithForkG.has(g.id)) return; // fork TX actif — ne pas réimporter l'original
     packCours.grooves.push({
       id: g.id, nom: g.nom, familles: g.familles_ids || [],
       band_defaut: g.band_defaut, signature: g.signature || '4/4',
@@ -3748,6 +3759,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     }
   });
   (encyclo || []).forEach(e => {
+    // Ne pas écraser les modifications TX locales non soumises
+    if (packCours.encyclo?.[e.key]?._pendingTX) return;
     packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
   });
 }
@@ -4141,6 +4154,8 @@ function markItemDirty(item, changeField) {
       fork.localChangeType = fork.localChangeType || 'update';
       if (!fork.localChangedFields) fork.localChangedFields = [];
       if (changeField && !fork.localChangedFields.includes(changeField)) fork.localChangedFields.push(changeField);
+      // Rafraîchir la liste bibliothèque pour éviter l'affichage de l'item école obsolète
+      if (isGroove) buildLibListGrooves(); else buildLibListPatterns();
       return;
     }
     item.localDirty = true;
@@ -4178,8 +4193,11 @@ function buildPublishSection() {
   const pendingEncyclo = isMX && packCours.encyclo
     ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:key}))
     : [];
+  const pendingEncycloTX = !isMX && packCours.encyclo
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingTX).map(([key,e])=>({key,nom:key}))
+    : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -4188,7 +4206,7 @@ function buildPublishSection() {
   const draftPats  = teacherPats.filter(p => p.localStatus !== 'submitted');
   const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
   _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length
-    + pendingEncyclo.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length;
+    + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -4256,6 +4274,18 @@ function buildPublishSection() {
         `</div></div>`;
     });
   }
+  if (pendingEncycloTX.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
+    pendingEncycloTX.forEach(e => {
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Local</span>` +
+        `<div style="display:flex;gap:4px;flex-shrink:0">` +
+        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" title="Annuler les modifications locales" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `</div></div>`;
+    });
+    html += `<div style="font-size:9px;color:#888;padding:2px 0 4px">ℹ Encyclopédie : modifications locales (approval MX requis — non soumis)</div>`;
+  }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
     [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g}))].forEach(({type,item}) => {
@@ -4289,7 +4319,7 @@ function buildPublishSection() {
         : await sbPublishGroove(btn.dataset.id);
       if (ok) {
         btn.textContent = '✓'; btn.style.background = '#d4f5e6';
-        setTimeout(() => buildPublishSection(), 700);
+        setTimeout(() => { buildPublishSection(); sbSyncSchoolPool(); }, 700);
       } else {
         btn.textContent = origText; btn.disabled = false;
       }
@@ -4306,7 +4336,7 @@ function buildPublishSection() {
         const ok = await sbCancelSubmission(btn.dataset.type, btn.dataset.id);
         if (ok) {
           if (item) delete item.localStatus;
-          saveToStorage(); buildPublishSection();
+          saveToStorage(); buildPublishSection(); sbSyncSchoolPool();
         } else { btn.textContent = '✕'; btn.disabled = false; }
       } else if (mode === 'school') {
         // MX: annuler les modifications locales d'un item école
@@ -4343,6 +4373,14 @@ function buildPublishSection() {
     btn.addEventListener('click', () => {
       const entry = packCours.encyclo?.[btn.dataset.key];
       if (entry) delete entry._pendingDB;
+      saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-encyclo-tx-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const entry = packCours.encyclo?.[btn.dataset.key];
+      if (entry) delete entry._pendingTX;
       saveToStorage(); buildPublishSection();
     });
   });
