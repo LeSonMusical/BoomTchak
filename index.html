@@ -223,15 +223,14 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-edit-row.hidden{display:none}
 /* Top bar : couleurs volets */
 /* Top bar VOL / Metro */
-#btn-vol{color:#999;border-color:#8ab4d0;min-width:28px;padding:3px 7px;font-size:14px;line-height:1}
-#btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5}
-#btn-vol.muted{color:#ccc;border-color:#ccc;background:#f8f8f8}
-#btn-tempo{color:#999;border-color:#b0a8d8;display:flex;align-items:center;gap:3px;padding:3px 7px}
-#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em}
-#btn-tempo .metro-state{font-size:13px;position:relative;display:inline-block}
-#btn-tempo:not(.metro-on) .metro-state::after{content:'';position:absolute;left:-1px;right:-1px;top:50%;height:1.5px;background:currentColor;transform:rotate(-20deg);border-radius:1px}
-#btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
-#btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
+#btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;min-width:28px;padding:3px 7px;font-size:14px;line-height:1;opacity:.7}
+#btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
+#btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
+#btn-tempo{color:#bbb;border-color:#ddd;background:#f5f5f5;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.7}
+#btn-tempo .metro-icon{font-size:14px;line-height:1}
+#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
+#btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
+#btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-edit-row .fam-filter{opacity:.9}
@@ -615,12 +614,12 @@ body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
 body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-body.dark-mode #btn-vol{color:#777;border-color:#4A7FA5}
-body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5}
-body.dark-mode #btn-vol.muted{color:#555;border-color:#555;background:#1c1c1a}
-body.dark-mode #btn-tempo{color:#777;border-color:#6B5FA5}
-body.dark-mode #btn-tempo.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
-body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5}
+body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
+body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
+body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
+body.dark-mode #btn-tempo{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
+body.dark-mode #btn-tempo.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
+body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
@@ -683,11 +682,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.1</span>
+      <span class="app-version">v3.4.2</span>
     </div>
   </div>
   <div class="top-bar-right">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo">🔔<span class="metro-state">♩</span><span class="metro-bpm">♩100</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-icon">🔕</span><span class="metro-bpm"> ♩100</span></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
@@ -3249,7 +3248,11 @@ function setMetroGlobal(on){
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
   const btnTop=document.getElementById('btn-tempo');
-  if(btnTop) btnTop.classList.toggle('metro-on',on);
+  if(btnTop){
+    btnTop.classList.toggle('metro-on',on);
+    const icon=btnTop.querySelector('.metro-icon');
+    if(icon) icon.textContent=on?'🔔':'🔕';
+  }
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
 function getMetroBeatSec(){
