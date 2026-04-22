@@ -228,9 +228,9 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-vol.muted{color:#ccc;border-color:#ccc;background:#f8f8f8}
 #btn-tempo{color:#999;border-color:#b0a8d8;display:flex;align-items:center;gap:3px;padding:3px 7px}
 #btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em}
-#btn-tempo .metro-state{font-size:10px;opacity:.6}
+#btn-tempo .metro-state{font-size:13px;position:relative;display:inline-block}
+#btn-tempo:not(.metro-on) .metro-state::after{content:'';position:absolute;left:-1px;right:-1px;top:50%;height:1.5px;background:currentColor;transform:rotate(-20deg);border-radius:1px}
 #btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
-#btn-tempo.metro-on .metro-state{opacity:1}
 #btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
@@ -683,11 +683,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.0</span>
+      <span class="app-version">v3.4.1</span>
     </div>
   </div>
   <div class="top-bar-right">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-state">🔇</span><span class="metro-bpm">♩100</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-state">♩</span><span class="metro-bpm">♩100</span></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
     <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
@@ -775,6 +775,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
       <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
+    </div>
+    <div class="metro-panel" style="gap:6px;margin-top:4px">
+      <span class="metro-row-lbl">Volume</span>
+      <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
+      <span id="metro-vol-val" style="font-size:10px;color:#888;min-width:26px;text-align:right">80%</span>
     </div>
   </div><!-- /metro-bloc -->
   </div>
@@ -1532,7 +1537,7 @@ const SIGNATURES=[
 let currentSig=SIGNATURES[2]; // 4/4 par défaut
 
 // ── État métronome ────────────────────────────────────────────────────────
-let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true};
+let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true, volume:80};
 // metro.muted=true  → Métro OFF : timing en sync avec Play, mais aucun son émis
 // metro.muted=false → Métro ON  : les clics sont audibles
 let metroBeatPos=0, metroNextBeatTime=0;
@@ -3244,11 +3249,7 @@ function setMetroGlobal(on){
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
   const btnTop=document.getElementById('btn-tempo');
-  if(btnTop){
-    btnTop.classList.toggle('metro-on',on);
-    const ico=btnTop.querySelector('.metro-state');
-    if(ico) ico.textContent=on?'🔔':'🔕';
-  }
+  if(btnTop) btnTop.classList.toggle('metro-on',on);
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
 function getMetroBeatSec(){
@@ -3260,7 +3261,8 @@ function playMetroClick(atTime,type){
   const osc=a.createOscillator();
   const gain=a.createGain();
   osc.connect(gain);gain.connect(a.destination);
-  const cfg={accent:{f:1760,v:0.5,d:0.05},beat:{f:880,v:0.3,d:0.03},subdiv:{f:440,v:0.15,d:0.02}}[type];
+  const vf=metro.volume/100;
+  const cfg={accent:{f:1760,v:0.5*vf,d:0.05},beat:{f:880,v:0.3*vf,d:0.03},subdiv:{f:440,v:0.15*vf,d:0.02}}[type];
   osc.frequency.value=cfg.f;osc.type='sine';
   gain.gain.setValueAtTime(cfg.v,atTime);
   gain.gain.exponentialRampToValueAtTime(0.001,atTime+cfg.d);
@@ -5605,12 +5607,12 @@ function loadFromStorage(){
 }
 
 function attachEvents(){
-  // ── Btn Metro (top bar) : court=mute métro, long sans drag=section Temps, long+drag=BPM ──
+  // ── Btn Metro (top bar) : court=mute métro, double tap=section, long+drag=BPM ──
   {
     const btnT=document.getElementById('btn-tempo');
     const bpmSlider=document.getElementById('bpm');
     const LONG_MS=350, DRAG_PX=6, SPM_PER_PX=1;
-    let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null;
+    let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
 
     function toggleTempsWrap(){
       const wrap=document.getElementById('temps-wrap');
@@ -5624,38 +5626,43 @@ function attachEvents(){
       _down=true; _dragMoved=false; _longFired=false;
       btnT.setPointerCapture(e.pointerId);
       e.preventDefault();
-      _longTimer=setTimeout(()=>{ _longFired=true; },LONG_MS);
+      // Section visible immédiatement après LONG_MS si pas de drag
+      _longTimer=setTimeout(()=>{
+        if(!_dragMoved){ _longFired=true; toggleTempsWrap(); }
+      },LONG_MS);
     },{passive:false});
 
     btnT.addEventListener('pointermove',e=>{
       if(!_down)return;
       const dx=e.clientX-_startX;
       if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
+      if(!_dragMoved){ clearTimeout(_longTimer); } // drag détecté → annuler section toggle
       _dragMoved=true;
-      if(_longFired){
-        const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
-        bpmSlider.value=newVal; updateBeatDisplay();
-        _dragOverlay.show('♩= '+Math.round(parseInt(bpmSlider.value)*globalSpeedMult/currentSig.stepsPerBeat));
-      }
+      const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
+      bpmSlider.value=newVal; updateBeatDisplay();
+      _dragOverlay.show('♩= '+Math.round(parseInt(bpmSlider.value)*globalSpeedMult/currentSig.stepsPerBeat));
     });
 
     btnT.addEventListener('pointerup',()=>{
       clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
-      if(_longFired&&_dragMoved){ /* BPM changé pendant le drag */ }
-      else if(_longFired&&!_dragMoved){ toggleTempsWrap(); }
-      else { setMetroGlobal(metro.muted); } // court tap → toggle mute
+      if(_dragMoved||_longFired) return; // drag ou long déjà traité
+      // Court tap : double tap = section, sinon mute métro
+      const now=Date.now();
+      if(now-_lastTap<300){ toggleTempsWrap(); _lastTap=0; }
+      else { setMetroGlobal(metro.muted); _lastTap=now; }
     });
 
     btnT.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
-  // ── Btn Vol (top bar) : court=mute band, long sans drag=section Band, long+drag=volume ──
+  // ── Btn Vol (top bar) : court=mute band, double tap=section, long+drag=volume ──
   {
     const btnV=document.getElementById('btn-vol');
     const LONG_MS=350, DRAG_PX=6;
-    let _startX=0,_startVol=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null;
+    let _startX=0,_startVol=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
 
     function setBandMuted(muted){
       bandMuted=muted;
+      btnV.textContent=muted?'🔇':'🔊';
       btnV.classList.toggle('muted',muted);
     }
     function toggleBandSection(){
@@ -5676,26 +5683,28 @@ function attachEvents(){
       _down=true; _dragMoved=false; _longFired=false;
       btnV.setPointerCapture(e.pointerId);
       e.preventDefault();
-      _longTimer=setTimeout(()=>{ _longFired=true; },LONG_MS);
+      _longTimer=setTimeout(()=>{
+        if(!_dragMoved){ _longFired=true; toggleBandSection(); }
+      },LONG_MS);
     },{passive:false});
 
     btnV.addEventListener('pointermove',e=>{
       if(!_down)return;
       const dx=e.clientX-_startX;
       if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
+      if(!_dragMoved){ clearTimeout(_longTimer); }
       _dragMoved=true;
-      if(_longFired){
-        bandVolume=Math.max(0,Math.min(100,Math.round(_startVol+dx*0.5)));
-        _dragOverlay.show('🔊 '+bandVolume+'%');
-        if(bandMuted&&bandVolume>0){ setBandMuted(false); }
-      }
+      bandVolume=Math.max(0,Math.min(100,Math.round(_startVol+dx*0.5)));
+      _dragOverlay.show('🔊 '+bandVolume+'%');
+      if(bandMuted&&bandVolume>0) setBandMuted(false);
     });
 
     btnV.addEventListener('pointerup',()=>{
       clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
-      if(_longFired&&_dragMoved){ /* volume changé */ }
-      else if(_longFired&&!_dragMoved){ toggleBandSection(); }
-      else { setBandMuted(!bandMuted); } // court tap → toggle mute
+      if(_dragMoved||_longFired) return;
+      const now=Date.now();
+      if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
+      else { setBandMuted(!bandMuted); _lastTap=now; }
     });
 
     btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
@@ -5860,6 +5869,12 @@ function attachEvents(){
     },{passive:false});
   }
 
+  // ── Volume métronome ──
+  document.getElementById('metro-vol').addEventListener('input', function(){
+    metro.volume = parseInt(this.value);
+    document.getElementById('metro-vol-val').textContent = metro.volume + '%';
+  });
+
   // ── Settings menu dropdown ──
   document.getElementById('btn-settings').addEventListener('click', e => {
     e.stopPropagation();
@@ -5927,8 +5942,7 @@ function attachEvents(){
 
   document.getElementById('bpm').addEventListener('input',function(){
     updateBeatDisplay();
-    const groove=getGroove(currentGrooveId);
-    if(groove){ grooveDirty=true; updateGrooveSaveBtn(); markItemDirty(groove,'tempo'); buildPublishSection(); }
+    saveGroove(); // persiste localement sans marquer le groove dirty
   });
   updateBeatDisplay();
 
