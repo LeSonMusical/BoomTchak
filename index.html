@@ -33,7 +33,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:230px;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
+.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -662,7 +662,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.3.0</span>
+      <span class="app-version">v3.3.1</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -672,6 +672,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="settings-menu-wrap">
       <button class="btn-top" id="btn-settings" title="Menu">···</button>
       <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
+      <span id="settings-role-badge" style="display:none;position:absolute;bottom:1px;right:0;font-size:9px;pointer-events:none;line-height:1"></span>
       <div class="settings-menu" id="panel-settings">
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
@@ -1685,6 +1686,7 @@ let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='sx'?'sx':'tx';
 let dirtyLayers = [false, false, false];
 let grooveDirty = false;
+let _suppressGrooveDirty = false;
 let encycloDir = false;
 
 // ── Gestion unifiée des états "modifié" ──────────────────────────────────
@@ -1718,6 +1720,7 @@ function updateGrooveSaveBtn(){
 
 function updateEncycloSaveBtn(){
   setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
+  updateSettingsBadge();
 }
 function refreshMenuBtnStates(){
   // Tous les menus restent actifs en permanence (TX et SX)
@@ -1755,7 +1758,16 @@ let _localPendingCount = 0;
 let _remotePendingCount = 0;
 function updateSettingsBadge(){
   const badge = document.getElementById('settings-badge');
-  if(badge) badge.style.display = (_localPendingCount + _remotePendingCount) > 0 ? '' : 'none';
+  const roleBadge = document.getElementById('settings-role-badge');
+  const role = authProfile?.role;
+  const encycloNotif = role === 'mx' && encycloDir;
+  if(badge) badge.style.display = (_localPendingCount + _remotePendingCount) > 0 || encycloNotif ? '' : 'none';
+  if(roleBadge){
+    if(role === 'mx')       { roleBadge.textContent='👑'; roleBadge.style.display=''; }
+    else if(role === 'tx')  { roleBadge.textContent='✏️'; roleBadge.style.display=''; }
+    else if(role === 'sx')  { roleBadge.textContent='🎵'; roleBadge.style.display=''; }
+    else                    { roleBadge.style.display='none'; }
+  }
 }
 let layersOuverts = true;
 let encycloOuvert = true;
@@ -1793,7 +1805,7 @@ function applyGroove(grooveId){
   // Appliquer la signature (si préférence activée)
   if(prefs.applyGrooveSig&&groove.signature){
     const sigEl=document.getElementById('sig-sel');
-    if(sigEl){sigEl.value=groove.signature;sigEl.dispatchEvent(new Event('change'));}
+    if(sigEl){_suppressGrooveDirty=true;sigEl.value=groove.signature;sigEl.dispatchEvent(new Event('change'));_suppressGrooveDirty=false;}
   }
 
   globalSpeedMult=1;
@@ -1880,7 +1892,18 @@ function buildBandSection(){
     const prev=sel.value;buildBandOpts(famSel.value);
     if([...sel.options].some(o=>o.value===prev))sel.value=prev;
   });
-  sel.addEventListener('change',()=>{if(sel.value){applyBand(sel.value);}});
+  sel.addEventListener('change',()=>{
+    if(sel.value){
+      applyBand(sel.value);
+      const groove=getGroove(currentGrooveId);
+      if(groove&&sel.value!==groove.band_defaut){
+        groove.band_defaut=sel.value;
+        grooveDirty=true; updateGrooveSaveBtn();
+        markItemDirty(groove,'band');
+        buildPublishSection();
+      }
+    }
+  });
   bar.appendChild(sel);
 
   // Bouton 💾 sauvegarder band
@@ -2669,8 +2692,6 @@ let _saveSheetBtn = null, _saveSheetType = 'groove';
 // Sauvegarde du groove courant (sync état runtime → packCours)
 function saveGroove(){
   const groove=getGroove(currentGrooveId);if(!groove)return;
-  // Sync l'état complet de chaque couche (patternId, mute, half/double)
-  // ⚠️ Ne jamais toucher aux séquences de steps ici — elles se sauvegardent via 💾 du layer
   LAYERS.forEach((_,li)=>{
     if(!groove.layers[li])return;
     if(state[li].patternId)groove.layers[li].patternId=state[li].patternId;
@@ -2680,6 +2701,8 @@ function saveGroove(){
     groove.layers[li].ternOn=state[li].ternOn||false;
     groove.layers[li].shift=state[li].shiftN||0;
   });
+  const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+  if(bpmVal>0){ if(!groove.tempo)groove.tempo={}; groove.tempo.defaut=bpmVal; }
   saveToStorage();
 }
 
@@ -3618,6 +3641,7 @@ async function sbPublishPattern(patId) {
 async function sbPublishGroove(grooveId) {
   const g = packCours.grooves.find(x => x.id === grooveId);
   if (!g || !authSession) return;
+  if (grooveId === currentGrooveId) saveGroove(); // sync state→packCours avant push
   const isMX = authProfile?.role === 'mx';
   try {
     await sbPushTeacherFamilles(g.familles);
@@ -3734,6 +3758,22 @@ async function sbDeleteFamille(famId) {
   try {
     await sbFetch(`/rest/v1/familles?id=eq.${famId}`, { method: 'DELETE' });
   } catch(e) { console.error('Suppression famille échouée :', e); }
+}
+
+async function sbDeletePattern(patId) {
+  if (!authSession) return false;
+  try {
+    await sbFetch(`/rest/v1/patterns?id=eq.${patId}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Suppression pattern échouée :', e); return false; }
+}
+
+async function sbDeleteGroove(grooveId) {
+  if (!authSession) return false;
+  try {
+    await sbFetch(`/rest/v1/grooves?id=eq.${grooveId}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Suppression groove échouée :', e); return false; }
 }
 
 // MX uniquement — publie une entrée encyclopédique en DB (scope:'school', approved:true)
@@ -3935,7 +3975,7 @@ function markItemDirty(item, changeField) {
 
 // Libelle lisible pour les champs modifiés
 function changeFieldLabel(fields) {
-  const labels = { sequence:'steps', layers:'couches', nom:'nom', famille:'famille', tempo:'tempo' };
+  const labels = { sequence:'steps', layers:'couches', nom:'nom', famille:'famille', tempo:'tempo', signature:'signature', band:'band' };
   return (fields||[]).map(f=>labels[f]||f).join(', ');
 }
 
@@ -4079,21 +4119,20 @@ function renderAuthUI() {
                     : authProfile.role === 'tx' ? '✏️ Enseignant'
                     : '🎵 Élève';
     container.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
-        '<div>' +
-          '<div style="font-size:11px;font-weight:600;color:var(--txt)">' +
-            (authProfile.display_name || authProfile.email) +
-          '</div>' +
-          '<div style="font-size:10px;color:#888">' + roleLabel + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px">' +
+        '<div style="font-size:11px;font-weight:600;color:var(--txt);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          (authProfile.display_name || authProfile.email) +
         '</div>' +
-        '<div style="display:flex;gap:6px">' +
-          '<button id="auth-btn-sync" style="font-size:10px;padding:4px 8px;border:1px solid #4A7FA5;border-radius:5px;background:#eef4f8;cursor:pointer;color:#2d5f80">↻ Sync</button>' +
-          '<button id="auth-btn-logout" style="font-size:10px;padding:4px 8px;border:1px solid #ccc;border-radius:5px;background:#fff;cursor:pointer;color:#666">Déco.</button>' +
-        '</div>' +
+        '<span style="font-size:10px;color:#888;white-space:nowrap;flex-shrink:0">' + roleLabel + '</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button id="auth-btn-sync" style="flex:1;font-size:10px;padding:4px 8px;border:1px solid #4A7FA5;border-radius:5px;background:#eef4f8;cursor:pointer;color:#2d5f80">↻ Sync</button>' +
+        '<button id="auth-btn-logout" style="flex:1;font-size:10px;padding:4px 8px;border:1px solid #ccc;border-radius:5px;background:#fff;cursor:pointer;color:#666">Déconnexion</button>' +
       '</div>' +
       '<div id="auth-sync-status" style="font-size:10px;color:#888;margin-top:2px"></div>';
     document.getElementById('auth-btn-logout').addEventListener('click', sbLogout);
     document.getElementById('auth-btn-sync').addEventListener('click', sbSyncSchoolPool);
+    updateSettingsBadge();
   } else if (authSession) {
     container.innerHTML = '<div style="font-size:10px;color:#888">Connexion en cours…</div>';
   } else {
@@ -4445,12 +4484,14 @@ function libDropPattern(srcId, tgtId){
 }
 
 function libDeletePattern(patId){
-  // Vérifier si utilisé dans un groove courant
+  const pat = packCours.patterns.find(p=>p.id===patId);
+  if(!pat) return;
   const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===patId));
   if(usedIn.length){
     alert('Ce pattern est utilisé dans : '+usedIn.map(g=>g.nom).join(', ')+'\nRetirez-le d\'abord des grooves.');
     return;
   }
+  const needsDbDelete = pat.source==='school' || pat.localStatus==='submitted';
   packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
   saveToStorage();
   buildLibListPatterns();
@@ -4458,6 +4499,9 @@ function libDeletePattern(patId){
     const s = document.getElementById('sel-'+LAYERS[li].id);
     if(s){ buildPatternSelect(s,'all'); }
   });
+  buildPublishSection();
+  showToast('Pattern supprimé', 'info');
+  if(needsDbDelete && authSession) sbDeletePattern(patId);
 }
 
 function updateLibBatchBar(){
@@ -5017,6 +5061,8 @@ function libDropGroove(srcId, tgtId){
 
 function libDeleteGroove(grooveId){
   if(packCours.grooves.length<=1){ alert('Impossible de supprimer le dernier groove.'); return; }
+  const groove = packCours.grooves.find(g=>g.id===grooveId);
+  const needsDbDelete = groove && (groove.source==='school' || groove.localStatus==='submitted');
   packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
   saveToStorage(); buildLibListGrooves();
   if(currentGrooveId===grooveId){ applyGroove(packCours.grooves[0].id); buildGrooveSection(); }
@@ -5024,6 +5070,9 @@ function libDeleteGroove(grooveId){
     const s=document.getElementById('groove-select');
     if(s){ [...s.options].forEach(o=>{ if(o.value===grooveId)s.removeChild(o); }); }
   }
+  buildPublishSection();
+  showToast('Groove supprimé', 'info');
+  if(needsDbDelete && authSession) sbDeleteGroove(grooveId);
 }
 
 function updateLibGrooveBatchBar(){
@@ -5399,7 +5448,6 @@ function attachEvents(){
   document.getElementById('sig-sel').addEventListener('change',function(){
     currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
     updateBeatDisplay();
-    // Mettre à jour n tap tempo selon la nouvelle signature (si l'utilisateur n'a pas forcé une valeur)
     _tapN=currentSig.beatsPerMeasure;
     const ni=document.getElementById('tap-n-input');
     if(ni) ni.value=_tapN;
@@ -5408,8 +5456,16 @@ function attachEvents(){
     _tapTimes=[];
     const tc=document.getElementById('tap-count');
     if(tc) tc.textContent='';
-    // Reconstruire les steps pour mettre à jour les séparateurs
     LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
+    if(!_suppressGrooveDirty){
+      const groove=getGroove(currentGrooveId);
+      if(groove&&this.value!==(groove.signature||'4/4')){
+        groove.signature=this.value;
+        grooveDirty=true; updateGrooveSaveBtn();
+        markItemDirty(groove,'signature');
+        buildPublishSection();
+      }
+    }
   });
   // ── Boutons métronome ──
   function mkMetroToggle(btnId,prop){
@@ -5603,6 +5659,8 @@ function attachEvents(){
 
   document.getElementById('bpm').addEventListener('input',function(){
     updateBeatDisplay();
+    const groove=getGroove(currentGrooveId);
+    if(groove){ grooveDirty=true; updateGrooveSaveBtn(); markItemDirty(groove,'tempo'); buildPublishSection(); }
   });
   updateBeatDisplay();
 
