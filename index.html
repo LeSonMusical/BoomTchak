@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.3</span>
+      <span class="app-version">v3.4.4</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2591,6 +2591,28 @@ function pspDoOverwritePattern(){
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   if(!srcPat){ closePatSavePop(); return; }
   const currentSeq = state[li].pattern.join('');
+
+  // TX écrase un pattern école → fork implicite (source:'teacher', soumettable)
+  if(srcPat.source === 'school' && authProfile?.role !== 'mx'){
+    closePatSavePop();
+    const fork = txForkItem('pattern', srcPat);
+    fork.sequence = currentSeq;
+    fork.pas = state[li].pattern.length;
+    fork.familles = [..._pspNewFamIds];
+    fork.localChangedFields = ['sequence'];
+    // Mettre à jour la référence dans state et groove
+    state[li].patternId = fork.id;
+    const groove = getGroove(currentGrooveId);
+    if(groove && groove.layers[li]) groove.layers[li].patternId = fork.id;
+    const sel = document.getElementById('sel-' + LAYERS[li].id);
+    if(sel){ buildPatternSelect(sel,'all'); sel.value = fork.id; }
+    saveToStorage(); setLayerDirty(li, false);
+    refreshMenuBtnStates(); buildPublishSection();
+    showToast('Modification sauvegardée — soumettez-la via ···','info');
+    if(btn) flashSave(btn);
+    return;
+  }
+
   const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
 
   const persist = ()=>{
@@ -2682,6 +2704,38 @@ function openGrooveSavePop(btn){
 function pspDoOverwriteGroove(){
   const btn = _pspBtn;
   const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
+
+  // TX écrase un groove école → fork implicite (source:'teacher', soumettable)
+  if(groove.source === 'school' && authProfile?.role !== 'mx'){
+    const schoolId = groove.id;
+    closePatSavePop();
+    const fork = txForkItem('groove', groove);
+    LAYERS.forEach((_,li)=>{
+      if(!fork.layers[li])return;
+      if(state[li].patternId)fork.layers[li].patternId=state[li].patternId;
+      fork.layers[li].mute=state[li].muted;
+      fork.layers[li].halfOn=state[li].halfOn;
+      fork.layers[li].doubleOn=state[li].doubleOn;
+      fork.layers[li].ternOn=state[li].ternOn||false;
+      fork.layers[li].shift=state[li].shiftN||0;
+    });
+    fork.familles=[..._pspNewFamIds];
+    const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+    if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
+    currentGrooveId=fork.id;
+    grooveDirty=false; updateGrooveSaveBtn();
+    const grooveSel=document.getElementById('groove-select');
+    if(grooveSel){
+      [...grooveSel.options].forEach(o=>{if(o.value===schoolId)grooveSel.removeChild(o);});
+      const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
+      grooveSel.appendChild(o); grooveSel.value=fork.id;
+    }
+    saveToStorage(); buildLibListGrooves(); buildPublishSection();
+    showToast('Modification sauvegardée — soumettez-la via ···','info');
+    if(btn)flashSave(btn);
+    return;
+  }
+
   closePatSavePop();
   saveGroove();
   groove.familles = [..._pspNewFamIds];
@@ -3668,6 +3722,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   packCours.familles = packCours.familles.filter(f => f.source !== 'school');
 
   (patterns || []).forEach(p => {
+    // Supprimer tout item local (teacher soumis+approuvé) qui aurait le même ID
+    packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
     packCours.patterns.push({
       id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
       familles: p.familles_ids || [],
@@ -3676,6 +3732,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     });
   });
   (grooves || []).forEach(g => {
+    // Supprimer tout item local (teacher soumis+approuvé) qui aurait le même ID
+    packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
     packCours.grooves.push({
       id: g.id, nom: g.nom, familles: g.familles_ids || [],
       band_defaut: g.band_defaut, signature: g.signature || '4/4',
@@ -4061,10 +4119,30 @@ function buildApprobationsSection() {
 
 // ── Tracking modifications locales ────────────────────────────────────────────
 // Marque un item comme modifié localement (pour affichage dans la section publier)
+// TX + item école → fork implicite immédiat pour apparaître dans les soumissions
 function markItemDirty(item, changeField) {
   if (!item) return;
   if (item.source === 'school') {
-    if (authProfile?.role !== 'mx') return; // TX ne peut pas marquer un item école
+    if (authProfile?.role !== 'mx') {
+      // TX modifie un item école → fork implicite pour tracking soumission
+      const isGroove = packCours.grooves.some(g => g === item);
+      const type = isGroove ? 'groove' : 'pattern';
+      const fork = txForkItem(type, item);
+      if (isGroove && currentGrooveId === item.id) {
+        currentGrooveId = fork.id;
+        const grooveSel = document.getElementById('groove-select');
+        if (grooveSel) {
+          [...grooveSel.options].forEach(o => { if (o.value === item.id) grooveSel.removeChild(o); });
+          const o = document.createElement('option'); o.value = fork.id; o.textContent = fork.nom;
+          grooveSel.appendChild(o); grooveSel.value = fork.id;
+        }
+      }
+      // Marquer le fork comme dirty
+      fork.localChangeType = fork.localChangeType || 'update';
+      if (!fork.localChangedFields) fork.localChangedFields = [];
+      if (changeField && !fork.localChangedFields.includes(changeField)) fork.localChangedFields.push(changeField);
+      return;
+    }
     item.localDirty = true;
   }
   item.localChangeType = item.localChangeType || 'update';
