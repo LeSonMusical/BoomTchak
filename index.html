@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.10</span>
+      <span class="app-version">v3.4.11</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4175,22 +4175,26 @@ function buildApprobationsSection() {
       .filter(f => f && f.source !== 'school')
       .map(f => f.nom);
     const famBadge = txFamNames.length
-      ? `<div style="font-size:10px;color:#856404;background:#fff3cd;padding:2px 5px;border-radius:3px;margin-bottom:4px">🏷 Famille(s) nouvelle(s) : ${txFamNames.join(', ')}</div>`
+      ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">🏷 ${txFamNames.join(', ')}</span>`
       : '';
+    const changeLabel = item.id?.startsWith('tx_mod_') ? 'Modif.' : 'Nouveau';
+    const changeBg    = item.id?.startsWith('tx_mod_') ? 'background:#fff3cd;color:#856404' : 'background:#d4f5e6;color:#0F6E56';
+    const typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;${changeBg};flex-shrink:0">${changeLabel}</span>`;
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${item.nom}</div>` +
-      `<div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">${preview}</div>` +
-      famBadge +
+      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+        typeBadge + famBadge +
+      `</div>` +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-load" data-type="${type}" data-id="${item.id}" ` +
-          `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
-          `▶ Charger</button>` +
+          `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
+          `Voir</button>` +
         `<button class="btn-appro-ok" data-type="${type}" data-id="${item.id}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
-          `✅ Approuver & Publier</button>` +
+          `Approuver et publier</button>` +
         `<button class="btn-appro-reject" data-type="${type}" data-id="${item.id}" ` +
-          `title="Refuser et supprimer" style="font-size:10px;padding:3px 7px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
-          `🗑</button>` +
+          `title="Refuser et supprimer" style="font-size:10px;padding:3px 8px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
+          `Rejeter</button>` +
       `</div>` +
     `</div>`;
   };
@@ -4203,17 +4207,20 @@ function buildApprobationsSection() {
       `<div style="font-size:10px;color:#444;padding:4px;background:#f8f8f8;border-radius:3px;margin-top:3px">${enc.chapo || '<em>pas de chapeau</em>'}</div>` +
       (bulletsHtml ? `<ul style="font-size:10px;color:#444;margin:3px 0;padding-left:14px">${bulletsHtml}</ul>` : '');
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${nom}</div>` +
-      `<details style="margin-bottom:4px"><summary style="font-size:10px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px">` +
+      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
+      `</div>` +
+      `<details style="margin-bottom:5px"><summary style="font-size:10px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px">` +
         `<span style="font-style:italic">${preview}</span><span style="color:#1D9E75;font-size:9px">▸ voir</span>` +
       `</summary>${detailsHtml}</details>` +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-enc-ok" data-key="${enc.key}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
-          `✅ Approuver & Publier</button>` +
+          `Approuver et publier</button>` +
         `<button class="btn-appro-enc-reject" data-key="${enc.key}" ` +
-          `title="Refuser et supprimer" style="font-size:10px;padding:3px 7px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
-          `🗑</button>` +
+          `title="Refuser et supprimer" style="font-size:10px;padding:3px 8px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
+          `Rejeter</button>` +
       `</div>` +
     `</div>`;
   };
@@ -4375,8 +4382,13 @@ function markItemDirty(item, changeField) {
 
 // Libelle lisible pour les champs modifiés
 function changeFieldLabel(fields) {
-  const labels = { sequence:'steps', layers:'couches', nom:'nom', famille:'famille', tempo:'tempo', signature:'signature', band:'band' };
-  return (fields||[]).map(f=>labels[f]||f).join(', ');
+  const map = {
+    sequence:'modif step', layers:'chg layer', nom:'modif nom',
+    famille_add:'+famille', famille_remove:'supp famille', famille:'+famille',
+    tempo:'modif param', signature:'modif param', band:'modif param',
+  };
+  const mapped = [...new Set((fields||[]).map(f=>map[f]||f))];
+  return mapped.join(' · ');
 }
 
 // ── Section Publier/Soumettre ─────────────────────────────────────────────────
@@ -4399,7 +4411,7 @@ function buildPublishSection() {
   const isTagOnly  = item =>
     item.localChangeType === 'update' &&
     item.localChangedFields?.length > 0 &&
-    item.localChangedFields.every(f => f === 'famille');
+    item.localChangedFields.every(f => f === 'famille_add' || f === 'famille_remove' || f === 'famille');
   const contentPats    = allPats.filter(p => !isTagOnly(p));
   const contentGrooves = allGrooves.filter(g => !isTagOnly(g));
   const tagOnlyItems   = [
@@ -4437,23 +4449,23 @@ function buildPublishSection() {
     ? baseLabel + ' (' + _localPendingCount + ')'
     : baseLabel;
 
-  const sendLabel = isMX ? '↑ École' : '→ Envoyer';
+  const sendLabel = isMX ? '↑ École' : 'Envoyer';
 
   const changeTypeBadge = (item) => {
     if (!item.localChangeType && item.source === 'teacher') return '';
     const type = item.localChangeType || 'create';
-    if (isTagOnly(item)) {
-      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Tag · famille</span>`;
+    if (type === 'create') {
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#d4f5e6;color:#0F6E56;flex-shrink:0">Nouveau</span>`;
     }
-    const styles = {
-      create:'background:#d4f5e6;color:#0F6E56',
-      update:'background:#fff3cd;color:#856404',
-      delete:'background:#fde8e8;color:#c04040',
-    };
-    const labels = { create:'Nouveau', update:'Modif.', delete:'🗑 Supprimer' };
-    const details = (type !== 'delete' && item.localChangedFields?.length) ? ' · ' + changeFieldLabel(item.localChangedFields) : '';
-    return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;${styles[type]||styles.update};flex-shrink:0">`
-      + (labels[type]||'Modif.') + details + '</span>';
+    if (type === 'delete') {
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">Suppression</span>`;
+    }
+    if (isTagOnly(item)) {
+      const detail = changeFieldLabel(item.localChangedFields);
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Tag · ${detail}</span>`;
+    }
+    const details = item.localChangedFields?.length ? ' · ' + changeFieldLabel(item.localChangedFields) : '';
+    return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.${details}</span>`;
   };
 
   const itemRow = (type, item) => {
@@ -4473,7 +4485,7 @@ function buildPublishSection() {
       : 'Ne pas soumettre (supprimer localement)';
     const btnCancel = (isSubmitted || isDraft)
       ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" data-cancel-mode="${isSubmitted?'submitted':isDirtySchool?'school':'draft'}" `+
-        `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>`
+        `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">Annuler</button>`
       : '';
     return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
       `<div style="display:flex;align-items:center;gap:4px">` +
@@ -4484,19 +4496,19 @@ function buildPublishSection() {
 
   let html = '';
   if (contentPats.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:var(--c-pattern);margin-bottom:4px">Patterns</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-pattern);margin-bottom:4px">Patterns (${contentPats.length})</div>`;
     contentPats.forEach(p => { html += itemRow('pattern', p); });
   }
   if (contentGrooves.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:var(--c-groove);margin-top:6px;margin-bottom:4px">Grooves</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-groove);margin-top:6px;margin-bottom:4px">Grooves (${contentGrooves.length})</div>`;
     contentGrooves.forEach(g => { html += itemRow('groove', g); });
   }
   if (tagOnlyItems.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:#3a56a6;margin-top:6px;margin-bottom:4px">Tags</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:#3a56a6;margin-top:6px;margin-bottom:4px">Tags (${tagOnlyItems.length})</div>`;
     tagOnlyItems.forEach(({type, item}) => { html += itemRow(type, item); });
   }
   if (pendingEncyclo.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie (${pendingEncyclo.length})</div>`;
     pendingEncyclo.forEach(e => {
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
@@ -4508,14 +4520,14 @@ function buildPublishSection() {
     });
   }
   if (pendingEncycloTX.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie (${pendingEncycloTX.length})</div>`;
     pendingEncycloTX.forEach(e => {
       const isResubmitEnc = e.isSubmitted && e.isDirty;
       const btnEncSend = isResubmitEnc
         ? `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010;cursor:pointer">↺ Renvoyer</button>`
         : e.isSubmitted
           ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
-          : `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>`;
+          : `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>`;
       const badgeEnc = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>`;
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
@@ -4527,7 +4539,7 @@ function buildPublishSection() {
     });
   }
   if (dirtyFams.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles (${dirtyFams.length})</div>`;
     dirtyFams.forEach(fam => {
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
@@ -5043,12 +5055,14 @@ function libBuildPatternTags(container, pat){
       if(pat.source==='school' && authProfile?.role!=='mx'){
         const fork=txForkItem('pattern', pat);
         fork.familles=(fork.familles||[]).filter(id=>id!==fid);
+        if (!fork.localChangedFields) fork.localChangedFields = [];
+        if (!fork.localChangedFields.includes('famille_remove')) fork.localChangedFields.push('famille_remove');
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
         LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         pat.familles = (pat.familles||[]).filter(id=>id!==fid);
-        markItemDirty(pat, 'famille');
+        markItemDirty(pat, 'famille_remove');
         libBuildPatternTags(container, pat);
         saveToStorage(); buildPublishSection();
       }
@@ -5075,13 +5089,15 @@ function libBuildPatternTags(container, pat){
         const fork=txForkItem('pattern', pat);
         if(!fork.familles)fork.familles=[];
         fork.familles.push(sel.value);
+        if (!fork.localChangedFields) fork.localChangedFields = [];
+        if (!fork.localChangedFields.includes('famille_add')) fork.localChangedFields.push('famille_add');
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
         LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         if(!pat.familles) pat.familles = [];
         pat.familles.push(sel.value);
-        markItemDirty(pat, 'famille');
+        markItemDirty(pat, 'famille_add');
         libBuildPatternTags(container, pat);
         saveToStorage(); buildPublishSection();
       }
@@ -5320,6 +5336,7 @@ function libDropFamille(srcId, tgtId){
 }
 
 function libDeleteFamille(famId, count){
+  if (authProfile?.role !== 'mx') { showToast('La gestion des familles est réservée aux administrateurs', 'warn'); return; }
   const fam = packCours.familles.find(f=>f.id===famId);
   if(!fam) return;
   const famNom = fam.nom;
@@ -5585,6 +5602,7 @@ function attachLibPanelEvents(){
   });
   // Créer
   function _doCreateFamPattern(){
+    if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
     const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm'};
@@ -5735,10 +5753,12 @@ function libBuildGrooveTags(container, groove){
       if(groove.source==='school' && authProfile?.role!=='mx'){
         const fork=txForkItem('groove', groove);
         fork.familles=(fork.familles||[]).filter(id=>id!==fid);
+        if (!fork.localChangedFields) fork.localChangedFields = [];
+        if (!fork.localChangedFields.includes('famille_remove')) fork.localChangedFields.push('famille_remove');
         saveToStorage(); buildLibListGrooves(); buildPublishSection();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
-        groove.familles=(groove.familles||[]).filter(id=>id!==fid); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
+        groove.familles=(groove.familles||[]).filter(id=>id!==fid); markItemDirty(groove,'famille_remove'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
       }
     });
     chip.appendChild(x); container.appendChild(chip);
@@ -5754,10 +5774,12 @@ function libBuildGrooveTags(container, groove){
         const fork=txForkItem('groove', groove);
         if(!fork.familles)fork.familles=[];
         fork.familles.push(sel.value);
+        if (!fork.localChangedFields) fork.localChangedFields = [];
+        if (!fork.localChangedFields.includes('famille_add')) fork.localChangedFields.push('famille_add');
         saveToStorage(); buildLibListGrooves(); buildPublishSection();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
-        if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
+        if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille_add'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
       }
     });
     sel.addEventListener('blur',()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
@@ -5897,6 +5919,7 @@ function attachGrooveLibEvents(){
   });
   // Créer
   function _doCreateFamGroove(){
+    if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
     const fam={id:'fam_user_'+Date.now(),nom,category:'rytm'};
@@ -6608,9 +6631,7 @@ function attachEvents(){
     e.target.value = '';
   });
   document.getElementById('psp-fam-create').addEventListener('click', ()=>{
-    const input = document.getElementById('psp-name-input');
-    // Utiliser le champ nom comme source si on veut créer une famille ad-hoc
-    // → ouvrir un prompt simple
+    if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const nomFam = prompt('Nom de la nouvelle famille :');
     if(!nomFam || !nomFam.trim()) return;
     const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim(), category:'rytm'};
