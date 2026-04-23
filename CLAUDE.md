@@ -32,7 +32,7 @@ Tous les types d'items (patterns, grooves, encyclopédie, familles) suivent la m
 
 ### Gaps connus (à traiter)
 - `GAP_ENC_DEL` : Pas de delete encyclopédie TX ni MX (hors scope actuel)
-- `GAP_FAM_RENAME_TX` : TX renomme une famille → local seulement, jamais soumis en DB
+- `GAP_FAM_RENAME_TX` : ✅ résolu v3.4.9 — `_pendingRename` flag + affichage panel + push auto via `sbPushTeacherFamilles`
 
 ## Règle de déploiement (OBLIGATOIRE — à chaque session)
 Après chaque push de branche feature :

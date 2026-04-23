@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.8</span>
+      <span class="app-version">v3.4.9</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4016,6 +4016,8 @@ async function sbPushTeacherFamilles(familleIds) {
         id: f.id, nom: f.nom, category: f.category||'rytm', scope: 'teacher', owner_id: authProfile?.id
       }))),
     });
+    // Nettoyer _pendingRename pour les familles effectivement poussées en DB
+    toPush.forEach(f => { delete f._pendingRename; });
   } catch(e) { console.error('Push familles TX échoué :', e); }
 }
 
@@ -4402,9 +4404,10 @@ function buildPublishSection() {
         .filter(([,e]) => e._pendingTX || e._localStatusEncyclo === 'submitted')
         .map(([key,e]) => ({ key, nom: getEncycloDisplayName(key), isSubmitted: e._localStatusEncyclo === 'submitted', isDirty: !!e._pendingTX }))
     : [];
-  const dirtyFams     = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
+  const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
+  const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename) : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -4414,7 +4417,8 @@ function buildPublishSection() {
   const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
   _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length
     + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
-    + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length;
+    + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length
+    + pendingRenameFamsTX.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -4515,6 +4519,15 @@ function buildPublishSection() {
         `<button class="btn-pub-fam-rename" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
         `<button class="btn-pub-fam-rename-cancel" data-id="${fam.id}" title="Annuler le renommage" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
         `</div></div>`;
+    });
+  }
+  if (pendingRenameFamsTX.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
+    pendingRenameFamsTX.forEach(fam => {
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">✎ Renommée · avec prochain item</span>` +
+        `</div>`;
     });
   }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
@@ -5259,12 +5272,16 @@ function libStartRenameFamille(nameEl, fam, afterSave){
     if(newNom !== nameEl.dataset.orig){
       fam.nom = newNom;
       saveToStorage(); afterSave(); rebuildAllFamFilters();
-      // MX + famille école → passe par la section Publier (confirmation manuelle)
       if (authProfile?.role === 'mx' && fam.source === 'school') {
+        // MX + famille école → passe par la section Publier (confirmation manuelle)
         fam.localDirty = true;
         buildPublishSection();
+      } else if (authProfile?.role !== 'mx') {
+        // TX → marquer comme renommée (sera poussée en DB avec le prochain item soumis)
+        fam._pendingRename = true;
+        buildPublishSection();
       } else {
-        sbSaveFamille(fam); // MX famille non-école (ou TX no-op)
+        sbSaveFamille(fam); // MX famille non-école
       }
     }
   };
