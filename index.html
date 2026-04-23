@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.14</span>
+      <span class="app-version">v3.4.15</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -721,7 +721,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <div id="publish-section" class="smenu-sub" style="display:none"></div>
         <!-- Ligne 5 : Propositions (MX uniquement) -->
         <div class="smenu-row smenu-row-btn" id="smenu-appro-toggle" style="display:none">
-          <span>📋 Propositions</span>
+          <span>📋 Propositions en attente</span>
           <span id="smenu-appro-count" style="font-size:10px;font-weight:700;color:#c07000;background:#fff5e0;border-radius:10px;padding:1px 6px;display:none">0</span>
           <span id="smenu-appro-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
@@ -3741,18 +3741,23 @@ async function sbSyncSchoolPool() {
 }
 
 function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
-  // Remplacer les items école existants par les nouvelles données
-  packCours.patterns = packCours.patterns.filter(p => p.source !== 'school');
-  packCours.grooves  = packCours.grooves.filter(g => g.source !== 'school');
-  packCours.familles = packCours.familles.filter(f => f.source !== 'school');
-
   // IDs école ayant un fork TX actif → ne pas réimporter (évite doublon fork+original)
   const schoolIdsWithForkP = new Set(packCours.patterns.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
   const schoolIdsWithForkG = new Set(packCours.grooves.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
+  // IDs école avec état local MX en attente → ne pas écraser (préserve localDirty/localDeletePending)
+  const localDirtyPIds = new Set(packCours.patterns.filter(p => p.source === 'school' && (p.localDirty || p.localDeletePending)).map(p => p.id));
+  const localDirtyGIds = new Set(packCours.grooves.filter(g => g.source === 'school' && (g.localDirty || g.localDeletePending)).map(g => g.id));
+  const localDirtyFIds = new Set(packCours.familles.filter(f => f.source === 'school' && (f.localDirty || f._deletePending)).map(f => f.id));
+
+  // Remplacer les items école sans état local en attente
+  packCours.patterns = packCours.patterns.filter(p => p.source !== 'school' || localDirtyPIds.has(p.id));
+  packCours.grooves  = packCours.grooves.filter(g => g.source !== 'school' || localDirtyGIds.has(g.id));
+  packCours.familles = packCours.familles.filter(f => f.source !== 'school' || localDirtyFIds.has(f.id));
 
   (patterns || []).forEach(p => {
-    packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
     if (schoolIdsWithForkP.has(p.id)) return; // fork TX actif — ne pas réimporter l'original
+    if (localDirtyPIds.has(p.id)) return; // modif MX en attente — garder version locale
+    packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
     packCours.patterns.push({
       id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
       familles: p.familles_ids || [],
@@ -3761,8 +3766,9 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     });
   });
   (grooves || []).forEach(g => {
-    packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
     if (schoolIdsWithForkG.has(g.id)) return; // fork TX actif — ne pas réimporter l'original
+    if (localDirtyGIds.has(g.id)) return; // modif MX en attente — garder version locale
+    packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
     packCours.grooves.push({
       id: g.id, nom: g.nom, familles: g.familles_ids || [],
       band_defaut: g.band_defaut, signature: g.signature || '4/4',
@@ -3772,6 +3778,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     });
   });
   (familles || []).forEach(f => {
+    if (localDirtyFIds.has(f.id)) return; // modif MX en attente — garder version locale
     if (!packCours.familles.find(x => x.id === f.id)) {
       packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school' });
     }
@@ -3994,7 +4001,12 @@ async function sbApproveEncycloItem(key) {
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
           body: JSON.stringify({ key: canonicalKey, chapo: row.chapo || '', bullets: row.bullets || [], scope: 'school', approved: true, owner_id: null }),
         });
-        await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, { method: 'DELETE' });
+        // Pas de DELETE RLS sur encyclo → archiver le fork TX (plus visible en teacher ni school)
+        await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ scope: 'archived', approved: true }),
+        });
       }
     } else {
       await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
@@ -4010,7 +4022,12 @@ async function sbApproveEncycloItem(key) {
 // MX — refuse une entrée encyclopédie TX
 async function sbRejectEncycloItem(key) {
   try {
-    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, { method: 'DELETE' });
+    // Pas de DELETE RLS sur encyclo → on archive avec scope='rejected' (pas visible en school ni en teacher)
+    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ scope: 'rejected', approved: false }),
+    });
     return true;
   } catch(e) { console.error('Rejet encyclo échoué :', e); return false; }
 }
