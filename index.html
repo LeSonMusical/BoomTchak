@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.13</span>
+      <span class="app-version">v3.4.14</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2261,19 +2261,17 @@ function buildLayers(){
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); const _sg=getGroove(currentGrooveId); if(_sg){markItemDirty(_sg,'rate'); buildPublishSection();} };
     bHalf.addEventListener('click',()=>{
       if(state[li].halfOn||state[li].pendingHalf){
-        state[li].pendingHalf=false;state[li].pendingClear=true;
+        state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=true;
       } else {
-        if(state[li].doubleOn||state[li].pendingDouble){state[li].pendingDouble=false;state[li].pendingClear=true;}
-        state[li].pendingHalf=true;state[li].pendingClear=false;
+        state[li].pendingDouble=false;state[li].pendingHalf=true;state[li].pendingClear=false;
       }
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
     bDbl.addEventListener('click',()=>{
       if(state[li].doubleOn||state[li].pendingDouble){
-        state[li].pendingDouble=false;state[li].pendingClear=true;
+        state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=true;
       } else {
-        if(state[li].halfOn||state[li].pendingHalf){state[li].pendingHalf=false;state[li].pendingClear=true;}
-        state[li].pendingDouble=true;state[li].pendingClear=false;
+        state[li].pendingHalf=false;state[li].pendingDouble=true;state[li].pendingClear=false;
       }
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
@@ -2454,8 +2452,11 @@ function buildStepsDOM(li,wrap){
   // ×2 → step 2× plus court → 2× plus de steps par temps → sepInterval ×2
   // /2 → step 2× plus long  → 2× moins de steps par temps → sepInterval ×0.5
   // T  → vitesse ×3/2        → 3/2 plus de steps par temps → sepInterval ×1.5
-  const _halfA = state[li] && (state[li].halfOn || state[li].pendingHalf);
-  const _dblA  = state[li] && (state[li].doubleOn || state[li].pendingDouble);
+  let _hA=state[li]?state[li].halfOn:false, _dA=state[li]?state[li].doubleOn:false;
+  if(state[li]?.pendingClear){_hA=false;_dA=false;}
+  if(state[li]?.pendingHalf){_hA=true;_dA=false;}
+  if(state[li]?.pendingDouble){_dA=true;_hA=false;}
+  const _halfA=_hA, _dblA=_dA;
   const _ternA = state[li] && state[li].ternOn;
   const _sm    = (_dblA ? 2 : _halfA ? 0.5 : 1) * (_ternA ? 1.5 : 1);
   const sepInterval = Math.max(1, Math.round((currentSig ? currentSig.beatSteps : 2) * _sm));
@@ -2793,8 +2794,12 @@ function saveGroove(){
     if(!groove.layers[li])return;
     if(state[li].patternId)groove.layers[li].patternId=state[li].patternId;
     groove.layers[li].mute=state[li].muted;
-    groove.layers[li].halfOn=state[li].pendingHalf?true:(state[li].pendingClear?false:state[li].halfOn);
-    groove.layers[li].doubleOn=state[li].pendingDouble?true:(state[li].pendingClear?false:state[li].doubleOn);
+    let _sh=state[li].halfOn,_sd=state[li].doubleOn;
+    if(state[li].pendingClear){_sh=false;_sd=false;}
+    if(state[li].pendingHalf){_sh=true;_sd=false;}
+    if(state[li].pendingDouble){_sd=true;_sh=false;}
+    groove.layers[li].halfOn=_sh;
+    groove.layers[li].doubleOn=_sd;
     groove.layers[li].ternOn=state[li].ternOn||false;
     groove.layers[li].shift=state[li].shiftN||0;
   });
@@ -4245,25 +4250,20 @@ function buildApprobationsSection() {
 
   const rowEnc = (enc) => {
     const nom = getEncycloDisplayName(enc.key);
-    const preview = enc.chapo ? enc.chapo.slice(0, 60) + (enc.chapo.length > 60 ? '…' : '') : '(pas de chapeau)';
-    const bulletsHtml = (enc.bullets || []).map(b => `<li style="margin:1px 0">${b}</li>`).join('');
-    const detailsHtml =
-      `<div style="font-size:10px;color:#444;padding:4px;background:#f8f8f8;border-radius:3px;margin-top:3px">${enc.chapo || '<em>pas de chapeau</em>'}</div>` +
-      (bulletsHtml ? `<ul style="font-size:10px;color:#444;margin:3px 0;padding-left:14px">${bulletsHtml}</ul>` : '');
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
         `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nom}</span>` +
         `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
       `</div>` +
-      `<details style="margin-bottom:5px"><summary style="font-size:10px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px">` +
-        `<span style="font-style:italic">${preview}</span><span style="color:#1D9E75;font-size:9px">▸ voir</span>` +
-      `</summary>${detailsHtml}</details>` +
       `<div style="display:flex;gap:5px">` +
+        `<button class="btn-appro-enc-load" data-key="${enc.key}" ` +
+          `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
+          `Voir</button>` +
         `<button class="btn-appro-enc-ok" data-key="${enc.key}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
           `Approuver et publier</button>` +
         `<button class="btn-appro-enc-reject" data-key="${enc.key}" ` +
-          `title="Refuser et supprimer" style="font-size:10px;padding:3px 8px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
+          `style="font-size:10px;padding:3px 8px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
           `Rejeter</button>` +
       `</div>` +
     `</div>`;
@@ -4283,6 +4283,22 @@ function buildApprobationsSection() {
     encs.forEach(e => { html += rowEnc(e); });
   }
   container.innerHTML = html;
+
+  container.querySelectorAll('.btn-appro-enc-load').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.key;
+      const canonicalKey = (k.startsWith('tx_') && k.length > 40) ? k.substring(40) : k;
+      const enc = (_pendingItems.encyclos||[]).find(e => e.key === k);
+      if (enc) {
+        if (!packCours.encyclo) packCours.encyclo = {};
+        packCours.encyclo[canonicalKey] = { chapo: enc.chapo || '', bullets: enc.bullets || [] };
+      }
+      showEncycloEntry(canonicalKey);
+      if (!encycloOuvert) toggleEncyclo(true);
+      document.getElementById('panel-settings')?.classList.remove('open');
+      document.getElementById('btn-settings')?.classList.remove('active');
+    });
+  });
 
   container.querySelectorAll('.btn-appro-load').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -4328,7 +4344,7 @@ function buildApprobationsSection() {
 
   container.querySelectorAll('.btn-appro-reject').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Refuser et supprimer cette soumission ?')) return;
+      if (!confirm('Refuser cette proposition et annuler la demande ?')) return;
       btn.disabled = true; btn.textContent = '…';
       const ok = await sbRejectItem(btn.dataset.type, btn.dataset.id);
       if (ok) {
@@ -4370,7 +4386,7 @@ function buildApprobationsSection() {
 
   container.querySelectorAll('.btn-appro-enc-reject').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Refuser et supprimer cette soumission encyclopédie ?')) return;
+      if (!confirm('Refuser cette proposition encyclopédie et annuler la demande ?')) return;
       btn.disabled = true; btn.textContent = '…';
       const ok = await sbRejectEncycloItem(btn.dataset.key);
       if (ok) {
@@ -4535,7 +4551,7 @@ function buildPublishSection() {
         ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
         : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
           `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
-    const cancelTitle = isSubmitted ? 'Annuler la soumission'
+    const cancelTitle = isSubmitted ? 'Annuler cette demande de modification pour l\'école'
       : isDirtySchool ? 'Annuler les modifications (ne pas publier)'
       : 'Ne pas soumettre (supprimer localement)';
     const btnCancel = (isSubmitted || isDraft)
@@ -4589,7 +4605,7 @@ function buildPublishSection() {
         badgeEnc +
         `<div style="display:flex;gap:4px;flex-shrink:0">` +
         btnEncSend +
-        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" data-submitted="${e.isSubmitted?'1':''}" title="${e.isSubmitted?'Annuler la soumission':'Annuler les modifications locales'}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" data-submitted="${e.isSubmitted?'1':''}" title="${e.isSubmitted?'Annuler cette demande de modification pour l\'école':'Annuler les modifications locales'}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
         `</div></div>`;
     });
   }
@@ -5301,7 +5317,7 @@ async function libDeletePattern(patId){
   }
   // Items teacher (draft ou submitted)
   if(pat.localStatus === 'submitted'){
-    if(!confirm('Ce pattern est soumis à l\'école. Annuler la proposition et le supprimer ?')) return;
+    if(!confirm('Ce pattern est en attente de validation par l\'école. Annuler la demande et le supprimer ?')) return;
     await sbCancelSubmission('pattern', patId);
   } else {
     if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
@@ -5947,7 +5963,7 @@ async function libDeleteGroove(grooveId){
     return;
   }
   if(groove.localStatus === 'submitted'){
-    if(!confirm('Ce groove est soumis à l\'école. Annuler la proposition et le supprimer ?')) return;
+    if(!confirm('Ce groove est en attente de validation par l\'école. Annuler la demande et le supprimer ?')) return;
     await sbCancelSubmission('groove', grooveId);
   } else {
     if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
