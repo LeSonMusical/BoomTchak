@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.11</span>
+      <span class="app-version">v3.4.12</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -714,13 +714,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
         <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
         <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
-          <span id="smenu-pub-label">↑ Soumettre</span>
+          <span id="smenu-pub-label">📤 Proposer à l'école</span>
+          <span id="smenu-pub-count" style="font-size:10px;font-weight:700;color:#0F6E56;background:#d4f5e6;border-radius:10px;padding:1px 6px;display:none">0</span>
           <span id="smenu-pub-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
         <div id="publish-section" class="smenu-sub" style="display:none"></div>
-        <!-- Ligne 5 : Approbations (MX uniquement) -->
+        <!-- Ligne 5 : Propositions (MX uniquement) -->
         <div class="smenu-row smenu-row-btn" id="smenu-appro-toggle" style="display:none">
-          <span>✅ Approbations</span>
+          <span>📋 Propositions</span>
           <span id="smenu-appro-count" style="font-size:10px;font-weight:700;color:#c07000;background:#fff5e0;border-radius:10px;padding:1px 6px;display:none">0</span>
           <span id="smenu-appro-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
@@ -3729,7 +3730,12 @@ async function sbSyncSchoolPool() {
     }
     saveToStorage();
     render();
-    updateSyncStatus('Synchronisé ✓');
+    buildPublishSection();
+    if (authProfile?.role === 'mx') sbFetchPendingApprovals().then(() => buildApprobationsSection());
+    const now = new Date();
+    const ts = now.toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit'})
+      + ' ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+    updateSyncStatus('Synchronisé ✓ ' + ts);
   } catch(e) {
     console.error('BoomTchak: sync école échouée', e);
     updateSyncStatus('Erreur de synchronisation');
@@ -4169,6 +4175,25 @@ function buildApprobationsSection() {
     return;
   }
 
+  // Inférer les champs modifiés en comparant l'item pending avec l'item école local
+  const inferChangedFields = (type, item) => {
+    if (!item.id?.startsWith('tx_mod_')) return null;
+    const match = item.id.match(/^tx_mod_(.+)_\d+$/);
+    if (!match) return null;
+    const origId = match[1];
+    const orig = (type === 'pattern' ? packCours.patterns : packCours.grooves).find(x => x.id === origId);
+    if (!orig) return null;
+    const fields = [];
+    if (item.nom !== orig.nom) fields.push('nom');
+    if (type === 'pattern' && item.sequence !== orig.sequence) fields.push('sequence');
+    if (type === 'groove' && JSON.stringify(item.layers||[]) !== JSON.stringify(orig.layers||[])) fields.push('layers');
+    const origFams = new Set(orig.familles || []);
+    const newFams  = new Set(item.familles_ids || []);
+    if ([...newFams].some(f => !origFams.has(f))) fields.push('famille_add');
+    if ([...origFams].some(f => !newFams.has(f))) fields.push('famille_remove');
+    return fields;
+  };
+
   const rowItem = (type, item, preview) => {
     const txFamNames = (item.familles_ids || [])
       .map(id => packCours.familles.find(f => f.id === id))
@@ -4177,9 +4202,20 @@ function buildApprobationsSection() {
     const famBadge = txFamNames.length
       ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">🏷 ${txFamNames.join(', ')}</span>`
       : '';
-    const changeLabel = item.id?.startsWith('tx_mod_') ? 'Modif.' : 'Nouveau';
-    const changeBg    = item.id?.startsWith('tx_mod_') ? 'background:#fff3cd;color:#856404' : 'background:#d4f5e6;color:#0F6E56';
-    const typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;${changeBg};flex-shrink:0">${changeLabel}</span>`;
+    // Badge type : inféré depuis la comparaison avec l'item école local
+    const isNew = !item.id?.startsWith('tx_mod_');
+    const inferred = isNew ? null : inferChangedFields(type, item);
+    let typeBadge;
+    if (isNew) {
+      typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#d4f5e6;color:#0F6E56;flex-shrink:0">Nouveau</span>`;
+    } else if (inferred && inferred.length > 0 && inferred.every(f => f === 'famille_add' || f === 'famille_remove')) {
+      typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">🏷 ${changeFieldLabel(inferred)}</span>`;
+    } else if (inferred && inferred.length === 1 && inferred[0] === 'nom') {
+      typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Renommé</span>`;
+    } else {
+      const det = inferred?.length ? ' · ' + changeFieldLabel(inferred) : '';
+      typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.${det}</span>`;
+    }
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
         `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
@@ -4383,9 +4419,9 @@ function markItemDirty(item, changeField) {
 // Libelle lisible pour les champs modifiés
 function changeFieldLabel(fields) {
   const map = {
-    sequence:'modif step', layers:'chg layer', nom:'modif nom',
-    famille_add:'+famille', famille_remove:'supp famille', famille:'+famille',
-    tempo:'modif param', signature:'modif param', band:'modif param',
+    sequence:'step', layers:'layer', nom:'nom',
+    famille_add:'+famille', famille_remove:'-famille', famille:'+famille',
+    tempo:'param', signature:'param', band:'param',
   };
   const mapped = [...new Set((fields||[]).map(f=>map[f]||f))];
   return mapped.join(' · ');
@@ -4444,10 +4480,10 @@ function buildPublishSection() {
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
-  const baseLabel = isMX ? '↑ Publier' : '→ Soumettre';
-  if(pubLabel) pubLabel.textContent = _localPendingCount > 0
-    ? baseLabel + ' (' + _localPendingCount + ')'
-    : baseLabel;
+  const baseLabel = isMX ? '↑ Publier' : '📤 Proposer à l\'école';
+  if(pubLabel) pubLabel.textContent = baseLabel;
+  const pubCount = document.getElementById('smenu-pub-count');
+  if(pubCount) { pubCount.textContent = _localPendingCount; pubCount.style.display = _localPendingCount > 0 ? '' : 'none'; }
 
   const sendLabel = isMX ? '↑ École' : 'Envoyer';
 
@@ -4462,9 +4498,13 @@ function buildPublishSection() {
     }
     if (isTagOnly(item)) {
       const detail = changeFieldLabel(item.localChangedFields);
-      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Tag · ${detail}</span>`;
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">🏷 ${detail}</span>`;
     }
-    const details = item.localChangedFields?.length ? ' · ' + changeFieldLabel(item.localChangedFields) : '';
+    const fields = item.localChangedFields || [];
+    if (fields.length > 0 && fields.every(f => f === 'nom')) {
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Renommé</span>`;
+    }
+    const details = fields.length ? ' · ' + changeFieldLabel(fields) : '';
     return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.${details}</span>`;
   };
 
@@ -5216,7 +5256,7 @@ function libDropPattern(srcId, tgtId){
   });
 }
 
-function libDeletePattern(patId){
+async function libDeletePattern(patId){
   const pat = packCours.patterns.find(p=>p.id===patId);
   if(!pat) return;
   const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===patId));
@@ -5226,8 +5266,7 @@ function libDeletePattern(patId){
   }
   if(pat.source === 'school'){
     if(authProfile?.role !== 'mx'){
-      alert('Les items école ne peuvent pas être supprimés par un enseignant.\nSignalez-le à MX si nécessaire.');
-      return;
+      showToast('Les items école ne peuvent être supprimés que par MX', 'warn'); return;
     }
     // MX : suppression différée via section Publier
     if(!confirm('Marquer le pattern « '+pat.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
@@ -5240,9 +5279,11 @@ function libDeletePattern(patId){
   }
   // Items teacher (draft ou submitted)
   if(pat.localStatus === 'submitted'){
-    alert('Ce pattern est en attente de validation. Annulez la soumission depuis ··· → Soumettre avant de le supprimer.'); return;
+    if(!confirm('Ce pattern est soumis à l\'école. Annuler la proposition et le supprimer ?')) return;
+    await sbCancelSubmission('pattern', patId);
+  } else {
+    if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
   }
-  if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
   packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
   saveToStorage(); buildLibListPatterns();
   LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
@@ -5856,14 +5897,13 @@ function libDropGroove(srcId, tgtId){
   if(s){ const prev=s.value; s.innerHTML=''; packCours.grooves.forEach(g=>{ const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;s.appendChild(o); }); s.value=prev; }
 }
 
-function libDeleteGroove(grooveId){
-  if(packCours.grooves.filter(g=>!g.localDeletePending).length<=1){ alert('Impossible de supprimer le dernier groove actif.'); return; }
+async function libDeleteGroove(grooveId){
+  if(packCours.grooves.filter(g=>!g.localDeletePending).length<=1){ showToast('Impossible de supprimer le dernier groove actif', 'warn'); return; }
   const groove = packCours.grooves.find(g=>g.id===grooveId);
   if(!groove) return;
   if(groove.source === 'school'){
     if(authProfile?.role !== 'mx'){
-      alert('Les items école ne peuvent pas être supprimés par un enseignant.\nSignalez-le à MX si nécessaire.');
-      return;
+      showToast('Les items école ne peuvent être supprimés que par MX', 'warn'); return;
     }
     // MX : suppression différée via section Publier
     if(!confirm('Marquer le groove « '+groove.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
@@ -5878,9 +5918,11 @@ function libDeleteGroove(grooveId){
     return;
   }
   if(groove.localStatus === 'submitted'){
-    alert('Ce groove est en attente de validation. Annulez la soumission depuis ··· → Soumettre avant de le supprimer.'); return;
+    if(!confirm('Ce groove est soumis à l\'école. Annuler la proposition et le supprimer ?')) return;
+    await sbCancelSubmission('groove', grooveId);
+  } else {
+    if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
   }
-  if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
   packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
   saveToStorage(); buildLibListGrooves();
   if(currentGrooveId===grooveId){ applyGroove(packCours.grooves.filter(g=>!g.localDeletePending)[0]?.id||packCours.grooves[0].id); buildGrooveSection(); }
