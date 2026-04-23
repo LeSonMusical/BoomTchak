@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.9</span>
+      <span class="app-version">v3.4.10</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4396,6 +4396,16 @@ function buildPublishSection() {
   const pendingDelFams  = isMX ? packCours.familles.filter(f => f._deletePending) : [];
   const allPats    = [...teacherPats, ...dirtySchoolPats];
   const allGrooves = [...teacherGrooves, ...dirtySchoolGrooves];
+  const isTagOnly  = item =>
+    item.localChangeType === 'update' &&
+    item.localChangedFields?.length > 0 &&
+    item.localChangedFields.every(f => f === 'famille');
+  const contentPats    = allPats.filter(p => !isTagOnly(p));
+  const contentGrooves = allGrooves.filter(g => !isTagOnly(g));
+  const tagOnlyItems   = [
+    ...allPats.filter(isTagOnly).map(p => ({ type: 'pattern', item: p })),
+    ...allGrooves.filter(isTagOnly).map(g => ({ type: 'groove', item: g })),
+  ];
   const pendingEncyclo = isMX && packCours.encyclo
     ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
     : [];
@@ -4432,6 +4442,9 @@ function buildPublishSection() {
   const changeTypeBadge = (item) => {
     if (!item.localChangeType && item.source === 'teacher') return '';
     const type = item.localChangeType || 'create';
+    if (isTagOnly(item)) {
+      return `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">Tag · famille</span>`;
+    }
     const styles = {
       create:'background:#d4f5e6;color:#0F6E56',
       update:'background:#fff3cd;color:#856404',
@@ -4470,13 +4483,17 @@ function buildPublishSection() {
   };
 
   let html = '';
-  if (allPats.length) {
+  if (contentPats.length) {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-pattern);margin-bottom:4px">Patterns</div>`;
-    allPats.forEach(p => { html += itemRow('pattern', p); });
+    contentPats.forEach(p => { html += itemRow('pattern', p); });
   }
-  if (allGrooves.length) {
+  if (contentGrooves.length) {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-groove);margin-top:6px;margin-bottom:4px">Grooves</div>`;
-    allGrooves.forEach(g => { html += itemRow('groove', g); });
+    contentGrooves.forEach(g => { html += itemRow('groove', g); });
+  }
+  if (tagOnlyItems.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#3a56a6;margin-top:6px;margin-bottom:4px">Tags</div>`;
+    tagOnlyItems.forEach(({type, item}) => { html += itemRow(type, item); });
   }
   if (pendingEncyclo.length) {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
@@ -5124,8 +5141,9 @@ function txForkItem(type, item) {
       familles: [...(item.familles || [])], encyclo_ref: item.encyclo_ref || null,
       source: 'teacher', localChangeType: 'update', sourceRef: item.id,
     };
-    packCours.patterns = packCours.patterns.filter(p => p.id !== item.id);
-    packCours.patterns.push(fork);
+    const idx = packCours.patterns.findIndex(p => p.id === item.id);
+    if (idx >= 0) packCours.patterns.splice(idx, 1, fork);
+    else packCours.patterns.push(fork);
     if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
     return fork;
   } else {
@@ -5136,8 +5154,9 @@ function txForkItem(type, item) {
       layers: (item.layers || []).map(l => ({ ...l })),
       source: 'teacher', localChangeType: 'update', sourceRef: item.id,
     };
-    packCours.grooves = packCours.grooves.filter(g => g.id !== item.id);
-    packCours.grooves.push(fork);
+    const idx = packCours.grooves.findIndex(g => g.id === item.id);
+    if (idx >= 0) packCours.grooves.splice(idx, 1, fork);
+    else packCours.grooves.push(fork);
     if (!packCours.encyclo[forkId]) packCours.encyclo[forkId] = { chapo: '', bullets: [] };
     return fork;
   }

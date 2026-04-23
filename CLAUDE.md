@@ -20,19 +20,25 @@ Toute modification de la base doit passer par `buildPublishSection` (MX) ou `bui
 **Règle 3 — Homogénéité CRUD**
 Tous les types d'items (patterns, grooves, encyclopédie, familles) suivent la même procédure CRUD avec le même UX design.
 
-### Conformité par item (post v3.4.8)
+**Règle 4 — Tag famille ≠ modif item**
+Une modification de tag famille est un phénomène distinct d'une modification de contenu (séquence, nom, couches…). Les deux ne se mélangent pas dans les panneaux Soumettre/Publier. Si un item a à la fois une modif contenu ET une modif tag, la soumission/approbation se fait en 2 étapes séparées. Les items tag-only apparaissent dans une section "Tags" dédiée, jamais dans "Patterns" ou "Grooves".
+
+**Règle 5 — Approuver = approuver ET publier**
+Le verbe "Publier" est réservé aux modifications MX (qui publient directement en DB). Pour les modifications TX, le verbe est "Approuver" (ou "Soumettre" côté TX). Approuver une modification TX équivaut à l'approuver et la publier simultanément — il n'y a pas d'étape intermédiaire entre approbation et publication.
+
+### Conformité par item (post v3.4.9)
 
 | Item | TX Create | TX Update | TX Delete | MX Create | MX Update | MX Delete |
 |---|---|---|---|---|---|---|
 | Pattern | ✅ | ✅ ↺ Renvoyer | ✅ draft cancel | ✅ publish | ✅ publish | ✅ pendingDel |
 | Groove | ✅ | ✅ ↺ Renvoyer | ✅ draft cancel | ✅ publish | ✅ publish | ✅ pendingDel |
 | Encyclopédie | ✅ | ✅ ↺ Renvoyer | ❌ GAP | ✅ publish | ✅ publish | ❌ GAP |
-| Famille école | n/a | ❌ GAP_FAM_RENAME_TX | n/a | ✅ localDirty→publish | ✅ localDirty→publish | ✅ pendingDel |
-| Famille teacher | ✅ auto-push item | ❌ GAP_FAM_RENAME_TX | ✅ local | n/a | n/a | n/a |
+| Famille école | n/a | ✅ _pendingRename→push | n/a | ✅ localDirty→publish | ✅ localDirty→publish | ✅ pendingDel |
+| Famille teacher | ✅ auto-push item | ✅ _pendingRename→push | ✅ local | n/a | n/a | n/a |
+| Tag famille | ✅ section Tags | ✅ section Tags | n/a | ✅ section Tags | ✅ section Tags | n/a |
 
 ### Gaps connus (à traiter)
 - `GAP_ENC_DEL` : Pas de delete encyclopédie TX ni MX (hors scope actuel)
-- `GAP_FAM_RENAME_TX` : ✅ résolu v3.4.9 — `_pendingRename` flag + affichage panel + push auto via `sbPushTeacherFamilles`
 
 ## Règle de déploiement (OBLIGATOIRE — à chaque session)
 Après chaque push de branche feature :
