@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.7</span>
+      <span class="app-version">v3.4.8</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3866,6 +3866,18 @@ async function sbFetchPendingApprovals() {
     _pendingItems.patterns = Array.isArray(pats) ? pats : [];
     _pendingItems.grooves  = Array.isArray(grvs) ? grvs : [];
     _pendingItems.encyclos = Array.isArray(encs) ? encs : [];
+    // Charger les familles TX référencées pour affichage dans le panel d'approbation
+    const allFamIds = [...new Set([..._pendingItems.patterns, ..._pendingItems.grooves].flatMap(x => x.familles_ids || []))];
+    const missingFamIds = allFamIds.filter(id => !packCours.familles.some(f => f.id === id));
+    if (missingFamIds.length) {
+      const txFams = await sbFetch(`/rest/v1/familles?id=in.(${missingFamIds.join(',')})&select=id,nom,scope`);
+      if (Array.isArray(txFams)) {
+        txFams.forEach(f => {
+          if (!packCours.familles.some(x => x.id === f.id))
+            packCours.familles.push({ id: f.id, nom: f.nom, category: 'rytm', source: f.scope || 'teacher' });
+        });
+      }
+    }
   } catch(e) {
     _pendingItems = { patterns: [], grooves: [], encyclos: [] };
   }
@@ -4155,10 +4167,18 @@ function buildApprobationsSection() {
     return;
   }
 
-  const rowItem = (type, item, preview) =>
-    `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+  const rowItem = (type, item, preview) => {
+    const txFamNames = (item.familles_ids || [])
+      .map(id => packCours.familles.find(f => f.id === id))
+      .filter(f => f && f.source !== 'school')
+      .map(f => f.nom);
+    const famBadge = txFamNames.length
+      ? `<div style="font-size:10px;color:#856404;background:#fff3cd;padding:2px 5px;border-radius:3px;margin-bottom:4px">🏷 Famille(s) nouvelle(s) : ${txFamNames.join(', ')}</div>`
+      : '';
+    return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${item.nom}</div>` +
       `<div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">${preview}</div>` +
+      famBadge +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-load" data-type="${type}" data-id="${item.id}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
@@ -4171,13 +4191,20 @@ function buildApprobationsSection() {
           `🗑</button>` +
       `</div>` +
     `</div>`;
+  };
 
   const rowEnc = (enc) => {
     const nom = getEncycloDisplayName(enc.key);
     const preview = enc.chapo ? enc.chapo.slice(0, 60) + (enc.chapo.length > 60 ? '…' : '') : '(pas de chapeau)';
+    const bulletsHtml = (enc.bullets || []).map(b => `<li style="margin:1px 0">${b}</li>`).join('');
+    const detailsHtml =
+      `<div style="font-size:10px;color:#444;padding:4px;background:#f8f8f8;border-radius:3px;margin-top:3px">${enc.chapo || '<em>pas de chapeau</em>'}</div>` +
+      (bulletsHtml ? `<ul style="font-size:10px;color:#444;margin:3px 0;padding-left:14px">${bulletsHtml}</ul>` : '');
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${nom}</div>` +
-      `<div style="font-size:10px;color:#888;margin-bottom:4px;font-style:italic">${preview}</div>` +
+      `<details style="margin-bottom:4px"><summary style="font-size:10px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px">` +
+        `<span style="font-style:italic">${preview}</span><span style="color:#1D9E75;font-size:9px">▸ voir</span>` +
+      `</summary>${detailsHtml}</details>` +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-enc-ok" data-key="${enc.key}" ` +
           `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
@@ -4376,7 +4403,6 @@ function buildPublishSection() {
         .map(([key,e]) => ({ key, nom: getEncycloDisplayName(key), isSubmitted: e._localStatusEncyclo === 'submitted', isDirty: !!e._pendingTX }))
     : [];
   const dirtyFams     = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
-  const teacherFamsTX = !isMX ? packCours.familles.filter(f => f.source !== 'school' && !f._deletePending) : [];
 
   if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
@@ -4480,7 +4506,7 @@ function buildPublishSection() {
     });
   }
   if (dirtyFams.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles (renommages)</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
     dirtyFams.forEach(fam => {
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
@@ -4489,15 +4515,6 @@ function buildPublishSection() {
         `<button class="btn-pub-fam-rename" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
         `<button class="btn-pub-fam-rename-cancel" data-id="${fam.id}" title="Annuler le renommage" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
         `</div></div>`;
-    });
-  }
-  if (teacherFamsTX.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
-    teacherFamsTX.forEach(fam => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">📎 Soumise avec item</span>` +
-        `</div>`;
     });
   }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
@@ -4630,8 +4647,9 @@ function buildPublishSection() {
       if (fam) {
         await sbSaveFamille(fam);
         fam.localDirty = false;
+        fam.source = 'school';
         saveToStorage(); buildPublishSection();
-        showToast('Famille mise à jour en DB', 'info');
+        showToast('Famille publiée en DB', 'info');
       }
     });
   });
@@ -5534,6 +5552,7 @@ function attachLibPanelEvents(){
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
     const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm'};
+    if (authProfile?.role === 'mx') fam.localDirty = true; // MX → passage obligatoire par buildPublishSection
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
@@ -5845,6 +5864,7 @@ function attachGrooveLibEvents(){
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
     const fam={id:'fam_user_'+Date.now(),nom,category:'rytm'};
+    if (authProfile?.role === 'mx') fam.localDirty = true; // MX → passage obligatoire par buildPublishSection
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');

@@ -9,6 +9,31 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Langue : français. Variables/fonctions : camelCase anglais.
 - Version `MAJEUR.MINEUR.PATCH` bumpée à chaque commit (dans `<span class="app-version">`).
 
+## Règles CRUD (bible — à respecter impérativement)
+
+**Règle 1 — Symétrie TX/MX**
+TX a les mêmes capacités d'édition que MX. La différence : ses modifications apparaissent dans la section "Soumettre" (au lieu de "Publier") et doivent être validées par MX pour intégrer la base commune.
+
+**Règle 2 — Aucune écriture DB directe**
+Toute modification de la base doit passer par `buildPublishSection` (MX) ou `buildApprobationsSection` (MX approbation TX). Aucun appel Supabase POST/PATCH/DELETE ne doit être déclenché depuis une action UI sans étape de confirmation dans l'un de ces deux panneaux.
+
+**Règle 3 — Homogénéité CRUD**
+Tous les types d'items (patterns, grooves, encyclopédie, familles) suivent la même procédure CRUD avec le même UX design.
+
+### Conformité par item (post v3.4.8)
+
+| Item | TX Create | TX Update | TX Delete | MX Create | MX Update | MX Delete |
+|---|---|---|---|---|---|---|
+| Pattern | ✅ | ✅ ↺ Renvoyer | ✅ draft cancel | ✅ publish | ✅ publish | ✅ pendingDel |
+| Groove | ✅ | ✅ ↺ Renvoyer | ✅ draft cancel | ✅ publish | ✅ publish | ✅ pendingDel |
+| Encyclopédie | ✅ | ✅ ↺ Renvoyer | ❌ GAP | ✅ publish | ✅ publish | ❌ GAP |
+| Famille école | n/a | ❌ GAP_FAM_RENAME_TX | n/a | ✅ localDirty→publish | ✅ localDirty→publish | ✅ pendingDel |
+| Famille teacher | ✅ auto-push item | ❌ GAP_FAM_RENAME_TX | ✅ local | n/a | n/a | n/a |
+
+### Gaps connus (à traiter)
+- `GAP_ENC_DEL` : Pas de delete encyclopédie TX ni MX (hors scope actuel)
+- `GAP_FAM_RENAME_TX` : TX renomme une famille → local seulement, jamais soumis en DB
+
 ## Règle de déploiement (OBLIGATOIRE — à chaque session)
 Après chaque push de branche feature :
 1. Créer une PR draft si elle n'existe pas
@@ -37,9 +62,8 @@ Merger vers : `main` après chaque session
 ## Tâches prioritaires (prochaine session)
 1. **G0 BUG CRITIQUE** — `initAuth()` bloque sur "Connexion en cours…" si token expiré
    Fix : si `authProfile` null après `sbFetchProfile()` → vider `authSession` + localStorage
-2. **G4 MX → DB** — MX publie patterns/grooves/encyclo directement en école (sans workflow TX)
-3. **G8 Ordre persisté** — colonne `ordre int` en DB pour familles/patterns/grooves
-4. **G2 Famille TX** — pousser familles TX en DB au moment de la soumission
+2. **G8 Ordre persisté** — colonne `ordre int` en DB pour familles/patterns/grooves
+3. **GAP_FAM_RENAME_TX** — TX renomme une famille → soumettre avec l'item ou soumission indépendante ?
 
 ## Conventions
 - Commentaires en français, code en anglais
