@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.6</span>
+      <span class="app-version">v3.4.7</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2968,15 +2968,17 @@ function hasEncycloContent(ref){
 }
 
 // Retourne le nom lisible d'une entrée encyclopédie à partir de sa clé
+// Gère aussi les clés TX préfixées (format: tx_{uid-36chars}_{canonicalKey})
 function getEncycloDisplayName(key) {
   if (!key) return key;
-  const misc = ENCYCLO_MISC.find(m => m.id === key);
+  const resolvedKey = (key.startsWith('tx_') && key.length > 40) ? key.substring(40) : key;
+  const misc = ENCYCLO_MISC.find(m => m.id === resolvedKey);
   if (misc) return misc.nom;
-  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === key);
+  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === resolvedKey);
   if (pat) return pat.nom;
-  const grv = packCours.grooves.find(g => g.id === key);
+  const grv = packCours.grooves.find(g => g.id === resolvedKey);
   if (grv) return grv.nom;
-  return key;
+  return resolvedKey;
 }
 
 // Reconstruit tous les selects de filtre famille (barre de couche + panel ≡)
@@ -3804,6 +3806,7 @@ async function sbPublishPattern(patId) {
       delete pat.localChangeType; delete pat.localChangedFields;
     } else {
       pat.localStatus = 'submitted';
+      delete pat.localChangedFields; // Réinitialise le suivi des changements (baseline = version soumise)
     }
     saveToStorage();
     return true;
@@ -3839,6 +3842,7 @@ async function sbPublishGroove(grooveId) {
       delete g.localChangeType; delete g.localChangedFields;
     } else {
       g.localStatus = 'submitted';
+      delete g.localChangedFields; // Réinitialise le suivi des changements (baseline = version soumise)
     }
     saveToStorage();
     return true;
@@ -3885,6 +3889,27 @@ async function sbApproveItem(type, id) {
   } catch(e) { console.error('Approbation échouée :', e); return false; }
 }
 
+// MX — approuve en cascade les familles TX référencées par un item approuvé
+async function sbApproveFamillesOfItem(familleIds) {
+  if (!authSession || authProfile?.role !== 'mx' || !familleIds?.length) return;
+  const teacherFamIds = familleIds.filter(id => {
+    const fam = packCours.familles.find(f => f.id === id);
+    return fam && fam.source !== 'school';
+  });
+  if (!teacherFamIds.length) return;
+  try {
+    await sbFetch(`/rest/v1/familles?id=in.(${teacherFamIds.join(',')})`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ scope: 'school', owner_id: null }),
+    });
+    teacherFamIds.forEach(id => {
+      const fam = packCours.familles.find(f => f.id === id);
+      if (fam) fam.source = 'school';
+    });
+  } catch(e) { console.error('Cascade familles échouée :', e); }
+}
+
 async function sbRejectItem(type, id) {
   try {
     await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
@@ -3899,39 +3924,57 @@ async function sbCancelSubmission(type, id) {
   } catch(e) { console.error('Annulation échouée :', e); return false; }
 }
 
+// TX — annule la soumission d'une entrée encyclopédie (supprime la clé TX préfixée en DB)
+async function sbCancelEncycloSubmission(canonKey) {
+  if (!authSession || authProfile?.role === 'mx') return false;
+  const txKey = 'tx_' + authProfile.id + '_' + canonKey;
+  try {
+    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(txKey)}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Annulation encyclo échouée :', e); return false; }
+}
+
 // TX — soumet une entrée encyclopédie (scope:'teacher', approved:false)
-// Uniquement pour les items source:'teacher' (nouveaux ou forks) — items école bloqués côté RLS
+// Utilise une clé préfixée tx_{uid}_{canonicalKey} pour éviter les conflits RLS avec les entrées école
 async function sbSubmitEncycloTX(key) {
   if (!authSession || authProfile?.role === 'mx') return false;
   const entry = packCours.encyclo?.[key];
   if (!entry) return false;
-  // Vérifier que l'item associé est source:'teacher' (pas un item école)
-  const isMisc = ENCYCLO_MISC.some(m => m.id === key);
-  const relPat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === key);
-  const relGrv = packCours.grooves.find(g => g.id === key);
-  const srcItem = relPat || relGrv;
-  if (isMisc || (srcItem && srcItem.source === 'school')) {
-    showToast('Item école — soumettez le groove/pattern associé pour inclure ces modifications', 'warn');
-    return false;
-  }
+  const txKey = 'tx_' + authProfile.id + '_' + key;
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ key, chapo: entry.chapo || '', bullets: entry.bullets || [], scope: 'teacher', approved: false, owner_id: authProfile.id }),
+      body: JSON.stringify({ key: txKey, chapo: entry.chapo || '', bullets: entry.bullets || [], scope: 'teacher', approved: false, owner_id: authProfile.id }),
     });
     return true;
   } catch(e) { console.error('Soumission encyclo TX échouée :', e); return false; }
 }
 
-// MX — approuve une entrée encyclopédie (scope:'school', approved:true)
+// MX — approuve une entrée encyclopédie
+// Gère les clés TX préfixées (tx_{uid-36}_{canonicalKey}) : crée l'entrée canonique puis supprime la TX
 async function sbApproveEncycloItem(key) {
+  const isTxKey = key.startsWith('tx_') && key.length > 40;
+  const canonicalKey = isTxKey ? key.substring(40) : key;
   try {
-    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
-      method: 'PATCH',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ scope: 'school', approved: true, owner_id: null }),
-    });
+    if (isTxKey) {
+      const rows = await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}&select=*`);
+      const row = Array.isArray(rows) && rows[0];
+      if (row) {
+        await sbFetch('/rest/v1/encyclo', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: canonicalKey, chapo: row.chapo || '', bullets: row.bullets || [], scope: 'school', approved: true, owner_id: null }),
+        });
+        await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, { method: 'DELETE' });
+      }
+    } else {
+      await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ scope: 'school', approved: true, owner_id: null }),
+      });
+    }
     return true;
   } catch(e) { console.error('Approbation encyclo échouée :', e); return false; }
 }
@@ -4025,14 +4068,15 @@ async function sbCheckRejections() {
   const uid = authProfile?.id;
   if (!uid) return 0;
   try {
-    const [pats, grvs] = await Promise.all([
+    const [pats, grvs, encs] = await Promise.all([
       sbFetch(`/rest/v1/patterns?owner_id=eq.${uid}&approved=eq.false&select=id`),
       sbFetch(`/rest/v1/grooves?owner_id=eq.${uid}&approved=eq.false&select=id`),
+      sbFetch(`/rest/v1/encyclo?owner_id=eq.${uid}&approved=eq.false&scope=eq.teacher&select=key`),
     ]);
     const dbPatIds = new Set((Array.isArray(pats) ? pats : []).map(p => p.id));
     const dbGrvIds = new Set((Array.isArray(grvs) ? grvs : []).map(g => g.id));
+    const dbEncKeys = new Set((Array.isArray(encs) ? encs : []).map(e => e.key));
     let rejected = 0;
-    // Supprimer complètement les items refusés (ne plus les laisser en draft)
     const rejPatIds = packCours.patterns
       .filter(p => p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIds.has(p.id))
       .map(p => p.id);
@@ -4044,6 +4088,17 @@ async function sbCheckRejections() {
       .map(g => g.id);
     rejected += rejGrvIds.length;
     packCours.grooves = packCours.grooves.filter(g => !rejGrvIds.includes(g.id));
+
+    // Détection refus articles encyclopédie TX
+    Object.entries(packCours.encyclo || {}).forEach(([canonKey, entry]) => {
+      if (entry._localStatusEncyclo === 'submitted') {
+        const txKey = 'tx_' + uid + '_' + canonKey;
+        if (!dbEncKeys.has(txKey)) {
+          delete entry._localStatusEncyclo;
+          rejected++;
+        }
+      }
+    });
     return rejected;
   } catch(e) { return 0; }
 }
@@ -4168,6 +4223,11 @@ function buildApprobationsSection() {
       btn.disabled = true; btn.textContent = '…';
       const ok = await sbApproveItem(btn.dataset.type, btn.dataset.id);
       if (ok) {
+        // Cascade : approuver les familles TX de l'item
+        const approvedItem = btn.dataset.type === 'pattern'
+          ? _pendingItems.patterns.find(x => x.id === btn.dataset.id)
+          : _pendingItems.grooves.find(x => x.id === btn.dataset.id);
+        if (approvedItem) await sbApproveFamillesOfItem(approvedItem.familles_ids);
         if (btn.dataset.type === 'pattern')
           _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);
         else
@@ -4311,10 +4371,14 @@ function buildPublishSection() {
     ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
     : [];
   const pendingEncycloTX = !isMX && packCours.encyclo
-    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingTX).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
+    ? Object.entries(packCours.encyclo)
+        .filter(([,e]) => e._pendingTX || e._localStatusEncyclo === 'submitted')
+        .map(([key,e]) => ({ key, nom: getEncycloDisplayName(key), isSubmitted: e._localStatusEncyclo === 'submitted', isDirty: !!e._pendingTX }))
     : [];
+  const dirtyFams     = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
+  const teacherFamsTX = !isMX ? packCours.familles.filter(f => f.source !== 'school' && !f._deletePending) : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -4323,7 +4387,8 @@ function buildPublishSection() {
   const draftPats  = teacherPats.filter(p => p.localStatus !== 'submitted');
   const draftGrvs  = teacherGrooves.filter(g => g.localStatus !== 'submitted');
   _localPendingCount = draftPats.length + draftGrvs.length + dirtySchoolPats.length + dirtySchoolGrooves.length
-    + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length;
+    + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
+    + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -4350,12 +4415,16 @@ function buildPublishSection() {
 
   const itemRow = (type, item) => {
     const isSubmitted = !isMX && item.localStatus === 'submitted';
+    const isResubmit  = isSubmitted && item.localChangedFields?.length > 0;
     const isDirtySchool = isMX && item.source === 'school' && item.localDirty;
     const isDraft = !isSubmitted;
-    const btnSend = isSubmitted
-      ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
-      : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
-        `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
+    const btnSend = isResubmit
+      ? `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
+        `style="font-size:10px;padding:2px 8px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010;cursor:pointer">↺ Renvoyer</button>`
+      : isSubmitted
+        ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
+        : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
+          `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
     const cancelTitle = isSubmitted ? 'Annuler la soumission'
       : isDirtySchool ? 'Annuler les modifications (ne pas publier)'
       : 'Ne pas soumettre (supprimer localement)';
@@ -4394,13 +4463,41 @@ function buildPublishSection() {
   if (pendingEncycloTX.length) {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie</div>`;
     pendingEncycloTX.forEach(e => {
+      const isResubmitEnc = e.isSubmitted && e.isDirty;
+      const btnEncSend = isResubmitEnc
+        ? `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010;cursor:pointer">↺ Renvoyer</button>`
+        : e.isSubmitted
+          ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
+          : `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>`;
+      const badgeEnc = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>`;
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
+        badgeEnc +
         `<div style="display:flex;gap:4px;flex-shrink:0">` +
-        `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
-        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" title="Annuler les modifications locales" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        btnEncSend +
+        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" data-submitted="${e.isSubmitted?'1':''}" title="${e.isSubmitted?'Annuler la soumission':'Annuler les modifications locales'}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
         `</div></div>`;
+    });
+  }
+  if (dirtyFams.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles (renommages)</div>`;
+    dirtyFams.forEach(fam => {
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Renommée</span>` +
+        `<div style="display:flex;gap:4px;flex-shrink:0">` +
+        `<button class="btn-pub-fam-rename" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
+        `<button class="btn-pub-fam-rename-cancel" data-id="${fam.id}" title="Annuler le renommage" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `</div></div>`;
+    });
+  }
+  if (teacherFamsTX.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
+    teacherFamsTX.forEach(fam => {
+      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">📎 Soumise avec item</span>` +
+        `</div>`;
     });
   }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
@@ -4510,9 +4607,39 @@ function buildPublishSection() {
   });
 
   container.querySelectorAll('.btn-pub-encyclo-tx-cancel').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const entry = packCours.encyclo?.[btn.dataset.key];
-      if (entry) delete entry._pendingTX;
+      if (btn.dataset.submitted === '1') {
+        btn.disabled = true;
+        const ok = await sbCancelEncycloSubmission(btn.dataset.key);
+        if (ok) {
+          if (entry) { delete entry._localStatusEncyclo; entry._pendingTX = true; }
+          saveToStorage(); buildPublishSection();
+        } else { btn.disabled = false; }
+      } else {
+        if (entry) { delete entry._pendingTX; delete entry._localStatusEncyclo; }
+        saveToStorage(); buildPublishSection();
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-fam-rename').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      const fam = packCours.familles.find(f => f.id === btn.dataset.id);
+      if (fam) {
+        await sbSaveFamille(fam);
+        fam.localDirty = false;
+        saveToStorage(); buildPublishSection();
+        showToast('Famille mise à jour en DB', 'info');
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-fam-rename-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fam = packCours.familles.find(f => f.id === btn.dataset.id);
+      if (fam) { fam.localDirty = false; }
       saveToStorage(); buildPublishSection();
     });
   });
@@ -5111,7 +5238,17 @@ function libStartRenameFamille(nameEl, fam, afterSave){
     nameEl.contentEditable = 'false';
     const newNom = nameEl.textContent.trim();
     if(!newNom){ nameEl.textContent=nameEl.dataset.orig; return; }
-    if(newNom !== nameEl.dataset.orig){ fam.nom = newNom; saveToStorage(); afterSave(); rebuildAllFamFilters(); sbSaveFamille(fam); }
+    if(newNom !== nameEl.dataset.orig){
+      fam.nom = newNom;
+      saveToStorage(); afterSave(); rebuildAllFamFilters();
+      // MX + famille école → passe par la section Publier (confirmation manuelle)
+      if (authProfile?.role === 'mx' && fam.source === 'school') {
+        fam.localDirty = true;
+        buildPublishSection();
+      } else {
+        sbSaveFamille(fam); // MX famille non-école (ou TX no-op)
+      }
+    }
   };
   nameEl.addEventListener('blur', commit, {once:true});
   nameEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();nameEl.blur();} if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();} });
@@ -5400,8 +5537,7 @@ function attachLibPanelEvents(){
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
-    buildLibFamListPatterns(); rebuildAllFamFilters();
-    sbSaveFamille(fam);
+    buildLibFamListPatterns(); rebuildAllFamFilters(); buildPublishSection();
   }
   document.getElementById('lib-fam-create-ok-patterns').addEventListener('click', _doCreateFamPattern);
   document.getElementById('lib-fam-new-input').addEventListener('keydown', e=>{
@@ -5712,8 +5848,7 @@ function attachGrooveLibEvents(){
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
-    buildLibFamListGrooves(); rebuildAllFamFilters();
-    sbSaveFamille(fam);
+    buildLibFamListGrooves(); rebuildAllFamFilters(); buildPublishSection();
   }
   document.getElementById('lib-fam-create-ok-grooves').addEventListener('click',_doCreateFamGroove);
   document.getElementById('lib-fam-new-input-grooves').addEventListener('keydown',e=>{
