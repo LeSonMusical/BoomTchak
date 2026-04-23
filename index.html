@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.5</span>
+      <span class="app-version">v3.4.6</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2967,6 +2967,18 @@ function hasEncycloContent(ref){
   return !!(entry.chapo || (entry.bullets && entry.bullets.length > 0));
 }
 
+// Retourne le nom lisible d'une entrée encyclopédie à partir de sa clé
+function getEncycloDisplayName(key) {
+  if (!key) return key;
+  const misc = ENCYCLO_MISC.find(m => m.id === key);
+  if (misc) return misc.nom;
+  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === key);
+  if (pat) return pat.nom;
+  const grv = packCours.grooves.find(g => g.id === key);
+  if (grv) return grv.nom;
+  return key;
+}
+
 // Reconstruit tous les selects de filtre famille (barre de couche + panel ≡)
 function rebuildAllFamFilters(){
   // Sélects dans les barres de couche
@@ -3837,21 +3849,23 @@ async function sbPublishGroove(grooveId) {
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
-let _pendingItems = { patterns: [], grooves: [] };
+let _pendingItems = { patterns: [], grooves: [], encyclos: [] };
 
 async function sbFetchPendingApprovals() {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
-    const [pats, grvs] = await Promise.all([
+    const [pats, grvs, encs] = await Promise.all([
       sbFetch('/rest/v1/patterns?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
       sbFetch('/rest/v1/grooves?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
+      sbFetch('/rest/v1/encyclo?select=*&scope=eq.teacher&approved=eq.false'),
     ]);
     _pendingItems.patterns = Array.isArray(pats) ? pats : [];
     _pendingItems.grooves  = Array.isArray(grvs) ? grvs : [];
+    _pendingItems.encyclos = Array.isArray(encs) ? encs : [];
   } catch(e) {
-    _pendingItems = { patterns: [], grooves: [] };
+    _pendingItems = { patterns: [], grooves: [], encyclos: [] };
   }
-  const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+  const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length;
   _remotePendingCount = total;
   const toggle = document.getElementById('smenu-appro-toggle');
   const badge  = document.getElementById('smenu-appro-count');
@@ -3883,6 +3897,51 @@ async function sbCancelSubmission(type, id) {
     await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
     return true;
   } catch(e) { console.error('Annulation échouée :', e); return false; }
+}
+
+// TX — soumet une entrée encyclopédie (scope:'teacher', approved:false)
+// Uniquement pour les items source:'teacher' (nouveaux ou forks) — items école bloqués côté RLS
+async function sbSubmitEncycloTX(key) {
+  if (!authSession || authProfile?.role === 'mx') return false;
+  const entry = packCours.encyclo?.[key];
+  if (!entry) return false;
+  // Vérifier que l'item associé est source:'teacher' (pas un item école)
+  const isMisc = ENCYCLO_MISC.some(m => m.id === key);
+  const relPat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === key);
+  const relGrv = packCours.grooves.find(g => g.id === key);
+  const srcItem = relPat || relGrv;
+  if (isMisc || (srcItem && srcItem.source === 'school')) {
+    showToast('Item école — soumettez le groove/pattern associé pour inclure ces modifications', 'warn');
+    return false;
+  }
+  try {
+    await sbFetch('/rest/v1/encyclo', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ key, chapo: entry.chapo || '', bullets: entry.bullets || [], scope: 'teacher', approved: false, owner_id: authProfile.id }),
+    });
+    return true;
+  } catch(e) { console.error('Soumission encyclo TX échouée :', e); return false; }
+}
+
+// MX — approuve une entrée encyclopédie (scope:'school', approved:true)
+async function sbApproveEncycloItem(key) {
+  try {
+    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ scope: 'school', approved: true, owner_id: null }),
+    });
+    return true;
+  } catch(e) { console.error('Approbation encyclo échouée :', e); return false; }
+}
+
+// MX — refuse une entrée encyclopédie TX
+async function sbRejectEncycloItem(key) {
+  try {
+    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('Rejet encyclo échoué :', e); return false; }
 }
 
 // ── Familles MX → Supabase ────────────────────────────────────────────────────
@@ -4035,11 +4094,13 @@ function buildApprobationsSection() {
   if (!container) return;
   const pats  = _pendingItems.patterns;
   const grvs  = _pendingItems.grooves;
-  if (!pats.length && !grvs.length) {
+  const encs  = _pendingItems.encyclos || [];
+  if (!pats.length && !grvs.length && !encs.length) {
     container.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu en attente</div>';
     return;
   }
-  const row = (type, item, preview) =>
+
+  const rowItem = (type, item, preview) =>
     `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${item.nom}</div>` +
       `<div style="font-size:10px;color:#888;font-family:monospace;margin-bottom:4px">${preview}</div>` +
@@ -4056,14 +4117,35 @@ function buildApprobationsSection() {
       `</div>` +
     `</div>`;
 
+  const rowEnc = (enc) => {
+    const nom = getEncycloDisplayName(enc.key);
+    const preview = enc.chapo ? enc.chapo.slice(0, 60) + (enc.chapo.length > 60 ? '…' : '') : '(pas de chapeau)';
+    return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+      `<div style="font-size:11px;font-weight:600;margin-bottom:3px">${nom}</div>` +
+      `<div style="font-size:10px;color:#888;margin-bottom:4px;font-style:italic">${preview}</div>` +
+      `<div style="display:flex;gap:5px">` +
+        `<button class="btn-appro-enc-ok" data-key="${enc.key}" ` +
+          `style="flex:1;font-size:10px;padding:3px 0;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">` +
+          `✅ Approuver & Publier</button>` +
+        `<button class="btn-appro-enc-reject" data-key="${enc.key}" ` +
+          `title="Refuser et supprimer" style="font-size:10px;padding:3px 7px;border:1px solid #e08888;border-radius:4px;background:#fff5f5;color:#c04040;cursor:pointer">` +
+          `🗑</button>` +
+      `</div>` +
+    `</div>`;
+  };
+
   let html = '';
   if (pats.length) {
     html += `<div style="font-size:10px;font-weight:700;color:#777;margin-bottom:4px">Patterns (${pats.length})</div>`;
-    pats.forEach(p => { html += row('pattern', p, p.sequence || ''); });
+    pats.forEach(p => { html += rowItem('pattern', p, p.sequence || ''); });
   }
   if (grvs.length) {
     html += `<div style="font-size:10px;font-weight:700;color:#777;margin:6px 0 4px">Grooves (${grvs.length})</div>`;
-    grvs.forEach(g => { html += row('groove', g, (g.layers||[]).map(l=>l.patternId||'?').join(' / ')); });
+    grvs.forEach(g => { html += rowItem('groove', g, (g.layers||[]).map(l=>l.patternId||'?').join(' / ')); });
+  }
+  if (encs.length) {
+    html += `<div style="font-size:10px;font-weight:700;color:#777;margin:6px 0 4px">Encyclopédie (${encs.length})</div>`;
+    encs.forEach(e => { html += rowEnc(e); });
   }
   container.innerHTML = html;
 
@@ -4075,7 +4157,6 @@ function buildApprobationsSection() {
       if (!item) return;
       if (btn.dataset.type === 'pattern') loadPendingPattern(item);
       else loadPendingGroove(item);
-      // Fermer le menu après chargement
       document.getElementById('panel-settings')?.classList.remove('open');
       document.getElementById('btn-settings')?.classList.remove('active');
     });
@@ -4087,12 +4168,11 @@ function buildApprobationsSection() {
       btn.disabled = true; btn.textContent = '…';
       const ok = await sbApproveItem(btn.dataset.type, btn.dataset.id);
       if (ok) {
-        // Retirer du cache local et rafraîchir
         if (btn.dataset.type === 'pattern')
           _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);
         else
           _pendingItems.grooves = _pendingItems.grooves.filter(x => x.id !== btn.dataset.id);
-        const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + (_pendingItems.encyclos||[]).length;
         _remotePendingCount = total; updateSettingsBadge();
         const badge = document.getElementById('smenu-appro-count');
         const approToggle = document.getElementById('smenu-appro-toggle');
@@ -4116,7 +4196,7 @@ function buildApprobationsSection() {
           _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);
         else
           _pendingItems.grooves = _pendingItems.grooves.filter(x => x.id !== btn.dataset.id);
-        const total = _pendingItems.patterns.length + _pendingItems.grooves.length;
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + (_pendingItems.encyclos||[]).length;
         _remotePendingCount = total; updateSettingsBadge();
         const badge = document.getElementById('smenu-appro-count');
         const approToggle = document.getElementById('smenu-appro-toggle');
@@ -4126,6 +4206,43 @@ function buildApprobationsSection() {
       } else {
         btn.textContent = '🗑'; btn.disabled = false;
       }
+    });
+  });
+
+  container.querySelectorAll('.btn-appro-enc-ok').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbApproveEncycloItem(btn.dataset.key);
+      if (ok) {
+        _pendingItems.encyclos = (_pendingItems.encyclos||[]).filter(x => x.key !== btn.dataset.key);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length;
+        _remotePendingCount = total; updateSettingsBadge();
+        const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
+        buildApprobationsSection();
+        await sbSyncSchoolPool();
+      } else { btn.textContent = origText; btn.disabled = false; }
+    });
+  });
+
+  container.querySelectorAll('.btn-appro-enc-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Refuser et supprimer cette soumission encyclopédie ?')) return;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbRejectEncycloItem(btn.dataset.key);
+      if (ok) {
+        _pendingItems.encyclos = (_pendingItems.encyclos||[]).filter(x => x.key !== btn.dataset.key);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length;
+        _remotePendingCount = total; updateSettingsBadge();
+        const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
+        buildApprobationsSection();
+      } else { btn.textContent = '🗑'; btn.disabled = false; }
     });
   });
 }
@@ -4191,10 +4308,10 @@ function buildPublishSection() {
   const allPats    = [...teacherPats, ...dirtySchoolPats];
   const allGrooves = [...teacherGrooves, ...dirtySchoolGrooves];
   const pendingEncyclo = isMX && packCours.encyclo
-    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:key}))
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDB).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
     : [];
   const pendingEncycloTX = !isMX && packCours.encyclo
-    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingTX).map(([key,e])=>({key,nom:key}))
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingTX).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
     : [];
 
   if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length)) {
@@ -4279,12 +4396,12 @@ function buildPublishSection() {
     pendingEncycloTX.forEach(e => {
       html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
         `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Local</span>` +
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
         `<div style="display:flex;gap:4px;flex-shrink:0">` +
+        `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
         `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" title="Annuler les modifications locales" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
         `</div></div>`;
     });
-    html += `<div style="font-size:9px;color:#888;padding:2px 0 4px">ℹ Encyclopédie : modifications locales (approval MX requis — non soumis)</div>`;
   }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
@@ -4374,6 +4491,21 @@ function buildPublishSection() {
       const entry = packCours.encyclo?.[btn.dataset.key];
       if (entry) delete entry._pendingDB;
       saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-encyclo-tx').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbSubmitEncycloTX(btn.dataset.key);
+      if (ok) {
+        const entry = packCours.encyclo?.[btn.dataset.key];
+        if (entry) { entry._localStatusEncyclo = 'submitted'; delete entry._pendingTX; }
+        btn.textContent = '✓'; btn.style.background = '#d4f5e6';
+        saveToStorage();
+        setTimeout(() => buildPublishSection(), 700);
+      } else { btn.textContent = origText; btn.disabled = false; }
     });
   });
 
