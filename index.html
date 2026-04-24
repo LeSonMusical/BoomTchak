@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.17</span>
+      <span class="app-version">v3.4.18</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3775,7 +3775,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   packCours.grooves  = packCours.grooves.filter(g => g.source !== 'school' || localDirtyGIds.has(g.id));
   packCours.familles = packCours.familles.filter(f => f.source !== 'school' || localDirtyFIds.has(f.id));
 
-  (patterns || []).forEach(p => {
+  const byOrdre = (a, b) => (a.ordre ?? 9999) - (b.ordre ?? 9999);
+  (patterns || []).slice().sort(byOrdre).forEach(p => {
     if (schoolIdsWithForkP.has(p.id)) return; // fork TX actif — ne pas réimporter l'original
     if (localDirtyPIds.has(p.id)) return; // modif MX en attente — garder version locale
     packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
@@ -3786,7 +3787,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
       source: 'school'
     });
   });
-  (grooves || []).forEach(g => {
+  (grooves || []).slice().sort(byOrdre).forEach(g => {
     if (schoolIdsWithForkG.has(g.id)) return; // fork TX actif — ne pas réimporter l'original
     if (localDirtyGIds.has(g.id)) return; // modif MX en attente — garder version locale
     packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
@@ -3829,7 +3830,8 @@ async function sbPublishPattern(patId) {
         encyclo_ref: pat.encyclo_ref || null,
         scope: isMX ? 'school' : 'teacher',
         approved: isMX,
-        owner_id: authProfile?.id
+        owner_id: authProfile?.id,
+        ...(isMX ? { ordre: packCours.patterns.filter(p => (p.source === 'school' || p.id === pat.id) && !p.localDeletePending).findIndex(p => p.id === pat.id) } : {}),
       })
     });
     if (isMX) {
@@ -3865,7 +3867,8 @@ async function sbPublishGroove(grooveId) {
         layers: g.layers,
         scope: isMX ? 'school' : 'teacher',
         approved: isMX,
-        owner_id: authProfile?.id
+        owner_id: authProfile?.id,
+        ...(isMX ? { ordre: packCours.grooves.filter(gv => (gv.source === 'school' || gv.id === g.id) && !gv.localDeletePending).findIndex(gv => gv.id === g.id) } : {}),
       })
     });
     if (isMX) {
@@ -3882,6 +3885,22 @@ async function sbPublishGroove(grooveId) {
     console.error('Erreur publication groove :', e);
     return false;
   }
+}
+
+// G8 — MX : persiste l'ordre courant (position dans packCours) vers la colonne `ordre` en DB
+async function sbPushSchoolOrder(type) {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const items = packCours[type].filter(x => x.source === 'school' && !x.localDeletePending);
+  if (!items.length) return;
+  try {
+    await Promise.all(items.map((item, idx) =>
+      sbFetch(`/rest/v1/${type}?id=eq.${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+  } catch(e) { console.warn('Ordre non persisté :', e); }
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
@@ -3980,12 +3999,17 @@ async function sbCancelSubmission(type, id) {
   } catch(e) { console.error('Annulation échouée :', e); return false; }
 }
 
-// TX — annule la soumission d'une entrée encyclopédie (supprime la clé TX préfixée en DB)
+// TX — annule la soumission d'une entrée encyclopédie
+// Pas de DELETE RLS sur encyclo → marquer approved=true pour exclure des requêtes pending
 async function sbCancelEncycloSubmission(canonKey) {
   if (!authSession || authProfile?.role === 'mx') return false;
   const txKey = 'tx_' + authProfile.id + '_' + canonKey;
   try {
-    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(txKey)}`, { method: 'DELETE' });
+    await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(txKey)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ approved: true, owner_id: null }),
+    });
     return true;
   } catch(e) { console.error('Annulation encyclo échouée :', e); return false; }
 }
@@ -5348,6 +5372,7 @@ function libDropPattern(srcId, tgtId){
   arr.splice(newTgt, 0, moved);
   saveToStorage();
   buildLibListPatterns();
+  sbPushSchoolOrder('patterns');
   LAYERS.forEach((_,li)=>{
     const s = document.getElementById('sel-'+LAYERS[li].id);
     if(s){ const prev=s.value; buildPatternSelect(s,'all'); s.value=prev; }
@@ -5998,6 +6023,7 @@ function libDropGroove(srcId, tgtId){
   const newTgt=arr.findIndex(g=>g.id===tgtId);
   arr.splice(newTgt,0,moved);
   saveToStorage(); buildLibListGrooves();
+  sbPushSchoolOrder('grooves');
   const s=document.getElementById('groove-select');
   if(s){ const prev=s.value; s.innerHTML=''; packCours.grooves.forEach(g=>{ const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;s.appendChild(o); }); s.value=prev; }
 }
