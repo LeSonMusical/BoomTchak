@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.18</span>
+      <span class="app-version">v3.4.19</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3762,9 +3762,16 @@ async function sbSyncSchoolPool() {
 }
 
 function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
-  // IDs école ayant un fork TX actif → ne pas réimporter (évite doublon fork+original)
-  const schoolIdsWithForkP = new Set(packCours.patterns.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
-  const schoolIdsWithForkG = new Set(packCours.grooves.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
+  const isMX = authProfile?.role === 'mx';
+  // MX ne crée jamais d'items source='teacher' — si le localStorage est partagé avec TX,
+  // ces forks TX sont des artefacts : on les purge pour que MX voie toujours l'état école validé
+  if (isMX) {
+    packCours.patterns = packCours.patterns.filter(p => p.source !== 'teacher');
+    packCours.grooves  = packCours.grooves.filter(g => g.source !== 'teacher');
+  }
+  // IDs école ayant un fork TX actif (TX seulement) → ne pas réimporter (évite doublon fork+original)
+  const schoolIdsWithForkP = isMX ? new Set() : new Set(packCours.patterns.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
+  const schoolIdsWithForkG = isMX ? new Set() : new Set(packCours.grooves.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
   // IDs école avec état local MX en attente → ne pas écraser (préserve localDirty/localDeletePending)
   const localDirtyPIds = new Set(packCours.patterns.filter(p => p.source === 'school' && (p.localDirty || p.localDeletePending)).map(p => p.id));
   const localDirtyGIds = new Set(packCours.grooves.filter(g => g.source === 'school' && (g.localDirty || g.localDeletePending)).map(g => g.id));
