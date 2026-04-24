@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.15</span>
+      <span class="app-version">v3.4.16</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1715,6 +1715,7 @@ let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let _suppressGrooveDirty = false;
 let encycloDir = false;
+let _encPreview = null; // { canonicalKey, chapo, bullets } — aperçu TX sans modifier packCours
 
 // ── Gestion unifiée des états "modifié" ──────────────────────────────────
 // bouton 💾 → classe .dirty (rouge + !)
@@ -3186,6 +3187,11 @@ function buildEncycloSection(){
   });
   if(currentEncycloId)sel.value=currentEncycloId;
   sel.addEventListener('change',()=>{
+    // Quitter le mode aperçu TX si l'utilisateur navigue
+    if(_encPreview && sel.value !== _encPreview.canonicalKey){
+      _encPreview = null;
+      [...sel.options].filter(o=>o.dataset.previewOpt).forEach(o=>sel.removeChild(o));
+    }
     encycloDir=false; updateEncycloSaveBtn(); // nouvelle entrée = état frais
     if(sel.value){
       showEncycloEntry(sel.value);
@@ -3258,14 +3264,22 @@ function showEncycloEntry(key){
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
+  // Aperçu TX : afficher le contenu de la proposition sans modifier packCours
+  const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
-  const entry=enc[key];
-  if(!entry || (currentMode!=='tx' && !hasEncycloContent(key))){
+  const entry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
+  if(!entry || (!isPreview && currentMode!=='tx' && !hasEncycloContent(key))){
     const p=document.createElement('p');p.className='encyclo-vide';
     p.textContent=currentMode==='tx'?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
     body.appendChild(p);return;
   }
-  const isTX=currentMode==='tx';
+  if(isPreview){
+    const banner=document.createElement('div');
+    banner.style.cssText='font-size:9px;background:#fff8ec;color:#a06010;border:1px solid #e0c060;border-radius:4px;padding:3px 8px;margin-bottom:8px';
+    banner.textContent='👁 Aperçu — proposition en attente d\'approbation';
+    body.appendChild(banner);
+  }
+  const isTX = isPreview ? false : currentMode==='tx'; // aperçu = lecture seule
   const ensureEnc=()=>{if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));};
 
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
@@ -3872,7 +3886,7 @@ async function sbFetchPendingApprovals() {
     const [pats, grvs, encs] = await Promise.all([
       sbFetch('/rest/v1/patterns?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
       sbFetch('/rest/v1/grooves?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
-      sbFetch('/rest/v1/encyclo?select=*&scope=eq.teacher&approved=eq.false'),
+      sbFetch('/rest/v1/encyclo?select=*,profiles(display_name,email)&scope=eq.teacher&approved=eq.false'),
     ]);
     _pendingItems.patterns = Array.isArray(pats) ? pats : [];
     _pendingItems.grooves  = Array.isArray(grvs) ? grvs : [];
@@ -4001,11 +4015,11 @@ async function sbApproveEncycloItem(key) {
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
           body: JSON.stringify({ key: canonicalKey, chapo: row.chapo || '', bullets: row.bullets || [], scope: 'school', approved: true, owner_id: null }),
         });
-        // Pas de DELETE RLS sur encyclo → archiver le fork TX (plus visible en teacher ni school)
+        // Pas de DELETE RLS sur encyclo → marquer approuvé (scope='teacher' valide, approved=true exclut du fetch pending)
         await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
           method: 'PATCH',
           headers: { 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ scope: 'archived', approved: true }),
+          body: JSON.stringify({ approved: true, owner_id: null }),
         });
       }
     } else {
@@ -4022,11 +4036,11 @@ async function sbApproveEncycloItem(key) {
 // MX — refuse une entrée encyclopédie TX
 async function sbRejectEncycloItem(key) {
   try {
-    // Pas de DELETE RLS sur encyclo → on archive avec scope='rejected' (pas visible en school ni en teacher)
+    // Pas de DELETE RLS sur encyclo → marquer approuvé+sans owner (scope='teacher' valide, approved=true exclut du fetch pending)
     await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ scope: 'rejected', approved: false }),
+      body: JSON.stringify({ approved: true, owner_id: null }),
     });
     return true;
   } catch(e) { console.error('Rejet encyclo échoué :', e); return false; }
@@ -4267,11 +4281,13 @@ function buildApprobationsSection() {
 
   const rowEnc = (enc) => {
     const nom = getEncycloDisplayName(enc.key);
+    const submitter = enc.profiles?.display_name || enc.profiles?.email || '';
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">` +
         `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nom}</span>` +
         `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
       `</div>` +
+      (submitter ? `<div style="font-size:9px;color:#888;margin-bottom:4px">Par : ${submitter}</div>` : '') +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-enc-load" data-key="${enc.key}" ` +
           `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
@@ -4306,9 +4322,16 @@ function buildApprobationsSection() {
       const k = btn.dataset.key;
       const canonicalKey = (k.startsWith('tx_') && k.length > 40) ? k.substring(40) : k;
       const enc = (_pendingItems.encyclos||[]).find(e => e.key === k);
-      if (enc) {
-        if (!packCours.encyclo) packCours.encyclo = {};
-        packCours.encyclo[canonicalKey] = { chapo: enc.chapo || '', bullets: enc.bullets || [] };
+      if (!enc) return;
+      // Aperçu TX sans modifier packCours.encyclo (évite publication accidentelle)
+      _encPreview = { canonicalKey, chapo: enc.chapo || '', bullets: enc.bullets || [] };
+      // Ajouter l'option au select si absente (articles sans contenu école filtrés en mode MX)
+      const encSel = document.getElementById('encyclo-select');
+      if (encSel && ![...encSel.options].some(o => o.value === canonicalKey)) {
+        const o = document.createElement('option');
+        o.value = canonicalKey; o.textContent = '👁 ' + getEncycloDisplayName(canonicalKey);
+        o.dataset.previewOpt = '1';
+        encSel.appendChild(o);
       }
       showEncycloEntry(canonicalKey);
       if (!encycloOuvert) toggleEncyclo(true);
