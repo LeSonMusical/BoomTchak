@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.16</span>
+      <span class="app-version">v3.4.17</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2039,8 +2039,15 @@ function buildGrooveSection(){
   function buildGrooveSelectOpts(filtreId){
     sel.innerHTML='';
     const allG=packCours.grooves.filter(g=>!g.localDeletePending);
-    const grooves=filtreId==='__teacher__'?allG.filter(g=>g.source==='teacher'):filtreId&&filtreId!=='all'?allG.filter(g=>(g.familles||[]).includes(filtreId)):allG;
+    const baseG=allG.filter(g=>g.source!=='pending');
+    const grooves=filtreId==='__teacher__'?baseG.filter(g=>g.source==='teacher'):filtreId&&filtreId!=='all'?baseG.filter(g=>(g.familles||[]).includes(filtreId)):baseG;
     grooves.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);});
+    // Ajouter les aperçus pending (non filtrés par famille, marqués visuellement)
+    allG.filter(g=>g.source==='pending').forEach(g=>{
+      if(![...sel.options].some(o=>o.value===g.id)){
+        const o=document.createElement('option');o.value=g.id;o.textContent='👁 '+g.nom;o.style.color='#a06010';sel.appendChild(o);
+      }
+    });
   }
   buildGrooveSelectOpts('all');
   if(currentGrooveId)sel.value=currentGrooveId;
@@ -4598,11 +4605,22 @@ function buildPublishSection() {
       ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" data-cancel-mode="${isSubmitted?'submitted':isDirtySchool?'school':'draft'}" `+
         `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">Annuler</button>`
       : '';
-    return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-      `<div style="display:flex;align-items:center;gap:4px">` +
-      `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
-      changeTypeBadge(item) +
-      `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div></div>`;
+    if (isMX) {
+      // MX (items école dirty) : 1 ligne compacte
+      return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
+        `<div style="display:flex;align-items:center;gap:4px">` +
+        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+        changeTypeBadge(item) +
+        `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div></div>`;
+    }
+    // TX : 2 lignes (nom + badge / boutons) — design aligné avec Propositions en attente
+    return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+        changeTypeBadge(item) +
+      `</div>` +
+      `<div style="display:flex;gap:5px">${btnSend}${btnCancel}</div>` +
+    `</div>`;
   };
 
   let html = '';
@@ -4640,12 +4658,14 @@ function buildPublishSection() {
           ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
           : `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>`;
       const badgeEnc = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>`;
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
-        badgeEnc +
-        `<div style="display:flex;gap:4px;flex-shrink:0">` +
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
+          badgeEnc +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
         btnEncSend +
-        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" data-submitted="${e.isSubmitted?'1':''}" title="${e.isSubmitted?'Annuler cette demande de modification pour l\'école':'Annuler les modifications locales'}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `<button class="btn-pub-encyclo-tx-cancel" data-key="${e.key}" data-submitted="${e.isSubmitted?'1':''}" title="${e.isSubmitted?'Annuler cette demande de modification pour l\'école':'Annuler les modifications locales'}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -4985,7 +5005,14 @@ function setMode(mode){
 }
 
 function saveToStorage(){
-  try{localStorage.setItem('ptk_content_v2',JSON.stringify(packCours));}catch(e){}
+  try{
+    // Ne pas persister les items source='pending' (aperçus temporaires MX depuis Propositions)
+    const toSave = { ...packCours,
+      patterns: packCours.patterns.filter(p => p.source !== 'pending'),
+      grooves:  packCours.grooves.filter(g => g.source !== 'pending'),
+    };
+    localStorage.setItem('ptk_content_v2',JSON.stringify(toSave));
+  }catch(e){}
 }
 
 function exportJSON(){
@@ -5053,7 +5080,7 @@ function buildLibListPatterns(){
   // Filtre famille courant (sélect en tête du panel) — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-patterns');
   const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
-  const allPatsVisible = packCours.patterns.filter(p => !p.localDeletePending);
+  const allPatsVisible = packCours.patterns.filter(p => !p.localDeletePending && p.source !== 'pending');
   const patterns = filtreId === '__teacher__'
     ? allPatsVisible.filter(p=>p.source==='teacher')
     : filtreId && filtreId !== 'all'
@@ -5810,7 +5837,7 @@ function buildLibListGrooves(){
   // Filtre famille courant — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-grooves');
   const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
-  const allGroovesVisible = packCours.grooves.filter(g => !g.localDeletePending);
+  const allGroovesVisible = packCours.grooves.filter(g => !g.localDeletePending && g.source !== 'pending');
   const grooves = filtreId === '__teacher__'
     ? allGroovesVisible.filter(g=>g.source==='teacher')
     : filtreId && filtreId !== 'all'
