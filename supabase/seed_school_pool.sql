@@ -46,8 +46,8 @@ on conflict (id) do update set
   nom = excluded.nom, sequence = excluded.sequence, familles_ids = excluded.familles_ids,
   encyclo_ref = excluded.encyclo_ref, scope = 'school', approved = true;
 
--- \u2500\u2500 Patterns Empty (templates vides, 1 par taille de pas) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
--- empty_4 omis : couvert par 'silence' (m\u00eame s\u00e9quence, m\u00eame famille)
+-- Patterns Empty (templates vides, 1 par taille de pas)
+-- empty_4 omis : couvert par 'silence' (meme sequence, meme famille)
 insert into patterns (id, nom, sequence, pas, familles_ids, encyclo_ref, scope, approved) values
   ('empty_1',  'Empty 1',  '.',                1,  array['fam_base'], null, 'school', true),
   ('empty_2',  'Empty 2',  '..',               2,  array['fam_base'], null, 'school', true),
