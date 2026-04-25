@@ -42,7 +42,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
+.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.19</span>
+      <span class="app-version">v3.4.20</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4713,12 +4713,17 @@ function buildPublishSection() {
     });
   }
   if (pendingRenameFamsTX.length) {
-    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles</div>`;
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Tags familles</div>`;
     pendingRenameFamsTX.forEach(fam => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">✎ Renommée · avec prochain item</span>` +
-        `</div>`;
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">✎ Renommée</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-fam-rename-tx" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>` +
+          `<button class="btn-pub-fam-rename-tx-cancel" data-id="${fam.id}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `</div></div>`;
     });
   }
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
@@ -4754,7 +4759,9 @@ function buildPublishSection() {
         : await sbPublishGroove(btn.dataset.id);
       if (ok) {
         btn.textContent = '✓'; btn.style.background = '#d4f5e6';
-        setTimeout(() => { buildPublishSection(); sbSyncSchoolPool(); }, 700);
+        buildPublishSection();
+        if (btn.dataset.type === 'pattern') buildLibListPatterns(); else buildLibListGrooves();
+        setTimeout(() => sbSyncSchoolPool(), 700);
       } else {
         btn.textContent = origText; btn.disabled = false;
       }
@@ -4779,7 +4786,7 @@ function buildPublishSection() {
         saveToStorage(); buildPublishSection();
       } else {
         // TX: draft teacher item → supprimer localement
-        if (!confirm('Annuler et supprimer « '+(item?.nom||btn.dataset.id)+' » ?')) return;
+        if (!confirm((isMX ? 'Annuler les modifications apportées à « ' : 'Annuler et supprimer « ')+(item?.nom||btn.dataset.id)+' » ?')) return;
         if (btn.dataset.type === 'pattern') {
           packCours.patterns = packCours.patterns.filter(p => p.id !== btn.dataset.id);
           buildLibListPatterns();
@@ -4862,6 +4869,26 @@ function buildPublishSection() {
     btn.addEventListener('click', () => {
       const fam = packCours.familles.find(f => f.id === btn.dataset.id);
       if (fam) { fam.localDirty = false; }
+      saveToStorage(); buildPublishSection();
+    });
+  });
+
+  // GAP_FAM_RENAME_TX — soumission indépendante du renommage de famille TX
+  container.querySelectorAll('.btn-pub-fam-rename-tx').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      await sbPushTeacherFamilles([btn.dataset.id]);
+      const fam = packCours.familles.find(f => f.id === btn.dataset.id);
+      if (fam) delete fam._pendingRename;
+      saveToStorage(); buildPublishSection();
+      showToast('Renommage de famille envoyé', 'info');
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-fam-rename-tx-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fam = packCours.familles.find(f => f.id === btn.dataset.id);
+      if (fam) delete fam._pendingRename;
       saveToStorage(); buildPublishSection();
     });
   });
