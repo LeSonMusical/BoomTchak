@@ -372,7 +372,8 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-panel-close:hover{background:#e0ddd8}
 .lib-list{flex:1;overflow-y:auto;padding:6px 0}
 /* ─── MOD PANEL ─── */
-.layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel{display:flex;flex-direction:column;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.mod-row{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .layer-mod-panel.hidden{display:none}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
 .btn-mod-sm{padding:1px 3px}
@@ -682,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.23</span>
+      <span class="app-version">v3.4.24</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2267,35 +2268,35 @@ function buildLayers(){
     modPanel.className='layer-mod-panel hidden';
     modPanel.id='mod-panel-'+li;
 
-    // — Vitesse /2 ×2 —
-    const bHalf=document.createElement('button');bHalf.className='btn-mod';bHalf.id='mod-half-'+li;bHalf.textContent='/2';bHalf.title='Vitesse ÷2 (appliqué au prochain cycle)';
-    const bDbl=document.createElement('button');bDbl.className='btn-mod';bDbl.id='mod-dbl-'+li;bDbl.textContent='×2';bDbl.title='Vitesse ×2 (appliqué au prochain cycle)';
+    // — Vitesse cyclique = → ×2 → /2 → = —
+    const bSpeed=document.createElement('button');bSpeed.className='btn-mod';bSpeed.id='mod-speed-'+li;bSpeed.title='Vitesse : tap pour cycler = → ×2 → /2 → = (appliqué au prochain cycle)';
     let bTern; // déclaré ici, initialisé après (guard dans updateSpeedBtns)
     const updateSpeedBtns=()=>{
-      // Calcul de l'état anticipé (après prochain boundary) — évite le double "on" visuel
       let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
       if(state[li].pendingClear){nextHalf=false;nextDbl=false;}
       if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
       if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
-      bHalf.classList.toggle('on',nextHalf);
-      bDbl.classList.toggle('on',nextDbl);
+      if(nextDbl){bSpeed.textContent='×2';bSpeed.classList.add('on');}
+      else if(nextHalf){bSpeed.textContent='/2';bSpeed.classList.add('on');}
+      else{bSpeed.textContent='=';bSpeed.classList.remove('on');}
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
     };
     updateSpeedBtns();
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); const _sg=getGroove(currentGrooveId); if(_sg){markItemDirty(_sg,'rate'); buildPublishSection();} };
-    bHalf.addEventListener('click',()=>{
-      if(state[li].halfOn||state[li].pendingHalf){
+    bSpeed.addEventListener('click',()=>{
+      let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
+      if(state[li].pendingClear){nextHalf=false;nextDbl=false;}
+      if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
+      if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
+      if(!nextHalf && !nextDbl){
+        // normal → ×2
+        state[li].pendingDouble=true;state[li].pendingHalf=false;state[li].pendingClear=false;
+      } else if(nextDbl){
+        // ×2 → /2
+        state[li].pendingHalf=true;state[li].pendingDouble=false;state[li].pendingClear=false;
+      } else {
+        // /2 → normal
         state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=true;
-      } else {
-        state[li].pendingDouble=false;state[li].pendingHalf=true;state[li].pendingClear=false;
-      }
-      updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
-    });
-    bDbl.addEventListener('click',()=>{
-      if(state[li].doubleOn||state[li].pendingDouble){
-        state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=true;
-      } else {
-        state[li].pendingHalf=false;state[li].pendingDouble=true;state[li].pendingClear=false;
       }
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
@@ -2326,6 +2327,31 @@ function buildLayers(){
       state[li].shiftN=((state[li].shiftN||0)+1)%state[li].pattern.length;
       shNum.textContent=String(state[li].shiftN);
       buildStepsDOM(li,state[li].wrapped); _shiftMark();
+    });
+
+    // — Resize − N + —
+    const nPas=document.createElement('span');nPas.className='shift-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);nPas.style.cssText='min-width:18px;font-weight:700';
+    const bMinus=document.createElement('button');bMinus.className='btn-mod btn-mod-sm';bMinus.textContent='−';bMinus.title='Enlever le dernier pas';
+    const bPlus=document.createElement('button');bPlus.className='btn-mod btn-mod-sm';bPlus.textContent='+';bPlus.title='Ajouter un pas vide';
+    const _reszMark=()=>{
+      nPas.textContent=String(state[li].pattern.length);
+      buildStepsDOM(li,state[li].wrapped);
+      setLayerDirty(li,true);
+      grooveDirty=true; updateGrooveSaveBtn();
+      const _sg=getGroove(currentGrooveId); if(_sg){markItemDirty(_sg,'layers'); buildPublishSection();}
+      updateSwapBtn();
+    };
+    bPlus.addEventListener('click',()=>{
+      state[li].pattern=[...state[li].pattern,'.'];
+      _reszMark();
+    });
+    bMinus.addEventListener('click',()=>{
+      if(state[li].pattern.length<=1) return;
+      const last=state[li].pattern[state[li].pattern.length-1];
+      if(last!=='.' && !confirm('Le dernier pas est actif. Enlever quand même ?')) return;
+      state[li].pattern=state[li].pattern.slice(0,-1);
+      if((state[li].shiftN||0)>=state[li].pattern.length){state[li].shiftN=0;shNum.textContent='0';}
+      _reszMark();
     });
 
     // — Inverser ⇄ (swap moitiés) + Inversion accents ⇅ + Rotation accents ⊙ —
@@ -2430,17 +2456,20 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);
     });
 
-    // Assemblage : Vitesse | T | Shift | ⇄ ⇅ ⊙ | 🎲 ✨
+    // Assemblage 2 lignes — ligne 1 : édit | ligne 2 : transf
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
-    modPanel.appendChild(bHalf); modPanel.appendChild(bDbl);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bTern);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bShL); modPanel.appendChild(shNum); modPanel.appendChild(bShR);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bSwap); modPanel.appendChild(bInv); modPanel.appendChild(bRot);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bDice); modPanel.appendChild(bMagic);
+    const modRow1=document.createElement('div');modRow1.className='mod-row';
+    modRow1.appendChild(bMinus); modRow1.appendChild(nPas); modRow1.appendChild(bPlus);
+    modRow1.appendChild(mkSep());
+    modRow1.appendChild(bShL); modRow1.appendChild(shNum); modRow1.appendChild(bShR);
+    modRow1.appendChild(mkSep());
+    modRow1.appendChild(bSpeed);
+    modRow1.appendChild(bTern);
+    const modRow2=document.createElement('div');modRow2.className='mod-row';
+    modRow2.appendChild(bSwap); modRow2.appendChild(bInv); modRow2.appendChild(bRot);
+    modRow2.appendChild(mkSep());
+    modRow2.appendChild(bDice); modRow2.appendChild(bMagic);
+    modPanel.appendChild(modRow1); modPanel.appendChild(modRow2);
 
     layerDiv.appendChild(modPanel);
 
