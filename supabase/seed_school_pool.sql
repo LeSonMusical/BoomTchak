@@ -46,6 +46,28 @@ on conflict (id) do update set
   nom = excluded.nom, sequence = excluded.sequence, familles_ids = excluded.familles_ids,
   encyclo_ref = excluded.encyclo_ref, scope = 'school', approved = true;
 
+-- \u2500\u2500 Patterns Empty (templates vides, 1 par taille de pas) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+-- empty_4 omis : couvert par 'silence' (m\u00eame s\u00e9quence, m\u00eame famille)
+insert into patterns (id, nom, sequence, pas, familles_ids, encyclo_ref, scope, approved) values
+  ('empty_1',  'Empty 1',  '.',                1,  array['fam_base'], null, 'school', true),
+  ('empty_2',  'Empty 2',  '..',               2,  array['fam_base'], null, 'school', true),
+  ('empty_3',  'Empty 3',  '...',              3,  array['fam_base'], null, 'school', true),
+  ('empty_5',  'Empty 5',  '.....',            5,  array['fam_base'], null, 'school', true),
+  ('empty_6',  'Empty 6',  '......',           6,  array['fam_base'], null, 'school', true),
+  ('empty_7',  'Empty 7',  '.......',          7,  array['fam_base'], null, 'school', true),
+  ('empty_8',  'Empty 8',  '........',         8,  array['fam_base'], null, 'school', true),
+  ('empty_9',  'Empty 9',  '.........',        9,  array['fam_base'], null, 'school', true),
+  ('empty_10', 'Empty 10', '..........',       10,  array['fam_base'], null, 'school', true),
+  ('empty_11', 'Empty 11', '...........',      11,  array['fam_base'], null, 'school', true),
+  ('empty_12', 'Empty 12', '............',     12,  array['fam_base'], null, 'school', true),
+  ('empty_13', 'Empty 13', '.............',    13,  array['fam_base'], null, 'school', true),
+  ('empty_14', 'Empty 14', '..............',   14,  array['fam_base'], null, 'school', true),
+  ('empty_15', 'Empty 15', '...............',  15,  array['fam_base'], null, 'school', true),
+  ('empty_16', 'Empty 16', '................', 16,  array['fam_base'], null, 'school', true)
+on conflict (id) do update set
+  nom = excluded.nom, sequence = excluded.sequence, familles_ids = excluded.familles_ids,
+  scope = 'school', approved = true;
+
 -- ── Grooves ──────────────────────────────────────────────────────────────────
 insert into grooves (id, nom, familles_ids, band_defaut, tempo_min, tempo_max, tempo_defaut, signature, layers, scope, approved) values
   ('salsa32',   'Salsa 3:2',  array['fam_afrocubain'], 'band_perc',    80,  360, 200, '4/4',

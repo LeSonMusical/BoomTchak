@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.22</span>
+      <span class="app-version">v3.4.23</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1226,6 +1226,22 @@ const PTK_DEFAULT = {
     {id:'pulse4', nom:'Pulse (4:4)',             familles:['fam_base'],                              sequence:'XXXX',             pas:4},
     {id:'sync4',  nom:'Double Up (2:4)',         familles:['fam_base'],                              sequence:'..XX',             pas:4},
     {id:'silence',nom:'Silence',                familles:['fam_base'],                              sequence:'....',             pas:4},
+    // Templates vides (1 par taille de pas — empty_4 omis, couvert par Silence)
+    {id:'empty_1', nom:'Empty 1',  familles:['fam_base'], sequence:'.',                pas:1},
+    {id:'empty_2', nom:'Empty 2',  familles:['fam_base'], sequence:'..',               pas:2},
+    {id:'empty_3', nom:'Empty 3',  familles:['fam_base'], sequence:'...',              pas:3},
+    {id:'empty_5', nom:'Empty 5',  familles:['fam_base'], sequence:'.....',            pas:5},
+    {id:'empty_6', nom:'Empty 6',  familles:['fam_base'], sequence:'......',           pas:6},
+    {id:'empty_7', nom:'Empty 7',  familles:['fam_base'], sequence:'.......',          pas:7},
+    {id:'empty_8', nom:'Empty 8',  familles:['fam_base'], sequence:'........',         pas:8},
+    {id:'empty_9', nom:'Empty 9',  familles:['fam_base'], sequence:'.........',        pas:9},
+    {id:'empty_10',nom:'Empty 10', familles:['fam_base'], sequence:'..........',       pas:10},
+    {id:'empty_11',nom:'Empty 11', familles:['fam_base'], sequence:'...........',      pas:11},
+    {id:'empty_12',nom:'Empty 12', familles:['fam_base'], sequence:'............',     pas:12},
+    {id:'empty_13',nom:'Empty 13', familles:['fam_base'], sequence:'.............',    pas:13},
+    {id:'empty_14',nom:'Empty 14', familles:['fam_base'], sequence:'..............',   pas:14},
+    {id:'empty_15',nom:'Empty 15', familles:['fam_base'], sequence:'...............',  pas:15},
+    {id:'empty_16',nom:'Empty 16', familles:['fam_base'], sequence:'................', pas:16},
     {id:'tres',   nom:'Tresillo',               familles:['fam_euclidien','fam_afrocubain'],         sequence:'X..X..X.',         pas:8,  encyclo_ref:'tres'},
     {id:'cinq',   nom:'Cinquillo',              familles:['fam_afrocubain'],                        sequence:'X.XX.XX.',         pas:8,  encyclo_ref:'cinq'},
     {id:'hab',    nom:'Habanera',               familles:['fam_afrocubain'],                        sequence:'X..XX.X.',         pas:8,  encyclo_ref:'hab'},
