@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.20</span>
+      <span class="app-version">v3.4.21</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2980,9 +2980,11 @@ function getEncycloDisplayName(key) {
   const resolvedKey = (key.startsWith('tx_') && key.length > 40) ? key.substring(40) : key;
   const misc = ENCYCLO_MISC.find(m => m.id === resolvedKey);
   if (misc) return misc.nom;
-  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === resolvedKey);
+  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === resolvedKey)
+           || PTK_DEFAULT.patterns?.find(p => (p.encyclo_ref || p.id) === resolvedKey);
   if (pat) return pat.nom;
-  const grv = packCours.grooves.find(g => g.id === resolvedKey);
+  const grv = packCours.grooves.find(g => g.id === resolvedKey)
+           || PTK_DEFAULT.grooves?.find(g => g.id === resolvedKey);
   if (grv) return grv.nom;
   return resolvedKey;
 }
@@ -3763,11 +3765,15 @@ async function sbSyncSchoolPool() {
 
 function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
   const isMX = authProfile?.role === 'mx';
-  // MX ne crée jamais d'items source='teacher' — si le localStorage est partagé avec TX,
-  // ces forks TX sont des artefacts : on les purge pour que MX voie toujours l'état école validé
+  // Isolation localStorage partagé MX/TX :
+  // MX ne crée jamais d'items source='teacher' — purger les forks TX pour voir l'état école validé
   if (isMX) {
     packCours.patterns = packCours.patterns.filter(p => p.source !== 'teacher');
     packCours.grooves  = packCours.grooves.filter(g => g.source !== 'teacher');
+  }
+  // TX ne doit pas voir les familles école non encore publiées par MX (localDirty)
+  if (!isMX) {
+    packCours.familles = packCours.familles.filter(f => !(f.source === 'school' && f.localDirty));
   }
   // IDs école ayant un fork TX actif (TX seulement) → ne pas réimporter (évite doublon fork+original)
   const schoolIdsWithForkP = isMX ? new Set() : new Set(packCours.patterns.filter(x => x.source === 'teacher' && x.sourceRef).map(x => x.sourceRef));
@@ -4786,7 +4792,7 @@ function buildPublishSection() {
         saveToStorage(); buildPublishSection();
       } else {
         // TX: draft teacher item → supprimer localement
-        if (!confirm((isMX ? 'Annuler les modifications apportées à « ' : 'Annuler et supprimer « ')+(item?.nom||btn.dataset.id)+' » ?')) return;
+        if (!confirm('Annuler les modifications apportées à « '+(item?.nom||btn.dataset.id)+' » ?')) return;
         if (btn.dataset.type === 'pattern') {
           packCours.patterns = packCours.patterns.filter(p => p.id !== btn.dataset.id);
           buildLibListPatterns();
@@ -5810,8 +5816,7 @@ function attachLibPanelEvents(){
     if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const input = document.getElementById('lib-fam-new-input');
     const nom = input.value.trim(); if(!nom) return;
-    const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm'};
-    if (authProfile?.role === 'mx') fam.localDirty = true; // MX → passage obligatoire par buildPublishSection
+    const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm', source:'school', localDirty:true};
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
@@ -6136,8 +6141,7 @@ function attachGrooveLibEvents(){
     if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const input=document.getElementById('lib-fam-new-input-grooves');
     const nom=input.value.trim(); if(!nom) return;
-    const fam={id:'fam_user_'+Date.now(),nom,category:'rytm'};
-    if (authProfile?.role === 'mx') fam.localDirty = true; // MX → passage obligatoire par buildPublishSection
+    const fam={id:'fam_user_'+Date.now(),nom,category:'rytm',source:'school',localDirty:true};
     packCours.familles.push(fam);
     saveToStorage(); input.value='';
     document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
@@ -6848,7 +6852,7 @@ function attachEvents(){
     if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
     const nomFam = prompt('Nom de la nouvelle famille :');
     if(!nomFam || !nomFam.trim()) return;
-    const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim(), category:'rytm'};
+    const newFam = {id:'fam_user_'+Date.now(), nom:nomFam.trim(), category:'rytm', source:'school', localDirty:true};
     packCours.familles.push(newFam);
     saveToStorage();
     _pspNewFamIds.push(newFam.id);
