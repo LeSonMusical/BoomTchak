@@ -682,7 +682,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.21</span>
+      <span class="app-version">v3.4.22</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -4575,7 +4575,7 @@ function buildPublishSection() {
         .map(([key,e]) => ({ key, nom: getEncycloDisplayName(key), isSubmitted: e._localStatusEncyclo === 'submitted', isDirty: !!e._pendingTX }))
     : [];
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
-  const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename) : [];
+  const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
   if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
@@ -5485,9 +5485,10 @@ function buildLibFamListPatterns(){
     const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
     nameEl.textContent = fam.nom;
     row.appendChild(nameEl);
-    // Bouton ✎ renommer
+    // Bouton ✎ renommer — masqué pour les familles école en mode TX (TX ne peut pas les modifier)
     const renBtn = document.createElement('button'); renBtn.className = 'lib-fam-rename'; renBtn.textContent = '✎'; renBtn.title = 'Renommer';
     renBtn.addEventListener('click', ()=>libStartRenameFamille(nameEl, fam, buildLibFamListPatterns));
+    if (fam.source === 'school' && authProfile?.role !== 'mx') renBtn.style.display = 'none';
     row.appendChild(renBtn);
     // Compteur
     const cntEl = document.createElement('span'); cntEl.className = 'lib-fam-count'; cntEl.textContent = count+'P';
@@ -5701,6 +5702,7 @@ function buildLibFamListBands(){
     row.appendChild(nameEl);
     const renBtn=document.createElement('button');renBtn.className='lib-fam-rename';renBtn.textContent='✎';renBtn.title='Renommer';
     renBtn.addEventListener('click',()=>libStartRenameFamille(nameEl,fam,buildLibFamListBands));
+    if(fam.source==='school'&&authProfile?.role!=='mx')renBtn.style.display='none';
     row.appendChild(renBtn);
     const cntEl=document.createElement('span');cntEl.className='lib-fam-count';cntEl.textContent=cnt+'B';
     row.appendChild(cntEl);
@@ -5862,6 +5864,7 @@ function buildLibFamListGrooves(){
     row.appendChild(nameEl);
     const renBtn=document.createElement('button'); renBtn.className='lib-fam-rename'; renBtn.textContent='✎'; renBtn.title='Renommer';
     renBtn.addEventListener('click',()=>libStartRenameFamille(nameEl,fam,buildLibFamListGrooves));
+    if(fam.source==='school'&&authProfile?.role!=='mx')renBtn.style.display='none';
     row.appendChild(renBtn);
     const cntEl=document.createElement('span'); cntEl.className='lib-fam-count'; cntEl.textContent=gCnt+'G '+pCnt+'P';
     row.appendChild(cntEl);
