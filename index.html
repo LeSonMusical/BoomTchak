@@ -373,6 +373,7 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-list{flex:1;overflow-y:auto;padding:6px 0}
 /* ─── MOD PANEL ─── */
 .layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .layer-mod-panel.hidden{display:none}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
 .btn-mod-sm{padding:1px 3px}
@@ -682,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.25</span>
+      <span class="app-version">v3.4.26</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2455,7 +2456,7 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);
     });
 
-    // Assemblage — 1 ligne flex-wrap (wrap naturel si écran trop étroit)
+    // Assemblage — édit : flex direct ; transf : groupe unitaire (wrap ensemble)
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
     modPanel.appendChild(bMinus); modPanel.appendChild(nPas); modPanel.appendChild(bPlus);
     modPanel.appendChild(mkSep());
@@ -2463,10 +2464,11 @@ function buildLayers(){
     modPanel.appendChild(mkSep());
     modPanel.appendChild(bSpeed);
     modPanel.appendChild(bTern);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bSwap); modPanel.appendChild(bInv); modPanel.appendChild(bRot);
-    modPanel.appendChild(mkSep());
-    modPanel.appendChild(bDice); modPanel.appendChild(bMagic);
+    const modTransf=document.createElement('div');modTransf.className='mod-transf';
+    modTransf.appendChild(bSwap); modTransf.appendChild(bInv); modTransf.appendChild(bRot);
+    modTransf.appendChild(mkSep());
+    modTransf.appendChild(bDice); modTransf.appendChild(bMagic);
+    modPanel.appendChild(modTransf);
 
     layerDiv.appendChild(modPanel);
 
