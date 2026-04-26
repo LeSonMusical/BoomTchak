@@ -683,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.27</span>
+      <span class="app-version">v3.4.28</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3036,28 +3036,55 @@ function getEncycloDisplayName(key) {
 
 // Reconstruit tous les selects de filtre famille (barre de couche + panel ≡)
 function rebuildAllFamFilters(){
-  // Sélects dans les barres de couche
+  const activePats = packCours.patterns.filter(p => !p.localDeletePending);
+  const activeGrvs = packCours.grooves.filter(g => !g.localDeletePending);
+  const famsWithPat = new Set(activePats.flatMap(p => p.familles||[]));
+  const famsWithGrv = new Set(activeGrvs.flatMap(g => g.familles||[]));
+  const famsWithEnc = new Set([...famsWithPat, ...famsWithGrv]);
+
+  // Sélects dans les barres de couche (filtre patterns)
   document.querySelectorAll('.fam-filter').forEach(sel=>{
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
     const _rp=document.createElement('option');_rp.value='__teacher__';_rp.textContent='Enseignant';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
-    packCours.familles.forEach(f=>{
+    packCours.familles.filter(f => famsWithPat.has(f.id)).forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
     if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
   });
-  // Select filtre en haut du panel ≡ patterns
-  ['lib-fam-filter-patterns','lib-fam-filter-grooves','lib-fam-filter-encyclo'].forEach(elId=>{
-    const panelFil = document.getElementById(elId);
-    if(!panelFil) return;
-    const prev = panelFil.value;
-    panelFil.innerHTML = '<option value="all">Toutes les familles</option>';
-    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';panelFil.appendChild(_pp);
-    packCours.familles.forEach(f=>{
-      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;panelFil.appendChild(o);
+  // Panel ≡ patterns — familles avec ≥1 pattern
+  const patFil = document.getElementById('lib-fam-filter-patterns');
+  if(patFil){
+    const prev = patFil.value;
+    patFil.innerHTML = '<option value="all">Toutes les familles</option>';
+    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';patFil.appendChild(_pp);
+    packCours.familles.filter(f => famsWithPat.has(f.id)).forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;patFil.appendChild(o);
     });
-    if([...panelFil.options].some(o=>o.value===prev)) panelFil.value=prev;
-  });
+    if([...patFil.options].some(o=>o.value===prev)) patFil.value=prev;
+  }
+  // Panel ≡ grooves — familles avec ≥1 groove
+  const grvFil = document.getElementById('lib-fam-filter-grooves');
+  if(grvFil){
+    const prev = grvFil.value;
+    grvFil.innerHTML = '<option value="all">Toutes les familles</option>';
+    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grvFil.appendChild(_pp);
+    packCours.familles.filter(f => famsWithGrv.has(f.id)).forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grvFil.appendChild(o);
+    });
+    if([...grvFil.options].some(o=>o.value===prev)) grvFil.value=prev;
+  }
+  // Panel ≡ encyclopédie — familles avec ≥1 pattern ou groove (entrées encyclo indexées par item)
+  const encFil = document.getElementById('lib-fam-filter-encyclo');
+  if(encFil){
+    const prev = encFil.value;
+    encFil.innerHTML = '<option value="all">Toutes les familles</option>';
+    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';encFil.appendChild(_pp);
+    packCours.familles.filter(f => famsWithEnc.has(f.id)).forEach(f=>{
+      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;encFil.appendChild(o);
+    });
+    if([...encFil.options].some(o=>o.value===prev)) encFil.value=prev;
+  }
 }
 
 // ── Panneau sons ──────────────────────────────────────────────────────────
@@ -4688,12 +4715,16 @@ function buildPublishSection() {
         `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">Annuler</button>`
       : '';
     if (isMX) {
-      // MX (items école dirty) : 1 ligne compacte
-      return `<div style="display:flex;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<div style="display:flex;align-items:center;gap:4px">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
-        changeTypeBadge(item) +
-        `<div style="display:flex;gap:4px;flex-shrink:0">${btnSend}${btnCancel}</div></div></div>`;
+      // MX : 2 lignes — même design que section Demandes
+      const btnView = `<button class="btn-pub-view" data-type="${type}" data-id="${item.id}" ` +
+        `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>`;
+      return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+          changeTypeBadge(item) +
+        `</div>` +
+        `<div style="display:flex;gap:5px">${btnView}${btnSend}${btnCancel}</div>` +
+      `</div>`;
     }
     // TX : 2 lignes (nom + badge / boutons) — design aligné avec Propositions en attente
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
@@ -4721,12 +4752,15 @@ function buildPublishSection() {
   if (pendingEncyclo.length) {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie (${pendingEncyclo.length})</div>`;
     pendingEncyclo.forEach(e => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
-        `<div style="display:flex;gap:4px;flex-shrink:0">` +
-        `<button class="btn-pub-encyclo" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
-        `<button class="btn-pub-encyclo-cancel" data-key="${e.key}" title="Ne pas publier" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
+          `<button class="btn-pub-encyclo" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
+          `<button class="btn-pub-encyclo-cancel" data-key="${e.key}" title="Ne pas publier" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -4754,12 +4788,14 @@ function buildPublishSection() {
   if (dirtyFams.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles (${dirtyFams.length})</div>`;
     dirtyFams.forEach(fam => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Renommée</span>` +
-        `<div style="display:flex;gap:4px;flex-shrink:0">` +
-        `<button class="btn-pub-fam-rename" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
-        `<button class="btn-pub-fam-rename-cancel" data-id="${fam.id}" title="Annuler le renommage" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Renommée</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-fam-rename" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
+          `<button class="btn-pub-fam-rename-cancel" data-id="${fam.id}" title="Annuler le renommage" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -4780,21 +4816,26 @@ function buildPublishSection() {
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
     [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g}))].forEach(({type,item}) => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Supprimer</span>` +
-        `<div style="display:flex;gap:4px;flex-shrink:0">` +
-        `<button class="btn-pub-del-confirm" data-type="${type}" data-id="${item.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
-        `<button class="btn-pub-del-cancel" data-type="${type}" data-id="${item.id}" title="Annuler la suppression" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Supprimer</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-view" data-type="${type}" data-id="${item.id}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
+          `<button class="btn-pub-del-confirm" data-type="${type}" data-id="${item.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
+          `<button class="btn-pub-del-cancel" data-type="${type}" data-id="${item.id}" title="Annuler la suppression" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
     pendingDelFams.forEach(fam => {
-      html += `<div style="display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid #f0ede8">` +
-        `<span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
-        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Famille</span>` +
-        `<div style="display:flex;gap:4px;flex-shrink:0">` +
-        `<button class="btn-pub-fam-del-confirm" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
-        `<button class="btn-pub-fam-del-cancel" data-id="${fam.id}" title="Annuler la suppression famille" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fam.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Famille</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-fam-del-confirm" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
+          `<button class="btn-pub-fam-del-cancel" data-id="${fam.id}" title="Annuler la suppression famille" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -5007,6 +5048,23 @@ function buildPublishSection() {
       const fam = packCours.familles.find(f => f.id === btn.dataset.id);
       if (fam) delete fam._deletePending;
       saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-view').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.type === 'groove') { applyGroove(btn.dataset.id); buildGrooveSection(); }
+      document.getElementById('panel-settings')?.classList.remove('open');
+      document.getElementById('btn-settings')?.classList.remove('active');
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-enc-view').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showEncycloEntry(btn.dataset.key);
+      if (!encycloOuvert) toggleEncyclo(true);
+      document.getElementById('panel-settings')?.classList.remove('open');
+      document.getElementById('btn-settings')?.classList.remove('active');
     });
   });
 }
