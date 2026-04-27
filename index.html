@@ -683,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.30</span>
+      <span class="app-version">v3.4.31</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2164,7 +2164,7 @@ function buildLayers(){
       btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
       layerDiv.classList.toggle('muted-layer',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
-      const _sgm=getGroove(currentGrooveId); if(_sgm){markItemDirty(_sgm,'mute_layer'); saveToStorage(); buildPublishSection();}
+      const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
     });
     row1.appendChild(btnMute);
 
@@ -2214,8 +2214,7 @@ function buildLayers(){
         const groove=getGroove(currentGrooveId);
         if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
         grooveDirty=true; updateGrooveSaveBtn();
-        if(groove){markItemDirty(groove,'pattern_layer'); saveToStorage(); buildPublishSection();}
-        else saveToStorage();
+        saveToStorage();
       }
       updateBtnI();
       updateEncycloSelect(pat.encyclo_ref||pat.id);
@@ -4385,8 +4384,8 @@ function buildApprobationsSection() {
       typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.${det}</span>`;
     }
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-        `<span style="font-size:11px;font-weight:600;word-break:break-word">${item.nom}</span>` +
+      `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
         typeBadge + famBadge +
       `</div>` +
       `<div style="display:flex;gap:5px">` +
@@ -4408,7 +4407,7 @@ function buildApprobationsSection() {
     const submitter = enc.profiles?.display_name || enc.profiles?.email || '';
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
       `<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">` +
-        `<span style="font-size:11px;font-weight:600;word-break:break-word">${nom}</span>` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${nom}</span>` +
         `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
       `</div>` +
       (submitter ? `<div style="font-size:9px;color:#888;margin-bottom:4px">Par : ${submitter}</div>` : '') +
@@ -4727,8 +4726,8 @@ function buildPublishSection() {
       const btnView = `<button class="btn-pub-view" data-type="${type}" data-id="${item.id}" ` +
         `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>`;
       return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${item.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
           changeTypeBadge(item) +
         `</div>` +
         `<div style="display:flex;gap:5px">${btnView}${btnSend}${btnCancel}</div>` +
@@ -4736,8 +4735,8 @@ function buildPublishSection() {
     }
     // TX : 2 lignes (nom + badge / boutons) — design aligné avec Propositions en attente
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-        `<span style="font-size:11px;font-weight:600;word-break:break-word">${item.nom}</span>` +
+      `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+        `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
         changeTypeBadge(item) +
       `</div>` +
       `<div style="display:flex;gap:5px">${btnSend}${btnCancel}</div>` +
@@ -4761,8 +4760,8 @@ function buildPublishSection() {
     html += `<div style="font-size:10px;font-weight:600;color:var(--c-encyclo);margin-top:6px;margin-bottom:4px">Encyclopédie (${pendingEncyclo.length})</div>`;
     pendingEncyclo.forEach(e => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${e.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${e.nom}</span>` +
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
@@ -4783,8 +4782,8 @@ function buildPublishSection() {
           : `<button class="btn-pub-encyclo-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>`;
       const badgeEnc = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.</span>`;
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${e.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${e.nom}</span>` +
           badgeEnc +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
@@ -4797,8 +4796,8 @@ function buildPublishSection() {
     html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Familles (${dirtyFams.length})</div>`;
     dirtyFams.forEach(fam => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${fam.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${fam.nom}</span>` +
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Renommée</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
@@ -4811,8 +4810,8 @@ function buildPublishSection() {
     html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">Tags familles</div>`;
     pendingRenameFamsTX.forEach(fam => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${fam.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${fam.nom}</span>` +
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8e8f4;color:#444;flex-shrink:0">✎ Renommée</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
@@ -4825,8 +4824,8 @@ function buildPublishSection() {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
     [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g}))].forEach(({type,item}) => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${item.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Supprimer</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
@@ -4837,8 +4836,8 @@ function buildPublishSection() {
     });
     pendingDelFams.forEach(fam => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-        `<div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">` +
-          `<span style="font-size:11px;font-weight:600;word-break:break-word">${fam.nom}</span>` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${fam.nom}</span>` +
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Famille</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
