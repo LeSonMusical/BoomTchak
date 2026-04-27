@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.38</span>
+      <span class="app-version">v3.4.39</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3606,27 +3606,42 @@ function drawCircles(){
 
     // Points — en mode mesure : répétitions du pattern si plus court que la mesure
     const stepsToDraw = [];
+    let currentRepM = 0; // répétition courante dans la mesure (pour isPlaying)
     if(circleModeView === 'measure'){
       const spmM = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
       const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
-      const maxRep = Math.ceil(measureSecM / (getBeatSec(li) * n));
+      const patSecM = getBeatSec(li) * n;
+      const maxRep = Math.ceil(measureSecM / patSecM);
+      if(playing){
+        const elM = now - state[li].startTime;
+        const posInMeasure = ((elM % measureSecM) + measureSecM) % measureSecM;
+        currentRepM = Math.min(Math.floor(posInMeasure / patSecM), maxRep - 1);
+      }
       for(let rep=0; rep<maxRep; rep++){
         for(let si=0; si<n; si++){
           const frac = (si + rep * n) * getBeatSec(li) / measureSecM;
-          if(frac < 1) stepsToDraw.push({si, a:-Math.PI/2+2*Math.PI*frac, dim:rep>0});
+          if(frac < 1) stepsToDraw.push({si, a:-Math.PI/2+2*Math.PI*frac, rep});
         }
       }
     } else {
-      for(let si=0; si<n; si++) stepsToDraw.push({si, a:getStepAngle(li, si, n), dim:false});
+      for(let si=0; si<n; si++) stepsToDraw.push({si, a:getStepAngle(li, si, n), rep:0});
     }
-    for(const {si, a, dim} of stepsToDraw){
+    const isDark = document.body.classList.contains('dark-mode');
+    for(const {si, a, rep} of stepsToDraw){
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
       const isOn   = pat[si]==='X';
       const isSoft = pat[si]==='x';
-      const isPlaying = playing && si===flashStep[li];
+      const isRepeat = rep > 0;
+      const isPlaying = playing && si===flashStep[li] && rep===currentRepM;
 
-      // Dessin du point selon l'état (X grand plein, x petit atténué, . petit vide)
-      if(isOn){
+      // Répétition = anneau vide (écho) ; occurrence originale = plein
+      if(isRepeat && isOn){
+        ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
+        ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1.5; ctx.stroke();
+      } else if(isRepeat && isSoft){
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
+        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=1; ctx.stroke();
+      } else if(isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
@@ -3637,7 +3652,6 @@ function drawCircles(){
         ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
         // Silence : petit cercle — en sombre, bord de couleur layer pour le rendre lisible
-        const isDark=document.body.classList.contains('dark-mode');
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
         ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
         ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0'; ctx.lineWidth=isDark?1:0.75; ctx.stroke();
@@ -3649,7 +3663,6 @@ function drawCircles(){
         ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
-
     }
   });
 
