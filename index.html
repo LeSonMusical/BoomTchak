@@ -62,6 +62,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
 .sig-sel{font-size:10px;padding:1px 1px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:28px;appearance:none;-webkit-appearance:none;text-align:center}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
+.spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
 .temps-slider{flex:1;min-width:30px;max-width:90px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
@@ -570,6 +571,7 @@ body.dark-mode .temps-bar{background:#1e1c2a;border-bottom-color:#2a2448}
 body.dark-mode .temps-bar .section-bar-lbl{color:#a89fd0}
 body.dark-mode .sig-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .beat-display{color:#a89fd0}
+body.dark-mode .spm-display{color:#555}
 body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
 body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
@@ -683,7 +685,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.32</span>
+      <span class="app-version">v3.4.33</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -712,6 +714,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <div id="smenu-prefs-body" class="smenu-sub" style="display:none">
           <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
           <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
+          <label class="smenu-pref-lbl" style="gap:6px">Chgt de métrique :
+            <select id="pref-sig-lock" style="font-size:10px;padding:1px 3px;border-radius:4px;border:1px solid #ccc">
+              <option value="spm">SPM constant (croche)</option>
+              <option value="bpm">BPM constant (pulsation)</option>
+            </select>
+          </label>
         </div>
         <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
         <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
@@ -751,6 +759,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <option value="4/2">4/2</option>
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
+    <span class="spm-display" id="spm-display" title="Steps Par Minute (vitesse de la croche)">♪200</span>
     <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">Pulse ▶</button>
   </div>
@@ -1562,7 +1571,7 @@ let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
-let prefs={applyGrooveSig:true,applyGrooveBand:true};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'spm'};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
@@ -3452,6 +3461,8 @@ function updateBeatDisplay(){
   if(el) el.textContent=txt;
   const bpmSpan=document.querySelector('#btn-tempo .metro-bpm');
   if(bpmSpan) bpmSpan.textContent=txt;
+  const spmEl=document.getElementById('spm-display');
+  if(spmEl) spmEl.textContent='♪'+Math.round(spm);
 }
 function setMetroGlobal(on){
   metro.muted=!on;
@@ -6644,7 +6655,14 @@ function attachEvents(){
   });
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
+    const oldSig=currentSig;
     currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
+    if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
+      const slider=document.getElementById('bpm');
+      const currentSPM=parseInt(slider.value);
+      const oldBPM=currentSPM/oldSig.stepsPerBeat;
+      slider.value=Math.max(40,Math.min(960,Math.round(oldBPM*currentSig.stepsPerBeat)));
+    }
     updateBeatDisplay();
     _tapN=currentSig.beatsPerMeasure;
     const ni=document.getElementById('tap-n-input');
@@ -6853,6 +6871,8 @@ function attachEvents(){
     const pBand = document.getElementById('pref-apply-band');
     if(pSig){pSig.checked=prefs.applyGrooveSig;pSig.addEventListener('change',()=>{prefs.applyGrooveSig=pSig.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
     if(pBand){pBand.checked=prefs.applyGrooveBand;pBand.addEventListener('change',()=>{prefs.applyGrooveBand=pBand.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
+    const pSigLock=document.getElementById('pref-sig-lock');
+    if(pSigLock){pSigLock.value=prefs.sigChangeLock||'spm';pSigLock.addEventListener('change',()=>{prefs.sigChangeLock=pSigLock.value;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
   }
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
