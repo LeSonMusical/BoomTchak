@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.44</span>
+      <span class="app-version">v3.4.45</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2513,7 +2513,6 @@ function buildLayers(){
     setTimeout(()=>checkWrap(li),0);
     attachLayerObserver(li);
   });
-  if(circleView) drawCircles();
 }
 
 function findPatternBySeq(arr){
@@ -2563,6 +2562,7 @@ function buildStepsDOM(li,wrap){
     div.appendChild(s);
   });
   state[li].wrapped=wrap;
+  if(circleView) drawCircles();
 }
 
 function onStepClick(li,si,el){
