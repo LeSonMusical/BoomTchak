@@ -489,7 +489,7 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{display:none;justify-content:center;align-items:flex-start;padding:.5rem 0;flex-shrink:0}
+#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
@@ -498,6 +498,11 @@ body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seul
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:none;cursor:default;max-width:100%;max-height:100%}
 body.mode-tx #rhythm-canvas{cursor:pointer}
+#circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
+.circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
+.circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
+body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 body.view-circle .frame{display:flex;flex-direction:column}
@@ -686,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.35</span>
+      <span class="app-version">v3.4.36</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -805,7 +810,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
-  <div id="circle-view"><canvas id="rhythm-canvas"></canvas></div>
+  <div id="circle-view">
+    <div id="circle-mode-toggle">
+      <button id="btn-circle-cycle" class="circle-mode-btn active" title="1 tour = 1 cycle du pattern">↺ Cycle</button>
+      <button id="btn-circle-measure" class="circle-mode-btn" title="1 tour = 1 mesure">♩ Mesure</button>
+    </div>
+    <canvas id="rhythm-canvas"></canvas>
+  </div>
   <div class="hdivider"></div>
   <!-- Section Encyclopédie -->
   <div id="section-encyclo"></div>
@@ -3499,6 +3510,7 @@ function playMetroClick(atTime,type){
 // ═══════════════════════════════════════════════════════════════════════════
 
 let circleView = false;
+let circleModeView = 'cycle'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
 
 const CIRCLE_COLORS = [
@@ -3507,8 +3519,17 @@ const CIRCLE_COLORS = [
   {fill:'#1D9E75', stroke:'#0F6E56', track:'rgba(29,158,117,0.25)'},   // noise — cercle extérieur
 ];
 
-function stepAngle(si, total){
-  return -Math.PI/2 + (2*Math.PI*si/total);
+function getStepAngle(li, si, n){
+  if(circleModeView === 'measure'){
+    const spm = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+    const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+    const measureSec = (60/spm) * stepsPerMeasure;
+    if(measureSec > 0){
+      const frac = (si * getBeatSec(li) / measureSec) % 1;
+      return -Math.PI/2 + 2*Math.PI * frac;
+    }
+  }
+  return -Math.PI/2 + (2*Math.PI*si/n);
 }
 
 function resizeCanvas(){
@@ -3537,7 +3558,9 @@ function resizeCanvas(){
     cv.style.transformOrigin = 'top center';
     wrap.style.width  = '100%';
   }
-  wrap.style.height = physSz + 'px';
+  const toggleEl = document.getElementById('circle-mode-toggle');
+  const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
+  wrap.style.height = (physSz + toggleH) + 'px';
   drawCircles();
 }
 
@@ -3554,8 +3577,17 @@ function drawCircles(){
   const now = playing ? getAC().currentTime : 0;
 
   // Calcul fraction needle par layer
+  let fracMeasure = 0;
+  if(playing && circleModeView === 'measure'){
+    const spm = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+    const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+    const measureSec = (60/spm) * stepsPerMeasure;
+    const el = now - state[0].startTime;
+    fracMeasure = ((el % measureSec) + measureSec) % measureSec / measureSec;
+  }
   const fracs = LAYERS.map((_,li)=>{
     if(!playing) return 0;
+    if(circleModeView === 'measure') return fracMeasure;
     const bs = getBeatSec(li), el = now - state[li].startTime;
     const cyc = bs * state[li].pattern.length;
     return ((el % cyc) + cyc) % cyc / cyc;
@@ -3583,7 +3615,7 @@ function drawCircles(){
 
     // Points
     for(let si=0; si<n; si++){
-      const a = stepAngle(si, n);
+      const a = getStepAngle(li, si, n);
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
       const isOn   = pat[si]==='X';
       const isSoft = pat[si]==='x';
@@ -3615,6 +3647,22 @@ function drawCircles(){
       }
     }
   });
+
+  // Marqueurs de beats en mode mesure
+  if(circleModeView === 'measure'){
+    const rInner = radii[0] - dotR - 3;
+    const rOuter = radii[2] + dotR + 5;
+    for(let b=0; b<currentSig.beatsPerMeasure; b++){
+      const a = -Math.PI/2 + 2*Math.PI * b / currentSig.beatsPerMeasure;
+      ctx.beginPath();
+      ctx.moveTo(cx + rInner*Math.cos(a), cy + rInner*Math.sin(a));
+      ctx.lineTo(cx + rOuter*Math.cos(a), cy + rOuter*Math.sin(a));
+      const isDark = document.body.classList.contains('dark-mode');
+      ctx.strokeStyle = b===0 ? (isDark?'#9080C0':'#7060B0') : (isDark?'#555':'#d0ccc5');
+      ctx.lineWidth = b===0 ? 1.5 : 0.75;
+      ctx.stroke();
+    }
+  }
 
   // Aiguilles — dégradé transparent au centre, opaque à leur cercle
   LAYERS.forEach((_, li)=>{
@@ -3648,7 +3696,7 @@ function circleHitTest(x, y){
   for(let li=0; li<LAYERS.length; li++){
     const n = state[li].pattern.length, r = radii[li];
     for(let si=0; si<n; si++){
-      const a = stepAngle(si, n);
+      const a = getStepAngle(li, si, n);
       const dx = cx+r*Math.cos(a), dy = cy+r*Math.sin(a);
       if(Math.hypot(x-dx, y-dy) <= dotR+4) return {li, si};
     }
@@ -3697,7 +3745,7 @@ function setView(circle){
 
   if(circle){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); setupCircleModeToggle(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
@@ -3709,6 +3757,21 @@ function visualLoopCircle(){
   if(!playing) return;
   drawCircles();
   visualRafID = requestAnimationFrame(visualLoopCircle);
+}
+
+function setupCircleModeToggle(){
+  const btnCycle   = document.getElementById('btn-circle-cycle');
+  const btnMeasure = document.getElementById('btn-circle-measure');
+  if(!btnCycle || !btnMeasure) return;
+  // Évite les doublons d'écouteurs si appelé plusieurs fois
+  const fresh = btnCycle.cloneNode(true);
+  const freshM = btnMeasure.cloneNode(true);
+  btnCycle.parentNode.replaceChild(fresh, btnCycle);
+  freshM.classList.toggle('active', circleModeView==='measure');
+  fresh.classList.toggle('active', circleModeView==='cycle');
+  btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
+  fresh.addEventListener('click', ()=>{ circleModeView='cycle'; fresh.classList.add('active'); freshM.classList.remove('active'); drawCircles(); });
+  freshM.addEventListener('click', ()=>{ circleModeView='measure'; freshM.classList.add('active'); fresh.classList.remove('active'); drawCircles(); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
