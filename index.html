@@ -683,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.31</span>
+      <span class="app-version">v3.4.32</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1836,7 +1836,7 @@ function applyGroove(grooveId){
 
   LAYERS.forEach((layer,li)=>{
     const gl=groove.layers[li];if(!gl)return;
-    const pat=getPattern(gl.patternId);if(!pat)return;
+    const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
     let seq=pat.sequence.split('');
     if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
     state[li].pattern=seq;
@@ -2183,8 +2183,8 @@ function buildLayers(){
     const sel=document.createElement('select');
     sel.className='layer-select';sel.id='sel-'+layer.id;
     buildPatternSelect(sel,'all');
-    const curPat=findPatternBySeq(state[li].pattern);
-    if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});
+    if(state[li].patternId&&[...sel.options].some(o=>o.value===state[li].patternId)){sel.value=state[li].patternId;}
+    else{const curPat=findPatternBySeq(state[li].pattern);if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});}
 
     // Filtre → rebuild le select en gardant la sélection courante
     famSel.addEventListener('change',()=>{
@@ -2210,11 +2210,11 @@ function buildLayers(){
       state[li].pattern=pat.sequence.split('');
       state[li].patternId=pat.id;
       state[li].stepPos=0;state[li].wrapped=false;
-      if(currentMode==='tx'){
+      {
         const groove=getGroove(currentGrooveId);
         if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
         grooveDirty=true; updateGrooveSaveBtn();
-        saveToStorage();
+        if(currentMode==='tx')saveToStorage();
       }
       updateBtnI();
       updateEncycloSelect(pat.encyclo_ref||pat.id);
@@ -7023,7 +7023,7 @@ function start(){
   // Initialiser le state audio depuis le groove
   LAYERS.forEach((layer,li)=>{
     const gl=randomGroove.layers[li];if(!gl)return;
-    const pat=getPattern(gl.patternId);if(!pat)return;
+    const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
     let seq=pat.sequence.split('');
     if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
     state[li].pattern=seq;
