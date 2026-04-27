@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.37</span>
+      <span class="app-version">v3.4.38</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3623,9 +3623,7 @@ function drawCircles(){
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
       const isOn   = pat[si]==='X';
       const isSoft = pat[si]==='x';
-      const isPlaying = !dim && playing && si===flashStep[li];
-
-      if(dim){ ctx.save(); ctx.globalAlpha = 0.42; }
+      const isPlaying = playing && si===flashStep[li];
 
       // Dessin du point selon l'état (X grand plein, x petit atténué, . petit vide)
       if(isOn){
@@ -3652,7 +3650,6 @@ function drawCircles(){
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
 
-      if(dim) ctx.restore();
     }
   });
 
