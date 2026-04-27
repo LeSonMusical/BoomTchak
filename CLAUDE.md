@@ -65,11 +65,37 @@ Merger vers : `main` après chaque session
 - `supabase/schema.sql` — schéma Supabase
 - `supabase/seed_school_pool.sql` — données initiales école
 
+## Version courante
+**v3.4.35** (session 2026-04-27)
+
+## Historique récent
+| Version | Changements |
+|---------|-------------|
+| v3.4.32 | Correctif critique groove : `applyGroove` préserve `state[li].patternId` avant early return ; `buildLayers` priorise `patternId` sur `findPatternBySeq` ; handler changement pattern étendu à MX |
+| v3.4.33 | Double affichage BPM + SPM dans la barre tempo ; préférence `sigChangeLock` (SPM constant vs BPM constant sur changement de métrique) |
+| v3.4.34 | Metro pleine largeur en paysage ; slider tempo adaptatif ; sig-sel compact ; défaut `sigChangeLock:'bpm'` |
+| v3.4.35 | Largeur sig-sel corrigée à `4.2ch` (exactement 4 caractères, indépendant du DPI/zoom) |
+
+## Architecture tempo (slider #bpm)
+- Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
+- Le **BPM** musical est dérivé : `BPM = SPM / currentSig.stepsPerBeat`
+- `stepsPerBeat` dans `SIGNATURES` : 2 pour ♩, 3 pour ♩., 4 pour ♩♩
+- Préférence `prefs.sigChangeLock` : `'spm'` (croche constante) ou `'bpm'` (pulsation constante, défaut)
+- Sur changement de métrique avec `sigChangeLock:'bpm'` : `newSPM = oldBPM × newSig.stepsPerBeat`
+
+## Familles multi-axes (future session)
+- Concept : tags multi-axes AND-filtrables (`style`, `metrique`, `feeling`, `difficulte`, `pedagogue`)
+- Chaque item peut avoir plusieurs tags de différents axes
+- UI : chips multi-select avec filtrage AND inter-axes
+- DB : champ `category` dans `familles` à standardiser ; champ `scope` item-types optionnel
+- **Ne pas implémenter avant décision archi concertée avec Lamberio**
+
 ## Tâches prioritaires (prochaine session)
 1. **G0 BUG CRITIQUE** — `initAuth()` bloque sur "Connexion en cours…" si token expiré
    Fix : si `authProfile` null après `sbFetchProfile()` → vider `authSession` + localStorage
 2. **G8 Ordre persisté** — colonne `ordre int` en DB pour familles/patterns/grooves
 3. **GAP_FAM_RENAME_TX** — TX renomme une famille → soumettre avec l'item ou soumission indépendante ?
+4. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (voir section ci-dessus)
 
 ## Conventions
 - Commentaires en français, code en anglais

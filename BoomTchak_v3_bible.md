@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.2.1
+> Mis à jour au fil du développement — v3.4.35
 
 ---
 
@@ -171,9 +171,20 @@ Lors de l'approbation par MX : `owner_id` est mis à `null`.
 | Opération spécifique | État | Gap |
 |----------------------|------|-----|
 | Éditer layers (mute/half/double/shift) | ✅ temps réel → dirty flag → saveGroove() → local | — |
-| Changer le pattern d'une couche | ✅ même workflow | — |
+| Changer le pattern d'une couche | ✅ même workflow (TX et MX) | — |
 | Éditer tempo (min/max/défaut) | ❌ non exposé post-création | ❌ Tempo figé après création |
 | Éditer signature | ❌ non exposé post-création | ❌ Signature figée après création |
+
+#### Détail : `applyGroove` et `patternId` de couche (correctif v3.4.32)
+
+Problème antérieur : si `getPattern(gl.patternId)` retournait `null` (pattern pas encore chargé),
+`applyGroove` faisait un `return` prématuré **sans** avoir mis à jour `state[li].patternId`.
+→ `saveGroove()` réutilisait le `patternId` du groove précédent → mauvais pattern sauvé.
+
+Fix (3 points) :
+1. `applyGroove` : `state[li].patternId = gl.patternId` **avant** l'early return
+2. `buildLayers` : initialisation du select priorise `state[li].patternId` sur `findPatternBySeq`
+3. Handler changement de pattern : étendu à tous modes (était TX-only → MX exclu)
 
 ---
 
@@ -248,7 +259,65 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 8. Règle de déploiement (ajoutée v3.2.1)
+## 8. Architecture tempo — SPM vs BPM (ajouté v3.4.33)
+
+### Principe
+Le slider `#bpm` (id historique) stocke des **SPM** (Steps Per Minute = vitesse de la croche ♪).
+Le **BPM** musical est une valeur **dérivée** et affichée uniquement :
+
+```
+BPM = SPM / currentSig.stepsPerBeat
+```
+
+### `SIGNATURES` — champ `stepsPerBeat`
+| Signature | stepsPerBeat | Exemple |
+|-----------|--------------|---------|
+| 4/4, 2/4, 3/4 | 2 | ♩ = SPM/2 |
+| 6/8, 9/8, 12/8 | 3 | ♩. = SPM/3 |
+| 2/2 | 4 | 𝅗𝅥 = SPM/4 |
+
+### Affichage barre tempo
+- `#beat-display` : BPM musical (`♩= 104`)
+- `#spm-display` : SPM brut (`♪208`)
+
+### Préférence `sigChangeLock` (localStorage `btk_prefs`)
+| Valeur | Comportement sur changement de métrique |
+|--------|----------------------------------------|
+| `'spm'` | SPM constant — BPM change (croche garde sa vitesse) |
+| `'bpm'` | BPM constant — recalcule SPM = `oldBPM × newSig.stepsPerBeat` |
+
+Défaut : `'bpm'` (musicalement correct — la pulsation reste stable).
+
+### Calcul dans le moteur audio
+```javascript
+getBeatSec(li) = (60 / spm) / mult * ternFactor
+```
+où `spm` est la valeur brute du slider (Steps Per Minute).
+
+---
+
+## 9. Familles multi-axes — Concept futur (noté v3.4.35)
+
+### Problème actuel
+Les familles sont une liste plate partagée par tous les types d'items → liste longue, peu discriminante.
+
+### Solution envisagée
+Tags multi-axes AND-filtrables :
+- Axes : `style`, `metrique`, `feeling`, `difficulte`, `pedagogue`
+- Chaque famille appartient à un axe (champ `category` déjà présent en DB)
+- Un item peut avoir plusieurs tags de différents axes
+- Filtre : sélection AND inter-axes (chip-based UI)
+
+### À décider avant implémentation
+- Standardisation des valeurs de `category` en DB
+- Champ `scope` (types d'items compatibles) : optionnel ou obligatoire ?
+- Migration des données existantes
+
+**Status : à mettre en chantier après validation archi avec Lamberio.**
+
+---
+
+## 10. Règle de déploiement (ajoutée v3.2.1)
 
 **Le développeur (Claude) doit, après chaque push de branche feature :**
 1. Créer une PR draft si elle n'existe pas encore
@@ -260,7 +329,7 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 9. Gaps identifiés — Backlog priorisé
+## 11. Gaps identifiés — Backlog priorisé
 
 ### Priorité haute (prochaine session)
 | # | Description | Impact |
@@ -287,7 +356,7 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 10. Fonctions Supabase clés
+## 12. Fonctions Supabase clés
 
 | Fonction | Endpoint | Rôle |
 |----------|----------|------|
@@ -304,7 +373,7 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 11. Fichiers du projet
+## 13. Fichiers du projet
 
 | Fichier | Rôle |
 |---------|------|
@@ -319,7 +388,7 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 12. Historique des versions
+## 14. Historique des versions
 
 | Version | Changements principaux |
 |---------|----------------------|
@@ -327,3 +396,7 @@ TX crée → local seulement (jamais en Supabase)
 | v3.1.0 | Workflow approbation, pastille ···, statuts |
 | v3.2.0 | localStatus draft/submitted, bouton Annuler TX, bouton Rejeter MX, familles MX → Supabase, correction RLS owner_id, feedback refus (toast) |
 | v3.2.1 | Icône cloche bouton métronome, bump docs, règle de déploiement auto main |
+| v3.4.32 | Correctif groove patternId (3 points : applyGroove, buildLayers, handler MX) |
+| v3.4.33 | Double affichage BPM + SPM ; préférence sigChangeLock (SPM/BPM constant) |
+| v3.4.34 | Metro pleine largeur paysage ; slider adaptatif ; sig-sel compact ; défaut sigChangeLock:'bpm' |
+| v3.4.35 | Largeur sig-sel corrigée à 4.2ch (4 caractères exact, DPI-indépendant) |
