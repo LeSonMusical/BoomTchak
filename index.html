@@ -145,13 +145,13 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 body.mode-tx .btn-layer-mod{display:inline-block}
 body.mode-tx .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
-.step.soft{background:var(--cs);border-color:var(--cc)}
+.step.soft{background:var(--cm);border-color:var(--cs)}
 .step.on{background:var(--cc);border-color:var(--cb)}
 .step.cur{box-shadow:0 0 0 3px var(--cb);border-color:var(--cb)}
 /* Séparateur de temps piano-roll : ligne pleine hauteur, sans impact sur le layout */
 .beat-sep-line{position:absolute;top:-80px;height:300px;width:1px;background:rgba(80,65,48,.13);pointer-events:none;z-index:0}
 .layer.muted-layer{opacity:.38;filter:saturate(.25)}
-.layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
+.layer.muted-layer .step.soft{background:var(--cm);border-color:var(--cs);opacity:.5}
 .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
 .hdivider{height:1px;background:#e0ddd8;margin:.4rem 0}
 /* Texte éditable en TX */
@@ -190,11 +190,11 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .save-sheet-cancel:hover{color:#555}
 
 /* ─── COULEURS PAR COUCHE ─── */
-.c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55}
-.c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055}
-.c-noise{--cc:#1D9E75;--cb:#0F6E56;--cl:#1D9E750D;--cs:#1D9E7555}
-.c-thumb-l{--cc:#7B5EA7;--cb:#5A3F85;--cl:#7B5EA70D;--cs:#7B5EA755}
-.c-thumb-r{--cc:#C8961A;--cb:#8B6914;--cl:#C8961A0D;--cs:#C8961A55}
+.c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55;--cm:#378ADDA6}
+.c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055;--cm:#D85A30A6}
+.c-noise{--cc:#1D9E75;--cb:#0F6E56;--cl:#1D9E750D;--cs:#1D9E7555;--cm:#1D9E75A6}
+.c-thumb-l{--cc:#7B5EA7;--cb:#5A3F85;--cl:#7B5EA70D;--cs:#7B5EA755;--cm:#7B5EA7A6}
+.c-thumb-r{--cc:#C8961A;--cb:#8B6914;--cl:#C8961A0D;--cs:#C8961A55;--cm:#C8961AA6}
 
 /* ─── SONS (BAND) ─── */
 .sound-layer{border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:var(--cl);margin-bottom:3px}
@@ -602,10 +602,10 @@ body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .step.on{background:var(--cc);border-color:var(--cb)}
-body.dark-mode .step.soft{background:var(--cs);border-color:var(--cc)}
+body.dark-mode .step.soft{background:var(--cm);border-color:rgba(255,255,255,.12)}
 body.dark-mode .layer.muted-layer{opacity:.32;filter:saturate(.2)}
 body.dark-mode .layer.muted-layer .step.on{background:var(--cs);border-color:var(--cs)}
-body.dark-mode .layer.muted-layer .step.soft{background:var(--cs);border-color:var(--cs);opacity:.5}
+body.dark-mode .layer.muted-layer .step.soft{background:var(--cm);border-color:rgba(255,255,255,.08);opacity:.5}
 body.dark-mode .step.cur{box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.42</span>
+      <span class="app-version">v3.4.43</span>
     </div>
   </div>
   <div class="top-bar-right">
