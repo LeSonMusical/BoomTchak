@@ -60,10 +60,10 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ─── SECTION TEMPS ─── */
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
-.sig-sel{font-size:10px;padding:1px 1px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:28px;appearance:none;-webkit-appearance:none;text-align:center}
+.sig-sel{font-size:9px;padding:1px 0;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:26px;appearance:none;-webkit-appearance:none;text-align:center}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
 .spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
-.temps-slider{flex:1;min-width:30px;max-width:90px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
+.temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
@@ -511,6 +511,7 @@ body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : split circle gauche / controls droite */
 @media(min-width:600px){
   body.view-circle .frame{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:0}
+  body.view-circle #temps-wrap{order:0;width:100%;flex-shrink:0}
   body.view-circle #section-band{order:1;width:100%;flex-shrink:0}
   body.view-circle #band-content{order:2;width:100%;flex-shrink:0}
   body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
@@ -685,7 +686,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.33</span>
+      <span class="app-version">v3.4.34</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1571,7 +1572,7 @@ let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'spm'};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm'};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
