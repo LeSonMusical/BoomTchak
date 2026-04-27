@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.39</span>
+      <span class="app-version">v3.4.40</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2513,6 +2513,7 @@ function buildLayers(){
     setTimeout(()=>checkWrap(li),0);
     attachLayerObserver(li);
   });
+  if(circleView) drawCircles();
 }
 
 function findPatternBySeq(arr){
@@ -3634,13 +3635,17 @@ function drawCircles(){
       const isRepeat = rep > 0;
       const isPlaying = playing && si===flashStep[li] && rep===currentRepM;
 
-      // Répétition = anneau vide (écho) ; occurrence originale = plein
+      // Répétition = anneau + disque central (écho) ; occurrence originale = plein
       if(isRepeat && isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.28, 0, 2*Math.PI);
+        ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
       } else if(isRepeat && isSoft){
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
         ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.22, 0, 2*Math.PI);
+        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
       } else if(isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
