@@ -42,7 +42,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow:hidden}
+.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -165,7 +165,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 /* ─── SAVE SHEET ─── */
 .save-sheet{position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
 .save-sheet.hidden{display:none}
-.save-sheet-box{width:100%;background:#fff;border-radius:16px 16px 0 0;padding:18px 16px 28px;max-height:85vh;overflow-y:auto}
+.save-sheet-box{width:100%;background:#fff;border-radius:16px 16px 0 0;padding:18px 16px 28px;max-height:85vh;overflow-y:auto;overscroll-behavior:contain}
 .save-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .save-sheet-title{font-size:13px;font-weight:700;color:#1a1a18}
 .save-sheet-x{width:28px;height:28px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#666}
@@ -370,7 +370,7 @@ body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-filter-sel{font-size:10px;flex:1;min-width:0;padding:2px 4px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer}
 .lib-panel-close{width:26px;height:26px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:13px;color:#666;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .lib-panel-close:hover{background:#e0ddd8}
-.lib-list{flex:1;overflow-y:auto;padding:6px 0}
+.lib-list{flex:1;overflow-y:auto;padding:6px 0;overscroll-behavior:contain}
 /* ─── MOD PANEL ─── */
 .layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
@@ -683,7 +683,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.28</span>
+      <span class="app-version">v3.4.29</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1741,16 +1741,23 @@ function setDirtyUI(selectId, btnId, isDirty){
   const btn=document.getElementById(btnId);
   if(btn)btn.classList.toggle('dirty',isDirty);
   const sel=document.getElementById(selectId);
-  if(sel&&sel.options[sel.selectedIndex]){
+  if(!sel) return;
+  if(isDirty){
     const opt=sel.options[sel.selectedIndex];
-    if(isDirty){
+    if(opt){
       opt.style.color='#D85A30';
       if(!opt.dataset.origName) opt.dataset.origName=opt.textContent;
-      opt.textContent='● modifié : '+opt.dataset.origName;
-    } else {
-      opt.style.color='';
-      if(opt.dataset.origName){ opt.textContent=opt.dataset.origName; delete opt.dataset.origName; }
+      opt.textContent='● '+opt.dataset.origName+' (modifié)';
     }
+  } else {
+    // Réinitialiser toutes les options marquées (pas seulement la sélectionnée)
+    [...sel.options].forEach(opt=>{
+      if(opt.dataset.origName){
+        opt.style.color='';
+        opt.textContent=opt.dataset.origName;
+        delete opt.dataset.origName;
+      }
+    });
   }
 }
 
@@ -1902,7 +1909,7 @@ function buildBandSection(){
 
   // Filtre famille band
   const famSel=document.createElement('select');
-  famSel.className='fam-filter';famSel.title='Filtrer par famille';
+  famSel.className='fam-filter';famSel.title='Filtrer par famille';famSel.dataset.filterFor='band';
   famSel.style.cssText='border-color:#8ab4d0;background:#eef4f8;color:#2d5f80';
   const fAll=document.createElement('option');fAll.value='all';fAll.textContent='Tout';famSel.appendChild(fAll);
   (packCours.bandFamilles||[]).forEach(f=>{
@@ -2039,11 +2046,12 @@ function buildGrooveSection(){
 
   // Filtre famille (compact, avant le select groove)
   const grooveFamSel=document.createElement('select');
-  grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';
+  grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';grooveFamSel.dataset.filterFor='groove';
   grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
   const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
   const gfPerso=document.createElement('option');gfPerso.value='__teacher__';gfPerso.textContent='Enseignant';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
-  packCours.familles.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});
+  {const _gfFams=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
+  packCours.familles.filter(f=>_gfFams.has(f.id)).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});}
   bar.appendChild(grooveFamSel);
   // ≡ avant le select groove
   const menuBtnGrooveEarly=mkBtnMenu(()=>openLibPanelGrooves());
@@ -2162,12 +2170,13 @@ function buildLayers(){
 
     // Filtre famille (compact select avant le select pattern)
     const famSel=document.createElement('select');
-    famSel.className='fam-filter';famSel.title='Filtrer par famille';
+    famSel.className='fam-filter';famSel.title='Filtrer par famille';famSel.dataset.filterFor='pattern';
     const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
     const optPersoFam=document.createElement('option');optPersoFam.value='__teacher__';optPersoFam.textContent='Enseignant';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
-    packCours.familles.forEach(f=>{
+    {const _pfFams=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
+    packCours.familles.filter(f=>_pfFams.has(f.id)).forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
-    });
+    });}
     row1.appendChild(famSel);
 
     // Select pattern
@@ -3042,12 +3051,15 @@ function rebuildAllFamFilters(){
   const famsWithGrv = new Set(activeGrvs.flatMap(g => g.familles||[]));
   const famsWithEnc = new Set([...famsWithPat, ...famsWithGrv]);
 
-  // Sélects dans les barres de couche (filtre patterns)
+  // Sélects .fam-filter (barres de couche) — filtrés selon leur type déclaré
   document.querySelectorAll('.fam-filter').forEach(sel=>{
+    const ft = sel.dataset.filterFor;
+    if(ft==='band'||ft==='sound') return; // gérés indépendamment
+    const famsToShow = ft==='groove' ? famsWithGrv : famsWithPat;
     const prev = sel.value;
     sel.innerHTML = '<option value="all">Tout</option>';
     const _rp=document.createElement('option');_rp.value='__teacher__';_rp.textContent='Enseignant';_rp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_rp);
-    packCours.familles.filter(f => famsWithPat.has(f.id)).forEach(f=>{
+    packCours.familles.filter(f => famsToShow.has(f.id)).forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
     if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
@@ -3138,7 +3150,7 @@ function buildSoundRow(key,label,cls,ss){
 
   // Filtre famille (réutilise .fam-filter — même style que volet pattern)
   const famSel=document.createElement('select');
-  famSel.className='fam-filter';famSel.title='Famille de sons';
+  famSel.className='fam-filter';famSel.title='Famille de sons';famSel.dataset.filterFor='sound';
   INSTR_FAMILLES.forEach(f=>{
     const o=document.createElement('option');o.value=f.id;o.textContent=f.label;famSel.appendChild(o);
   });
