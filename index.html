@@ -190,11 +190,11 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .save-sheet-cancel:hover{color:#555}
 
 /* ─── COULEURS PAR COUCHE ─── */
-.c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55;--cm:#378ADDA6}
-.c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055;--cm:#D85A30A6}
-.c-noise{--cc:#1D9E75;--cb:#0F6E56;--cl:#1D9E750D;--cs:#1D9E7555;--cm:#1D9E75A6}
-.c-thumb-l{--cc:#7B5EA7;--cb:#5A3F85;--cl:#7B5EA70D;--cs:#7B5EA755;--cm:#7B5EA7A6}
-.c-thumb-r{--cc:#C8961A;--cb:#8B6914;--cl:#C8961A0D;--cs:#C8961A55;--cm:#C8961AA6}
+.c-low  {--cc:#378ADD;--cb:#185FA5;--cl:#378ADD0D;--cs:#378ADD55;--cm:#378ADD66}
+.c-high {--cc:#D85A30;--cb:#993C1D;--cl:#D85A300D;--cs:#D85A3055;--cm:#D85A3066}
+.c-noise{--cc:#1D9E75;--cb:#0F6E56;--cl:#1D9E750D;--cs:#1D9E7555;--cm:#1D9E7566}
+.c-thumb-l{--cc:#7B5EA7;--cb:#5A3F85;--cl:#7B5EA70D;--cs:#7B5EA755;--cm:#7B5EA766}
+.c-thumb-r{--cc:#C8961A;--cb:#8B6914;--cl:#C8961A0D;--cs:#C8961A55;--cm:#C8961A66}
 
 /* ─── SONS (BAND) ─── */
 .sound-layer{border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:var(--cl);margin-bottom:3px}
@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.43</span>
+      <span class="app-version">v3.4.44</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3643,18 +3643,17 @@ function drawCircles(){
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
       } else if(isRepeat && isSoft){
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
-        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'99'; ctx.lineWidth=0.75; ctx.stroke();
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.5, 0, 2*Math.PI);
-        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
+        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'99'; ctx.fill();
       } else if(isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
       } else if(isSoft){
-        // x faible : taille intermédiaire entre . (×0.6) et X (×1), ~33% opacité
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
-        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'55'; ctx.fill();
-        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'55'; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'99'; ctx.fill();
+        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'99'; ctx.lineWidth=0.75; ctx.stroke();
       } else {
         // Silence : petit cercle — en sombre, bord de couleur layer pour le rendre lisible
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
