@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.36</span>
+      <span class="app-version">v3.4.37</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -812,8 +812,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
     <div id="circle-mode-toggle">
-      <button id="btn-circle-cycle" class="circle-mode-btn active" title="1 tour = 1 cycle du pattern">↺ Cycle</button>
-      <button id="btn-circle-measure" class="circle-mode-btn" title="1 tour = 1 mesure">♩ Mesure</button>
+      <button id="btn-circle-cycle" class="circle-mode-btn" title="1 tour = 1 cycle du pattern">↺ Pattern</button>
+      <button id="btn-circle-measure" class="circle-mode-btn active" title="1 tour = 1 mesure">↺ Mesure</button>
     </div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
@@ -3510,7 +3510,7 @@ function playMetroClick(atTime,type){
 // ═══════════════════════════════════════════════════════════════════════════
 
 let circleView = false;
-let circleModeView = 'cycle'; // 'cycle' | 'measure'
+let circleModeView = 'measure'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
 
 const CIRCLE_COLORS = [
@@ -3520,15 +3520,6 @@ const CIRCLE_COLORS = [
 ];
 
 function getStepAngle(li, si, n){
-  if(circleModeView === 'measure'){
-    const spm = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
-    const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
-    const measureSec = (60/spm) * stepsPerMeasure;
-    if(measureSec > 0){
-      const frac = (si * getBeatSec(li) / measureSec) % 1;
-      return -Math.PI/2 + 2*Math.PI * frac;
-    }
-  }
   return -Math.PI/2 + (2*Math.PI*si/n);
 }
 
@@ -3613,13 +3604,28 @@ function drawCircles(){
       if(curSi !== flashStep[li]) flashStep[li] = curSi;
     }
 
-    // Points
-    for(let si=0; si<n; si++){
-      const a = getStepAngle(li, si, n);
+    // Points — en mode mesure : répétitions du pattern si plus court que la mesure
+    const stepsToDraw = [];
+    if(circleModeView === 'measure'){
+      const spmM = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+      const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+      const maxRep = Math.ceil(measureSecM / (getBeatSec(li) * n));
+      for(let rep=0; rep<maxRep; rep++){
+        for(let si=0; si<n; si++){
+          const frac = (si + rep * n) * getBeatSec(li) / measureSecM;
+          if(frac < 1) stepsToDraw.push({si, a:-Math.PI/2+2*Math.PI*frac, dim:rep>0});
+        }
+      }
+    } else {
+      for(let si=0; si<n; si++) stepsToDraw.push({si, a:getStepAngle(li, si, n), dim:false});
+    }
+    for(const {si, a, dim} of stepsToDraw){
       const dx = cx + r*Math.cos(a), dy = cy + r*Math.sin(a);
       const isOn   = pat[si]==='X';
       const isSoft = pat[si]==='x';
-      const isPlaying = playing && si===flashStep[li];
+      const isPlaying = !dim && playing && si===flashStep[li];
+
+      if(dim){ ctx.save(); ctx.globalAlpha = 0.42; }
 
       // Dessin du point selon l'état (X grand plein, x petit atténué, . petit vide)
       if(isOn){
@@ -3645,6 +3651,8 @@ function drawCircles(){
         ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
+
+      if(dim) ctx.restore();
     }
   });
 
@@ -3695,9 +3703,21 @@ function circleHitTest(x, y){
   const cx = cv.width/2, cy = cv.height/2;
   for(let li=0; li<LAYERS.length; li++){
     const n = state[li].pattern.length, r = radii[li];
-    for(let si=0; si<n; si++){
-      const a = getStepAngle(li, si, n);
-      const dx = cx+r*Math.cos(a), dy = cy+r*Math.sin(a);
+    const pts = [];
+    if(circleModeView === 'measure'){
+      const spmM = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+      const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+      const maxRep = Math.ceil(measureSecM / (getBeatSec(li) * n));
+      for(let rep=0; rep<maxRep; rep++)
+        for(let si=0; si<n; si++){
+          const frac=(si+rep*n)*getBeatSec(li)/measureSecM;
+          if(frac<1) pts.push({si, a:-Math.PI/2+2*Math.PI*frac});
+        }
+    } else {
+      for(let si=0; si<n; si++) pts.push({si, a:getStepAngle(li, si, n)});
+    }
+    for(const {si, a} of pts){
+      const dx=cx+r*Math.cos(a), dy=cy+r*Math.sin(a);
       if(Math.hypot(x-dx, y-dy) <= dotR+4) return {li, si};
     }
   }
