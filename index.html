@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.45</span>
+      <span class="app-version">v3.4.46</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2186,6 +2186,7 @@ function buildLayers(){
       layerDiv.classList.toggle('muted-layer',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
+      if(circleView) drawCircles();
     });
     row1.appendChild(btnMute);
 
