@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.35** (session 2026-04-27)
+**v3.4.47** (session 2026-04-28)
 
 ## Historique récent
 | Version | Changements |
@@ -75,6 +75,11 @@ Merger vers : `main` après chaque session
 | v3.4.33 | Double affichage BPM + SPM dans la barre tempo ; préférence `sigChangeLock` (SPM constant vs BPM constant sur changement de métrique) |
 | v3.4.34 | Metro pleine largeur en paysage ; slider tempo adaptatif ; sig-sel compact ; défaut `sigChangeLock:'bpm'` |
 | v3.4.35 | Largeur sig-sel corrigée à `4.2ch` (exactement 4 caractères, indépendant du DPI/zoom) |
+| v3.4.36–37 | Vue circulaire : toggle ↺ Pattern / ↺ Mesure ; mode Mesure par défaut ; steps positionnés en fraction de mesure avec répétitions si pattern < mesure |
+| v3.4.38–42 | Anneau "playing" sur l'occurrence active uniquement (`currentRepM`) ; visual ghost : disque fill à 62% du rayon + anneau vide extérieur (même taille totale) |
+| v3.4.43–44 | Step soft (×) : 40 % en vue linéaire sans bordure colorée ; 60 % en vue circulaire |
+| v3.4.45–46 | `buildStepsDOM` rafraîchit le cercle automatiquement (couvre load pattern, mods, rotation, mute, signature) |
+| v3.4.47 | `applyGroove` : resync alignée sur le prochain temps 1 du métronome (fin de mesure courante) |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
@@ -82,6 +87,29 @@ Merger vers : `main` après chaque session
 - `stepsPerBeat` dans `SIGNATURES` : 2 pour ♩, 3 pour ♩., 4 pour ♩♩
 - Préférence `prefs.sigChangeLock` : `'spm'` (croche constante) ou `'bpm'` (pulsation constante, défaut)
 - Sur changement de métrique avec `sigChangeLock:'bpm'` : `newSPM = oldBPM × newSig.stepsPerBeat`
+- `getMetroBeatSec()` = `(60/spm) * currentSig.stepsPerBeat` — beat métronome (sans `mult` ni `ternFactor`)
+
+## Architecture vue circulaire
+
+### Modes
+- `circleModeView = 'measure'` (défaut) : 1 tour = 1 mesure complète
+- `circleModeView = 'cycle'` : 1 tour = 1 cycle du pattern
+
+### Mode Mesure — formules clés
+- `measureSec = (60/spm) * stepsPerBeat * beatsPerMeasure`
+- `maxRep = Math.ceil(measureSec / patternSec)` — nombre d'occurrences du pattern dans 1 mesure
+- Angle du step `si` à la répétition `rep` : `frac = (si + rep*n) * getBeatSec(li) / measureSec`
+- Occurrence active : `currentRepM = Math.floor(posInMeasure / patternSec)`
+
+### Visual ghost (occurrences répétées)
+- Même diamètre total que les steps normaux
+- Fill à `dotR * 0.62` (anneau vide sur le bord extérieur)
+- Stroke plein à `dotR`
+- L'anneau "playing" n'est dessiné que sur `rep === currentRepM`
+
+### Rafraîchissement automatique
+`buildStepsDOM(li, wrap)` appelle `if(circleView) drawCircles()` en fin.
+Couvre : chargement de pattern, tous les boutons mod, rotation, mute, changement de signature.
 
 ## Familles multi-axes (future session)
 - Concept : tags multi-axes AND-filtrables (`style`, `metrique`, `feeling`, `difficulte`, `pedagogue`)

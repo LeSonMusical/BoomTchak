@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.4.35
+> Mis à jour au fil du développement — v3.4.47
 
 ---
 
@@ -172,6 +172,7 @@ Lors de l'approbation par MX : `owner_id` est mis à `null`.
 |----------------------|------|-----|
 | Éditer layers (mute/half/double/shift) | ✅ temps réel → dirty flag → saveGroove() → local | — |
 | Changer le pattern d'une couche | ✅ même workflow (TX et MX) | — |
+| Changer de groove **en cours de lecture** | ✅ resync sur le prochain temps 1 du métronome (v3.4.47) | — |
 | Éditer tempo (min/max/défaut) | ❌ non exposé post-création | ❌ Tempo figé après création |
 | Éditer signature | ❌ non exposé post-création | ❌ Signature figée après création |
 
@@ -290,13 +291,80 @@ Défaut : `'bpm'` (musicalement correct — la pulsation reste stable).
 
 ### Calcul dans le moteur audio
 ```javascript
-getBeatSec(li) = (60 / spm) / mult * ternFactor
+getBeatSec(li)    = (60 / spm) / mult * ternFactor   // durée d'un step couche (avec mult et ternFactor)
+getMetroBeatSec() = (60 / spm) * currentSig.stepsPerBeat  // beat métronome (sans mult ni ternFactor)
 ```
 où `spm` est la valeur brute du slider (Steps Per Minute).
 
+### Resync groove sur changement en lecture (v3.4.47)
+Quand `applyGroove()` est appelé pendant la lecture, toutes les couches sont réalignées sur le
+**prochain temps 1** du métronome (fin de la mesure en cours) :
+```javascript
+const beatsLeft = (currentSig.beatsPerMeasure - metroBeatPos) % currentSig.beatsPerMeasure;
+const syncTime  = Math.max(now, metroNextBeatTime + beatsLeft * beatSec);
+LAYERS.forEach((_, li) => {
+  state[li].stepPos = 0;
+  state[li].nextStepTime = syncTime;
+  state[li].startTime    = syncTime;
+});
+```
+→ Garantit que le nouveau groove repart toujours au début d'une mesure, en phase avec le métronome.
+
 ---
 
-## 9. Familles multi-axes — Concept futur (noté v3.4.35)
+## 9. Architecture vue circulaire (ajoutée v3.4.36)
+
+### Modes de visualisation
+| Mode | Variable | Description |
+|------|----------|-------------|
+| `'measure'` (défaut) | `circleModeView` | 1 tour de cercle = 1 mesure complète |
+| `'cycle'` | `circleModeView` | 1 tour de cercle = 1 cycle du pattern |
+
+Bouton toggle `↺ Pattern` / `↺ Mesure` affiché au-dessus du canvas `#rhythm-canvas`.
+
+### Mode Mesure — formules clés
+```
+measureSec = (60/spm) * stepsPerBeat * beatsPerMeasure
+patternSec = getBeatSec(li) * n           // durée d'un cycle du pattern
+maxRep     = Math.ceil(measureSec / patternSec)   // occurrences du pattern dans 1 mesure
+```
+
+Angle du step `si` à la répétition `rep` :
+```
+frac  = (si + rep * n) * getBeatSec(li) / measureSec
+angle = -Math.PI/2 + 2*Math.PI*frac
+```
+
+### Occurrences répétées ("ghost steps")
+Quand un pattern est plus court qu'une mesure (`maxRep > 1`), ses steps sont dupliqués pour remplir
+le cercle. Les occurrences répétées (rep > 0) ont un visuel distinct :
+- **Taille totale identique** aux steps normaux (rayon `dotR`)
+- **Fill** : disque intérieur de rayon `dotR * 0.62` → laisse un anneau vide sur le bord extérieur
+- **Stroke** : cercle plein à `dotR`
+
+### Occurrence active (anneau "playing")
+```
+posInMeasure = ((elapsedSinceStart % measureSec) + measureSec) % measureSec
+currentRepM  = Math.min(Math.floor(posInMeasure / patternSec), maxRep - 1)
+```
+L'anneau de lecture n'est dessiné que pour `rep === currentRepM`.
+
+### Niveaux de visibilité des steps
+| Contexte | Step accentué (on) | Step faible (soft) | Step off |
+|----------|--------------------|--------------------|----------|
+| Vue linéaire | 100 % | 40 % (`--cm`, hex `66`) | invisible |
+| Vue circulaire | 100 % | 60 % (hex `99`) | invisible |
+
+Les steps soft n'ont **pas** de bordure colorée en vue linéaire (`border-color: var(--cs)`).
+
+### Rafraîchissement automatique
+`buildStepsDOM(li, wrap)` appelle `if(circleView) drawCircles()` en dernière instruction.
+Couvre : chargement de pattern ou groove, tous les boutons mod (rotate, accent, length…), mute,
+et changement de signature.
+
+---
+
+## 10. Familles multi-axes — Concept futur (noté v3.4.35)
 
 ### Problème actuel
 Les familles sont une liste plate partagée par tous les types d'items → liste longue, peu discriminante.
@@ -317,7 +385,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 10. Règle de déploiement (ajoutée v3.2.1)
+## 11. Règle de déploiement (ajoutée v3.2.1)
 
 **Le développeur (Claude) doit, après chaque push de branche feature :**
 1. Créer une PR draft si elle n'existe pas encore
@@ -329,7 +397,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 11. Gaps identifiés — Backlog priorisé
+## 12. Gaps identifiés — Backlog priorisé
 
 ### Priorité haute (prochaine session)
 | # | Description | Impact |
@@ -356,7 +424,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 12. Fonctions Supabase clés
+## 13. Fonctions Supabase clés
 
 | Fonction | Endpoint | Rôle |
 |----------|----------|------|
@@ -373,7 +441,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 13. Fichiers du projet
+## 14. Fichiers du projet
 
 | Fichier | Rôle |
 |---------|------|
@@ -388,7 +456,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 14. Historique des versions
+## 15. Historique des versions
 
 | Version | Changements principaux |
 |---------|----------------------|
@@ -400,3 +468,8 @@ Tags multi-axes AND-filtrables :
 | v3.4.33 | Double affichage BPM + SPM ; préférence sigChangeLock (SPM/BPM constant) |
 | v3.4.34 | Metro pleine largeur paysage ; slider adaptatif ; sig-sel compact ; défaut sigChangeLock:'bpm' |
 | v3.4.35 | Largeur sig-sel corrigée à 4.2ch (4 caractères exact, DPI-indépendant) |
+| v3.4.36–37 | Vue circulaire : toggle ↺ Pattern / ↺ Mesure ; mode Mesure par défaut ; steps positionnés en fraction de mesure avec répétitions si pattern < mesure |
+| v3.4.38–42 | Anneau "playing" sur l'occurrence active uniquement (currentRepM) ; visual ghost : fill 62% du rayon + anneau vide extérieur |
+| v3.4.43–44 | Step soft (×) : 40 % vue linéaire sans bordure colorée ; 60 % vue circulaire |
+| v3.4.45–46 | buildStepsDOM rafraîchit le cercle automatiquement (load, mods, rotation, mute, signature) |
+| v3.4.47 | applyGroove : resync alignée sur le prochain temps 1 du métronome (getMetroBeatSec) |
