@@ -75,7 +75,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
-.temps-content.open{max-height:160px}
+.temps-content.open{max-height:600px}
 .metro-bloc{border-left:2px solid #b0a8d8;margin-left:4px;padding:.2rem 0 .35rem .5rem;display:flex;flex-direction:column;gap:0}
 .metro-panel{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:.1rem 0}
 .metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
@@ -89,6 +89,13 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
+/* Visualisation du pattern métronome courant */
+.metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;padding:.35rem 0 .2rem;align-items:center}
+.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid rgba(0,0,0,.08);transition:background .12s}
+.mpv-A{background:#c04040;color:#fff}
+.mpv-P{background:#1D9E75;color:#fff}
+.mpv-p{background:#6B5FA5;color:#fff;opacity:.8}
+.mpv-dot{background:#e0dce8;color:#aaa}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -691,7 +698,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.50</span>
+      <span class="app-version">v3.4.51</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -788,6 +795,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
       <span id="metro-vol-val" style="font-size:10px;color:#888;min-width:26px;text-align:right">80%</span>
     </div>
+  <!-- Visualisation du pattern métronome actif -->
+  <div class="metro-pat-viz" id="metro-pattern-viz"></div>
   <!-- Création de preset métronome (visible si connecté) -->
   <div id="metro-preset-creation" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.08)">
     <button id="btn-new-metro-preset" style="font-size:10px;padding:3px 10px;border:1px dashed #9980d0;border-radius:4px;background:transparent;color:#6B5FA5;cursor:pointer;width:100%">＋ Nouveau preset métronome</button>
@@ -1661,6 +1670,20 @@ function buildSigSelector() {
     `<option value="${p.id}"${p.id === cur ? ' selected' : ''}>${p.label || p.id}</option>`
   ).join('');
   if (metroPresets.find(p => p.id === cur)) sel.value = cur;
+  renderMetroPatternViz();
+}
+
+function renderMetroPatternViz() {
+  const wrap = document.getElementById('metro-pattern-viz');
+  if (!wrap) return;
+  const mp = currentSig?.metroPattern;
+  if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
+  const cls = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
+  wrap.innerHTML = mp.map((v, i) => {
+    const sep = (i > 0 && i % (currentSig.stepsPerBeat || 2) === 0)
+      ? '<span style="width:1px;height:14px;background:rgba(0,0,0,.12);border-radius:1px;flex-shrink:0"></span>' : '';
+    return `${sep}<span class="mpv-step ${cls[v] || 'mpv-dot'}" title="${v}">${v === '.' ? '·' : v}</span>`;
+  }).join('');
 }
 
 let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
@@ -7067,6 +7090,7 @@ function attachEvents(){
     const tc=document.getElementById('tap-count');
     if(tc) tc.textContent='';
     LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
+    renderMetroPatternViz();
     if(!_suppressGrooveDirty){
       const groove=getGroove(currentGrooveId);
       if(groove&&this.value!==(groove.signature||'4/4')){
@@ -7279,6 +7303,7 @@ function attachEvents(){
     saveToStorage();
     rebuildMetroPresets();
     buildSigSelector();
+    renderMetroPatternViz();
     buildPublishSection();
     document.getElementById('metro-preset-form').style.display = 'none';
     document.getElementById('mpf-label').value = '';
