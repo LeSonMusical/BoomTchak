@@ -89,13 +89,27 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
-/* Visualisation du pattern métronome courant */
-.metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;padding:.35rem 0 .2rem;align-items:center}
-.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid rgba(0,0,0,.08);transition:background .12s}
+/* ── Volet métro : contrôles signature (L1) ── */
+.mpv-beats-btn{width:14px;height:14px;border-radius:3px;border:1px solid #b0a8d8;background:transparent;color:#6B5FA5;cursor:pointer;font-size:7px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.mpv-beats-val{font-size:12px;font-weight:700;color:#4a3d8a;min-width:14px;text-align:center;flex-shrink:0}
+.mpv-unit-btn,.mpv-subdiv-btn{font-size:9px;padding:1px 3px;border-radius:3px;border:1px solid #b0a8d8;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;transition:background .1s,color .1s;line-height:1.3}
+.mpv-unit-btn.active,.mpv-subdiv-btn.active{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+/* ── Volet métro : toggles ON/OFF + pattern (L2) ── */
+.mpv-tog{width:17px;height:17px;border-radius:3px;border:1px solid rgba(0,0,0,.08);cursor:pointer;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.3;transition:opacity .12s;padding:0;line-height:1}
+.mpv-tog.on{opacity:1}
+.mpv-tog-A{background:#c04040;color:#fff}
+.mpv-tog-P{background:#1D9E75;color:#fff}
+.mpv-tog-p{background:#6B5FA5;color:#fff}
+.mpv-edit-btn{font-size:11px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:3px;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;transition:background .1s}
+.mpv-edit-btn.active{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+.mpv-save-btn{font-size:9px;padding:2px 7px;border:1px solid #1D9E75;border-radius:3px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;white-space:nowrap}
+/* ── Steps pattern viz ── */
+.metro-pat-viz{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0;flex:1;overflow-x:auto}
+.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid rgba(0,0,0,.06);line-height:1;user-select:none}
 .mpv-A{background:#c04040;color:#fff}
 .mpv-P{background:#1D9E75;color:#fff}
-.mpv-p{background:#6B5FA5;color:#fff;opacity:.8}
-.mpv-dot{background:#e0dce8;color:#aaa}
+.mpv-p{background:#6B5FA5;color:#fff;opacity:.85}
+.mpv-dot{background:#e0dce8;color:transparent}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -698,7 +712,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.51</span>
+      <span class="app-version">v3.4.52</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -769,71 +783,49 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <div class="metro-panel">
-      <span class="metro-row-lbl">Mesure</span>
-      <button class="btn-metro-on on" id="btn-metro-accent">ON</button>
-      <span class="metro-sep">·</span>
+    <!-- L1 : Signature paramétrique -->
+    <div class="metro-panel" style="gap:4px">
       <span class="metro-row-lbl">Temps</span>
-      <button class="btn-metro-on on" id="btn-metro-temps">ON</button>
+      <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+      <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+      <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
       <span class="metro-sep">·</span>
-      <span class="metro-row-lbl">Subdiv.</span>
-      <select class="metro-subdiv-sel" id="metro-subdiv-sel">
-        <option value="2">÷2</option>
-        <option value="3">÷3</option>
-        <option value="4">÷4</option>
-      </select>
-      <button class="btn-metro-on" id="btn-metro-subdiv">OFF</button>
+      <button class="mpv-unit-btn active" data-unit="4">♩</button>
+      <button class="mpv-unit-btn" data-unit="8">♪</button>
+      <button class="mpv-unit-btn" data-unit="2">𝅗𝅥</button>
+      <span class="metro-sep">·</span>
+      <button class="mpv-subdiv-btn" data-sub="1">×1</button>
+      <button class="mpv-subdiv-btn active" data-sub="2">×2</button>
+      <button class="mpv-subdiv-btn" data-sub="3">×3</button>
+      <button class="mpv-subdiv-btn" data-sub="4">×4</button>
     </div>
+    <!-- L2 : Pattern + ON/OFF toggles + Edit -->
+    <div class="metro-panel" style="gap:3px;flex-wrap:nowrap">
+      <button class="mpv-tog mpv-tog-A on" id="mpv-tog-A" title="Accent ON/OFF">›</button>
+      <button class="mpv-tog mpv-tog-P on" id="mpv-tog-P" title="Temps ON/OFF">×</button>
+      <button class="mpv-tog mpv-tog-p" id="mpv-tog-p" title="Subdiv ON/OFF">·</button>
+      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
+      <button class="mpv-edit-btn" id="btn-metro-edit" title="Éditer le pattern">✏</button>
+    </div>
+    <!-- L2b : Rangée sauvegarde (visible uniquement en mode édition) -->
+    <div id="metro-edit-row" style="display:none;gap:4px" class="metro-panel">
+      <input type="text" id="metro-edit-label" placeholder="Nom du preset" style="flex:1;font-size:10px;padding:2px 5px;border:1px solid #ccc;border-radius:3px;min-width:0">
+      <button class="mpv-save-btn" id="btn-metro-save-confirm">✓ Enreg.</button>
+      <button id="btn-metro-edit-cancel" style="font-size:9px;padding:2px 5px;border:1px solid #ccc;border-radius:3px;background:#fff;color:#999;cursor:pointer;flex-shrink:0">✕</button>
+    </div>
+    <!-- L3 : Volume -->
+    <div class="metro-panel" style="gap:6px;margin-top:2px">
+      <span class="metro-row-lbl">Volume</span>
+      <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
+      <span id="metro-vol-val" style="font-size:10px;color:#888;min-width:26px;text-align:right">80%</span>
+    </div>
+    <!-- L4 : Tap tempo -->
     <div class="tap-tempo-row">
       <span class="tap-n-lbl">n =</span>
       <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
       <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
     </div>
-    <div class="metro-panel" style="gap:6px;margin-top:4px">
-      <span class="metro-row-lbl">Volume</span>
-      <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
-      <span id="metro-vol-val" style="font-size:10px;color:#888;min-width:26px;text-align:right">80%</span>
-    </div>
-  <!-- Visualisation du pattern métronome actif -->
-  <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-  <!-- Création de preset métronome (visible si connecté) -->
-  <div id="metro-preset-creation" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.08)">
-    <button id="btn-new-metro-preset" style="font-size:10px;padding:3px 10px;border:1px dashed #9980d0;border-radius:4px;background:transparent;color:#6B5FA5;cursor:pointer;width:100%">＋ Nouveau preset métronome</button>
-    <div id="metro-preset-form" style="display:none;margin-top:6px">
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:5px">
-        <label style="font-size:10px;color:#555">Temps
-          <input type="number" id="mpf-beats" min="1" max="20" value="4" style="width:40px;font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
-        </label>
-        <label style="font-size:10px;color:#555">Unité
-          <select id="mpf-unit" style="font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
-            <option value="4">♩ (noire)</option>
-            <option value="8">♪ (croche)</option>
-            <option value="2">𝅗𝅥 (blanche)</option>
-          </select>
-        </label>
-        <label style="font-size:10px;color:#555">Subdiv
-          <select id="mpf-subdiv" style="font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
-            <option value="1">×1</option>
-            <option value="2" selected>×2</option>
-            <option value="3">×3</option>
-            <option value="4">×4</option>
-          </select>
-        </label>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:5px;align-items:center">
-        <label style="font-size:10px;color:#555;flex-shrink:0">Nom</label>
-        <input type="text" id="mpf-label" placeholder="ex: Rachenitsa 7/8" style="flex:1;font-size:11px;padding:2px 6px;border:1px solid #ccc;border-radius:3px">
-      </div>
-      <!-- Éditeur d'accents auto-généré -->
-      <div style="font-size:10px;color:#555;margin-bottom:3px">Accents <span style="color:#aaa">(cliquer pour changer : A=fort, P=temps, p=subdiv, .=silence)</span></div>
-      <div id="mpf-pattern-editor" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px"></div>
-      <div style="display:flex;gap:5px">
-        <button id="mpf-save" style="font-size:10px;padding:3px 10px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex:1">✓ Créer</button>
-        <button id="mpf-cancel" style="font-size:10px;padding:3px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>
-      </div>
-    </div>
-  </div>
   </div><!-- /metro-bloc -->
   </div>
   </div><!-- /temps-wrap -->
@@ -1670,20 +1662,91 @@ function buildSigSelector() {
     `<option value="${p.id}"${p.id === cur ? ' selected' : ''}>${p.label || p.id}</option>`
   ).join('');
   if (metroPresets.find(p => p.id === cur)) sel.value = cur;
+  syncMetroControls();
   renderMetroPatternViz();
 }
 
+// Synchronise les contrôles L1 depuis currentSig
+function syncMetroControls(sig) {
+  const s = sig || currentSig;
+  if (!s) return;
+  const bv = document.getElementById('mpv-beats-val');
+  if (bv) bv.textContent = s.beatsPerMeasure;
+  document.querySelectorAll('.mpv-unit-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.unit) === s.beatUnit)
+  );
+  document.querySelectorAll('.mpv-subdiv-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.sub) === s.subdivision)
+  );
+}
+
+// Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
+function buildSigFromControls() {
+  const beats = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
+  const unitBtn = document.querySelector('.mpv-unit-btn.active');
+  const unit = unitBtn ? parseInt(unitBtn.dataset.unit) : 4;
+  const subBtn = document.querySelector('.mpv-subdiv-btn.active');
+  const sub = subBtn ? parseInt(subBtn.dataset.sub) : 2;
+  // Cherche un preset existant avec ces paramètres exactement
+  const match = metroPresets.find(p =>
+    p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
+  );
+  if (match) {
+    currentSig = match;
+    const sel = document.getElementById('sig-sel');
+    if (sel) sel.value = match.id;
+  } else {
+    const pat = (_metroEditMode && _editPattern) ? [..._editPattern]
+      : generateMetroPattern(beats, sub);
+    currentSig = {
+      id: '_custom', label: `${beats}/${unit}×${sub}`,
+      beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
+      stepsPerBeat: sub, beatSteps: sub,
+      beatSym: beatSymFromUnit(unit, sub),
+      metroPattern: pat,
+    };
+  }
+  if (_metroEditMode) _editPattern = [...currentSig.metroPattern];
+  metroStepPos = 0; metroBeatPos = 0;
+  updateBeatDisplay();
+  _tapN = currentSig.beatsPerMeasure;
+  const ni = document.getElementById('tap-n-input');
+  if (ni) ni.value = _tapN;
+  const tb = document.getElementById('btn-tap-tempo');
+  if (tb) tb.textContent = 'Tap ' + _tapN;
+  LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
+  renderMetroPatternViz();
+}
+
+let _metroEditMode = false;
+let _editPattern = null;
+
+// Affiche le pattern courant (ou _editPattern en mode édition)
 function renderMetroPatternViz() {
   const wrap = document.getElementById('metro-pattern-viz');
   if (!wrap) return;
-  const mp = currentSig?.metroPattern;
+  const mp = _metroEditMode ? (_editPattern || currentSig?.metroPattern)
+                             : currentSig?.metroPattern;
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
-  const cls = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
+  const SYM = { A: '›', P: '×', p: '·', '.': '' };
+  const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
+  const spb = currentSig?.stepsPerBeat || 2;
   wrap.innerHTML = mp.map((v, i) => {
-    const sep = (i > 0 && i % (currentSig.stepsPerBeat || 2) === 0)
-      ? '<span style="width:1px;height:14px;background:rgba(0,0,0,.12);border-radius:1px;flex-shrink:0"></span>' : '';
-    return `${sep}<span class="mpv-step ${cls[v] || 'mpv-dot'}" title="${v}">${v === '.' ? '·' : v}</span>`;
+    const sep = (i > 0 && i % spb === 0)
+      ? `<span style="width:1px;height:10px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
+    const cur = _metroEditMode ? ` style="cursor:pointer"` : '';
+    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}"${cur}>${SYM[v] ?? ''}</span>`;
   }).join('');
+  if (_metroEditMode) {
+    const LEVELS = ['A', 'P', 'p', '.'];
+    wrap.querySelectorAll('.mpv-step').forEach(s => {
+      s.addEventListener('click', () => {
+        const idx = parseInt(s.dataset.idx);
+        _editPattern[idx] = LEVELS[(LEVELS.indexOf(_editPattern[idx]) + 1) % LEVELS.length];
+        renderMetroPatternViz();
+      });
+    });
+  }
 }
 
 let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
@@ -5544,9 +5607,6 @@ function renderAuthUI() {
     document.getElementById('auth-btn-logout').addEventListener('click', sbLogout);
     document.getElementById('auth-btn-sync').addEventListener('click', sbSyncSchoolPool);
     updateSettingsBadge();
-    // Afficher le bouton de création de preset si connecté
-    const mpCreate = document.getElementById('metro-preset-creation');
-    if (mpCreate) mpCreate.style.display = '';
   } else if (authSession) {
     container.innerHTML = '<div style="font-size:10px;color:#888">Connexion en cours…</div>';
   } else {
@@ -7090,6 +7150,7 @@ function attachEvents(){
     const tc=document.getElementById('tap-count');
     if(tc) tc.textContent='';
     LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
+    syncMetroControls();
     renderMetroPatternViz();
     if(!_suppressGrooveDirty){
       const groove=getGroove(currentGrooveId);
@@ -7101,19 +7162,97 @@ function attachEvents(){
       }
     }
   });
-  // ── Boutons métronome ──
-  function mkMetroToggle(btnId,prop){
-    document.getElementById(btnId).addEventListener('click',function(){
-      metro[prop]=!metro[prop];
-      this.classList.toggle('on',metro[prop]);
-      this.textContent=metro[prop]?'ON':'OFF';
+  // ── Contrôles L1 : signature paramétrique ──
+  document.getElementById('mpv-beats-up').addEventListener('click', () => {
+    const bv = document.getElementById('mpv-beats-val');
+    bv.textContent = Math.min(20, (parseInt(bv.textContent) || 4) + 1);
+    buildSigFromControls();
+  });
+  document.getElementById('mpv-beats-down').addEventListener('click', () => {
+    const bv = document.getElementById('mpv-beats-val');
+    bv.textContent = Math.max(1, (parseInt(bv.textContent) || 4) - 1);
+    buildSigFromControls();
+  });
+  document.querySelectorAll('.mpv-unit-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.mpv-unit-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      buildSigFromControls();
     });
-  }
-  mkMetroToggle('btn-metro-accent','accentOn');
-  mkMetroToggle('btn-metro-temps','tempsOn');
-  mkMetroToggle('btn-metro-subdiv','subdivOn');
-  document.getElementById('metro-subdiv-sel').addEventListener('change',function(){
-    metro.subdivDiv=parseInt(this.value);
+  });
+  document.querySelectorAll('.mpv-subdiv-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.mpv-subdiv-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      buildSigFromControls();
+    });
+  });
+  // ── ON/OFF toggles (L2) ──
+  document.getElementById('mpv-tog-A').addEventListener('click', function() {
+    metro.accentOn = !metro.accentOn;
+    this.classList.toggle('on', metro.accentOn);
+  });
+  document.getElementById('mpv-tog-P').addEventListener('click', function() {
+    metro.tempsOn = !metro.tempsOn;
+    this.classList.toggle('on', metro.tempsOn);
+  });
+  document.getElementById('mpv-tog-p').addEventListener('click', function() {
+    metro.subdivOn = !metro.subdivOn;
+    this.classList.toggle('on', metro.subdivOn);
+  });
+  // ── Édition pattern (L2 ✏) ──
+  document.getElementById('btn-metro-edit').addEventListener('click', () => {
+    _metroEditMode = !_metroEditMode;
+    document.getElementById('btn-metro-edit').classList.toggle('active', _metroEditMode);
+    const row = document.getElementById('metro-edit-row');
+    if (_metroEditMode) {
+      _editPattern = [...(currentSig?.metroPattern || [])];
+      row.style.display = '';
+    } else {
+      _editPattern = null;
+      row.style.display = 'none';
+    }
+    renderMetroPatternViz();
+  });
+  document.getElementById('btn-metro-edit-cancel').addEventListener('click', () => {
+    _metroEditMode = false; _editPattern = null;
+    document.getElementById('btn-metro-edit').classList.remove('active');
+    document.getElementById('metro-edit-row').style.display = 'none';
+    renderMetroPatternViz();
+  });
+  document.getElementById('btn-metro-save-confirm').addEventListener('click', async () => {
+    const pat = _editPattern || currentSig?.metroPattern || [];
+    if (!pat.length) { showToast('Pattern vide', 'warn'); return; }
+    const beats = currentSig?.beatsPerMeasure || 4;
+    const unit  = currentSig?.beatUnit || 4;
+    const sub   = currentSig?.subdivision || 2;
+    const label = document.getElementById('metro-edit-label').value.trim()
+                  || `${beats}/${unit} ×${sub}`;
+    if (!authProfile) { showToast('Connexion requise pour créer des presets', 'warn'); return; }
+    const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+    const preset = {
+      id, label,
+      beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
+      stepsPerBeat: sub, beatSteps: sub,
+      beatSym: beatSymFromUnit(unit, sub),
+      metroPattern: pat,
+      source: 'teacher', localStatus: 'draft',
+    };
+    if (!packCours.metroPresets) packCours.metroPresets = [];
+    packCours.metroPresets.push(preset);
+    saveToStorage();
+    rebuildMetroPresets();
+    buildSigSelector();
+    currentSig = metroPresets.find(p => p.id === id) || currentSig;
+    const sel = document.getElementById('sig-sel');
+    if (sel) sel.value = id;
+    _metroEditMode = false; _editPattern = null;
+    document.getElementById('btn-metro-edit').classList.remove('active');
+    document.getElementById('metro-edit-row').style.display = 'none';
+    document.getElementById('metro-edit-label').value = '';
+    renderMetroPatternViz();
+    buildPublishSection();
+    showToast(`Preset "${label}" créé`, 'info');
   });
 
   // ── Tap Tempo ──
@@ -7230,84 +7369,6 @@ function attachEvents(){
   document.getElementById('metro-vol').addEventListener('input', function(){
     metro.volume = parseInt(this.value);
     document.getElementById('metro-vol-val').textContent = metro.volume + '%';
-  });
-
-  // ── Création preset métronome ──
-  function renderMpfPatternEditor() {
-    const beats = parseInt(document.getElementById('mpf-beats')?.value) || 4;
-    const subdiv = parseInt(document.getElementById('mpf-subdiv')?.value) || 2;
-    const editor = document.getElementById('mpf-pattern-editor');
-    if (!editor) return;
-    // Conserver les valeurs existantes si la longueur n'a pas changé
-    const existing = [...editor.querySelectorAll('.mpf-step')].map(s => s.dataset.val);
-    const fresh = generateMetroPattern(beats, subdiv);
-    const pat = fresh.map((v, i) => existing[i] || v);
-    const LEVELS = ['A', 'P', 'p', '.'];
-    const COLORS = { A:'#c04040', P:'#1D9E75', p:'#6B5FA5', '.':'#ccc' };
-    editor.innerHTML = pat.map((v, i) =>
-      `<span class="mpf-step" data-idx="${i}" data-val="${v}"
-        style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;
-               border-radius:50%;font-size:10px;font-weight:700;cursor:pointer;user-select:none;
-               background:${COLORS[v]||'#eee'};color:${v==='.'?'#999':'#fff'};border:1px solid rgba(0,0,0,.1)"
-      >${v}</span>`
-    ).join('');
-    editor.querySelectorAll('.mpf-step').forEach(s => {
-      s.addEventListener('click', () => {
-        const cur = s.dataset.val;
-        const next = LEVELS[(LEVELS.indexOf(cur) + 1) % LEVELS.length];
-        s.dataset.val = next;
-        s.textContent = next;
-        s.style.background = COLORS[next] || '#eee';
-        s.style.color = next === '.' ? '#999' : '#fff';
-      });
-    });
-  }
-
-  ['mpf-beats', 'mpf-subdiv'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', renderMpfPatternEditor);
-    document.getElementById(id)?.addEventListener('change', renderMpfPatternEditor);
-  });
-
-  document.getElementById('btn-new-metro-preset')?.addEventListener('click', () => {
-    const form = document.getElementById('metro-preset-form');
-    const isOpen = form.style.display !== 'none';
-    form.style.display = isOpen ? 'none' : '';
-    if (!isOpen) renderMpfPatternEditor();
-  });
-
-  document.getElementById('mpf-cancel')?.addEventListener('click', () => {
-    document.getElementById('metro-preset-form').style.display = 'none';
-  });
-
-  document.getElementById('mpf-save')?.addEventListener('click', async () => {
-    const beats  = parseInt(document.getElementById('mpf-beats').value) || 4;
-    const unit   = parseInt(document.getElementById('mpf-unit').value) || 4;
-    const subdiv = parseInt(document.getElementById('mpf-subdiv').value) || 2;
-    const label  = document.getElementById('mpf-label').value.trim() ||
-                   `${beats}/${unit} ×${subdiv}`;
-    const steps  = [...document.getElementById('mpf-pattern-editor').querySelectorAll('.mpf-step')]
-                     .map(s => s.dataset.val);
-    if (!steps.length) { showToast('Définir au moins 1 step', 'warn'); return; }
-
-    const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
-    const preset = {
-      id, label,
-      beatsPerMeasure: beats, beatUnit: unit, subdivision: subdiv, stepUnit: 8,
-      stepsPerBeat: subdiv, beatSteps: subdiv,
-      beatSym: beatSymFromUnit(unit, subdiv),
-      metroPattern: steps,
-      source: 'teacher', localStatus: 'draft',
-    };
-    if (!packCours.metroPresets) packCours.metroPresets = [];
-    packCours.metroPresets.push(preset);
-    saveToStorage();
-    rebuildMetroPresets();
-    buildSigSelector();
-    renderMetroPatternViz();
-    buildPublishSection();
-    document.getElementById('metro-preset-form').style.display = 'none';
-    document.getElementById('mpf-label').value = '';
-    showToast(`Preset "${label}" créé`, 'info');
   });
 
   // ── Settings menu dropdown ──
