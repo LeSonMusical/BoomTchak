@@ -223,6 +223,41 @@ create policy "Lecture student_data" on public.student_data for select
 create policy "Insert student_data" on public.student_data for insert
   with check (sx_id = auth.uid());
 
+-- ── Presets métronome (v3.4.50) ──────────────────────────────────────────────
+-- Un preset encode : beatsPerMeasure, subdivision, metroPattern (accents)
+-- TX peut proposer un preset, MX approuve (même workflow que patterns/grooves)
+create table public.metro_presets (
+  id                 text primary key,
+  label              text not null,
+  beats_per_measure  int  not null,
+  beat_unit          int  not null default 4,
+  subdivision        int  not null default 2,
+  step_unit          int  not null default 8,
+  metro_pattern      text[]        not null,
+  scope              text not null default 'school' check (scope in ('school','teacher')),
+  approved           bool not null default true,
+  owner_id           uuid references auth.users(id) on delete set null,
+  created_at         timestamptz default now(),
+  updated_at         timestamptz default now()
+);
+alter table public.metro_presets enable row level security;
+
+-- SELECT : école approuvé OU owner=moi OU MX
+create policy "Lecture metro_presets"     on public.metro_presets for select
+  using ((scope='school' and approved=true) or owner_id=auth.uid() or public.current_role_name()='mx');
+
+-- INSERT : utilisateur authentifié, owner=moi
+create policy "Insert metro_presets"      on public.metro_presets for insert
+  with check (auth.uid() is not null and owner_id=auth.uid());
+
+-- UPDATE : owner=moi OU MX
+create policy "Update metro_presets"      on public.metro_presets for update
+  using (owner_id=auth.uid() or public.current_role_name()='mx');
+
+-- DELETE : owner=moi OU MX
+create policy "Delete metro_presets"      on public.metro_presets for delete
+  using (owner_id=auth.uid() or public.current_role_name()='mx');
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIGRATION — Pour bases existantes créées avant v3.1
 -- Exécuter ce bloc séparément si vous avez déjà une base :
@@ -236,6 +271,12 @@ alter table public.grooves
   drop column if exists vitesse_mult,
   add column if not exists signature text not null default '4/4';
 */
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.4.50 — Pour bases existantes (ajouter metro_presets)
+-- Exécuter séparément si vous avez déjà une base v3.x :
+-- ═══════════════════════════════════════════════════════════════════════════
+-- (copier/coller le bloc CREATE TABLE metro_presets ci-dessus)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
