@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.46</span>
+      <span class="app-version">v3.4.47</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1887,14 +1887,19 @@ function applyGroove(grooveId){
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
 
-  // Resync si en lecture
+  // Resync si en lecture — aligner sur le prochain début de mesure du métronome
   if(playing){
     clearTimeout(schedTimerID);
     const now=getAC().currentTime;
+    // Calculer combien de beats restent jusqu'au prochain temps 1 (mesure start)
+    const beatSec=getMetroBeatSec();
+    const beatsLeft=(currentSig.beatsPerMeasure-metroBeatPos)%currentSig.beatsPerMeasure;
+    // syncTime = début de la prochaine mesure selon la grille du métronome
+    const syncTime=Math.max(now, metroNextBeatTime+beatsLeft*beatSec);
     LAYERS.forEach((_,li)=>{
       state[li].stepPos=0;
-      state[li].nextStepTime=now;
-      state[li].startTime=now;
+      state[li].nextStepTime=syncTime;
+      state[li].startTime=syncTime;
     });
     scheduler();
   }
