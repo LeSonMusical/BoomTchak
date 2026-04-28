@@ -433,10 +433,16 @@ Valider le modèle avec Lamberio avant tout codage.
 
 ## 13. Gaps identifiés — Backlog priorisé
 
-### Priorité haute (prochaine session)
+### Résolu ✅ (vérifié session 2026-04-28)
+| # | Description | Localisation |
+|---|-------------|--------------|
+| G0 | **Bug initAuth() bloquant** — `authSession` vidé si `authProfile` null après `sbFetchProfile()` | ll. 5291–5296 |
+| G8 | **Ordre patterns/grooves persisté** — `sbPushSchoolOrder()` appelée après drag-drop | ll. 4123–4137, 5666, 6319 |
+| GAP_FAM_RENAME_TX | **Renommage TX famille** — soumission indépendante via `_pendingRename` + section "Tags familles" | ll. 5117–5126 |
+
+### Priorité haute
 | # | Description | Impact |
 |---|-------------|--------|
-| G0 | **Bug initAuth() bloquant** : app parfois figée sur "Connexion en cours…" si sbFetchProfile() échoue silencieusement (token expiré → authProfile=null mais authSession reste) | Bloquant au démarrage |
 | G1 | **Fork item école** : TX modifie un item école → copie automatique en source:'teacher' pour soumission | TX ne peut pas proposer d'amélioration d'un item école |
 | G2 | **Famille TX transmise à la soumission** : push les familles TX (scope:'teacher') au moment du submit pattern/groove | MX voit des IDs de famille inconnus |
 | G3 | **Suppression locale → annulation Supabase auto** : si item localStatus:'submitted', DELETE Supabase avant supprimer localement | Orphelins en DB |
@@ -448,7 +454,6 @@ Valider le modèle avec Lamberio avant tout codage.
 | G5 | **Encyclo MX → DB** : bouton "Publier en DB" dans la section encyclopédie pour MX | Éditions MX perdues si localStorage vidé |
 | G6 | **Édition tempo/signature post-création** | Groove figé après création |
 | G7 | **Raison de refus** : MX peut saisir un message lors du rejet, TX le voit dans le toast | UX de communication TX/MX |
-| G8 | **Ordre familles/patterns/grooves persisté** : colonne `ordre int` en DB, sync à la sauvegarde MX | Ordre MX perdu après sync |
 
 ### Priorité basse
 | # | Description | Impact |

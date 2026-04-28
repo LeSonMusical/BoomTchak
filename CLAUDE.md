@@ -121,11 +121,15 @@ Couvre : chargement de pattern, tous les boutons mod, rotation, mute, changement
 - **Ne pas implémenter avant décision archi concertée avec Lamberio**
 
 ## Tâches prioritaires (prochaine session)
-1. **G0 BUG CRITIQUE** — `initAuth()` bloque sur "Connexion en cours…" si token expiré
-   Fix : si `authProfile` null après `sbFetchProfile()` → vider `authSession` + localStorage
-2. **G8 Ordre persisté** — colonne `ordre int` en DB pour familles/patterns/grooves
-3. **GAP_FAM_RENAME_TX** — TX renomme une famille → soumettre avec l'item ou soumission indépendante ?
-4. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (voir section ci-dessus)
+1. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (voir section ci-dessus — décision archi requise avec Lamberio)
+2. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher' pour soumission
+3. **G6 Édition tempo/signature post-création** — groove figé après création
+4. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
+
+## Résolu (vérification session 2026-04-28)
+- ✅ **G0** — `initAuth()` invalide `authSession` si `authProfile` null (ll. 5291–5296)
+- ✅ **G8** — Ordre patterns/grooves persisté via `sbPushSchoolOrder()` après drag-drop (ll. 4123–4137)
+- ✅ **GAP_FAM_RENAME_TX** — Renommage TX soumis indépendamment via `_pendingRename` + section "Tags familles" (ll. 5117–5126)
 
 ## Futur chantier — Metro comme pattern (à valider avec Lamberio)
 
