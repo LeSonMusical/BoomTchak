@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.49</span>
+      <span class="app-version">v3.4.50</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -753,20 +753,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="section-bar temps-bar" id="section-temps">
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <select class="sig-sel" id="sig-sel">
-      <option value="2/4">2/4</option>
-      <option value="3/4">3/4</option>
       <option value="4/4" selected>4/4</option>
-      <option value="5/4">5/4</option>
-      <option value="7/4">7/4</option>
-      <option value="6/8">6/8</option>
-      <option value="9/8">9/8</option>
-      <option value="12/8">12/8</option>
-      <option value="7/8">7/8</option>
-      <option value="11/8">11/8</option>
-      <option value="13/8">13/8</option>
-      <option value="2/2">2/2</option>
-      <option value="3/2">3/2</option>
-      <option value="4/2">4/2</option>
     </select>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <span class="spm-display" id="spm-display" title="Steps Par Minute (vitesse de la croche)">♪200</span>
@@ -801,6 +788,43 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
       <span id="metro-vol-val" style="font-size:10px;color:#888;min-width:26px;text-align:right">80%</span>
     </div>
+  <!-- Création de preset métronome (visible si connecté) -->
+  <div id="metro-preset-creation" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.08)">
+    <button id="btn-new-metro-preset" style="font-size:10px;padding:3px 10px;border:1px dashed #9980d0;border-radius:4px;background:transparent;color:#6B5FA5;cursor:pointer;width:100%">＋ Nouveau preset métronome</button>
+    <div id="metro-preset-form" style="display:none;margin-top:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:5px">
+        <label style="font-size:10px;color:#555">Temps
+          <input type="number" id="mpf-beats" min="1" max="20" value="4" style="width:40px;font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
+        </label>
+        <label style="font-size:10px;color:#555">Unité
+          <select id="mpf-unit" style="font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
+            <option value="4">♩ (noire)</option>
+            <option value="8">♪ (croche)</option>
+            <option value="2">𝅗𝅥 (blanche)</option>
+          </select>
+        </label>
+        <label style="font-size:10px;color:#555">Subdiv
+          <select id="mpf-subdiv" style="font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;margin-left:3px">
+            <option value="1">×1</option>
+            <option value="2" selected>×2</option>
+            <option value="3">×3</option>
+            <option value="4">×4</option>
+          </select>
+        </label>
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:5px;align-items:center">
+        <label style="font-size:10px;color:#555;flex-shrink:0">Nom</label>
+        <input type="text" id="mpf-label" placeholder="ex: Rachenitsa 7/8" style="flex:1;font-size:11px;padding:2px 6px;border:1px solid #ccc;border-radius:3px">
+      </div>
+      <!-- Éditeur d'accents auto-généré -->
+      <div style="font-size:10px;color:#555;margin-bottom:3px">Accents <span style="color:#aaa">(cliquer pour changer : A=fort, P=temps, p=subdiv, .=silence)</span></div>
+      <div id="mpf-pattern-editor" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px"></div>
+      <div style="display:flex;gap:5px">
+        <button id="mpf-save" style="font-size:10px;padding:3px 10px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex:1">✓ Créer</button>
+        <button id="mpf-cancel" style="font-size:10px;padding:3px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>
+      </div>
+    </div>
+  </div>
   </div><!-- /metro-bloc -->
   </div>
   </div><!-- /temps-wrap -->
@@ -1336,6 +1360,7 @@ const PTK_DEFAULT = {
        {id:'noise', patternId:'hab',    mute:false, shift:0, halfOn:false, doubleOn:true},
      ]},
   ],
+  metroPresets: [],
 };
 
 // Marquer les éléments du dictionnaire comme source 'school'
@@ -1573,38 +1598,78 @@ let soundStateThumb=[
 ];
 const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
 
-// ── Signatures rythmiques ─────────────────────────────────────────────────
-const SIGNATURES=[
-  // 1 step = 1 croche (1/8) — résolution de base des patterns
-  // stepsPerBeat  : steps par temps (utilisé pour tap tempo et métronome)
-  // beatSteps     : intervalle VISUEL du séparateur de temps dans la grille
-  //   ♩  (bas=4) : 1 temps=noire=2 croches     → beatSteps=2
-  //   ♩. (bas=8) : 1 temps=noire pointée=3 cr. → beatSteps=3
-  //   𝅗𝅥  (bas=2) : 1 temps=blanche=4 croches   → beatSteps=4
-  // Avec modificateur ×2, /2 ou T : sepInterval = beatSteps × speedFactor (calculé dans buildStepsDOM)
-  {id:'2/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:2, beatSteps:2},
-  {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3, beatSteps:2},
-  {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4, beatSteps:2},
-  {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5, beatSteps:2},
-  {id:'7/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:7, beatSteps:2},
-  {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2, beatSteps:3},
-  {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3, beatSteps:3},
-  {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4, beatSteps:3},
-  // Signatures asymétriques — unité = croche ♪ (stepsPerBeat=1, chaque step = 1 temps)
-  {id:'7/8',  beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:7,  beatSteps:1},
-  {id:'11/8', beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:11, beatSteps:1},
-  {id:'13/8', beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:13, beatSteps:1},
-  {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2, beatSteps:4},
-  {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3, beatSteps:4},
-  {id:'4/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:4, beatSteps:4},
-];
-let currentSig=SIGNATURES[2]; // 4/4 par défaut
+// ── Presets métronome ─────────────────────────────────────────────────────
+// stepsPerBeat = subdivision : steps par temps (BPM↔SPM, séparateurs visuels)
+// metroPattern : 'A'=accent fort (temps 1), 'P'=accent temps, 'p'=subdivision
+
+function generateMetroPattern(beatsPerMeasure, subdivision) {
+  const pat = [];
+  for (let b = 0; b < beatsPerMeasure; b++)
+    for (let s = 0; s < subdivision; s++)
+      pat.push(b === 0 && s === 0 ? 'A' : s === 0 ? 'P' : 'p');
+  return pat;
+}
+
+function beatSymFromUnit(beatUnit, subdivision) {
+  if (beatUnit === 2) return '𝅗𝅥';
+  if (beatUnit === 8 && subdivision >= 3) return '♩.';
+  if (beatUnit === 8) return '♪';
+  return '♩';
+}
+
+const METRO_PRESETS_DEFAULT = [
+  {id:'2/4',  label:'2/4',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'3/4',  label:'3/4',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'4/4',  label:'4/4',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'5/4',  label:'5/4',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'7/4',  label:'7/4',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'6/8',  label:'6/8',  beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'9/8',  label:'9/8',  beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'12/8', label:'12/8', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'7/8',  label:'7/8',  beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'11/8', label:'11/8', beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'13/8', label:'13/8', beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'2/2',  label:'2/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'3/2',  label:'3/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'4/2',  label:'4/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+].map(p => ({...p, metroPattern: generateMetroPattern(p.beatsPerMeasure, p.subdivision)}));
+
+// Runtime : presets par défaut + presets personnalisés (DB/local, via packCours.metroPresets)
+let metroPresets = METRO_PRESETS_DEFAULT.slice();
+
+function rebuildMetroPresets() {
+  const builtinIds = new Set(METRO_PRESETS_DEFAULT.map(p => p.id));
+  const custom = (packCours.metroPresets || [])
+    .filter(p => !builtinIds.has(p.id))
+    .map(p => ({
+      ...p,
+      stepsPerBeat: p.subdivision,
+      beatSteps:    p.subdivision,
+      beatSym:  p.beatSym || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
+      metroPattern: Array.isArray(p.metroPattern) ? p.metroPattern
+                    : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
+    }));
+  metroPresets.length = 0;
+  [...METRO_PRESETS_DEFAULT, ...custom].forEach(p => metroPresets.push(p));
+}
+
+function buildSigSelector() {
+  const sel = document.getElementById('sig-sel');
+  if (!sel) return;
+  const cur = currentSig?.id || '4/4';
+  sel.innerHTML = metroPresets.map(p =>
+    `<option value="${p.id}"${p.id === cur ? ' selected' : ''}>${p.label || p.id}</option>`
+  ).join('');
+  if (metroPresets.find(p => p.id === cur)) sel.value = cur;
+}
+
+let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
 
 // ── État métronome ────────────────────────────────────────────────────────
 let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true, volume:80};
 // metro.muted=true  → Métro OFF : timing en sync avec Play, mais aucun son émis
 // metro.muted=false → Métro ON  : les clics sont audibles
-let metroBeatPos=0, metroNextBeatTime=0;
+let metroBeatPos=0, metroStepPos=0, metroNextBeatTime=0;
 let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 
 let playing=false, ac=null, latencyMs=0;
@@ -1659,24 +1724,23 @@ function scheduler(){
     }
   });
   // ── Métronome ─────────────────────────────────────────────────────────────
-  // La boucle timing avance TOUJOURS avec Play pour rester en sync.
-  // Les clics audio ne sont émis que si non-muté (metro.muted=false).
+  // Avance step par step (1 croche) en suivant metroPattern du preset courant.
+  // 'A'=accent fort, 'P'=temps, 'p'=subdivision — chacun contrôlé par un toggle.
   {
     const nowM=getAC().currentTime;
-    const beatSec=getMetroBeatSec();
+    const spmNow=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+    const stepSec=60/spmNow;
+    const mp=currentSig.metroPattern;
     while(metroNextBeatTime<nowM+LOOKAHEAD){
       if(!metro.muted){
-        const isFirst=metroBeatPos===0;
-        if(isFirst&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
-        else if(metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
-        if(metro.subdivOn){
-          for(let s=1;s<metro.subdivDiv;s++){
-            playMetroClick(metroNextBeatTime+beatSec*s/metro.subdivDiv,'subdiv');
-          }
-        }
+        const level=mp[metroStepPos];
+        if(level==='A'&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
+        else if(level==='P'&&metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
+        else if(level==='p'&&metro.subdivOn) playMetroClick(metroNextBeatTime,'subdiv');
       }
-      metroNextBeatTime+=beatSec;
-      metroBeatPos=(metroBeatPos+1)%currentSig.beatsPerMeasure;
+      metroNextBeatTime+=stepSec;
+      metroStepPos=(metroStepPos+1)%mp.length;
+      metroBeatPos=Math.floor(metroStepPos/currentSig.stepsPerBeat); // alias dérivé
     }
   }
   schedTimerID=setTimeout(scheduler,SCHED_MS);
@@ -1734,7 +1798,7 @@ function startPlay(){
     state[li].nextStepTime=now;
     state[li].startTime=now;
   });
-  metroBeatPos=0; metroNextBeatTime=now;
+  metroBeatPos=0; metroStepPos=0; metroNextBeatTime=now;
   scheduler();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -1917,11 +1981,13 @@ function applyGroove(grooveId){
   if(playing){
     clearTimeout(schedTimerID);
     const now=getAC().currentTime;
-    // Calculer combien de beats restent jusqu'au prochain temps 1 (mesure start)
-    const beatSec=getMetroBeatSec();
-    const beatsLeft=(currentSig.beatsPerMeasure-metroBeatPos)%currentSig.beatsPerMeasure;
+    // Steps restants jusqu'au prochain temps 1 (début de mesure)
+    const spmNow=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+    const stepSec=60/spmNow;
+    const totalSteps=currentSig.metroPattern.length;
+    const stepsLeft=(totalSteps-metroStepPos)%totalSteps;
     // syncTime = début de la prochaine mesure selon la grille du métronome
-    const syncTime=Math.max(now, metroNextBeatTime+beatsLeft*beatSec);
+    const syncTime=Math.max(now, metroNextBeatTime+stepsLeft*stepSec);
     LAYERS.forEach((_,li)=>{
       state[li].stepPos=0;
       state[li].nextStepTime=syncTime;
@@ -3951,13 +4017,14 @@ async function sbSyncSchoolPool() {
   if (!authSession) return;
   updateSyncStatus('Synchronisation…');
   try {
-    const [patterns, grooves, familles, encyclo] = await Promise.all([
+    const [patterns, grooves, familles, encyclo, metroPres] = await Promise.all([
       sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*'),
       sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*'),
       sbFetch('/rest/v1/familles?scope=eq.school&select=*'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
+      sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]),
     ]);
-    sbMergeSchoolData({ patterns, grooves, familles, encyclo });
+    sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres });
     // Vérifier les refus TX (fire-and-forget, non bloquant)
     if (authProfile?.role !== 'mx') {
       sbCheckRejections().then(n => {
@@ -3983,7 +4050,7 @@ async function sbSyncSchoolPool() {
   }
 }
 
-function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
+function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: mpRows }) {
   const isMX = authProfile?.role === 'mx';
   // Isolation localStorage partagé MX/TX :
   // MX ne crée jamais d'items source='teacher' — purger les forks TX pour voir l'état école validé
@@ -4043,6 +4110,23 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo }) {
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
     packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
   });
+  // Merge des presets métronome école
+  if (Array.isArray(mpRows)) {
+    if (!packCours.metroPresets) packCours.metroPresets = [];
+    mpRows.forEach(row => {
+      const preset = {
+        id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
+        beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
+        metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+        source: 'school', approved: true, ownerId: row.owner_id,
+      };
+      const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
+      if (idx >= 0) packCours.metroPresets[idx] = preset;
+      else packCours.metroPresets.push(preset);
+    });
+    rebuildMetroPresets();
+    buildSigSelector();
+  }
 }
 
 // ── Publication vers le pool école ───────────────────────────────────────────
@@ -4137,19 +4221,21 @@ async function sbPushSchoolOrder(type) {
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
-let _pendingItems = { patterns: [], grooves: [], encyclos: [] };
+let _pendingItems = { patterns: [], grooves: [], encyclos: [], metroPresets: [] };
 
 async function sbFetchPendingApprovals() {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
-    const [pats, grvs, encs] = await Promise.all([
+    const [pats, grvs, encs, mps] = await Promise.all([
       sbFetch('/rest/v1/patterns?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
       sbFetch('/rest/v1/grooves?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
       sbFetch('/rest/v1/encyclo?select=*,profiles(display_name,email)&scope=eq.teacher&approved=eq.false'),
+      sbFetch('/rest/v1/metro_presets?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc').catch(()=>[]),
     ]);
-    _pendingItems.patterns = Array.isArray(pats) ? pats : [];
-    _pendingItems.grooves  = Array.isArray(grvs) ? grvs : [];
-    _pendingItems.encyclos = Array.isArray(encs) ? encs : [];
+    _pendingItems.patterns     = Array.isArray(pats) ? pats : [];
+    _pendingItems.grooves      = Array.isArray(grvs) ? grvs : [];
+    _pendingItems.encyclos     = Array.isArray(encs) ? encs : [];
+    _pendingItems.metroPresets = Array.isArray(mps)  ? mps  : [];
     // Charger les familles TX référencées pour affichage dans le panel d'approbation
     const allFamIds = [...new Set([..._pendingItems.patterns, ..._pendingItems.grooves].flatMap(x => x.familles_ids || []))];
     const missingFamIds = allFamIds.filter(id => !packCours.familles.some(f => f.id === id));
@@ -4163,9 +4249,9 @@ async function sbFetchPendingApprovals() {
       }
     }
   } catch(e) {
-    _pendingItems = { patterns: [], grooves: [], encyclos: [] };
+    _pendingItems = { patterns: [], grooves: [], encyclos: [], metroPresets: [] };
   }
-  const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length;
+  const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length + _pendingItems.metroPresets.length;
   _remotePendingCount = total;
   const toggle = document.getElementById('smenu-appro-toggle');
   const badge  = document.getElementById('smenu-appro-count');
@@ -4230,6 +4316,74 @@ async function sbCancelSubmission(type, id) {
     await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
     return true;
   } catch(e) { console.error('Annulation échouée :', e); return false; }
+}
+
+// ── Presets métronome — CRUD Supabase ─────────────────────────────────────
+
+async function sbSaveMetroPreset(presetId) {
+  const p = (packCours.metroPresets || []).find(x => x.id === presetId);
+  if (!p || !authSession) return false;
+  const isMX = authProfile?.role === 'mx';
+  try {
+    await sbFetch('/rest/v1/metro_presets', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        id: p.id,
+        label: p.label,
+        beats_per_measure: p.beatsPerMeasure,
+        beat_unit: p.beatUnit,
+        subdivision: p.subdivision,
+        step_unit: p.stepUnit || 8,
+        metro_pattern: p.metroPattern,
+        scope: isMX ? 'school' : 'teacher',
+        approved: isMX,
+        owner_id: authProfile.id,
+      }),
+    });
+    if (isMX) {
+      p.source = 'school'; p.approved = true; delete p.localStatus;
+    } else {
+      p.source = 'teacher'; p.localStatus = 'submitted';
+    }
+    saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection();
+    return true;
+  } catch(e) { console.error('sbSaveMetroPreset échoué :', e); return false; }
+}
+
+async function sbDeleteMetroPreset(presetId) {
+  try {
+    await sbFetch(`/rest/v1/metro_presets?id=eq.${presetId}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('sbDeleteMetroPreset échoué :', e); return false; }
+}
+
+async function sbApproveMetroPreset(id) {
+  try {
+    await sbFetch(`/rest/v1/metro_presets?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ scope: 'school', approved: true, owner_id: null }),
+    });
+    return true;
+  } catch(e) { console.error('sbApproveMetroPreset échoué :', e); return false; }
+}
+
+async function sbRejectMetroPreset(id) {
+  try {
+    await sbFetch(`/rest/v1/metro_presets?id=eq.${id}`, { method: 'DELETE' });
+    return true;
+  } catch(e) { console.error('sbRejectMetroPreset échoué :', e); return false; }
+}
+
+async function sbCancelMetroPresetSubmission(presetId) {
+  try {
+    await sbFetch(`/rest/v1/metro_presets?id=eq.${presetId}`, { method: 'DELETE' });
+    const p = (packCours.metroPresets || []).find(x => x.id === presetId);
+    if (p) { delete p.localStatus; }
+    saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection();
+    return true;
+  } catch(e) { console.error('sbCancelMetroPresetSubmission échoué :', e); return false; }
 }
 
 // TX — annule la soumission d'une entrée encyclopédie
@@ -4475,10 +4629,6 @@ function buildApprobationsSection() {
   const pats  = _pendingItems.patterns;
   const grvs  = _pendingItems.grooves;
   const encs  = _pendingItems.encyclos || [];
-  if (!pats.length && !grvs.length && !encs.length) {
-    container.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu en attente</div>';
-    return;
-  }
 
   // Inférer les champs modifiés en comparant l'item pending avec l'item école local
   const inferChangedFields = (type, item) => {
@@ -4566,6 +4716,12 @@ function buildApprobationsSection() {
     `</div>`;
   };
 
+  const mps = _pendingItems.metroPresets || [];
+  if (!pats.length && !grvs.length && !encs.length && !mps.length) {
+    container.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;padding:4px 0">Aucun contenu en attente</div>';
+    return;
+  }
+
   let html = '';
   if (pats.length) {
     html += `<div style="font-size:10px;font-weight:700;color:#777;margin-bottom:4px">Patterns (${pats.length})</div>`;
@@ -4578,6 +4734,22 @@ function buildApprobationsSection() {
   if (encs.length) {
     html += `<div style="font-size:10px;font-weight:700;color:#777;margin:6px 0 4px">Encyclopédie (${encs.length})</div>`;
     encs.forEach(e => { html += rowEnc(e); });
+  }
+  if (mps.length) {
+    html += `<div style="font-size:10px;font-weight:700;color:#777;margin:6px 0 4px">🎼 Presets métro (${mps.length})</div>`;
+    mps.forEach(mp => {
+      const desc = `${mp.beats_per_measure}/${mp.beat_unit} · subdiv ${mp.subdivision}`;
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${mp.label || mp.id}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#d4f5e6;color:#0F6E56;flex-shrink:0">Nouveau</span>` +
+        `</div>` +
+        `<div style="font-size:9px;color:#888;margin-bottom:4px">${desc}</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-appro-metro-approve" data-id="${mp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">✓ Approuver</button>` +
+          `<button class="btn-appro-metro-reject"  data-id="${mp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff8f8;color:#c04040;cursor:pointer">✕ Rejeter</button>` +
+        `</div></div>`;
+    });
   }
   container.innerHTML = html;
 
@@ -4695,7 +4867,46 @@ function buildApprobationsSection() {
       const ok = await sbRejectEncycloItem(btn.dataset.key);
       if (ok) {
         _pendingItems.encyclos = (_pendingItems.encyclos||[]).filter(x => x.key !== btn.dataset.key);
-        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length;
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + _pendingItems.encyclos.length + (_pendingItems.metroPresets||[]).length;
+        _remotePendingCount = total; updateSettingsBadge();
+        const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
+        buildApprobationsSection();
+      } else { btn.textContent = '🗑'; btn.disabled = false; }
+    });
+  });
+
+  // Presets métronome — approuver
+  container.querySelectorAll('.btn-appro-metro-approve').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbApproveMetroPreset(btn.dataset.id);
+      if (ok) {
+        _pendingItems.metroPresets = (_pendingItems.metroPresets||[]).filter(x => x.id !== btn.dataset.id);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + (_pendingItems.encyclos||[]).length + (_pendingItems.metroPresets||[]).length;
+        _remotePendingCount = total; updateSettingsBadge();
+        const badge = document.getElementById('smenu-appro-count');
+        const approToggle = document.getElementById('smenu-appro-toggle');
+        if (badge) { badge.textContent = total; badge.style.display = total ? '' : 'none'; }
+        if (approToggle) approToggle.style.display = total ? '' : 'none';
+        buildApprobationsSection();
+        await sbSyncSchoolPool();
+      } else { btn.textContent = origText; btn.disabled = false; }
+    });
+  });
+
+  // Presets métronome — rejeter
+  container.querySelectorAll('.btn-appro-metro-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Refuser ce preset métronome ?')) return;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbRejectMetroPreset(btn.dataset.id);
+      if (ok) {
+        _pendingItems.metroPresets = (_pendingItems.metroPresets||[]).filter(x => x.id !== btn.dataset.id);
+        const total = _pendingItems.patterns.length + _pendingItems.grooves.length + (_pendingItems.encyclos||[]).length + (_pendingItems.metroPresets||[]).length;
         _remotePendingCount = total; updateSettingsBadge();
         const badge = document.getElementById('smenu-appro-count');
         const approToggle = document.getElementById('smenu-appro-toggle');
@@ -4766,6 +4977,7 @@ function buildPublishSection() {
   const isMX = authProfile?.role === 'mx';
   const teacherPats    = packCours.patterns.filter(p => p.source === 'teacher' && !p.localDeletePending);
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher' && !g.localDeletePending);
+  const teacherMetroPres = (packCours.metroPresets || []).filter(p => p.source === 'teacher');
   const dirtySchoolPats    = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDirty && !p.localDeletePending) : [];
   const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty && !g.localDeletePending) : [];
   const pendingDelPats  = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDeletePending) : [];
@@ -4797,7 +5009,7 @@ function buildPublishSection() {
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
   const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length + pendingRenameFamsTX.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -4811,7 +5023,7 @@ function buildPublishSection() {
     + dirtySchoolPats.length + dirtySchoolGrooves.length
     + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
     + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length
-    + pendingRenameFamsTX.length;
+    + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -4958,6 +5170,30 @@ function buildPublishSection() {
         `<div style="display:flex;gap:5px">` +
           `<button class="btn-pub-fam-rename-tx" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>` +
           `<button class="btn-pub-fam-rename-tx-cancel" data-id="${fam.id}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕</button>` +
+        `</div></div>`;
+    });
+  }
+  // Presets métronome (TX draft/submitted + MX teacher)
+  if (teacherMetroPres.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">🎼 Presets métro</div>`;
+    teacherMetroPres.forEach(p => {
+      const isSubmitted = p.localStatus === 'submitted';
+      const desc = `${p.beatsPerMeasure}/${p.beatUnit} · subdiv ${p.subdivision}`;
+      const badge = isSubmitted
+        ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">⏳ En attente</span>`
+        : `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#d4f5e6;color:#0F6E56;flex-shrink:0">Nouveau</span>`;
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${p.label || p.id}</span>` +
+          badge +
+        `</div>` +
+        `<div style="font-size:9px;color:#888;margin-bottom:4px">${desc}</div>` +
+        `<div style="display:flex;gap:5px">` +
+          (isMX
+            ? `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>`
+            : isSubmitted
+              ? `<button class="btn-pub-metro-cancel" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+              : `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>`) +
         `</div></div>`;
     });
   }
@@ -5215,6 +5451,30 @@ function buildPublishSection() {
       document.getElementById('btn-settings')?.classList.remove('active');
     });
   });
+
+  // Presets métronome — envoyer/publier
+  container.querySelectorAll('.btn-pub-metro-preset').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbSaveMetroPreset(btn.dataset.id);
+      if (ok) {
+        showToast(isMX ? 'Preset publié' : 'Preset soumis', 'info');
+      } else {
+        btn.textContent = origText; btn.disabled = false;
+        showToast('Échec envoi preset', 'error');
+      }
+    });
+  });
+
+  // Presets métronome — annuler soumission TX
+  container.querySelectorAll('.btn-pub-metro-cancel').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      await sbCancelMetroPresetSubmission(btn.dataset.id);
+      showToast('Soumission annulée', 'info');
+    });
+  });
 }
 
 // ── UI Auth ───────────────────────────────────────────────────────────────────
@@ -5261,6 +5521,9 @@ function renderAuthUI() {
     document.getElementById('auth-btn-logout').addEventListener('click', sbLogout);
     document.getElementById('auth-btn-sync').addEventListener('click', sbSyncSchoolPool);
     updateSettingsBadge();
+    // Afficher le bouton de création de preset si connecté
+    const mpCreate = document.getElementById('metro-preset-creation');
+    if (mpCreate) mpCreate.style.display = '';
   } else if (authSession) {
     container.innerHTML = '<div style="font-size:10px;color:#888">Connexion en cours…</div>';
   } else {
@@ -6786,7 +7049,8 @@ function attachEvents(){
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
     const oldSig=currentSig;
-    currentSig=SIGNATURES.find(s=>s.id===this.value)||SIGNATURES[2];
+    currentSig=metroPresets.find(p=>p.id===this.value)||metroPresets.find(p=>p.id==='4/4')||metroPresets[0];
+    metroStepPos=0; metroBeatPos=0; // reset au changement de signature (nouveau pattern)
     if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
       const slider=document.getElementById('bpm');
       const currentSPM=parseInt(slider.value);
@@ -6922,7 +7186,7 @@ function attachEvents(){
           }
           const acNow=getAC().currentTime;
           LAYERS.forEach((_lyr,li)=>{state[li].stepPos=0; state[li].nextStepTime=acNow;});
-          metroBeatPos=0; metroNextBeatTime=acNow;
+          metroBeatPos=0; metroStepPos=0; metroNextBeatTime=acNow;
           // Mettre à jour le bouton Play si on vient de le lancer
           if(!document.getElementById('btn-play').classList.contains('active')){
             document.getElementById('btn-play').textContent='■';
@@ -6942,6 +7206,83 @@ function attachEvents(){
   document.getElementById('metro-vol').addEventListener('input', function(){
     metro.volume = parseInt(this.value);
     document.getElementById('metro-vol-val').textContent = metro.volume + '%';
+  });
+
+  // ── Création preset métronome ──
+  function renderMpfPatternEditor() {
+    const beats = parseInt(document.getElementById('mpf-beats')?.value) || 4;
+    const subdiv = parseInt(document.getElementById('mpf-subdiv')?.value) || 2;
+    const editor = document.getElementById('mpf-pattern-editor');
+    if (!editor) return;
+    // Conserver les valeurs existantes si la longueur n'a pas changé
+    const existing = [...editor.querySelectorAll('.mpf-step')].map(s => s.dataset.val);
+    const fresh = generateMetroPattern(beats, subdiv);
+    const pat = fresh.map((v, i) => existing[i] || v);
+    const LEVELS = ['A', 'P', 'p', '.'];
+    const COLORS = { A:'#c04040', P:'#1D9E75', p:'#6B5FA5', '.':'#ccc' };
+    editor.innerHTML = pat.map((v, i) =>
+      `<span class="mpf-step" data-idx="${i}" data-val="${v}"
+        style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;
+               border-radius:50%;font-size:10px;font-weight:700;cursor:pointer;user-select:none;
+               background:${COLORS[v]||'#eee'};color:${v==='.'?'#999':'#fff'};border:1px solid rgba(0,0,0,.1)"
+      >${v}</span>`
+    ).join('');
+    editor.querySelectorAll('.mpf-step').forEach(s => {
+      s.addEventListener('click', () => {
+        const cur = s.dataset.val;
+        const next = LEVELS[(LEVELS.indexOf(cur) + 1) % LEVELS.length];
+        s.dataset.val = next;
+        s.textContent = next;
+        s.style.background = COLORS[next] || '#eee';
+        s.style.color = next === '.' ? '#999' : '#fff';
+      });
+    });
+  }
+
+  ['mpf-beats', 'mpf-subdiv'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', renderMpfPatternEditor);
+    document.getElementById(id)?.addEventListener('change', renderMpfPatternEditor);
+  });
+
+  document.getElementById('btn-new-metro-preset')?.addEventListener('click', () => {
+    const form = document.getElementById('metro-preset-form');
+    const isOpen = form.style.display !== 'none';
+    form.style.display = isOpen ? 'none' : '';
+    if (!isOpen) renderMpfPatternEditor();
+  });
+
+  document.getElementById('mpf-cancel')?.addEventListener('click', () => {
+    document.getElementById('metro-preset-form').style.display = 'none';
+  });
+
+  document.getElementById('mpf-save')?.addEventListener('click', async () => {
+    const beats  = parseInt(document.getElementById('mpf-beats').value) || 4;
+    const unit   = parseInt(document.getElementById('mpf-unit').value) || 4;
+    const subdiv = parseInt(document.getElementById('mpf-subdiv').value) || 2;
+    const label  = document.getElementById('mpf-label').value.trim() ||
+                   `${beats}/${unit} ×${subdiv}`;
+    const steps  = [...document.getElementById('mpf-pattern-editor').querySelectorAll('.mpf-step')]
+                     .map(s => s.dataset.val);
+    if (!steps.length) { showToast('Définir au moins 1 step', 'warn'); return; }
+
+    const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+    const preset = {
+      id, label,
+      beatsPerMeasure: beats, beatUnit: unit, subdivision: subdiv, stepUnit: 8,
+      stepsPerBeat: subdiv, beatSteps: subdiv,
+      beatSym: beatSymFromUnit(unit, subdiv),
+      metroPattern: steps,
+      source: 'teacher', localStatus: 'draft',
+    };
+    if (!packCours.metroPresets) packCours.metroPresets = [];
+    packCours.metroPresets.push(preset);
+    saveToStorage();
+    rebuildMetroPresets();
+    buildSigSelector();
+    buildPublishSection();
+    document.getElementById('metro-preset-form').style.display = 'none';
+    document.getElementById('mpf-label').value = '';
+    showToast(`Preset "${label}" créé`, 'info');
   });
 
   // ── Settings menu dropdown ──
@@ -7199,6 +7540,9 @@ function start(){
   // Mettre à jour l'affichage tempo
   updateBeatDisplay();
   updateGlobalSpeedBtns();
+
+  // Peupler le sélecteur de signature (metroPresets disponibles dès l'init)
+  buildSigSelector();
 
   // Auth Supabase (async, n'attend pas la fin pour ne pas bloquer l'UI)
   initAuth().catch(e => console.warn('BoomTchak: initAuth échouée', e));
