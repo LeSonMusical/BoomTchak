@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.47</span>
+      <span class="app-version">v3.4.48</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1122,9 +1122,10 @@ const ENCYCLO = {
     bullets:[["X — son fort","Volume plein (100%). Le pas est joué avec toute son intensité."],["x — son faible","Volume réduit (33%). Le squelette rythmique est maintenu, la dynamique allégée."],["· — silence","Pas joué. L'absence de son est constitutive du pattern au même titre que les frappes."]]
   },
   misc_tempo:{
-    chapo:"Le tempo règle la vitesse globale du groove, exprimé en BPM (battements par minute). Le slider et le bouton Tap permettent d'ajuster le tempo en temps réel. La valeur s'affiche aussi en notation musicale (♩ noire, ♩. noire pointée, 𝅗𝅥 blanche) selon la signature courante.",
+    chapo:"Le tempo règle la vitesse globale du groove. BoomTchak l'affiche simultanément en BPM (♩ battements par minute, valeur musicale courante) et en SPM (♪ steps par minute, vitesse interne de la croche). Le slider ajuste les SPM ; le BPM affiché en est déduit selon la signature. Le bouton Tap permet d'indiquer le tempo à l'oreille.",
     bullets:[
-      ["BPM","Battements par minute — 1 BPM correspond à 1 temps (noire en 4/4). Repères : 60 = lent, 120 = marche, 200 = très rapide."],
+      ["BPM — battements par minute","Repère musical : 1 BPM = 1 temps (noire en 4/4). Repères : 80 lent, 120 marche, 200 rapide. La valeur dépend de la signature : en 6/8 à mêmes SPM, les BPM sont plus bas qu'en 4/4 car chaque temps vaut 3 croches."],
+      ["SPM — steps par minute","Valeur interne du séquenceur. 1 SPM = 1 croche ♪ par minute. Indépendant de la signature : 240 SPM donne ♩120 en 4/4, mais ♩.80 en 6/8. Affiché avec ♪ dans la barre tempo, juste à côté du BPM."],
       ["Tap Tempo","Frapper plusieurs fois la zone Tap en suivant le pulse permet d'indiquer le tempo à l'oreille, sans chercher la valeur numérique."],
       ["×2 / /2 globaux","Doublent ou divisent le tempo de toutes les couches simultanément, en restant synchronisés."],
       ["Vitesse par couche","Chaque couche peut avoir sa propre vitesse relative indépendante via les boutons /2, ×2 et T du volet Mod — voir article Transformations."]
@@ -1161,12 +1162,13 @@ const ENCYCLO = {
     ]
   },
   misc_signature:{
-    chapo:"La signature (ou chiffrage) de mesure définit la structure temporelle du groove : combien de temps par mesure, et quelle valeur de note constitue un temps. Elle s'affiche en fraction dans la barre Metro et conditionne le placement des séparateurs visuels dans la grille de steps.",
+    chapo:"La signature (ou chiffrage) de mesure définit la structure temporelle du groove : combien de temps par mesure, et quelle valeur de note constitue un temps. Elle conditionne les séparateurs visuels de la grille, le métronome et — avec le réglage 'Chgt de métrique' — le comportement du tempo lors d'un changement de métrique.",
     bullets:[
       ["Chiffre du haut — nombre de temps","Combien de temps il y a par mesure : 4/4 = 4 temps, 3/4 = 3 temps (valse), 5/4 = 5 temps (asymétrique), 6/8 = 2 temps."],
       ["Chiffre du bas — valeur du temps","L'unité de temps. 4 = noire ♩ (2 steps), 8 = noire pointée ♩. (3 steps), 2 = blanche 𝅗𝅥 (4 steps). En 4/4, 1 temps = 2 cases à vitesse normale."],
       ["Séparateurs visuels","Une ligne marque le début de chaque temps dans la grille. Leur espacement change selon la signature et le modificateur de vitesse de la couche (×2, /2, T)."],
-      ["Signatures composées — 6/8, 9/8, 12/8","Le temps est une noire pointée (3 croches). Feel naturellement ternaire. En 6/8 : 2 temps de 3 croches, séparateur toutes les 3 cases. Combinées avec T : séparateur toutes les ~4-5 cases."]
+      ["Signatures composées — 6/8, 9/8, 12/8","Le temps est une noire pointée (3 croches). Feel naturellement ternaire. En 6/8 : 2 temps de 3 croches, séparateur toutes les 3 cases. Combinées avec T : séparateur toutes les ~4-5 cases."],
+      ["Chgt de métrique — BPM ou SPM constant","Réglage dans ⚙ Préférences. 'BPM constant (pulsation)' (défaut) : le BPM musical est préservé, les SPM sont recalculés — la pulsation ne change pas. 'SPM constant (croche)' : la croche garde sa vitesse, le BPM change. Exemple 4/4 → 6/8 à BPM constant : la pulsation musicale reste identique mais chaque temps vaut désormais 3 croches au lieu de 2."]
     ]
   },
   misc_mesure:{
@@ -1175,7 +1177,8 @@ const ENCYCLO = {
       ["En 4/4","4 temps par mesure, chaque temps = noire. La mesure la plus répandue dans la musique populaire mondiale. 1 mesure = 8 cases (steps) à vitesse normale."],
       ["En 3/4","3 temps par mesure. Signature de la valse et de nombreuses musiques traditionnelles. 1 mesure = 6 cases à vitesse normale."],
       ["En 6/8","6 croches regroupées en 2 temps de noire pointée. Feel ternaire — chaque temps 'cloche' en 3. 1 mesure = 6 cases à vitesse normale."],
-      ["Pattern et mesure","Un pattern de 8 cases couvre 1 mesure en 4/4 à vitesse normale. La durée réelle dépend du nombre de steps, de la signature et de la vitesse de la couche (/2, ×2, T)."]
+      ["Pattern et mesure","Un pattern de 8 cases couvre 1 mesure en 4/4 à vitesse normale. La durée réelle dépend du nombre de steps, de la signature et de la vitesse de la couche (/2, ×2, T)."],
+      ["Vue circulaire ↺ Mesure","En mode ↺ Mesure de la vue circulaire, un tour complet représente exactement 1 mesure. Le temps 1 (le '1') est à 12h. Des repères visuels entre les anneaux marquent chaque temps — le trait du temps 1 est plus marqué. Si un pattern est plus court que la mesure, ses steps se répètent pour remplir le cercle."]
     ]
   },
   misc_step:{
@@ -1186,6 +1189,17 @@ const ENCYCLO = {
       ["/2 — noire ♩","1 step = 1/4. Chaque step est 2× plus long. 1 step = 1 temps en 4/4."],
       ["T — croche ternaire","1 step = 2/3 de croche (vitesse ×3/2). En 4/4 : 3 steps T = 1 temps. Produit un feeling de triolet ou de swing. Combiner /2+T pour la noire de triolet."],
       ["Notations","X = son fort (100% vol), x = son faible (33% vol), · = silence. Cliquer une case fait cycler · → X → x → ·."]
+    ]
+  },
+  misc_visualisation:{
+    chapo:"BoomTchak propose deux façons de voir un groove : ⊞ la vue linéaire (grille gauche→droite) et ◎ la vue circulaire (rotation horaire depuis 12h). La vue circulaire révèle la nature cyclique du rythme et propose deux modes selon l'unité de référence du tour complet.",
+    bullets:[
+      ["⊞ Vue linéaire","Chaque couche est une rangée de cases. Le temps progresse de gauche à droite. Vue naturelle pour l'édition : on voit chaque step, son niveau (X/x/·) et les séparateurs de temps. Les sons faibles (x) s'affichent à 40 % d'intensité."],
+      ["◎ Vue circulaire","Toutes les couches s'affichent sur des anneaux concentriques. La lecture progresse dans le sens horaire depuis 12h. Révèle les symétries rythmiques et les décalages entre couches invisibles en linéaire. Les sons faibles s'affichent à 60 % pour compenser la densité visuelle du cercle."],
+      ["↺ Mode Mesure (défaut)","Un tour = 1 mesure. Si un pattern est plus court que la mesure, ses steps se répètent pour remplir le cercle entier — ces répétitions (occurrences fantômes) se distinguent par un anneau vide sur leur bord extérieur : même diamètre total, centre plein à 62 % seulement."],
+      ["↺ Mode Pattern","Un tour = 1 cycle complet du pattern, quelle que soit sa longueur par rapport à la mesure. Chaque couche est indépendante : deux couches de longueurs différentes font des tours à des vitesses différentes."],
+      ["Repères de temps — mode Mesure","Des traits fins marquent la position de chaque temps entre les anneaux. Le trait du temps 1 (le '1', à 12h) est plus prononcé. Permettent de situer les frappes par rapport à la grille métrique sans compter les steps."],
+      ["Anneau de lecture","Un halo lumineux tourne autour de l'anneau de chaque couche et indique la position de lecture en temps réel. En mode Mesure avec répétitions, il s'affiche uniquement sur l'occurrence actuellement jouée — pas sur les fantômes."]
     ]
   }
 };
@@ -1201,6 +1215,7 @@ const ENCYCLO_MISC=[
   {id:'misc_metro',          nom:'Métronome'},
   {id:'misc_sons',           nom:'Sons & instruments'},
   {id:'misc_notations',      nom:'Notations'},
+  {id:'misc_visualisation',  nom:'Visualisation'},
   {id:'misc_tempo',          nom:'Tempo'},
   {id:'misc_transformations',nom:'Transformations'},
   {id:'misc_familles',       nom:'Familles'},

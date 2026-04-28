@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.47** (session 2026-04-28)
+**v3.4.48** (session 2026-04-28)
 
 ## Historique récent
 | Version | Changements |
@@ -80,6 +80,7 @@ Merger vers : `main` après chaque session
 | v3.4.43–44 | Step soft (×) : 40 % en vue linéaire sans bordure colorée ; 60 % en vue circulaire |
 | v3.4.45–46 | `buildStepsDOM` rafraîchit le cercle automatiquement (couvre load pattern, mods, rotation, mute, signature) |
 | v3.4.47 | `applyGroove` : resync alignée sur le prochain temps 1 du métronome (fin de mesure courante) |
+| v3.4.48 | Encyclopédie : `misc_tempo` (SPM/BPM dual), `misc_signature` (verrou métrique), `misc_mesure` (↺ Mesure), nouvel article `misc_visualisation` (vues linéaire/circulaire, modes Pattern/Mesure, fantômes) |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
