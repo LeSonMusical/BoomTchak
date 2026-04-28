@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.4.47
+> Mis à jour au fil du développement — v3.4.49
 
 ---
 
@@ -385,7 +385,41 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 11. Règle de déploiement (ajoutée v3.2.1)
+## 11. Chantier futur — Metro comme pattern (noté v3.4.49)
+
+### Problème actuel
+Les signatures asymétriques (7/8, 11/8, 13/8…) ont des **regroupements internes variables** selon le style
+musical (Rachenitsa 7/8 = 3+2+2 ; Daichovo 9/8 = 2+2+2+3…). L'architecture actuelle ne peut encoder
+que des séparateurs réguliers (toutes les N croches), sans distinctions d'accent ni de regroupement.
+
+### Concept
+Remplacer les signatures hardcodées par des **presets de métronome** où les coups sont encodés
+comme un mini-pattern, à l'image des patterns de grooves.
+
+### Structure envisagée
+```javascript
+{
+  id: '7/8_rachenitsa',
+  nom: 'Rachenitsa (3+2+2)',
+  totalSteps: 7,           // nombre de croches par mesure
+  stepsPerBeat: 1,         // unité interne (croche = 1 step)
+  // Niveau de chaque step : 'A' accent fort (temps 1), 'P' accent de groupe, 'p' pulse léger, '·' silence
+  metroPattern: ['A','p','p','P','p','P','p']
+}
+```
+
+### Impact architectural
+- Refonte de `SIGNATURES` → `METRO_PRESETS`
+- Refonte du scheduler métronome (volume par level plutôt que position % beatsPerMeasure)
+- Refonte de `buildStepsDOM` : séparateurs aux positions 'A' et 'P' (regroupements)
+- Interface de création/édition de presets (futur)
+
+### Prérequis
+Valider le modèle avec Lamberio avant tout codage.
+
+---
+
+## 12. Règle de déploiement (ajoutée v3.2.1)
 
 **Le développeur (Claude) doit, après chaque push de branche feature :**
 1. Créer une PR draft si elle n'existe pas encore
@@ -397,7 +431,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 12. Gaps identifiés — Backlog priorisé
+## 13. Gaps identifiés — Backlog priorisé
 
 ### Priorité haute (prochaine session)
 | # | Description | Impact |
@@ -424,7 +458,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 13. Fonctions Supabase clés
+## 14. Fonctions Supabase clés
 
 | Fonction | Endpoint | Rôle |
 |----------|----------|------|
@@ -441,7 +475,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 14. Fichiers du projet
+## 15. Fichiers du projet
 
 | Fichier | Rôle |
 |---------|------|
@@ -456,7 +490,7 @@ Tags multi-axes AND-filtrables :
 
 ---
 
-## 15. Historique des versions
+## 16. Historique des versions
 
 | Version | Changements principaux |
 |---------|----------------------|
@@ -473,3 +507,5 @@ Tags multi-axes AND-filtrables :
 | v3.4.43–44 | Step soft (×) : 40 % vue linéaire sans bordure colorée ; 60 % vue circulaire |
 | v3.4.45–46 | buildStepsDOM rafraîchit le cercle automatiquement (load, mods, rotation, mute, signature) |
 | v3.4.47 | applyGroove : resync alignée sur le prochain temps 1 du métronome (getMetroBeatSec) |
+| v3.4.48 | Encyclopédie : misc_tempo (SPM/BPM), misc_signature (sigChangeLock), misc_mesure (↺ Mesure), nouvel article misc_visualisation |
+| v3.4.49 | Signatures 7/4, 7/8, 11/8, 13/8 ; encyclopédie misc_signature étendue ; chantier futur metro-comme-pattern documenté |

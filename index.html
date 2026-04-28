@@ -691,7 +691,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.48</span>
+      <span class="app-version">v3.4.49</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -757,9 +757,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <option value="3/4">3/4</option>
       <option value="4/4" selected>4/4</option>
       <option value="5/4">5/4</option>
+      <option value="7/4">7/4</option>
       <option value="6/8">6/8</option>
       <option value="9/8">9/8</option>
       <option value="12/8">12/8</option>
+      <option value="7/8">7/8</option>
+      <option value="11/8">11/8</option>
+      <option value="13/8">13/8</option>
       <option value="2/2">2/2</option>
       <option value="3/2">3/2</option>
       <option value="4/2">4/2</option>
@@ -1167,8 +1171,10 @@ const ENCYCLO = {
       ["Chiffre du haut — nombre de temps","Combien de temps il y a par mesure : 4/4 = 4 temps, 3/4 = 3 temps (valse), 5/4 = 5 temps (asymétrique), 6/8 = 2 temps."],
       ["Chiffre du bas — valeur du temps","L'unité de temps. 4 = noire ♩ (2 steps), 8 = noire pointée ♩. (3 steps), 2 = blanche 𝅗𝅥 (4 steps). En 4/4, 1 temps = 2 cases à vitesse normale."],
       ["Séparateurs visuels","Une ligne marque le début de chaque temps dans la grille. Leur espacement change selon la signature et le modificateur de vitesse de la couche (×2, /2, T)."],
-      ["Signatures composées — 6/8, 9/8, 12/8","Le temps est une noire pointée (3 croches). Feel naturellement ternaire. En 6/8 : 2 temps de 3 croches, séparateur toutes les 3 cases. Combinées avec T : séparateur toutes les ~4-5 cases."],
-      ["Chgt de métrique — BPM ou SPM constant","Réglage dans ⚙ Préférences. 'BPM constant (pulsation)' (défaut) : le BPM musical est préservé, les SPM sont recalculés — la pulsation ne change pas. 'SPM constant (croche)' : la croche garde sa vitesse, le BPM change. Exemple 4/4 → 6/8 à BPM constant : la pulsation musicale reste identique mais chaque temps vaut désormais 3 croches au lieu de 2."]
+      ["Signatures composées — 6/8, 9/8, 12/8","Le temps est une noire pointée ♩. (3 croches). Feel naturellement ternaire — chaque temps se subdivise en 3. En 6/8 : 2 temps de 3 croches ; en 9/8 : 3 temps de 3 croches (gigue, valse irlandaise)."],
+      ["Signatures asymétriques — 7/8, 11/8, 13/8","La croche ♪ est l'unité de temps : chaque case = 1 temps, le métronome pulse sur chaque croche. Ces signatures sont la base des rythmes aksak des musiques balkaniques et méditerranéennes — 7/8 se regroupe souvent en 2+2+3 ou 3+2+2 (Rachenitsa), 11/8 en 2+2+3+2+2, etc. Le regroupement dépend du style et n'est pas encore encodé dans les séparateurs visuels."],
+      ["7/4 — sept temps de noire","7 temps de noire ♩ par mesure. Plus lent et spacieux que 7/8. Présent en jazz (Brubeck) et en musique progressive. La grille affiche un séparateur toutes les 2 cases."],
+      ["Chgt de métrique — BPM ou SPM constant","Réglage dans ⚙ Préférences. 'BPM constant (pulsation)' (défaut) : le BPM musical est préservé, les SPM sont recalculés — la pulsation ne change pas. 'SPM constant (croche)' : la croche garde sa vitesse, le BPM change. Exemple 4/4 → 7/8 à SPM constant : les croches gardent la même vitesse mais on en compte 7 par mesure au lieu de 8."]
     ]
   },
   misc_mesure:{
@@ -1580,9 +1586,14 @@ const SIGNATURES=[
   {id:'3/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:3, beatSteps:2},
   {id:'4/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:4, beatSteps:2},
   {id:'5/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:5, beatSteps:2},
+  {id:'7/4', beatSym:'♩',  stepsPerBeat:2, beatsPerMeasure:7, beatSteps:2},
   {id:'6/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:2, beatSteps:3},
   {id:'9/8', beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:3, beatSteps:3},
   {id:'12/8',beatSym:'♩.', stepsPerBeat:3, beatsPerMeasure:4, beatSteps:3},
+  // Signatures asymétriques — unité = croche ♪ (stepsPerBeat=1, chaque step = 1 temps)
+  {id:'7/8',  beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:7,  beatSteps:1},
+  {id:'11/8', beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:11, beatSteps:1},
+  {id:'13/8', beatSym:'♪', stepsPerBeat:1, beatsPerMeasure:13, beatSteps:1},
   {id:'2/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:2, beatSteps:4},
   {id:'3/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:3, beatSteps:4},
   {id:'4/2', beatSym:'♩♩', stepsPerBeat:4, beatsPerMeasure:4, beatSteps:4},

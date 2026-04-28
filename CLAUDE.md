@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.48** (session 2026-04-28)
+**v3.4.49** (session 2026-04-28)
 
 ## Historique récent
 | Version | Changements |
@@ -81,6 +81,7 @@ Merger vers : `main` après chaque session
 | v3.4.45–46 | `buildStepsDOM` rafraîchit le cercle automatiquement (couvre load pattern, mods, rotation, mute, signature) |
 | v3.4.47 | `applyGroove` : resync alignée sur le prochain temps 1 du métronome (fin de mesure courante) |
 | v3.4.48 | Encyclopédie : `misc_tempo` (SPM/BPM dual), `misc_signature` (verrou métrique), `misc_mesure` (↺ Mesure), nouvel article `misc_visualisation` (vues linéaire/circulaire, modes Pattern/Mesure, fantômes) |
+| v3.4.49 | Nouvelles signatures : 7/4 (♩, 7 temps), 7/8 / 11/8 / 13/8 (♪ croche, aksak) ; encyclopédie `misc_signature` étendue |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
@@ -125,6 +126,31 @@ Couvre : chargement de pattern, tous les boutons mod, rotation, mute, changement
 2. **G8 Ordre persisté** — colonne `ordre int` en DB pour familles/patterns/grooves
 3. **GAP_FAM_RENAME_TX** — TX renomme une famille → soumettre avec l'item ou soumission indépendante ?
 4. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (voir section ci-dessus)
+
+## Futur chantier — Metro comme pattern (à valider avec Lamberio)
+
+**Concept :** Remplacer les signatures codées en dur par des presets de métronome éditables,
+où les coups du métronome sont encodés comme un pattern (comme les patterns de grooves).
+
+**Motivation :** Les signatures asymétriques (7/8, 11/8…) ont des regroupements variables
+(2+2+3, 3+2+2, 2+3+2…) non représentables avec l'architecture actuelle (séparateur fixe toutes
+les N croches). Un preset permettrait d'encoder exactement où tombent les accents, les temps et
+les subdivisions.
+
+**Structure envisagée d'un preset metro :**
+```
+{
+  id: '7/8_rachenitsa',
+  nom: 'Rachenitsa (3+2+2)',
+  totalSteps: 7,          // = beatsPerMeasure si croche = unité
+  stepsPerBeat: 1,        // unité interne
+  pattern: ['A','p','p','P','p','P','p']
+  // A = accent fort (temps 1), P = accent moyen (début de groupe), p = pulse léger
+}
+```
+
+**Impact :** Refonte de `SIGNATURES`, du scheduler métronome, et de `buildStepsDOM` (séparateurs).
+**Prérequis :** Valider le modèle de données avec Lamberio avant tout codage.
 
 ## Conventions
 - Commentaires en français, code en anglais
