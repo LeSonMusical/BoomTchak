@@ -92,36 +92,36 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ── Volet métro : toggle sous-volet ── */
 .metro-sig-toggle{font-size:10px;font-weight:600;background:transparent;border:none;cursor:pointer;color:#6B5FA5;padding:2px 0;white-space:nowrap;transition:color .12s;display:inline-flex;align-items:center;gap:3px}
 .metro-sig-toggle:hover,.metro-sig-toggle.open{color:#3d3080}
-/* ── L1 : grille 3 colonnes ── */
-.metro-sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;padding:.3rem 0 .2rem}
-.metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:4px}
-.metro-sig-col .mpv-word-btn{width:100%;text-align:center}
-.metro-sig-col .mpv-sel{width:100%}
-.metro-sig-col .mpv-beats-ctrl{justify-content:center}
-.mpv-word{font-size:10px;color:#aaa;flex-shrink:0}
-.mpv-word-btn{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;border:1px solid #c8c0e0;background:transparent;color:#c8c0e0;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4}
-.mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+/* ── L1 : ligne signature (flat row) ── */
+.metro-sig-row{display:flex;align-items:center;gap:6px;padding:.3rem 0 .2rem;flex-wrap:wrap}
+.mpv-label{font-size:10px;color:#888;white-space:nowrap;flex-shrink:0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
 .mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
 .mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:#efecf8;border:1px solid #b0a8d8;border-radius:4px;padding:2px 4px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
+.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0;max-width:72px}
 /* ── L2 : pattern ── */
 .metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
+.mpv-sig-label{font-size:11px;font-weight:700;color:#6B5FA5;white-space:nowrap;flex-shrink:0;min-width:28px;text-align:center;background:#efecf8;border:1px solid #b0a8d8;border-radius:5px;padding:2px 4px;line-height:1.4}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;flex:1;min-width:0}
-.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none}
+.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none;cursor:pointer;transition:transform .08s}
+.mpv-step:active{transform:scale(.88)}
+.mpv-step.mpv-cur{transform:scale(1.45);box-shadow:0 0 0 2px rgba(61,48,128,.35)}
 .mpv-A{background:#3d3080;color:#fff}
 .mpv-P{background:#6B5FA5;color:#fff}
-.mpv-p{background:#c4bde8;color:#fff}
+.mpv-p{background:#c4bde8;color:#6B5FA5}
 .mpv-dot{background:#e8e5f0;color:transparent}
-.mpv-save-btn{font-size:15px;padding:1px 5px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;line-height:1.3}
+.mpv-save-btn{font-size:15px;padding:1px 5px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;line-height:1.3;transition:all .15s}
+.mpv-save-btn.dirty{border-color:#c00;background:#fff0f0;color:#c00;font-size:12px;font-weight:700}
 /* ── Modal save preset ── */
 .mpv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
 .mpv-modal-box{background:#fff;border-radius:14px;padding:20px;width:min(300px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.22);display:flex;flex-direction:column;gap:12px}
 .mpv-modal-title{font-size:13px;font-weight:700;color:#4a3d8a}
 .mpv-modal-input{font-size:12px;padding:7px 10px;border:1.5px solid #ccc;border-radius:7px;width:100%;outline:none}
 .mpv-modal-input:focus{border-color:#6B5FA5}
-.mpv-modal-btns{display:flex;gap:8px}
+.mpv-modal-btns{display:flex;gap:8px;flex-wrap:wrap}
 .mpv-modal-ok{flex:1;padding:8px;border:1.5px solid #1D9E75;border-radius:7px;background:#f0fff8;color:#0F6E56;font-size:12px;font-weight:700;cursor:pointer}
+.mpv-modal-discard{padding:8px 10px;border:1.5px solid #c00;border-radius:7px;background:#fff0f0;color:#c00;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
 .mpv-modal-cancel{padding:8px 14px;border:1.5px solid #ccc;border-radius:7px;background:#fff;color:#888;font-size:12px;cursor:pointer}
 
 /* ─── BARRES DE SECTION ─── */
@@ -725,7 +725,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.58</span>
+      <span class="app-version">v3.4.59</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -813,36 +813,31 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <!-- Sous-volet : L1 grille + L2 pattern -->
     <div id="metro-sig-content" style="display:none">
       <div class="metro-pat-row">
+        <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
         <div class="metro-pat-viz" id="metro-pattern-viz"></div>
         <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
       </div>
-      <div class="metro-sig-grid">
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
-          <div class="mpv-beats-ctrl">
-            <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-            <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
-          </div>
+      <div class="metro-sig-row">
+        <div class="mpv-beats-ctrl">
+          <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+          <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
         </div>
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
-          <select class="mpv-sel" id="mpv-unit-sel">
-            <option value="4">♩ noire</option>
-            <option value="8">♪ croche</option>
-            <option value="6">♩. pointée</option>
-            <option value="2">𝅗𝅥 blanche</option>
-          </select>
-        </div>
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
-          <select class="mpv-sel" id="mpv-subdiv-sel">
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-        </div>
+        <span class="mpv-label">temps :</span>
+        <span class="mpv-label">unité</span>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
+          <option value="4">♩ noire</option>
+          <option value="8">♪ croche</option>
+          <option value="6">♩. pointée</option>
+          <option value="2">𝅗𝅥 blanche</option>
+        </select>
+        <span class="mpv-label">divisé en</span>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
       </div>
     </div>
   </div><!-- /metro-bloc -->
@@ -864,6 +859,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <input type="text" class="mpv-modal-input" id="modal-metro-name" placeholder="ex: Rachenitsa 7/8">
       <div class="mpv-modal-btns">
         <button class="mpv-modal-ok" id="modal-metro-confirm">Sauvegarder</button>
+        <button class="mpv-modal-discard" id="modal-metro-discard">Réinitialiser</button>
         <button class="mpv-modal-cancel" id="modal-metro-cancel">Annuler</button>
       </div>
     </div>
@@ -1742,20 +1738,39 @@ function buildSigFromControls() {
   renderMetroPatternViz();
 }
 
-// Affiche le pattern : ^ accent (fort), > temps, cercle vide = subdiv, gris = silence
+let metroPatternDirty = false;
+
+function updateMetroSaveBtn() {
+  const btn = document.getElementById('btn-metro-save');
+  if (!btn) return;
+  if (metroPatternDirty) {
+    btn.textContent = '!';
+    btn.classList.add('dirty');
+    btn.title = 'Pattern modifié — sauvegarder ou réinitialiser';
+  } else {
+    btn.textContent = '💾';
+    btn.classList.remove('dirty');
+    btn.title = 'Sauvegarder comme preset';
+  }
+}
+
+// ^ accent fort, > temps, « subdiv, gris silence
 function renderMetroPatternViz() {
   const wrap = document.getElementById('metro-pattern-viz');
   if (!wrap) return;
   const mp = currentSig?.metroPattern;
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
-  const SYM = { A: '^', P: '>', p: '', '.': '' };
+  const SYM = { A: '^', P: '>', p: '«', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
   const spb = currentSig?.stepsPerBeat || 2;
   wrap.innerHTML = mp.map((v, i) => {
     const sep = (i > 0 && i % spb === 0)
       ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
-    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}">${SYM[v] ?? ''}</span>`;
+    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
   }).join('');
+  const lbl = document.getElementById('mpv-sig-label');
+  if (lbl) lbl.textContent = currentSig?.label || '';
+  updateMetroSaveBtn();
 }
 
 let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
@@ -1852,6 +1867,13 @@ function visualLoop(){
     const div=document.getElementById('steps-'+layer.id);if(!div)return;
     div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
   });
+  // Highlight step métro courant
+  const mp=currentSig?.metroPattern;
+  if(mp?.length){
+    const curStep=(metroStepPos-1+mp.length)%mp.length;
+    document.getElementById('metro-pattern-viz')?.querySelectorAll('.mpv-step')
+      .forEach((el,i)=>el.classList.toggle('mpv-cur',i===curStep));
+  }
   visualRafID=requestAnimationFrame(visualLoop);
 }
 
@@ -7152,6 +7174,7 @@ function attachEvents(){
     const oldSig=currentSig;
     currentSig=metroPresets.find(p=>p.id===this.value)||metroPresets.find(p=>p.id==='4/4')||metroPresets[0];
     metroStepPos=0; metroBeatPos=0; // reset au changement de signature (nouveau pattern)
+    metroPatternDirty=false;
     if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
       const slider=document.getElementById('bpm');
       const currentSPM=parseInt(slider.value);
@@ -7194,18 +7217,16 @@ function attachEvents(){
   // ── L1 : Selects unité et subdivision ──
   document.getElementById('mpv-unit-sel').addEventListener('change', buildSigFromControls);
   document.getElementById('mpv-subdiv-sel').addEventListener('change', buildSigFromControls);
-  // ── L1 : Mots-boutons ON/OFF (mute accent, temps, subdiv) ──
-  document.getElementById('mpv-tog-A').addEventListener('click', function() {
-    metro.accentOn = !metro.accentOn;
-    this.classList.toggle('on', metro.accentOn);
-  });
-  document.getElementById('mpv-tog-P').addEventListener('click', function() {
-    metro.tempsOn = !metro.tempsOn;
-    this.classList.toggle('on', metro.tempsOn);
-  });
-  document.getElementById('mpv-tog-p').addEventListener('click', function() {
-    metro.subdivOn = !metro.subdivOn;
-    this.classList.toggle('on', metro.subdivOn);
+  // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
+  document.getElementById('metro-pattern-viz').addEventListener('click', e => {
+    const el = e.target.closest('.mpv-step[data-idx]');
+    if (!el || !currentSig?.metroPattern) return;
+    const idx = parseInt(el.dataset.idx);
+    const CYCLE = ['A', 'P', 'p', '.'];
+    const cur = currentSig.metroPattern[idx] || '.';
+    currentSig.metroPattern[idx] = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
+    metroPatternDirty = true;
+    renderMetroPatternViz();
   });
   // ── L2 : Sauver preset → modal ──
   document.getElementById('btn-metro-save').addEventListener('click', () => {
@@ -7218,6 +7239,17 @@ function attachEvents(){
   });
   document.getElementById('modal-metro-cancel').addEventListener('click', () => {
     document.getElementById('modal-metro-save').style.display = 'none';
+  });
+  document.getElementById('modal-metro-discard').addEventListener('click', () => {
+    const orig = metroPresets.find(p => p.id === currentSig?.id);
+    if (orig?.metroPattern) {
+      currentSig.metroPattern = [...orig.metroPattern];
+    } else if (currentSig) {
+      currentSig.metroPattern = generateMetroPattern(currentSig.beatsPerMeasure, currentSig.subdivision);
+    }
+    metroPatternDirty = false;
+    document.getElementById('modal-metro-save').style.display = 'none';
+    renderMetroPatternViz();
   });
   document.getElementById('modal-metro-save').addEventListener('click', e => {
     if (e.target === e.currentTarget)
@@ -7248,6 +7280,7 @@ function attachEvents(){
     currentSig = metroPresets.find(p => p.id === id) || currentSig;
     const sel = document.getElementById('sig-sel');
     if (sel) sel.value = id;
+    metroPatternDirty = false;
     document.getElementById('modal-metro-save').style.display = 'none';
     buildPublishSection();
     showToast(`Preset "${label}" créé`, 'info');
