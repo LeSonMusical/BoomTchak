@@ -90,8 +90,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
 /* ── Volet métro : toggle sous-volet ── */
-.metro-sig-toggle{font-size:10px;font-weight:500;background:transparent;border:none;cursor:pointer;color:#a89fd0;padding:2px 0;white-space:nowrap;transition:color .12s;display:inline-flex;align-items:center;gap:3px}
-.metro-sig-toggle:hover,.metro-sig-toggle.open{color:#4a3d8a}
+.metro-sig-toggle{font-size:10px;font-weight:600;background:transparent;border:none;cursor:pointer;color:#6B5FA5;padding:2px 0;white-space:nowrap;transition:color .12s;display:inline-flex;align-items:center;gap:3px}
+.metro-sig-toggle:hover,.metro-sig-toggle.open{color:#3d3080}
 /* ── L1 : grille 3 colonnes ── */
 .metro-sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;padding:.3rem 0 .2rem}
 .metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -106,7 +106,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:#efecf8;border:1px solid #b0a8d8;border-radius:4px;padding:2px 4px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
-.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.3rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.1rem 0}
+.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;flex:1;min-width:0}
 .mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none}
 .mpv-A{background:#3d3080;color:#fff}
@@ -725,7 +725,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.57</span>
+      <span class="app-version">v3.4.58</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -812,6 +812,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
     <!-- Sous-volet : L1 grille + L2 pattern -->
     <div id="metro-sig-content" style="display:none">
+      <div class="metro-pat-row">
+        <div class="metro-pat-viz" id="metro-pattern-viz"></div>
+        <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+      </div>
       <div class="metro-sig-grid">
         <div class="metro-sig-col">
           <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
@@ -839,10 +843,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
             <option value="4">4</option>
           </select>
         </div>
-      </div>
-      <div class="metro-pat-row">
-        <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-        <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
       </div>
     </div>
   </div><!-- /metro-bloc -->
@@ -7141,8 +7141,8 @@ function attachEvents(){
   document.getElementById('btn-metro-sig-volet').addEventListener('click',()=>{
     const c=document.getElementById('metro-sig-content');
     const btn=document.getElementById('btn-metro-sig-volet');
-    const open=c.style.display==='none'||!c.style.display;
-    c.style.display=open?'':'none';
+    const open=c.style.display==='none';
+    c.style.display=open?'block':'none';
     btn.textContent=open?'def ▼':'def ▶';
     btn.classList.toggle('open',open);
     if(open) renderMetroPatternViz();
