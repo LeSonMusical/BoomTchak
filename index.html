@@ -92,14 +92,21 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ── Volet métro : toggle sous-volet ── */
 .metro-sig-toggle{font-size:10px;font-weight:600;background:transparent;border:none;cursor:pointer;color:#6B5FA5;padding:2px 0;white-space:nowrap;transition:color .12s;display:inline-flex;align-items:center;gap:3px}
 .metro-sig-toggle:hover,.metro-sig-toggle.open{color:#3d3080}
-/* ── L1 : ligne signature (flat row) ── */
-.metro-sig-row{display:flex;align-items:center;gap:6px;padding:.3rem 0 .2rem;flex-wrap:wrap}
+/* ── L1 : grille 3 colonnes ── */
+.metro-sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;padding:.3rem 0 .2rem}
+.metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.metro-sig-col .mpv-word-btn{width:100%;text-align:center}
+.metro-sig-col .mpv-beats-ctrl{justify-content:center}
+.mpv-word-btn{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;border:1px solid #c8c0e0;background:transparent;color:#c8c0e0;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4;width:100%}
+.mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+.mpv-sig-unit-row{display:flex;align-items:center;gap:3px;width:100%}
+.mpv-sig-unit-row .mpv-sel-sm{flex:1;min-width:0}
 .mpv-label{font-size:10px;color:#888;white-space:nowrap;flex-shrink:0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
 .mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
 .mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:#efecf8;border:1px solid #b0a8d8;border-radius:4px;padding:2px 4px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
-.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0;max-width:72px}
+.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
 .metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
 .mpv-sig-label{font-size:11px;font-weight:700;color:#6B5FA5;white-space:nowrap;flex-shrink:0;min-width:28px;text-align:center;background:#efecf8;border:1px solid #b0a8d8;border-radius:5px;padding:2px 4px;line-height:1.4}
@@ -725,7 +732,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.59</span>
+      <span class="app-version">v3.4.60</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -817,27 +824,39 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <div class="metro-pat-viz" id="metro-pattern-viz"></div>
         <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
       </div>
-      <div class="metro-sig-row">
-        <div class="mpv-beats-ctrl">
-          <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-          <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+      <div class="metro-sig-grid">
+        <div class="metro-sig-col">
+          <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
+          <div class="mpv-beats-ctrl">
+            <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+            <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+          </div>
         </div>
-        <span class="mpv-label">temps :</span>
-        <span class="mpv-label">unité</span>
-        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
-          <option value="4">♩ noire</option>
-          <option value="8">♪ croche</option>
-          <option value="6">♩. pointée</option>
-          <option value="2">𝅗𝅥 blanche</option>
-        </select>
-        <span class="mpv-label">divisé en</span>
-        <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-          <option value="1">1</option>
-          <option value="2" selected>2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
+        <div class="metro-sig-col">
+          <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
+          <div class="mpv-sig-unit-row">
+            <span class="mpv-label">unité</span>
+            <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
+              <option value="4">♩ noire</option>
+              <option value="8">♪ croche</option>
+              <option value="6">♩. pointée</option>
+              <option value="2">𝅗𝅥 blanche</option>
+            </select>
+          </div>
+        </div>
+        <div class="metro-sig-col">
+          <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
+          <div class="mpv-sig-unit-row">
+            <span class="mpv-label">÷</span>
+            <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   </div><!-- /metro-bloc -->
@@ -1760,7 +1779,7 @@ function renderMetroPatternViz() {
   if (!wrap) return;
   const mp = currentSig?.metroPattern;
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
-  const SYM = { A: '^', P: '>', p: '«', '.': '' };
+  const SYM = { A: '^', P: '>', p: '', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
   const spb = currentSig?.stepsPerBeat || 2;
   wrap.innerHTML = mp.map((v, i) => {
@@ -1867,12 +1886,15 @@ function visualLoop(){
     const div=document.getElementById('steps-'+layer.id);if(!div)return;
     div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
   });
-  // Highlight step métro courant
-  const mp=currentSig?.metroPattern;
-  if(mp?.length){
-    const curStep=(metroStepPos-1+mp.length)%mp.length;
+  // Highlight step métro courant (même approche temporelle que les couches)
+  const mpv=currentSig?.metroPattern;
+  if(mpv?.length && state[0]){
+    const spmV=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+    const stepSecV=60/spmV;
+    const elapsedV=Math.max(0,now-state[0].startTime);
+    const curStepV=Math.floor(elapsedV/stepSecV)%mpv.length;
     document.getElementById('metro-pattern-viz')?.querySelectorAll('.mpv-step')
-      .forEach((el,i)=>el.classList.toggle('mpv-cur',i===curStep));
+      .forEach((el,i)=>el.classList.toggle('mpv-cur',i===curStepV));
   }
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -5307,10 +5329,13 @@ function buildPublishSection() {
         `<div style="font-size:9px;color:#888;margin-bottom:4px">${desc}</div>` +
         `<div style="display:flex;gap:5px">` +
           (isMX
-            ? `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>`
+            ? `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>` +
+              `<button class="btn-pub-metro-local-cancel" data-id="${p.id}" title="Annuler et supprimer localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`
             : isSubmitted
-              ? `<button class="btn-pub-metro-cancel" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
-              : `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>`) +
+              ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>` +
+                `<button class="btn-pub-metro-cancel" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+              : `<button class="btn-pub-metro-preset" data-id="${p.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
+                `<button class="btn-pub-metro-local-cancel" data-id="${p.id}" title="Supprimer ce preset localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`) +
         `</div></div>`;
     });
   }
@@ -5584,12 +5609,29 @@ function buildPublishSection() {
     });
   });
 
-  // Presets métronome — annuler soumission TX
+  // Presets métronome — annuler soumission TX (submitted)
   container.querySelectorAll('.btn-pub-metro-cancel').forEach(btn => {
     btn.addEventListener('click', async () => {
       btn.disabled = true;
       await sbCancelMetroPresetSubmission(btn.dataset.id);
       showToast('Soumission annulée', 'info');
+    });
+  });
+
+  // Presets métronome — supprimer localement (MX ou TX draft)
+  container.querySelectorAll('.btn-pub-metro-local-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = (packCours.metroPresets||[]).find(x => x.id === btn.dataset.id);
+      if (!confirm(`Supprimer le preset "${preset?.label || btn.dataset.id}" ?`)) return;
+      packCours.metroPresets = (packCours.metroPresets||[]).filter(x => x.id !== btn.dataset.id);
+      if (currentSig?.id === btn.dataset.id) {
+        currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
+      }
+      saveToStorage();
+      rebuildMetroPresets();
+      buildSigSelector();
+      buildPublishSection();
+      showToast('Preset supprimé', 'info');
     });
   });
 }
@@ -7217,6 +7259,19 @@ function attachEvents(){
   // ── L1 : Selects unité et subdivision ──
   document.getElementById('mpv-unit-sel').addEventListener('change', buildSigFromControls);
   document.getElementById('mpv-subdiv-sel').addEventListener('change', buildSigFromControls);
+  // ── L1 : Mots-boutons ON/OFF (mute accent, temps, subdiv) ──
+  document.getElementById('mpv-tog-A').addEventListener('click', function() {
+    metro.accentOn = !metro.accentOn;
+    this.classList.toggle('on', metro.accentOn);
+  });
+  document.getElementById('mpv-tog-P').addEventListener('click', function() {
+    metro.tempsOn = !metro.tempsOn;
+    this.classList.toggle('on', metro.tempsOn);
+  });
+  document.getElementById('mpv-tog-p').addEventListener('click', function() {
+    metro.subdivOn = !metro.subdivOn;
+    this.classList.toggle('on', metro.subdivOn);
+  });
   // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
   document.getElementById('metro-pattern-viz').addEventListener('click', e => {
     const el = e.target.closest('.mpv-step[data-idx]');
