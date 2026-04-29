@@ -89,27 +89,33 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
-/* ── Volet métro : contrôles signature (L1) ── */
-.mpv-beats-btn{width:14px;height:14px;border-radius:3px;border:1px solid #b0a8d8;background:transparent;color:#6B5FA5;cursor:pointer;font-size:7px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
-.mpv-beats-val{font-size:12px;font-weight:700;color:#4a3d8a;min-width:14px;text-align:center;flex-shrink:0}
-.mpv-unit-btn,.mpv-subdiv-btn{font-size:9px;padding:1px 3px;border-radius:3px;border:1px solid #b0a8d8;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;transition:background .1s,color .1s;line-height:1.3}
-.mpv-unit-btn.active,.mpv-subdiv-btn.active{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
-/* ── Volet métro : toggles ON/OFF + pattern (L2) ── */
-.mpv-tog{width:17px;height:17px;border-radius:3px;border:1px solid rgba(0,0,0,.08);cursor:pointer;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.3;transition:opacity .12s;padding:0;line-height:1}
-.mpv-tog.on{opacity:1}
-.mpv-tog-A{background:#c04040;color:#fff}
-.mpv-tog-P{background:#1D9E75;color:#fff}
-.mpv-tog-p{background:#6B5FA5;color:#fff}
-.mpv-edit-btn{font-size:11px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:3px;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;transition:background .1s}
-.mpv-edit-btn.active{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
-.mpv-save-btn{font-size:9px;padding:2px 7px;border:1px solid #1D9E75;border-radius:3px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;white-space:nowrap}
-/* ── Steps pattern viz ── */
-.metro-pat-viz{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0;flex:1;overflow-x:auto}
-.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid rgba(0,0,0,.06);line-height:1;user-select:none}
-.mpv-A{background:#c04040;color:#fff}
-.mpv-P{background:#1D9E75;color:#fff}
-.mpv-p{background:#6B5FA5;color:#fff;opacity:.85}
-.mpv-dot{background:#e0dce8;color:transparent}
+/* ── Volet métro L1 : phrase battue ── */
+.metro-sent{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:.45rem 0 .3rem}
+.mpv-word{font-size:11px;color:#aaa;flex-shrink:0}
+.mpv-word-btn{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1.5px solid #c8c0e0;background:transparent;color:#c8c0e0;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4}
+.mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
+.mpv-beats-ctrl{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+.mpv-beats-btn{width:18px;height:18px;border-radius:4px;border:1.5px solid #b0a8d8;background:transparent;color:#6B5FA5;cursor:pointer;font-size:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
+.mpv-beats-val{font-size:16px;font-weight:700;color:#4a3d8a;min-width:18px;text-align:center;flex-shrink:0}
+.mpv-sel{font-size:11px;padding:3px 5px;border:1.5px solid #b0a8d8;border-radius:6px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
+/* ── Volet métro L2 : pattern ── */
+.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.2rem 0}
+.metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;flex:1;min-width:0}
+.mpv-step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none}
+.mpv-A{background:#3d3080;color:#fff}
+.mpv-P{background:#6B5FA5;color:#fff}
+.mpv-p{background:#c4bde8;color:#fff}
+.mpv-dot{background:#e8e5f0;color:transparent}
+.mpv-save-btn{font-size:10px;padding:3px 10px;border:1.5px solid #1D9E75;border-radius:6px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;white-space:nowrap;font-weight:600}
+/* ── Modal save preset ── */
+.mpv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
+.mpv-modal-box{background:#fff;border-radius:14px;padding:20px;width:min(300px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.22);display:flex;flex-direction:column;gap:12px}
+.mpv-modal-title{font-size:13px;font-weight:700;color:#4a3d8a}
+.mpv-modal-input{font-size:12px;padding:7px 10px;border:1.5px solid #ccc;border-radius:7px;width:100%;outline:none}
+.mpv-modal-input:focus{border-color:#6B5FA5}
+.mpv-modal-btns{display:flex;gap:8px}
+.mpv-modal-ok{flex:1;padding:8px;border:1.5px solid #1D9E75;border-radius:7px;background:#f0fff8;color:#0F6E56;font-size:12px;font-weight:700;cursor:pointer}
+.mpv-modal-cancel{padding:8px 14px;border:1.5px solid #ccc;border-radius:7px;background:#fff;color:#888;font-size:12px;cursor:pointer}
 
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
@@ -712,7 +718,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.52</span>
+      <span class="app-version">v3.4.53</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -783,35 +789,36 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <!-- L1 : Signature paramétrique -->
-    <div class="metro-panel" style="gap:4px">
-      <span class="metro-row-lbl">Temps</span>
-      <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-      <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-      <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
-      <span class="metro-sep">·</span>
-      <button class="mpv-unit-btn active" data-unit="4">♩</button>
-      <button class="mpv-unit-btn" data-unit="8">♪</button>
-      <button class="mpv-unit-btn" data-unit="2">𝅗𝅥</button>
-      <span class="metro-sep">·</span>
-      <button class="mpv-subdiv-btn" data-sub="1">×1</button>
-      <button class="mpv-subdiv-btn active" data-sub="2">×2</button>
-      <button class="mpv-subdiv-btn" data-sub="3">×3</button>
-      <button class="mpv-subdiv-btn" data-sub="4">×4</button>
+    <!-- L1 : Battue en phrase lisible -->
+    <div class="metro-sent">
+      <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
+      <span class="mpv-word">de</span>
+      <div class="mpv-beats-ctrl">
+        <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+        <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+        <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+      </div>
+      <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
+      <select class="mpv-sel" id="mpv-unit-sel">
+        <option value="4">♩ noire</option>
+        <option value="8">♪ croche</option>
+        <option value="6">♩. pointée</option>
+        <option value="2">𝅗𝅥 blanche</option>
+      </select>
+      <span class="mpv-word">÷</span>
+      <select class="mpv-sel" id="mpv-subdiv-sel">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
     </div>
-    <!-- L2 : Pattern + ON/OFF toggles + Edit -->
-    <div class="metro-panel" style="gap:3px;flex-wrap:nowrap">
-      <button class="mpv-tog mpv-tog-A on" id="mpv-tog-A" title="Accent ON/OFF">›</button>
-      <button class="mpv-tog mpv-tog-P on" id="mpv-tog-P" title="Temps ON/OFF">×</button>
-      <button class="mpv-tog mpv-tog-p" id="mpv-tog-p" title="Subdiv ON/OFF">·</button>
+    <!-- L2 : Pattern -->
+    <div class="metro-pat-row">
+      <span class="mpv-word" style="flex-shrink:0">Pattern</span>
       <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-      <button class="mpv-edit-btn" id="btn-metro-edit" title="Éditer le pattern">✏</button>
-    </div>
-    <!-- L2b : Rangée sauvegarde (visible uniquement en mode édition) -->
-    <div id="metro-edit-row" style="display:none;gap:4px" class="metro-panel">
-      <input type="text" id="metro-edit-label" placeholder="Nom du preset" style="flex:1;font-size:10px;padding:2px 5px;border:1px solid #ccc;border-radius:3px;min-width:0">
-      <button class="mpv-save-btn" id="btn-metro-save-confirm">✓ Enreg.</button>
-      <button id="btn-metro-edit-cancel" style="font-size:9px;padding:2px 5px;border:1px solid #ccc;border-radius:3px;background:#fff;color:#999;cursor:pointer;flex-shrink:0">✕</button>
+      <button class="mpv-save-btn" id="btn-metro-save">Sauver</button>
     </div>
     <!-- L3 : Volume -->
     <div class="metro-panel" style="gap:6px;margin-top:2px">
@@ -838,6 +845,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
+  <!-- Modal : sauvegarde preset métronome -->
+  <div class="mpv-modal-overlay" id="modal-metro-save" style="display:none">
+    <div class="mpv-modal-box">
+      <div class="mpv-modal-title">Sauvegarder le preset métronome</div>
+      <input type="text" class="mpv-modal-input" id="modal-metro-name" placeholder="ex: Rachenitsa 7/8">
+      <div class="mpv-modal-btns">
+        <button class="mpv-modal-ok" id="modal-metro-confirm">Sauvegarder</button>
+        <button class="mpv-modal-cancel" id="modal-metro-cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
     <div id="circle-mode-toggle">
@@ -1672,22 +1690,19 @@ function syncMetroControls(sig) {
   if (!s) return;
   const bv = document.getElementById('mpv-beats-val');
   if (bv) bv.textContent = s.beatsPerMeasure;
-  document.querySelectorAll('.mpv-unit-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.unit) === s.beatUnit)
-  );
-  document.querySelectorAll('.mpv-subdiv-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.sub) === s.subdivision)
-  );
+  const us = document.getElementById('mpv-unit-sel');
+  if (us) us.value = String(s.beatUnit);
+  const ss = document.getElementById('mpv-subdiv-sel');
+  if (ss) ss.value = String(s.subdivision);
 }
 
 // Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
 function buildSigFromControls() {
   const beats = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
-  const unitBtn = document.querySelector('.mpv-unit-btn.active');
-  const unit = unitBtn ? parseInt(unitBtn.dataset.unit) : 4;
-  const subBtn = document.querySelector('.mpv-subdiv-btn.active');
-  const sub = subBtn ? parseInt(subBtn.dataset.sub) : 2;
-  // Cherche un preset existant avec ces paramètres exactement
+  const us = document.getElementById('mpv-unit-sel');
+  const unit = us ? parseInt(us.value) : 4;
+  const ss = document.getElementById('mpv-subdiv-sel');
+  const sub = ss ? parseInt(ss.value) : 2;
   const match = metroPresets.find(p =>
     p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
   );
@@ -1696,17 +1711,14 @@ function buildSigFromControls() {
     const sel = document.getElementById('sig-sel');
     if (sel) sel.value = match.id;
   } else {
-    const pat = (_metroEditMode && _editPattern) ? [..._editPattern]
-      : generateMetroPattern(beats, sub);
     currentSig = {
       id: '_custom', label: `${beats}/${unit}×${sub}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
       stepsPerBeat: sub, beatSteps: sub,
       beatSym: beatSymFromUnit(unit, sub),
-      metroPattern: pat,
+      metroPattern: generateMetroPattern(beats, sub),
     };
   }
-  if (_metroEditMode) _editPattern = [...currentSig.metroPattern];
   metroStepPos = 0; metroBeatPos = 0;
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
@@ -1718,35 +1730,20 @@ function buildSigFromControls() {
   renderMetroPatternViz();
 }
 
-let _metroEditMode = false;
-let _editPattern = null;
-
-// Affiche le pattern courant (ou _editPattern en mode édition)
+// Affiche le pattern : ^ accent (fort), > temps, cercle vide = subdiv, gris = silence
 function renderMetroPatternViz() {
   const wrap = document.getElementById('metro-pattern-viz');
   if (!wrap) return;
-  const mp = _metroEditMode ? (_editPattern || currentSig?.metroPattern)
-                             : currentSig?.metroPattern;
+  const mp = currentSig?.metroPattern;
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
-  const SYM = { A: '›', P: '×', p: '·', '.': '' };
+  const SYM = { A: '^', P: '>', p: '', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
   const spb = currentSig?.stepsPerBeat || 2;
   wrap.innerHTML = mp.map((v, i) => {
     const sep = (i > 0 && i % spb === 0)
-      ? `<span style="width:1px;height:10px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
-    const cur = _metroEditMode ? ` style="cursor:pointer"` : '';
-    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}"${cur}>${SYM[v] ?? ''}</span>`;
+      ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
+    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}">${SYM[v] ?? ''}</span>`;
   }).join('');
-  if (_metroEditMode) {
-    const LEVELS = ['A', 'P', 'p', '.'];
-    wrap.querySelectorAll('.mpv-step').forEach(s => {
-      s.addEventListener('click', () => {
-        const idx = parseInt(s.dataset.idx);
-        _editPattern[idx] = LEVELS[(LEVELS.indexOf(_editPattern[idx]) + 1) % LEVELS.length];
-        renderMetroPatternViz();
-      });
-    });
-  }
 }
 
 let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
@@ -7162,7 +7159,7 @@ function attachEvents(){
       }
     }
   });
-  // ── Contrôles L1 : signature paramétrique ──
+  // ── L1 : Beats up/down ──
   document.getElementById('mpv-beats-up').addEventListener('click', () => {
     const bv = document.getElementById('mpv-beats-val');
     bv.textContent = Math.min(20, (parseInt(bv.textContent) || 4) + 1);
@@ -7173,21 +7170,10 @@ function attachEvents(){
     bv.textContent = Math.max(1, (parseInt(bv.textContent) || 4) - 1);
     buildSigFromControls();
   });
-  document.querySelectorAll('.mpv-unit-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.mpv-unit-btn').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      buildSigFromControls();
-    });
-  });
-  document.querySelectorAll('.mpv-subdiv-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.mpv-subdiv-btn').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      buildSigFromControls();
-    });
-  });
-  // ── ON/OFF toggles (L2) ──
+  // ── L1 : Selects unité et subdivision ──
+  document.getElementById('mpv-unit-sel').addEventListener('change', buildSigFromControls);
+  document.getElementById('mpv-subdiv-sel').addEventListener('change', buildSigFromControls);
+  // ── L1 : Mots-boutons ON/OFF (mute accent, temps, subdiv) ──
   document.getElementById('mpv-tog-A').addEventListener('click', function() {
     metro.accentOn = !metro.accentOn;
     this.classList.toggle('on', metro.accentOn);
@@ -7200,35 +7186,30 @@ function attachEvents(){
     metro.subdivOn = !metro.subdivOn;
     this.classList.toggle('on', metro.subdivOn);
   });
-  // ── Édition pattern (L2 ✏) ──
-  document.getElementById('btn-metro-edit').addEventListener('click', () => {
-    _metroEditMode = !_metroEditMode;
-    document.getElementById('btn-metro-edit').classList.toggle('active', _metroEditMode);
-    const row = document.getElementById('metro-edit-row');
-    if (_metroEditMode) {
-      _editPattern = [...(currentSig?.metroPattern || [])];
-      row.style.display = '';
-    } else {
-      _editPattern = null;
-      row.style.display = 'none';
-    }
-    renderMetroPatternViz();
+  // ── L2 : Sauver preset → modal ──
+  document.getElementById('btn-metro-save').addEventListener('click', () => {
+    if (!authProfile) { showToast('Connexion requise pour créer des presets', 'warn'); return; }
+    const s = currentSig;
+    document.getElementById('modal-metro-name').value =
+      s ? `${s.beatsPerMeasure}/${s.beatUnit} ×${s.subdivision}` : '';
+    document.getElementById('modal-metro-save').style.display = 'flex';
+    setTimeout(() => document.getElementById('modal-metro-name').focus(), 50);
   });
-  document.getElementById('btn-metro-edit-cancel').addEventListener('click', () => {
-    _metroEditMode = false; _editPattern = null;
-    document.getElementById('btn-metro-edit').classList.remove('active');
-    document.getElementById('metro-edit-row').style.display = 'none';
-    renderMetroPatternViz();
+  document.getElementById('modal-metro-cancel').addEventListener('click', () => {
+    document.getElementById('modal-metro-save').style.display = 'none';
   });
-  document.getElementById('btn-metro-save-confirm').addEventListener('click', async () => {
-    const pat = _editPattern || currentSig?.metroPattern || [];
+  document.getElementById('modal-metro-save').addEventListener('click', e => {
+    if (e.target === e.currentTarget)
+      document.getElementById('modal-metro-save').style.display = 'none';
+  });
+  document.getElementById('modal-metro-confirm').addEventListener('click', async () => {
+    const pat = currentSig?.metroPattern || [];
     if (!pat.length) { showToast('Pattern vide', 'warn'); return; }
     const beats = currentSig?.beatsPerMeasure || 4;
     const unit  = currentSig?.beatUnit || 4;
     const sub   = currentSig?.subdivision || 2;
-    const label = document.getElementById('metro-edit-label').value.trim()
+    const label = document.getElementById('modal-metro-name').value.trim()
                   || `${beats}/${unit} ×${sub}`;
-    if (!authProfile) { showToast('Connexion requise pour créer des presets', 'warn'); return; }
     const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
     const preset = {
       id, label,
@@ -7246,11 +7227,7 @@ function attachEvents(){
     currentSig = metroPresets.find(p => p.id === id) || currentSig;
     const sel = document.getElementById('sig-sel');
     if (sel) sel.value = id;
-    _metroEditMode = false; _editPattern = null;
-    document.getElementById('btn-metro-edit').classList.remove('active');
-    document.getElementById('metro-edit-row').style.display = 'none';
-    document.getElementById('metro-edit-label').value = '';
-    renderMetroPatternViz();
+    document.getElementById('modal-metro-save').style.display = 'none';
     buildPublishSection();
     showToast(`Preset "${label}" créé`, 'info');
   });
