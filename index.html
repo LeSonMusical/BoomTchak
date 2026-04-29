@@ -113,7 +113,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;flex:1;min-width:0}
 .mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none;cursor:pointer;transition:transform .08s}
 .mpv-step:active{transform:scale(.88)}
-.mpv-step.mpv-cur{transform:scale(1.45);box-shadow:0 0 0 2px rgba(61,48,128,.35)}
+@keyframes mpvBeat{0%{transform:scale(1.7)}70%{transform:scale(1.2)}100%{transform:scale(1.15)}}
+.mpv-step.mpv-cur{animation:mpvBeat .22s ease-out forwards;transition:none}
 .mpv-A{background:#3d3080;color:#fff}
 .mpv-P{background:#6B5FA5;color:#fff}
 .mpv-p{background:#c4bde8;color:#6B5FA5}
@@ -732,7 +733,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.61</span>
+      <span class="app-version">v3.4.62</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -827,10 +828,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <div class="metro-sig-grid">
         <div class="metro-sig-col">
           <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
-          <div class="mpv-beats-ctrl">
-            <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-            <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+          <div class="mpv-sig-unit-row">
+            <div class="mpv-beats-ctrl">
+              <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+              <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+              <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+            </div>
+            <span class="mpv-label">temps :</span>
           </div>
         </div>
         <div class="metro-sig-col">
@@ -848,7 +852,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <div class="metro-sig-col">
           <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
           <div class="mpv-sig-unit-row">
-            <span class="mpv-label">÷</span>
+            <span class="mpv-label">divisé en</span>
             <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
               <option value="1">1</option>
               <option value="2" selected>2</option>
@@ -1768,6 +1772,26 @@ function buildSigFromControls() {
 }
 
 let metroPatternDirty = false;
+let _lastMetroVizStep = -1;
+
+function highlightMetroStep() {
+  const mpv = currentSig?.metroPattern;
+  if (!mpv?.length) return;
+  const curStep = (metroStepPos - 1 + mpv.length) % mpv.length;
+  if (curStep === _lastMetroVizStep) return;
+  _lastMetroVizStep = curStep;
+  const steps = document.getElementById('metro-pattern-viz')?.querySelectorAll('.mpv-step');
+  if (!steps?.length) return;
+  steps.forEach((el, i) => {
+    if (i === curStep) {
+      el.classList.remove('mpv-cur');
+      void el.offsetWidth; // force reflow → relance l'animation CSS
+      el.classList.add('mpv-cur');
+    } else {
+      el.classList.remove('mpv-cur');
+    }
+  });
+}
 
 function updateMetroSaveBtn() {
   const btn = document.getElementById('btn-metro-save');
@@ -1896,13 +1920,7 @@ function visualLoop(){
     const div=document.getElementById('steps-'+layer.id);if(!div)return;
     div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
   });
-  // Highlight step métro courant
-  const mpv=currentSig?.metroPattern;
-  if(mpv?.length){
-    const curStepV=(metroStepPos-1+mpv.length)%mpv.length;
-    document.getElementById('metro-pattern-viz')?.querySelectorAll('.mpv-step')
-      .forEach((el,i)=>el.classList.toggle('mpv-cur',i===curStepV));
-  }
+  highlightMetroStep();
   visualRafID=requestAnimationFrame(visualLoop);
 }
 
@@ -1945,6 +1963,7 @@ function startPlay(){
     state[li].startTime=now;
   });
   metroBeatPos=0; metroStepPos=0; metroNextBeatTime=now;
+  _lastMetroVizStep=-1;
   scheduler();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -4034,6 +4053,7 @@ function setView(circle){
 function visualLoopCircle(){
   if(!playing) return;
   drawCircles();
+  highlightMetroStep();
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
