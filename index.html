@@ -126,11 +126,10 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ── Bouton ≡ gestion presets ── */
 .btn-metro-mgr{font-size:14px;padding:0 5px;height:22px;border:none;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;line-height:1;font-weight:700}
 .btn-metro-mgr:hover{color:#4a3d8a}
-/* ── Modal gestion presets (style lib-panel) ── */
-.mpv-mgr-box{background:#fff;border-radius:16px;width:min(340px,96vw);box-shadow:0 -4px 24px rgba(0,0,0,.15);display:flex;flex-direction:column;max-height:80vh;overflow:hidden}
-.mpv-mgr-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid rgba(107,95,165,.2);background:rgba(107,95,165,.09);flex-shrink:0}
-.mpv-mgr-head-title{font-size:13px;font-weight:700;color:#4a3d8a;flex:1}
-.mpv-mgr-list{overflow-y:auto;flex:1;padding:6px 0}
+/* ── Panel gestion presets métronome ── */
+#lib-panel-metro .lib-panel-head,
+#lib-panel-metro .lib-batch-bar{background:rgba(107,95,165,.09)}
+#lib-panel-metro .lib-head-secname{color:#4a3d8a}
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
 .mpv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
@@ -744,7 +743,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.64</span>
+      <span class="app-version">v3.4.65</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -898,14 +897,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
-  <!-- Modal : gestion presets métronome -->
-  <div class="mpv-modal-overlay" id="modal-metro-mgr" style="display:none">
-    <div class="mpv-mgr-box">
-      <div class="mpv-mgr-head">
-        <span class="mpv-mgr-head-title">Presets métronome</span>
-        <button id="btn-metro-mgr-close" style="background:none;border:none;font-size:16px;cursor:pointer;color:#888;padding:2px 6px;line-height:1">✕</button>
-      </div>
-      <div class="mpv-mgr-list lib-list" id="metro-mgr-list"></div>
+  <!-- Panel gestion presets métronome -->
+  <div class="lib-overlay hidden" id="lib-overlay-metro"></div>
+  <div class="lib-panel hidden" id="lib-panel-metro">
+    <div class="lib-panel-head">
+      <div class="lib-head-label">Gérer les <span class="lib-head-secname">Presets métronome</span></div>
+      <button class="lib-panel-close" id="btn-metro-mgr-close">✕</button>
+    </div>
+    <div class="lib-list" id="metro-mgr-list"></div>
+    <div class="lib-batch-bar">
+      <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-metro"> Tout sélectionner</label>
+      <button class="lib-batch-del" id="lib-batch-del-metro" disabled>🗑 Supprimer</button>
     </div>
   </div>
   <!-- Modal : sauvegarde preset métronome -->
@@ -3811,10 +3813,20 @@ function libStartRenamePreset(nameEl,id){
   nameEl.addEventListener('blur',finish,{once:true});
   nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape')nameEl.blur();},{once:true});
 }
+function _updateMetroBatchBar(){
+  const checks=[...document.querySelectorAll('#metro-mgr-list .lib-item-check:not(:disabled)')];
+  const checked=checks.filter(c=>c.checked);
+  const btn=document.getElementById('lib-batch-del-metro');
+  if(btn) btn.disabled=checked.length===0;
+  const selAll=document.getElementById('lib-select-all-metro');
+  if(selAll) selAll.checked=checks.length>0&&checked.length===checks.length;
+}
 function buildMetroMgrModal(){
   const list=document.getElementById('metro-mgr-list');
   if(!list)return;
   list.innerHTML='';
+  document.getElementById('lib-select-all-metro').checked=false;
+  document.getElementById('lib-batch-del-metro').disabled=true;
   let _mgrDragId=null;
   metroPresets.forEach(p=>{
     const custom=packCours.metroPresets||[];
@@ -3823,13 +3835,18 @@ function buildMetroMgrModal(){
     const item=document.createElement('div');
     item.className='lib-item'+(isCurrent?' mpv-mgr-active':'');
     item.dataset.pid=p.id;
+    // Checkbox (désactivée pour presets de base)
+    const chk=document.createElement('input');chk.type='checkbox';chk.className='lib-item-check';
+    if(!isCustom) chk.disabled=true;
+    chk.addEventListener('change',_updateMetroBatchBar);
+    item.appendChild(chk);
     // Drag handle (custom only)
     const handle=document.createElement('span');
     handle.className='lib-drag-handle';handle.textContent='⠿';handle.title='Glisser';
     handle.style.visibility=isCustom?'visible':'hidden';
     item.appendChild(handle);
-    if(isCustom){item.setAttribute('draggable','true');}
-    // Name
+    if(isCustom) item.setAttribute('draggable','true');
+    // Colonne principale
     const main=document.createElement('div');main.className='lib-item-main';
     const row1=document.createElement('div');row1.className='lib-item-row1';
     const nameEl=document.createElement('span');nameEl.className='lib-item-name';
@@ -3850,7 +3867,6 @@ function buildMetroMgrModal(){
         saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
       });
       row1.appendChild(delBtn);
-      // Drag events
       item.addEventListener('dragstart',e=>{
         _mgrDragId=p.id;e.dataTransfer.setData('text',p.id);e.dataTransfer.effectAllowed='move';
         setTimeout(()=>item.classList.add('lib-item-dragging'),0);
@@ -3864,7 +3880,7 @@ function buildMetroMgrModal(){
       if(!_mgrDragId||!isCustom)return;
       e.preventDefault();e.dataTransfer.dropEffect='move';
       list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      if(p.id!==_mgrDragId)item.classList.add('lib-item-drag-over');
+      if(p.id!==_mgrDragId) item.classList.add('lib-item-drag-over');
     });
     item.addEventListener('drop',e=>{
       e.preventDefault();item.classList.remove('lib-item-drag-over');
@@ -7383,15 +7399,24 @@ function attachEvents(){
     updateSpmDisplay();
   });
   // ── Menu ≡ gestion presets ──
-  document.getElementById('btn-metro-presets-mgr').addEventListener('click',()=>{
-    buildMetroMgrModal();
-    document.getElementById('modal-metro-mgr').style.display='flex';
+  function _openMetroMgr(){buildMetroMgrModal();document.getElementById('lib-overlay-metro').classList.remove('hidden');document.getElementById('lib-panel-metro').classList.remove('hidden');}
+  function _closeMetroMgr(){document.getElementById('lib-overlay-metro').classList.add('hidden');document.getElementById('lib-panel-metro').classList.add('hidden');}
+  document.getElementById('btn-metro-presets-mgr').addEventListener('click',_openMetroMgr);
+  document.getElementById('btn-metro-mgr-close').addEventListener('click',_closeMetroMgr);
+  document.getElementById('lib-overlay-metro').addEventListener('click',_closeMetroMgr);
+  document.getElementById('lib-select-all-metro').addEventListener('change',e=>{
+    document.querySelectorAll('#metro-mgr-list .lib-item-check:not(:disabled)').forEach(c=>{c.checked=e.target.checked;});
+    _updateMetroBatchBar();
   });
-  document.getElementById('btn-metro-mgr-close').addEventListener('click',()=>{
-    document.getElementById('modal-metro-mgr').style.display='none';
-  });
-  document.getElementById('modal-metro-mgr').addEventListener('click',e=>{
-    if(e.target===e.currentTarget) document.getElementById('modal-metro-mgr').style.display='none';
+  document.getElementById('lib-batch-del-metro').addEventListener('click',()=>{
+    const toDelete=[...document.querySelectorAll('#metro-mgr-list .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.pid);
+    if(!toDelete.length)return;
+    if(!confirm(`Supprimer ${toDelete.length} preset(s) ?`))return;
+    toDelete.forEach(id=>{
+      packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==id);
+      if(currentSig?.id===id) currentSig=metroPresets.find(x=>x.id==='4/4')||metroPresets[0];
+    });
+    saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
   });
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
