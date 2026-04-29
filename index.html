@@ -89,8 +89,12 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
-/* ── Volet métro L1 : phrase battue ── */
-.metro-sent{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:.45rem 0 .3rem}
+/* ── Volet métro L1 : grille 3 colonnes ── */
+.metro-sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px 8px;padding:.4rem 0 .25rem}
+.metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:5px}
+.metro-sig-col .mpv-word-btn{width:100%;text-align:center;padding:4px 6px}
+.metro-sig-col .mpv-sel{width:100%;text-align:center}
+.metro-sig-col .mpv-beats-ctrl{justify-content:center}
 .mpv-word{font-size:11px;color:#aaa;flex-shrink:0}
 .mpv-word-btn{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1.5px solid #c8c0e0;background:transparent;color:#c8c0e0;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4}
 .mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
@@ -99,7 +103,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-beats-val{font-size:16px;font-weight:700;color:#4a3d8a;min-width:18px;text-align:center;flex-shrink:0}
 .mpv-sel{font-size:11px;padding:3px 5px;border:1.5px solid #b0a8d8;border-radius:6px;background:#efecf8;color:#4a3d8a;cursor:pointer;flex-shrink:0}
 /* ── Volet métro L2 : pattern ── */
-.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.2rem 0}
+.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.35rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.15rem 0}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;flex:1;min-width:0}
 .mpv-step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none}
 .mpv-A{background:#3d3080;color:#fff}
@@ -718,7 +722,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.53</span>
+      <span class="app-version">v3.4.54</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -789,30 +793,34 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <!-- L1 : Battue en phrase lisible -->
-    <div class="metro-sent">
-      <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
-      <span class="mpv-word">de</span>
-      <div class="mpv-beats-ctrl">
-        <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-        <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-        <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+    <!-- L1 : Signature en 3 colonnes -->
+    <div class="metro-sig-grid">
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
+        <div class="mpv-beats-ctrl">
+          <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+          <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+        </div>
       </div>
-      <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
-      <select class="mpv-sel" id="mpv-unit-sel">
-        <option value="4">♩ noire</option>
-        <option value="8">♪ croche</option>
-        <option value="6">♩. pointée</option>
-        <option value="2">𝅗𝅥 blanche</option>
-      </select>
-      <span class="mpv-word">÷</span>
-      <select class="mpv-sel" id="mpv-subdiv-sel">
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-      </select>
-      <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
+        <select class="mpv-sel" id="mpv-unit-sel">
+          <option value="4">♩ noire</option>
+          <option value="8">♪ croche</option>
+          <option value="6">♩. pointée</option>
+          <option value="2">𝅗𝅥 blanche</option>
+        </select>
+      </div>
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
+        <select class="mpv-sel" id="mpv-subdiv-sel">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
     </div>
     <!-- L2 : Pattern -->
     <div class="metro-pat-row">
