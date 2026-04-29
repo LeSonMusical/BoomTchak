@@ -732,7 +732,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.60</span>
+      <span class="app-version">v3.4.61</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1747,6 +1747,16 @@ function buildSigFromControls() {
     };
   }
   metroStepPos = 0; metroBeatPos = 0;
+  // Marquer le groove courant comme modifié si la signature change
+  if (!_suppressGrooveDirty) {
+    const groove = getGroove(currentGrooveId);
+    if (groove && currentSig.id !== (groove.signature || '4/4')) {
+      groove.signature = currentSig.id;
+      grooveDirty = true; updateGrooveSaveBtn();
+      markItemDirty(groove, 'signature');
+      buildPublishSection();
+    }
+  }
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
   const ni = document.getElementById('tap-n-input');
@@ -1886,13 +1896,10 @@ function visualLoop(){
     const div=document.getElementById('steps-'+layer.id);if(!div)return;
     div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
   });
-  // Highlight step métro courant (même approche temporelle que les couches)
+  // Highlight step métro courant
   const mpv=currentSig?.metroPattern;
-  if(mpv?.length && state[0]){
-    const spmV=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
-    const stepSecV=60/spmV;
-    const elapsedV=Math.max(0,now-state[0].startTime);
-    const curStepV=Math.floor(elapsedV/stepSecV)%mpv.length;
+  if(mpv?.length){
+    const curStepV=(metroStepPos-1+mpv.length)%mpv.length;
     document.getElementById('metro-pattern-viz')?.querySelectorAll('.mpv-step')
       .forEach((el,i)=>el.classList.toggle('mpv-cur',i===curStepV));
   }
