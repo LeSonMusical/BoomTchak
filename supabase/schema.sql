@@ -235,6 +235,7 @@ create table public.metro_presets (
   step_unit          int  not null default 8,
   metro_pattern      text[]        not null,
   scope              text not null default 'school' check (scope in ('school','teacher')),
+  source             text not null default 'school' check (source in ('base','school','teacher')),
   approved           bool not null default true,
   owner_id           uuid references auth.users(id) on delete set null,
   created_at         timestamptz default now(),
@@ -277,6 +278,15 @@ alter table public.grooves
 -- Exécuter séparément si vous avez déjà une base v3.x :
 -- ═══════════════════════════════════════════════════════════════════════════
 -- (copier/coller le bloc CREATE TABLE metro_presets ci-dessus)
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.4.66 — Ajouter colonne source à metro_presets
+-- ═══════════════════════════════════════════════════════════════════════════
+/*
+alter table public.metro_presets
+  add column if not exists source text not null default 'school'
+    check (source in ('base','school','teacher'));
+*/
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma

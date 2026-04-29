@@ -743,7 +743,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.65</span>
+      <span class="app-version">v3.4.66</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1723,19 +1723,37 @@ const METRO_PRESETS_DEFAULT = [
 let metroPresets = METRO_PRESETS_DEFAULT.slice();
 
 function rebuildMetroPresets() {
-  const builtinIds = new Set(METRO_PRESETS_DEFAULT.map(p => p.id));
-  const custom = (packCours.metroPresets || [])
-    .filter(p => !builtinIds.has(p.id))
-    .map(p => ({
-      ...p,
-      stepsPerBeat: p.subdivision,
-      beatSteps:    p.subdivision,
-      beatSym:  p.beatSym || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
-      metroPattern: Array.isArray(p.metroPattern) ? p.metroPattern
-                    : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
-    }));
+  const normalize = p => ({
+    ...p,
+    stepsPerBeat: p.stepsPerBeat || p.subdivision,
+    beatSteps:    p.beatSteps    || p.subdivision,
+    beatSym:      p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
+    metroPattern: Array.isArray(p.metroPattern) ? p.metroPattern
+                  : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
+  });
+  // Presets DB (source: 'base'|'school') — ne pas inclure les drafts teacher dans la liste principale
+  const dbPresets = (packCours.metroPresets || [])
+    .filter(p => p.source !== 'teacher')
+    .map(normalize);
+  const dbIds = new Set(dbPresets.map(p => p.id));
+  // Fallback JS pour les presets de base pas encore seeded en DB
+  const fallback = METRO_PRESETS_DEFAULT.filter(p => !dbIds.has(p.id))
+    .map(p => normalize({...p, source: 'base'}));
   metroPresets.length = 0;
-  [...METRO_PRESETS_DEFAULT, ...custom].forEach(p => metroPresets.push(p));
+  [...dbPresets, ...fallback].forEach(p => metroPresets.push(p));
+}
+
+function getSigFallback(presetId) {
+  if (presetId) {
+    const found = metroPresets.find(p => p.id === presetId);
+    if (found) return found;
+    // Preset supprimé de DB mais encore dans les défauts JS
+    const def = METRO_PRESETS_DEFAULT.find(p => p.id === presetId);
+    if (def) return {...def, source: 'base',
+      stepsPerBeat: def.subdivision, beatSteps: def.subdivision,
+      beatSym: def.beatSym || beatSymFromUnit(def.beatUnit||4, def.subdivision||2)};
+  }
+  return metroPresets.find(p => p.id === '4/4') || METRO_PRESETS_DEFAULT[2] || metroPresets[0];
 }
 
 function buildSigSelector() {
@@ -1808,6 +1826,7 @@ function buildSigFromControls() {
 
 let metroPatternDirty = false;
 let _lastMetroVizStep = -1;
+let _editingMetroPresetId = null; // id du preset en cours d'édition (MX seulement)
 
 function highlightMetroStep() {
   const mpv = currentSig?.metroPattern;
@@ -2167,10 +2186,19 @@ function applyGroove(grooveId){
   // Appliquer le band (si préférence activée)
   if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){applyBand(groove.band_defaut);}
 
-  // Appliquer la signature (si préférence activée)
+  // Appliquer la signature (si préférence activée) — avec fallback si preset supprimé
   if(prefs.applyGrooveSig&&groove.signature){
-    const sigEl=document.getElementById('sig-sel');
-    if(sigEl){_suppressGrooveDirty=true;sigEl.value=groove.signature;sigEl.dispatchEvent(new Event('change'));_suppressGrooveDirty=false;}
+    const sig=getSigFallback(groove.signature);
+    if(sig){
+      _suppressGrooveDirty=true;
+      currentSig=sig;
+      const sigEl=document.getElementById('sig-sel');
+      if(sigEl){
+        if(metroPresets.find(p=>p.id===sig.id)) sigEl.value=sig.id;
+        sigEl.dispatchEvent(new Event('change'));
+      }
+      _suppressGrooveDirty=false;
+    }
   }
 
   globalSpeedMult=1;
@@ -3795,9 +3823,10 @@ function updateBeatDisplay(){
 }
 
 function _mgrSelectPreset(id){
-  currentSig=metroPresets.find(p=>p.id===id)||currentSig;
+  currentSig=getSigFallback(id)||currentSig;
   metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
-  const sel=document.getElementById('sig-sel');if(sel)sel.value=id;
+  _editingMetroPresetId=authProfile?.role==='mx'?id:null;
+  const sel=document.getElementById('sig-sel');if(sel&&metroPresets.find(p=>p.id===id))sel.value=id;
   syncMetroControls();renderMetroPatternViz();buildMetroMgrModal();
 }
 function libStartRenamePreset(nameEl,id){
@@ -3807,8 +3836,16 @@ function libStartRenamePreset(nameEl,id){
   function finish(){
     nameEl.contentEditable='false';
     const n=nameEl.textContent.trim();if(!n)return;
-    const p=(packCours.metroPresets||[]).find(x=>x.id===id);if(!p)return;
-    p.label=n;saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
+    // Cherche dans packCours ou crée l'entrée depuis metroPresets (base non encore seeded)
+    if(!packCours.metroPresets)packCours.metroPresets=[];
+    let p=packCours.metroPresets.find(x=>x.id===id);
+    if(!p){
+      const mp=metroPresets.find(x=>x.id===id);if(!mp)return;
+      p={...mp};packCours.metroPresets.push(p);
+    }
+    p.label=n;nameEl.textContent=n;
+    saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
+    if(authProfile?.role==='mx') sbSaveMetroPreset(id).catch(()=>{});
   }
   nameEl.addEventListener('blur',finish,{once:true});
   nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape')nameEl.blur();},{once:true});
@@ -3827,25 +3864,33 @@ function buildMetroMgrModal(){
   list.innerHTML='';
   document.getElementById('lib-select-all-metro').checked=false;
   document.getElementById('lib-batch-del-metro').disabled=true;
+  const isMX=authProfile?.role==='mx';
   let _mgrDragId=null;
   metroPresets.forEach(p=>{
-    const custom=packCours.metroPresets||[];
-    const isCustom=!!custom.find(c=>c.id===p.id);
+    const isBase=p.source==='base';
+    const isSchool=p.source==='school';
+    const isTeacher=p.source==='teacher';
+    const isOwnDraft=isTeacher&&(p.localStatus==='draft'||p.ownerId===authProfile?.id);
     const isCurrent=p.id===currentSig?.id;
+    // Permissions par rôle
+    const canRename=isMX||isOwnDraft;
+    const canDelete=isMX||isOwnDraft;
+    const canDrag=isMX&&!isBase; // MX réordonne les presets école, pas les presets de base
+
     const item=document.createElement('div');
     item.className='lib-item'+(isCurrent?' mpv-mgr-active':'');
     item.dataset.pid=p.id;
-    // Checkbox (désactivée pour presets de base)
+    // Checkbox
     const chk=document.createElement('input');chk.type='checkbox';chk.className='lib-item-check';
-    if(!isCustom) chk.disabled=true;
+    chk.disabled=!canDelete;
     chk.addEventListener('change',_updateMetroBatchBar);
     item.appendChild(chk);
-    // Drag handle (custom only)
+    // Drag handle
     const handle=document.createElement('span');
     handle.className='lib-drag-handle';handle.textContent='⠿';handle.title='Glisser';
-    handle.style.visibility=isCustom?'visible':'hidden';
+    handle.style.visibility=canDrag?'visible':'hidden';
     item.appendChild(handle);
-    if(isCustom) item.setAttribute('draggable','true');
+    if(canDrag) item.setAttribute('draggable','true');
     // Colonne principale
     const main=document.createElement('div');main.className='lib-item-main';
     const row1=document.createElement('div');row1.className='lib-item-row1';
@@ -3853,20 +3898,29 @@ function buildMetroMgrModal(){
     nameEl.textContent=p.label||p.id;
     nameEl.addEventListener('click',()=>_mgrSelectPreset(p.id));
     row1.appendChild(nameEl);
-    if(isCustom){
+    // Badge source
+    const badge=document.createElement('span');
+    badge.style.cssText='font-size:9px;padding:1px 4px;border-radius:3px;flex-shrink:0;margin-left:2px';
+    if(isBase){badge.textContent='base';badge.style.background='rgba(107,95,165,.18)';badge.style.color='#4a3d8a';}
+    else if(isTeacher){badge.textContent='perso';badge.style.background='rgba(29,158,117,.15)';badge.style.color='#0F6E56';}
+    else{badge.textContent='école';badge.style.background='rgba(107,95,165,.08)';badge.style.color='#6B5FA5';}
+    row1.appendChild(badge);
+    // Bouton renommer
+    if(canRename){
       const renBtn=document.createElement('button');renBtn.className='lib-item-rename';
       renBtn.textContent='✎';renBtn.title='Renommer';
       renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenamePreset(nameEl,p.id);});
       row1.appendChild(renBtn);
+    }
+    // Bouton supprimer
+    if(canDelete){
       const delBtn=document.createElement('button');delBtn.className='lib-item-del';
       delBtn.textContent='🗑';delBtn.title='Supprimer';
-      delBtn.addEventListener('click',()=>{
-        if(!confirm(`Supprimer "${p.label||p.id}" ?`))return;
-        packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==p.id);
-        if(currentSig?.id===p.id) currentSig=metroPresets.find(x=>x.id==='4/4')||metroPresets[0];
-        saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
-      });
+      delBtn.addEventListener('click',()=>_deleteMetroPreset(p));
       row1.appendChild(delBtn);
+    }
+    // Drag events (MX school uniquement)
+    if(canDrag){
       item.addEventListener('dragstart',e=>{
         _mgrDragId=p.id;e.dataTransfer.setData('text',p.id);e.dataTransfer.effectAllowed='move';
         setTimeout(()=>item.classList.add('lib-item-dragging'),0);
@@ -3877,7 +3931,7 @@ function buildMetroMgrModal(){
       });
     }
     item.addEventListener('dragover',e=>{
-      if(!_mgrDragId||!isCustom)return;
+      if(!_mgrDragId||!canDrag)return;
       e.preventDefault();e.dataTransfer.dropEffect='move';
       list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
       if(p.id!==_mgrDragId) item.classList.add('lib-item-drag-over');
@@ -4345,6 +4399,12 @@ async function sbSyncSchoolPool() {
       sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]),
     ]);
     sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres });
+    // MX : seeder les presets de base si la DB n'en contient encore aucun
+    if (authProfile?.role === 'mx' && Array.isArray(metroPres) && !metroPres.some(p => p.source === 'base')) {
+      await _seedBaseMetroPresets();
+      const seeded = await sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]);
+      await _syncMetroPresetsOnly(seeded);
+    }
     // Vérifier les refus TX (fire-and-forget, non bloquant)
     if (authProfile?.role !== 'mx') {
       sbCheckRejections().then(n => {
@@ -4438,7 +4498,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
         id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
         beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
         metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
-        source: 'school', approved: true, ownerId: row.owner_id,
+        source: row.source || 'school', approved: true, ownerId: row.owner_id,
       };
       const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
       if (idx >= 0) packCours.metroPresets[idx] = preset;
@@ -4640,32 +4700,88 @@ async function sbCancelSubmission(type, id) {
 
 // ── Presets métronome — CRUD Supabase ─────────────────────────────────────
 
+async function _seedBaseMetroPresets() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  try {
+    await sbFetch('/rest/v1/metro_presets', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(METRO_PRESETS_DEFAULT.map(p => ({
+        id: p.id, label: p.label,
+        beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
+        subdivision: p.subdivision, step_unit: p.stepUnit || 8,
+        metro_pattern: p.metroPattern,
+        scope: 'school', approved: true, source: 'base', owner_id: authProfile.id,
+      }))),
+    });
+  } catch(e) { console.error('Seeding presets de base échoué :', e); }
+}
+
+async function _syncMetroPresetsOnly(rows) {
+  if (!Array.isArray(rows)) return;
+  if (!packCours.metroPresets) packCours.metroPresets = [];
+  rows.forEach(row => {
+    const preset = {
+      id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
+      beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
+      metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+      source: row.source || 'school', approved: true, ownerId: row.owner_id,
+    };
+    const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
+    if (idx >= 0) packCours.metroPresets[idx] = preset;
+    else packCours.metroPresets.push(preset);
+  });
+  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildMetroMgrModal();
+}
+
+function _deleteMetroPreset(p) {
+  const usedBy = (packCours.grooves || []).filter(g => g.signature === p.id);
+  let msg = `Supprimer le preset "${p.label || p.id}" ?`;
+  if (usedBy.length > 0) {
+    const names = usedBy.slice(0, 5).map(g => g.nom).join(', ') + (usedBy.length > 5 ? '…' : '');
+    msg = `Le preset "${p.label || p.id}" est utilisé par ${usedBy.length} groove(s) : ${names}.\nLes grooves concernés passeront en signature automatique (4/4).\nSupprimer quand même ?`;
+  }
+  if (!confirm(msg)) return;
+  const inDB = !!(packCours.metroPresets || []).find(x => x.id === p.id);
+  if (inDB) sbDeleteMetroPreset(p.id).catch(() => {});
+  packCours.metroPresets = (packCours.metroPresets || []).filter(x => x.id !== p.id);
+  if (currentSig?.id === p.id) currentSig = getSigFallback(null);
+  usedBy.forEach(g => {
+    const live = packCours.grooves.find(x => x.id === g.id);
+    if (live) delete live.signature;
+  });
+  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); buildMetroMgrModal();
+}
+
 async function sbSaveMetroPreset(presetId) {
-  const p = (packCours.metroPresets || []).find(x => x.id === presetId);
+  // Cherche d'abord dans packCours, puis dans metroPresets (presets de base non encore seeded)
+  let p = (packCours.metroPresets || []).find(x => x.id === presetId);
+  if (!p) p = metroPresets.find(x => x.id === presetId);
   if (!p || !authSession) return false;
   const isMX = authProfile?.role === 'mx';
+  const preservedSource = isMX ? (p.source || 'school') : 'teacher';
   try {
     await sbFetch('/rest/v1/metro_presets', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
-        id: p.id,
-        label: p.label,
-        beats_per_measure: p.beatsPerMeasure,
-        beat_unit: p.beatUnit,
-        subdivision: p.subdivision,
-        step_unit: p.stepUnit || 8,
+        id: p.id, label: p.label,
+        beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
+        subdivision: p.subdivision, step_unit: p.stepUnit || 8,
         metro_pattern: p.metroPattern,
         scope: isMX ? 'school' : 'teacher',
+        source: preservedSource,
         approved: isMX,
         owner_id: authProfile.id,
       }),
     });
-    if (isMX) {
-      p.source = 'school'; p.approved = true; delete p.localStatus;
-    } else {
-      p.source = 'teacher'; p.localStatus = 'submitted';
-    }
+    if (!packCours.metroPresets) packCours.metroPresets = [];
+    const idx = packCours.metroPresets.findIndex(x => x.id === p.id);
+    const updated = { ...p, source: preservedSource };
+    if (isMX) { updated.approved = true; delete updated.localStatus; }
+    else { updated.localStatus = 'submitted'; }
+    if (idx >= 0) packCours.metroPresets[idx] = updated;
+    else packCours.metroPresets.push(updated);
     saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection();
     return true;
   } catch(e) { console.error('sbSaveMetroPreset échoué :', e); return false; }
@@ -7411,19 +7527,29 @@ function attachEvents(){
   document.getElementById('lib-batch-del-metro').addEventListener('click',()=>{
     const toDelete=[...document.querySelectorAll('#metro-mgr-list .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.pid);
     if(!toDelete.length)return;
-    if(!confirm(`Supprimer ${toDelete.length} preset(s) ?`))return;
-    toDelete.forEach(id=>{
-      packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==id);
-      if(currentSig?.id===id) currentSig=metroPresets.find(x=>x.id==='4/4')||metroPresets[0];
+    const presets=toDelete.map(id=>metroPresets.find(p=>p.id===id)).filter(Boolean);
+    const allUsed=presets.flatMap(p=>(packCours.grooves||[]).filter(g=>g.signature===p.id));
+    let msg=`Supprimer ${toDelete.length} preset(s) ?`;
+    if(allUsed.length>0){
+      const names=[...new Set(allUsed.map(g=>g.nom))].slice(0,5).join(', ')+(allUsed.length>5?'…':'');
+      msg=`Ces presets sont utilisés par ${allUsed.length} groove(s) : ${names}.\nLes grooves concernés passeront en signature automatique (4/4).\nSupprimer quand même ?`;
+    }
+    if(!confirm(msg))return;
+    presets.forEach(p=>{
+      const inDB=!!(packCours.metroPresets||[]).find(x=>x.id===p.id);
+      if(inDB) sbDeleteMetroPreset(p.id).catch(()=>{});
+      packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==p.id);
+      if(currentSig?.id===p.id) currentSig=getSigFallback(null);
+      (packCours.grooves||[]).forEach(g=>{if(g.signature===p.id)delete g.signature;});
     });
     saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
   });
   // ── Signature ──
   document.getElementById('sig-sel').addEventListener('change',function(){
     const oldSig=currentSig;
-    currentSig=metroPresets.find(p=>p.id===this.value)||metroPresets.find(p=>p.id==='4/4')||metroPresets[0];
+    currentSig=getSigFallback(this.value);
     metroStepPos=0; metroBeatPos=0; // reset au changement de signature (nouveau pattern)
-    metroPatternDirty=false;
+    metroPatternDirty=false; _editingMetroPresetId=null;
     if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
       const slider=document.getElementById('bpm');
       const currentSPM=parseInt(slider.value);
@@ -7494,12 +7620,19 @@ function attachEvents(){
   document.getElementById('btn-metro-save').addEventListener('click', () => {
     if (!authProfile) { showToast('Connexion requise pour créer des presets', 'warn'); return; }
     const s = currentSig;
+    const isMX = authProfile?.role === 'mx';
+    const isExisting = isMX && _editingMetroPresetId && metroPresets.find(p => p.id === _editingMetroPresetId);
+    // Si MX édite un preset existant → pré-remplir avec le nom actuel; sinon formule auto
     document.getElementById('modal-metro-name').value =
-      s ? `${s.beatsPerMeasure}/${s.beatUnit} ×${s.subdivision}` : '';
+      isExisting ? (s?.label || s?.id || '') : (s ? `${s.beatsPerMeasure}/${s.beatUnit} ×${s.subdivision}` : '');
+    const confirmBtn = document.getElementById('modal-metro-confirm');
+    if (confirmBtn) confirmBtn.textContent = isExisting ? 'Mettre à jour' : 'Sauvegarder';
     document.getElementById('modal-metro-save').style.display = 'flex';
     setTimeout(() => document.getElementById('modal-metro-name').focus(), 50);
   });
   document.getElementById('modal-metro-cancel').addEventListener('click', () => {
+    _editingMetroPresetId = null;
+    document.getElementById('modal-metro-confirm').textContent = 'Sauvegarder';
     document.getElementById('modal-metro-save').style.display = 'none';
   });
   document.getElementById('modal-metro-discard').addEventListener('click', () => {
@@ -7525,6 +7658,36 @@ function attachEvents(){
     const sub   = currentSig?.subdivision || 2;
     const label = document.getElementById('modal-metro-name').value.trim()
                   || `${beats}/${unit} ×${sub}`;
+    const isMX = authProfile?.role === 'mx';
+    // MX édite un preset existant → mise à jour en place
+    if (isMX && _editingMetroPresetId) {
+      const existingId = _editingMetroPresetId;
+      if (!packCours.metroPresets) packCours.metroPresets = [];
+      let pci = packCours.metroPresets.findIndex(x => x.id === existingId);
+      if (pci < 0) {
+        const mp = metroPresets.find(x => x.id === existingId);
+        if (mp) { packCours.metroPresets.push({...mp}); pci = packCours.metroPresets.length - 1; }
+      }
+      if (pci >= 0) {
+        packCours.metroPresets[pci].label = label;
+        packCours.metroPresets[pci].metroPattern = [...pat];
+      }
+      metroPatternDirty = false;
+      _editingMetroPresetId = null;
+      document.getElementById('modal-metro-save').style.display = 'none';
+      saveToStorage(); rebuildMetroPresets(); buildSigSelector();
+      currentSig = getSigFallback(existingId);
+      const sel = document.getElementById('sig-sel');
+      if (sel && metroPresets.find(p => p.id === existingId)) sel.value = existingId;
+      renderMetroPatternViz();
+      const btn = document.getElementById('modal-metro-confirm');
+      if (btn) btn.textContent = 'Sauvegarder';
+      const ok = await sbSaveMetroPreset(existingId);
+      showToast(ok ? `Preset "${label}" mis à jour` : 'Erreur lors de la mise à jour', ok ? 'info' : 'error');
+      buildPublishSection();
+      return;
+    }
+    // Nouveau preset (TX ou MX)
     const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
     const preset = {
       id, label,
@@ -7543,7 +7706,10 @@ function attachEvents(){
     const sel = document.getElementById('sig-sel');
     if (sel) sel.value = id;
     metroPatternDirty = false;
+    _editingMetroPresetId = null;
     document.getElementById('modal-metro-save').style.display = 'none';
+    const btn = document.getElementById('modal-metro-confirm');
+    if (btn) btn.textContent = 'Sauvegarder';
     buildPublishSection();
     showToast(`Preset "${label}" créé`, 'info');
   });
