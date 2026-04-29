@@ -89,9 +89,6 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
-/* ── Volet métro : toggle sous-volet ── */
-.metro-sig-toggle{font-size:10px;font-weight:600;background:transparent;border:none;cursor:pointer;color:#6B5FA5;padding:2px 0;white-space:nowrap;transition:color .12s;display:inline-flex;align-items:center;gap:3px}
-.metro-sig-toggle:hover,.metro-sig-toggle.open{color:#3d3080}
 /* ── L1 : grille 3 colonnes ── */
 .metro-sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;padding:.3rem 0 .2rem}
 .metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -101,10 +98,10 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .mpv-sig-unit-row{display:flex;align-items:center;gap:3px;width:100%}
 .mpv-sig-unit-row .mpv-sel-sm{flex:1;min-width:0}
-.mpv-label{font-size:10px;color:#888;white-space:nowrap;flex-shrink:0}
+.mpv-label{font-size:10px;color:#6B5FA5;white-space:nowrap;flex-shrink:0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
-.mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
-.mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:transparent;border:1px solid #b0a8d8;border-radius:4px;padding:2px 4px;display:inline-block}
+.mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid rgba(107,95,165,.3);background:rgba(107,95,165,.1);color:#4a3d8a;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
+.mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.3);border-radius:4px;padding:2px 4px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#4a3d8a;cursor:pointer;flex-shrink:0}
 .mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#4a3d8a;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
@@ -119,25 +116,22 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-P{background:#6B5FA5;color:#fff}
 .mpv-p{background:#c4bde8;color:#6B5FA5}
 .mpv-dot{background:#e8e5f0;color:transparent}
-.mpv-save-btn{font-size:15px;padding:1px 5px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer;flex-shrink:0;line-height:1.3;transition:all .15s}
-.mpv-save-btn.dirty{border-color:#c00;background:#fff0f0;color:#c00;font-size:12px;font-weight:700}
+.mpv-save-btn{font-size:15px;padding:1px 5px;border:none;background:transparent;color:#1D9E75;cursor:pointer;flex-shrink:0;line-height:1.3;transition:all .15s}
+.mpv-save-btn.dirty{color:#c00;font-size:12px;font-weight:700}
 /* ── Vol + Tempo (ligne 1 metro) ── */
 .mpv-vol-tempo-row{gap:8px!important;align-items:stretch!important}
 .mpv-ctrl-block{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
 .mpv-ctrl-inner{display:flex;align-items:center;gap:4px}
 .mpv-ctrl-lbl{font-size:9px;color:#888;text-align:center;line-height:1;padding-bottom:1px}
 /* ── Bouton ≡ gestion presets ── */
-.btn-metro-mgr{font-size:14px;padding:0 5px;height:22px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;line-height:1;font-weight:700}
-.btn-metro-mgr:hover{background:rgba(107,95,165,.1)}
-/* ── Modal gestion presets ── */
-.mpv-mgr-box{background:#fff;border-radius:14px;padding:16px;width:min(340px,96vw);box-shadow:0 8px 32px rgba(0,0,0,.22);display:flex;flex-direction:column;max-height:80vh}
-.mpv-mgr-list{overflow-y:auto;flex:1}
-.mpv-mgr-row{display:flex;align-items:center;gap:4px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)}
-.mpv-mgr-name{font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;color:#333;padding:2px 0}
-.mpv-mgr-name.active{font-weight:700;color:#4a3d8a}
-.mpv-mgr-btn{font-size:10px;padding:2px 5px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;flex-shrink:0;color:#666;line-height:1.4}
-.mpv-mgr-btn:hover{background:#f0f0f0}
-.mpv-mgr-badge{font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0;white-space:nowrap}
+.btn-metro-mgr{font-size:14px;padding:0 5px;height:22px;border:none;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;line-height:1;font-weight:700}
+.btn-metro-mgr:hover{color:#4a3d8a}
+/* ── Modal gestion presets (style lib-panel) ── */
+.mpv-mgr-box{background:#fff;border-radius:16px;width:min(340px,96vw);box-shadow:0 -4px 24px rgba(0,0,0,.15);display:flex;flex-direction:column;max-height:80vh;overflow:hidden}
+.mpv-mgr-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid rgba(107,95,165,.2);background:rgba(107,95,165,.09);flex-shrink:0}
+.mpv-mgr-head-title{font-size:13px;font-weight:700;color:#4a3d8a;flex:1}
+.mpv-mgr-list{overflow-y:auto;flex:1;padding:6px 0}
+.mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
 .mpv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
 .mpv-modal-box{background:#fff;border-radius:14px;padding:20px;width:min(300px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.22);display:flex;flex-direction:column;gap:12px}
@@ -750,7 +744,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.63</span>
+      <span class="app-version">v3.4.64</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -845,7 +839,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
       <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
-      <button class="metro-sig-toggle" id="btn-metro-sig-volet" style="border:1px solid #9088c8;border-radius:4px;padding:2px 6px;color:#4a3d8a;font-weight:700">metrics ▶</button>
+      <button class="btn-metro-volet" id="btn-metro-sig-volet">metrics ▶</button>
     </div>
     <!-- Sous-volet : L1 grille + L2 pattern -->
     <div id="metro-sig-content" style="display:none">
@@ -907,11 +901,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Modal : gestion presets métronome -->
   <div class="mpv-modal-overlay" id="modal-metro-mgr" style="display:none">
     <div class="mpv-mgr-box">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:13px;font-weight:700;color:#4a3d8a;flex:1">Presets métronome</span>
+      <div class="mpv-mgr-head">
+        <span class="mpv-mgr-head-title">Presets métronome</span>
         <button id="btn-metro-mgr-close" style="background:none;border:none;font-size:16px;cursor:pointer;color:#888;padding:2px 6px;line-height:1">✕</button>
       </div>
-      <div class="mpv-mgr-list" id="metro-mgr-list"></div>
+      <div class="mpv-mgr-list lib-list" id="metro-mgr-list"></div>
     </div>
   </div>
   <!-- Modal : sauvegarde preset métronome -->
@@ -3798,53 +3792,90 @@ function updateBeatDisplay(){
   if(nameEl) nameEl.textContent=getTempoName(bpm);
 }
 
+function _mgrSelectPreset(id){
+  currentSig=metroPresets.find(p=>p.id===id)||currentSig;
+  metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
+  const sel=document.getElementById('sig-sel');if(sel)sel.value=id;
+  syncMetroControls();renderMetroPatternViz();buildMetroMgrModal();
+}
+function libStartRenamePreset(nameEl,id){
+  nameEl.contentEditable='true';nameEl.focus();
+  const r=document.createRange();r.selectNodeContents(nameEl);
+  const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function finish(){
+    nameEl.contentEditable='false';
+    const n=nameEl.textContent.trim();if(!n)return;
+    const p=(packCours.metroPresets||[]).find(x=>x.id===id);if(!p)return;
+    p.label=n;saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
+  }
+  nameEl.addEventListener('blur',finish,{once:true});
+  nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape')nameEl.blur();},{once:true});
+}
 function buildMetroMgrModal(){
   const list=document.getElementById('metro-mgr-list');
-  if(!list) return;
-  const custom=packCours.metroPresets||[];
-  list.innerHTML=metroPresets.map(p=>{
+  if(!list)return;
+  list.innerHTML='';
+  let _mgrDragId=null;
+  metroPresets.forEach(p=>{
+    const custom=packCours.metroPresets||[];
     const isCustom=!!custom.find(c=>c.id===p.id);
     const isCurrent=p.id===currentSig?.id;
-    const ci=custom.findIndex(c=>c.id===p.id);
-    const badge=isCustom
-      ?`<span class="mpv-mgr-badge" style="background:#e8e5f0;color:#6B5FA5">perso</span>`
-      :`<span class="mpv-mgr-badge" style="background:#e8f0e8;color:#1D9E75">base</span>`;
-    const upBtn=ci>0?`<button class="mpv-mgr-btn" data-action="up" data-id="${p.id}">↑</button>`:`<span style="width:24px;display:inline-block"></span>`;
-    const dnBtn=ci>=0&&ci<custom.length-1?`<button class="mpv-mgr-btn" data-action="down" data-id="${p.id}">↓</button>`:`<span style="width:24px;display:inline-block"></span>`;
-    const renBtn=isCustom?`<button class="mpv-mgr-btn" data-action="rename" data-id="${p.id}">✎</button>`:'';
-    const delBtn=isCustom?`<button class="mpv-mgr-btn" data-action="delete" data-id="${p.id}" style="color:#c04040;border-color:#e08888">✕</button>`:'';
-    return`<div class="mpv-mgr-row">${badge}<span class="mpv-mgr-name${isCurrent?' active':''}" data-action="select" data-id="${p.id}">${p.label||p.id}</span>${upBtn}${dnBtn}${renBtn}${delBtn}</div>`;
-  }).join('');
-  list.querySelectorAll('[data-action]').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const id=el.dataset.id, action=el.dataset.action;
-      if(action==='select'){
-        currentSig=metroPresets.find(p=>p.id===id)||currentSig;
-        metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
-        const sel=document.getElementById('sig-sel');if(sel)sel.value=id;
-        syncMetroControls();renderMetroPatternViz();buildMetroMgrModal();
-      } else if(action==='delete'){
-        const preset=metroPresets.find(p=>p.id===id);
-        if(!confirm(`Supprimer "${preset?.label||id}" ?`))return;
-        packCours.metroPresets=(packCours.metroPresets||[]).filter(p=>p.id!==id);
-        if(currentSig?.id===id) currentSig=metroPresets.find(p=>p.id==='4/4')||metroPresets[0];
+    const item=document.createElement('div');
+    item.className='lib-item'+(isCurrent?' mpv-mgr-active':'');
+    item.dataset.pid=p.id;
+    // Drag handle (custom only)
+    const handle=document.createElement('span');
+    handle.className='lib-drag-handle';handle.textContent='⠿';handle.title='Glisser';
+    handle.style.visibility=isCustom?'visible':'hidden';
+    item.appendChild(handle);
+    if(isCustom){item.setAttribute('draggable','true');}
+    // Name
+    const main=document.createElement('div');main.className='lib-item-main';
+    const row1=document.createElement('div');row1.className='lib-item-row1';
+    const nameEl=document.createElement('span');nameEl.className='lib-item-name';
+    nameEl.textContent=p.label||p.id;
+    nameEl.addEventListener('click',()=>_mgrSelectPreset(p.id));
+    row1.appendChild(nameEl);
+    if(isCustom){
+      const renBtn=document.createElement('button');renBtn.className='lib-item-rename';
+      renBtn.textContent='✎';renBtn.title='Renommer';
+      renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenamePreset(nameEl,p.id);});
+      row1.appendChild(renBtn);
+      const delBtn=document.createElement('button');delBtn.className='lib-item-del';
+      delBtn.textContent='🗑';delBtn.title='Supprimer';
+      delBtn.addEventListener('click',()=>{
+        if(!confirm(`Supprimer "${p.label||p.id}" ?`))return;
+        packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==p.id);
+        if(currentSig?.id===p.id) currentSig=metroPresets.find(x=>x.id==='4/4')||metroPresets[0];
         saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
-      } else if(action==='rename'){
-        const preset=(packCours.metroPresets||[]).find(p=>p.id===id);
-        if(!preset)return;
-        const n=prompt('Nouveau nom :',preset.label||id);
-        if(!n?.trim())return;
-        preset.label=n.trim();
-        saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
-      } else if(action==='up'||action==='down'){
-        const arr=packCours.metroPresets||[];
-        const i=arr.findIndex(p=>p.id===id);if(i<0)return;
-        const j=action==='up'?i-1:i+1;
-        if(j<0||j>=arr.length)return;
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-        saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
-      }
+      });
+      row1.appendChild(delBtn);
+      // Drag events
+      item.addEventListener('dragstart',e=>{
+        _mgrDragId=p.id;e.dataTransfer.setData('text',p.id);e.dataTransfer.effectAllowed='move';
+        setTimeout(()=>item.classList.add('lib-item-dragging'),0);
+      });
+      item.addEventListener('dragend',()=>{
+        item.classList.remove('lib-item-dragging');
+        list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
+      });
+    }
+    item.addEventListener('dragover',e=>{
+      if(!_mgrDragId||!isCustom)return;
+      e.preventDefault();e.dataTransfer.dropEffect='move';
+      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
+      if(p.id!==_mgrDragId)item.classList.add('lib-item-drag-over');
     });
+    item.addEventListener('drop',e=>{
+      e.preventDefault();item.classList.remove('lib-item-drag-over');
+      const srcId=e.dataTransfer.getData('text')||_mgrDragId;if(!srcId||srcId===p.id)return;
+      const arr=packCours.metroPresets||[];
+      const si=arr.findIndex(x=>x.id===srcId),di=arr.findIndex(x=>x.id===p.id);
+      if(si<0||di<0)return;
+      const[moved]=arr.splice(si,1);arr.splice(di,0,moved);
+      saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
+    });
+    main.appendChild(row1);item.appendChild(main);list.appendChild(item);
   });
 }
 function setMetroGlobal(on){
