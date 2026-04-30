@@ -73,6 +73,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
+.tap-tempo-row .btn-metro-volet{margin-left:0}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
 .temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .temps-content.open{max-height:600px}
@@ -83,10 +84,10 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
-.tap-tempo-row{padding:.2rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:6px}
+.tap-tempo-row{padding:.35rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:6px;justify-content:center;border-top:1px solid rgba(176,168,216,.5);margin-top:.2rem}
 .tap-n-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0}
 .tap-n-input{width:32px;font-size:11px;text-align:center;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;padding:2px 3px;flex-shrink:0}
-.btn-tap-tempo{flex:1;padding:5px 8px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
+.btn-tap-tempo{padding:5px 18px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
 /* ── L1 : grille 3 colonnes ── */
@@ -94,16 +95,16 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-sig-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .metro-sig-col .mpv-word-btn{width:100%;text-align:center}
 .metro-sig-col .mpv-beats-ctrl{justify-content:center}
-.mpv-word-btn{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;border:1px solid #c8c0e0;background:transparent;color:#c8c0e0;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4;width:100%}
+.mpv-word-btn{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;border:1px solid rgba(0,0,0,.25);background:transparent;color:#333;cursor:pointer;flex-shrink:0;transition:all .15s;white-space:nowrap;line-height:1.4;width:100%}
 .mpv-word-btn.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .mpv-sig-unit-row{display:flex;align-items:center;gap:3px;width:100%}
 .mpv-sig-unit-row .mpv-sel-sm{flex:1;min-width:0}
-.mpv-label{font-size:10px;color:#6B5FA5;white-space:nowrap;flex-shrink:0}
+.mpv-label{font-size:10px;color:#111;white-space:nowrap;flex-shrink:0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
 .mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid rgba(107,95,165,.3);background:rgba(107,95,165,.1);color:#4a3d8a;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
-.mpv-beats-val{font-size:10px;font-weight:600;color:#4a3d8a;min-width:20px;text-align:center;flex-shrink:0;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.3);border-radius:4px;padding:2px 4px;display:inline-block}
-.mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#4a3d8a;cursor:pointer;flex-shrink:0}
-.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#4a3d8a;cursor:pointer;flex-shrink:0}
+.mpv-beats-val{font-size:10px;font-weight:600;color:#111;min-width:20px;text-align:center;flex-shrink:0;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.3);border-radius:4px;padding:2px 4px;display:inline-block}
+.mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
+.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
 .metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
 .mpv-sig-label{font-size:11px;font-weight:700;color:#6B5FA5;white-space:nowrap;flex-shrink:0;min-width:28px;text-align:center;background:transparent;border:1px solid #b0a8d8;border-radius:5px;padding:2px 4px;line-height:1.4}
@@ -121,7 +122,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ── Vol + Tempo (ligne 1 metro) ── */
 .mpv-vol-tempo-row{gap:8px!important;align-items:stretch!important}
 .mpv-ctrl-block{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
-.mpv-ctrl-inner{display:flex;align-items:center;gap:4px}
+.mpv-ctrl-inner{display:flex;align-items:center;gap:4px;min-width:0;width:100%}
 .mpv-ctrl-lbl{font-size:9px;color:#888;text-align:center;line-height:1;padding-bottom:1px}
 /* ── Boutons +/- tempo ── */
 .mpv-tempo-adj{font-size:13px;padding:0 5px;border:none;background:rgba(107,95,165,.1);border-radius:4px;color:#4a3d8a;cursor:pointer;height:20px;line-height:1;flex-shrink:0;font-weight:600}
@@ -655,6 +656,11 @@ body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3
 body.dark-mode .btn-tap-tempo:active{background:#3a3448}
 body.dark-mode .tap-n-input{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .tap-count{color:#a89fd0}
+body.dark-mode .tap-tempo-row{border-top-color:rgba(58,52,72,.9)}
+body.dark-mode .mpv-label{color:#d0c0ff}
+body.dark-mode .mpv-beats-val{color:#d0c0ff}
+body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
+body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -748,7 +754,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.68</span>
+      <span class="app-version">v3.4.69</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -837,7 +843,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
         <div class="mpv-ctrl-inner">
           <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
-          <input type="range" id="metro-bpm" min="0" max="1000" value="400" step="1" style="flex:1;accent-color:#6B5FA5">
+          <input type="range" id="metro-bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0;accent-color:#6B5FA5">
           <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
         </div>
       </div>
