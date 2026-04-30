@@ -37,7 +37,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
-.btn-view{padding:3px 8px;font-size:13px;border:2px solid #d0cec7;border-radius:5px;cursor:pointer;background:#fff;color:#666}
+.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
 .btn-view:hover{background:#e8e5e0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
@@ -69,8 +69,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:2px solid #d8d2e8;border-radius:4px;cursor:pointer;font-size:10px;font-weight:600;padding:0 6px;height:22px;min-width:36px;background:#efecf8;color:#6B5FA5;transition:background .15s,color .15s,border-color .15s;letter-spacing:.03em;white-space:nowrap}
-.btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
+.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 6px;height:22px;min-width:36px;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
+.btn-metro-main.on{color:#4a3d8a}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
@@ -292,7 +292,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 #btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
-.drag-value-overlay{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
+.drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-edit-row .fam-filter{opacity:.9}
 .sound-edit-row .btn-sec-ico{opacity:.5}
 .sound-edit-row .btn-sec-ico:hover{opacity:1}
@@ -599,7 +599,7 @@ body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-top:hover{background:#333330}
 body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#666}
-body.dark-mode .btn-view{background:#2a2a28;border-color:#444;color:#888}
+body.dark-mode .btn-view{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-view:hover{background:#333330}
 body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
 body.dark-mode .t-spm-display{color:#666}
@@ -641,8 +641,8 @@ body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
 body.dark-mode .temps-slider::-moz-range-track{background:#3a3448}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#8878c8;border-color:#1e1c2a}
-body.dark-mode .btn-metro-main{background:#1e1c2a;border-color:#2e2840;color:#a89fd0}
-body.dark-mode .btn-metro-main.on{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
+body.dark-mode .btn-metro-main{background:transparent;color:#7868b8}
+body.dark-mode .btn-metro-main.on{color:#c0b0f0}
 body.dark-mode .btn-metro-volet{color:#6858a8}
 body.dark-mode .btn-metro-volet:hover,.btn-metro-volet.open{color:#a89fd0}
 body.dark-mode .metro-panel{border-left-color:#3a3448}
@@ -755,13 +755,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.72</span>
+      <span class="app-version">v3.4.73</span>
     </div>
   </div>
   <div class="top-bar-right">
+    <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-icon">🔕</span><span class="metro-bpm"> ♩100</span></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
-    <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <div class="settings-menu-wrap">
       <button class="btn-top" id="btn-settings" title="Menu">···</button>
       <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
@@ -4671,8 +4671,8 @@ async function sbFetchPendingApprovals() {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
     const [pats, grvs, encs, mps] = await Promise.all([
-      sbFetch('/rest/v1/patterns?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
-      sbFetch('/rest/v1/grooves?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
+      sbFetch('/rest/v1/patterns?select=*,profiles(display_name,email)&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
+      sbFetch('/rest/v1/grooves?select=*,profiles(display_name,email)&scope=eq.teacher&approved=eq.false&order=created_at.desc'),
       sbFetch('/rest/v1/encyclo?select=*,profiles(display_name,email)&scope=eq.teacher&approved=eq.false'),
       sbFetch('/rest/v1/metro_presets?select=*&scope=eq.teacher&approved=eq.false&order=created_at.desc').catch(()=>[]),
     ]);
@@ -5174,11 +5174,13 @@ function buildApprobationsSection() {
       const det = inferred?.length ? ' · ' + changeFieldLabel(inferred) : '';
       typeBadge = `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fff3cd;color:#856404;flex-shrink:0">Modif.${det}</span>`;
     }
+    const submitter = item.profiles?.display_name || (item.profiles?.email ? item.profiles.email.split('@')[0] : '');
     return `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
-      `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+      `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
         `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
         typeBadge + famBadge +
       `</div>` +
+      (submitter ? `<div style="font-size:9px;color:#888;margin-bottom:4px">Par : ${submitter}</div>` : '') +
       `<div style="display:flex;gap:5px">` +
         `<button class="btn-appro-load" data-type="${type}" data-id="${item.id}" ` +
           `style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">` +
@@ -7482,7 +7484,7 @@ function attachEvents(){
       _dragMoved=true;
       const newVal=Math.max(0,Math.min(1000,Math.round(_startVal+dx*POS_PER_PX)));
       bpmSlider.value=newVal; updateBeatDisplay();
-      _dragOverlay.show('♩= '+Math.round(parseInt(bpmSlider.value)*globalSpeedMult/currentSig.stepsPerBeat));
+      _dragOverlay.show('♩= '+Math.round(posToBPM(parseInt(bpmSlider.value))*globalSpeedMult));
     });
 
     btnT.addEventListener('pointerup',()=>{
@@ -7552,8 +7554,10 @@ function attachEvents(){
     btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    // metro.muted=true(OFF) → passer true → setMetroGlobal met muted=false(ON) ✓
-    setMetroGlobal(metro.muted);
+    const content=document.getElementById('temps-content');
+    const btn=document.getElementById('btn-metro-volet');
+    const open=content.classList.toggle('open');
+    if(btn){ btn.textContent=open?'tempo ▼':'tempo ▶'; btn.classList.toggle('open',open); }
   });
   // ── Bouton Pulse (panel seul, indépendant du on/off) ──
   document.getElementById('btn-metro-volet').addEventListener('click',()=>{
