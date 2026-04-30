@@ -123,6 +123,11 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-ctrl-block{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
 .mpv-ctrl-inner{display:flex;align-items:center;gap:4px}
 .mpv-ctrl-lbl{font-size:9px;color:#888;text-align:center;line-height:1;padding-bottom:1px}
+/* ── Boutons +/- tempo ── */
+.mpv-tempo-adj{font-size:13px;padding:0 5px;border:none;background:rgba(107,95,165,.1);border-radius:4px;color:#4a3d8a;cursor:pointer;height:20px;line-height:1;flex-shrink:0;font-weight:600}
+.mpv-tempo-adj:hover{background:rgba(107,95,165,.22)}
+.mpv-tempo-input{font-size:12px;width:52px;border:1.5px solid #6B5FA5;border-radius:5px;padding:2px 4px;text-align:center;outline:none}
+
 /* ── Bouton ≡ gestion presets ── */
 .btn-metro-mgr{font-size:14px;padding:0 5px;height:22px;border:none;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;line-height:1;font-weight:700}
 .btn-metro-mgr:hover{color:#4a3d8a}
@@ -743,7 +748,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.67</span>
+      <span class="app-version">v3.4.68</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -810,7 +815,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-mgr" id="btn-metro-presets-mgr" title="Gérer les presets métronome">≡</button>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <span class="spm-display" id="spm-display" title="Steps Par Minute (vitesse de la croche)">♪200</span>
-    <input type="range" class="temps-slider" id="bpm" min="40" max="960" value="200" step="1">
+    <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">tempo ▶</button>
   </div>
   <div class="temps-content metro-off" id="temps-content">
@@ -825,10 +830,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
       <div class="mpv-ctrl-block">
-        <span class="mpv-ctrl-lbl" id="metro-tempo-name">—</span>
+        <div class="mpv-ctrl-lbl" style="display:flex;gap:5px;justify-content:center;align-items:center">
+          <span id="metro-tempo-name">—</span>
+          <span>·</span>
+          <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+        </div>
         <div class="mpv-ctrl-inner">
-          <span class="metro-row-lbl">tempo</span>
-          <input type="range" id="metro-bpm" min="40" max="960" value="200" step="1" style="flex:1;accent-color:#6B5FA5">
+          <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
+          <input type="range" id="metro-bpm" min="0" max="1000" value="400" step="1" style="flex:1;accent-color:#6B5FA5">
+          <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
         </div>
       </div>
     </div>
@@ -1903,7 +1913,7 @@ function getAC(){
 }
 
 function getBeatSec(li){
-  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
   const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
   const ternFactor=state[li].ternOn?(2/3):1; // T : vitesse ×3/2 → durée ×2/3 (croche ternaire)
   return(60/spm)/mult*ternFactor;
@@ -1945,7 +1955,7 @@ function scheduler(){
   // 'A'=accent fort, 'P'=temps, 'p'=subdivision — chacun contrôlé par un toggle.
   {
     const nowM=getAC().currentTime;
-    const spmNow=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+    const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const stepSec=60/spmNow;
     const mp=currentSig.metroPattern;
     while(metroNextBeatTime<nowM+LOOKAHEAD){
@@ -2210,7 +2220,7 @@ function applyGroove(grooveId){
     clearTimeout(schedTimerID);
     const now=getAC().currentTime;
     // Steps restants jusqu'au prochain temps 1 (début de mesure)
-    const spmNow=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+    const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const stepSec=60/spmNow;
     const totalSteps=currentSig.metroPattern.length;
     const stepsLeft=(totalSteps-metroStepPos)%totalSteps;
@@ -3130,7 +3140,7 @@ function pspDoOverwriteGroove(){
       fork.layers[li].shift=state[li].shiftN||0;
     });
     fork.familles=[..._pspNewFamIds];
-    const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+    const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
     if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
     currentGrooveId=fork.id;
     grooveDirty=false; updateGrooveSaveBtn();
@@ -3208,7 +3218,7 @@ function saveGroove(){
     groove.layers[li].ternOn=state[li].ternOn||false;
     groove.layers[li].shift=state[li].shiftN||0;
   });
-  const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+  const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
   if(bpmVal>0){ if(!groove.tempo)groove.tempo={}; groove.tempo.defaut=bpmVal; }
   saveToStorage();
 }
@@ -3270,7 +3280,7 @@ function doOverwriteGroove(){
       fork.layers[li].ternOn=state[li].ternOn||false;
       fork.layers[li].shift=state[li].shiftN||0;
     });
-    const bpmVal=parseInt(document.getElementById('bpm')?.value||0);
+    const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
     if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
     currentGrooveId=fork.id;
     saveToStorage();
@@ -3786,8 +3796,30 @@ function updateGlobalSpeedBtns(){
   if(bd)bd.classList.toggle('active',globalSpeedMult===2);
 }
 
+// ── Tempo non-linéaire : position 0-1000 ↔ BPM 20-333 ──────────────────────
+// 0-200 → 20-60 BPM  |  200-800 → 60-180 BPM (zone précise)  |  800-1000 → 180-333 BPM
+const _BPM_MIN=20,_BPM_MAX=333;
+function posToBPM(pos){
+  const p=Math.max(0,Math.min(1000,pos));
+  if(p<=200)return _BPM_MIN+(p/200)*40;
+  if(p<=800)return 60+((p-200)/600)*120;
+  return 180+((p-800)/200)*(_BPM_MAX-180);
+}
+function bpmToPos(bpm){
+  const b=Math.max(_BPM_MIN,Math.min(_BPM_MAX,bpm));
+  if(b<=60)return Math.round((b-_BPM_MIN)/40*200);
+  if(b<=180)return Math.round(200+(b-60)/120*600);
+  return Math.round(800+(b-180)/(_BPM_MAX-180)*200);
+}
+function posToSPM(pos){
+  return Math.max(1,Math.round(posToBPM(pos)*(currentSig?.stepsPerBeat||2)));
+}
+function spmToPos(spm){
+  return bpmToPos(Math.round((spm||40)/(currentSig?.stepsPerBeat||2)));
+}
+
 function updateSpmDisplay(){
-  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
   const half=Math.round(spm/2),third=Math.round(spm/3),quarter=Math.round(spm/4);
   const eq=document.getElementById('bpm-equiv');
   if(eq)eq.innerHTML='<span style="letter-spacing:-.1em">♩♩</span>='+quarter+'&ensp;♩='+half+'&ensp;♩.='+third;
@@ -3806,7 +3838,8 @@ function getTempoName(bpm){
   return'Prestissimo';
 }
 function updateBeatDisplay(){
-  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const pos=parseInt(document.getElementById('bpm').value);
+  const spm=posToSPM(pos)*globalSpeedMult;
   const bpm=Math.round(spm/currentSig.stepsPerBeat);
   const txt=currentSig.beatSym+'= '+bpm;
   const el=document.getElementById('beat-display');
@@ -3815,11 +3848,13 @@ function updateBeatDisplay(){
   if(bpmSpan) bpmSpan.textContent=txt;
   const spmEl=document.getElementById('spm-display');
   if(spmEl) spmEl.textContent='♪'+Math.round(spm);
-  // Sync slider miroir + nom latin
+  // Sync slider miroir (même position) + affichages
   const mirrorSlider=document.getElementById('metro-bpm');
-  if(mirrorSlider) mirrorSlider.value=parseInt(document.getElementById('bpm').value);
+  if(mirrorSlider) mirrorSlider.value=pos;
   const nameEl=document.getElementById('metro-tempo-name');
   if(nameEl) nameEl.textContent=getTempoName(bpm);
+  const bpmValEl=document.getElementById('metro-bpm-val');
+  if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
 }
 
 function _mgrSelectPreset(id){
@@ -3968,7 +4003,7 @@ function setMetroGlobal(on){
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
 function getMetroBeatSec(){
-  const spm=parseInt(document.getElementById('bpm').value)*globalSpeedMult;
+  const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
   return(60/spm)*currentSig.stepsPerBeat;
 }
 function playMetroClick(atTime,type){
@@ -4049,7 +4084,7 @@ function drawCircles(){
   // Calcul fraction needle par layer
   let fracMeasure = 0;
   if(playing && circleModeView === 'measure'){
-    const spm = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+    const spm = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
     const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
     const measureSec = (60/spm) * stepsPerMeasure;
     const el = now - state[0].startTime;
@@ -4087,7 +4122,7 @@ function drawCircles(){
     const stepsToDraw = [];
     let currentRepM = 0; // répétition courante dans la mesure (pour isPlaying)
     if(circleModeView === 'measure'){
-      const spmM = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+      const spmM = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
       const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
       const patSecM = getBeatSec(li) * n;
       const maxRep = Math.ceil(measureSecM / patSecM);
@@ -4197,7 +4232,7 @@ function circleHitTest(x, y){
     const n = state[li].pattern.length, r = radii[li];
     const pts = [];
     if(circleModeView === 'measure'){
-      const spmM = parseInt(document.getElementById('bpm').value) * globalSpeedMult;
+      const spmM = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
       const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
       const maxRep = Math.ceil(measureSecM / (getBeatSec(li) * n));
       for(let rep=0; rep<maxRep; rep++)
@@ -7396,7 +7431,7 @@ function attachEvents(){
   {
     const btnT=document.getElementById('btn-tempo');
     const bpmSlider=document.getElementById('bpm');
-    const LONG_MS=350, DRAG_PX=6, SPM_PER_PX=1;
+    const LONG_MS=350, DRAG_PX=6, POS_PER_PX=2;
     let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
 
     function toggleTempsWrap(){
@@ -7423,7 +7458,7 @@ function attachEvents(){
       if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
       if(!_dragMoved){ clearTimeout(_longTimer); } // drag détecté → annuler section toggle
       _dragMoved=true;
-      const newVal=Math.max(30,Math.min(400,Math.round(_startVal+dx*SPM_PER_PX)));
+      const newVal=Math.max(0,Math.min(1000,Math.round(_startVal+dx*POS_PER_PX)));
       bpmSlider.value=newVal; updateBeatDisplay();
       _dragOverlay.show('♩= '+Math.round(parseInt(bpmSlider.value)*globalSpeedMult/currentSig.stepsPerBeat));
     });
@@ -7521,6 +7556,41 @@ function attachEvents(){
     updateBeatDisplay();
     updateSpmDisplay();
   });
+  // ── Boutons +/- tempo (1 BPM par clic, répétition sur appui long) ──
+  function _adjustTempoBPM(delta){
+    const sl=document.getElementById('bpm');
+    const curBPM=Math.round(posToBPM(parseInt(sl.value)));
+    const newBPM=Math.max(_BPM_MIN,Math.min(_BPM_MAX,curBPM+delta));
+    sl.value=bpmToPos(newBPM);
+    document.getElementById('metro-bpm').value=sl.value;
+    updateBeatDisplay();updateSpmDisplay();
+  }
+  ['metro-bpm-minus','metro-bpm-plus'].forEach(id=>{
+    const btn=document.getElementById(id);if(!btn)return;
+    const delta=id.includes('minus')?-1:1;
+    let _rpt=null;
+    btn.addEventListener('pointerdown',()=>{_adjustTempoBPM(delta);_rpt=setTimeout(()=>{_rpt=setInterval(()=>_adjustTempoBPM(delta),60);},400);});
+    ['pointerup','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{clearTimeout(_rpt);clearInterval(_rpt);}));
+  });
+  // ── Saisie manuelle BPM (double-clic sur la valeur) ──
+  document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
+    const valEl=document.getElementById('metro-bpm-val');
+    const curBPM=Math.round(posToBPM(parseInt(document.getElementById('bpm').value)));
+    const inp=document.createElement('input');
+    inp.type='number';inp.className='mpv-tempo-input';
+    inp.min=_BPM_MIN;inp.max=_BPM_MAX;inp.value=curBPM;
+    valEl.replaceWith(inp);inp.select();
+    function _commit(){
+      const v=Math.max(_BPM_MIN,Math.min(_BPM_MAX,parseInt(inp.value)||curBPM));
+      const pos=bpmToPos(v);
+      document.getElementById('bpm').value=pos;
+      document.getElementById('metro-bpm').value=pos;
+      updateBeatDisplay();updateSpmDisplay();
+      inp.replaceWith(valEl);
+    }
+    inp.addEventListener('blur',_commit,{once:true});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur();}if(e.key==='Escape'){inp.replaceWith(valEl);}});
+  });
   // ── Menu ≡ gestion presets ──
   function _openMetroMgr(){buildMetroMgrModal();document.getElementById('lib-overlay-metro').classList.remove('hidden');document.getElementById('lib-panel-metro').classList.remove('hidden');}
   function _closeMetroMgr(){document.getElementById('lib-overlay-metro').classList.add('hidden');document.getElementById('lib-panel-metro').classList.add('hidden');}
@@ -7559,9 +7629,9 @@ function attachEvents(){
     metroPatternDirty=false; _editingMetroPresetId=null;
     if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
       const slider=document.getElementById('bpm');
-      const currentSPM=parseInt(slider.value);
+      const currentSPM=posToSPM(parseInt(slider.value));
       const oldBPM=currentSPM/oldSig.stepsPerBeat;
-      slider.value=Math.max(40,Math.min(960,Math.round(oldBPM*currentSig.stepsPerBeat)));
+      slider.value=spmToPos(Math.round(oldBPM*currentSig.stepsPerBeat));
     }
     updateBeatDisplay();
     _tapN=currentSig.beatsPerMeasure;
@@ -7798,7 +7868,7 @@ function attachEvents(){
         for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
         const spm=Math.round((60000/avgMs)*currentSig.stepsPerBeat);
-        document.getElementById('bpm').value=Math.max(40,Math.min(960,spm));
+        document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*(currentSig?.stepsPerBeat||2),Math.min(_BPM_MAX*(currentSig?.stepsPerBeat||2),spm)));
         updateBeatDisplay();
         _tapCalculated=true;
         tapCount.textContent='▶';
