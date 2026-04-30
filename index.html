@@ -756,7 +756,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.75</span>
+      <span class="app-version">v3.4.76</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1929,7 +1929,7 @@ const LOOKAHEAD=0.1;
 const SCHED_MS=25;
 
 function getAC(){
-  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}
+  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
   return ac;
 }
 
@@ -2070,7 +2070,7 @@ function stopPlay(){
 
 function togglePlay(){
   if(!playing){
-    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
     ac.resume(); // iOS 18 : resume() synchrone dans le handler de clic
     document.getElementById('btn-play').textContent='■';
     document.getElementById('btn-play').classList.add('active');
@@ -2146,8 +2146,9 @@ function refreshMenuBtnStates(){
 }
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
 let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
-let bandMuted = false;    // Mute global band (btn-vol court)
-let bandVolume = 100;     // Volume band 0-100 (btn-vol long+drag)
+let bandMuted = false;    // Mute global band
+let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
+let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
@@ -3493,9 +3494,11 @@ function buildSoundPanel(){
     {key:'noise',  label:'Noise',    cls:LAYERS[2].cls, ss:soundState[2]},
   ];
   rows.forEach(r=>cont.appendChild(buildSoundRow(r.key,r.label,r.cls,r.ss)));
-  const sep=document.createElement('div');sep.className='sound-sep';cont.appendChild(sep);
-  cont.appendChild(buildSoundRow('thumbL','Main G','c-thumb-l',soundStateThumb[0]));
-  cont.appendChild(buildSoundRow('thumbR','Main D','c-thumb-r',soundStateThumb[1]));
+  if(jouerOpen){
+    const sep=document.createElement('div');sep.className='sound-sep';cont.appendChild(sep);
+    cont.appendChild(buildSoundRow('thumbL','Main G','c-thumb-l',soundStateThumb[0]));
+    cont.appendChild(buildSoundRow('thumbR','Main D','c-thumb-r',soundStateThumb[1]));
+  }
 }
 
 function buildSoundRow(key,label,cls,ss){
@@ -7520,11 +7523,12 @@ function attachEvents(){
     }
     function toggleBandSection(){
       sonsOuvert=!sonsOuvert;
+      if(sonsOuvert) instrOuvert=true; // toujours ouvrir les layers au tap
       const bar=document.querySelector('.band-bar');
       if(bar){
         bar.classList.toggle('visible',sonsOuvert);
         const btnInstr=bar.querySelector('.btn-volet-band');
-        if(btnInstr)btnInstr.classList.toggle('open',instrOuvert);
+        if(btnInstr){ btnInstr.textContent=instrOuvert?'Instru ▼':'Instru ▶'; btnInstr.classList.toggle('open',instrOuvert); }
       }
       btnV.classList.toggle('active',sonsOuvert);
       const bc=document.getElementById('band-content');
@@ -7555,9 +7559,7 @@ function attachEvents(){
     btnV.addEventListener('pointerup',()=>{
       clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
       if(_dragMoved||_longFired) return;
-      const now=Date.now();
-      if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
-      else { setBandMuted(!bandMuted); _lastTap=now; }
+      toggleBandSection();
     });
 
     btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
@@ -8036,25 +8038,26 @@ function attachEvents(){
   // ── Jouer (volet mains) ──
   const btnJouer=document.getElementById('btn-jouer');
   const playDrawer=document.getElementById('play-drawer');
-  btnJouer.addEventListener('click',()=>{
-    playDrawer.classList.toggle('open');
-    btnJouer.classList.toggle('active',playDrawer.classList.contains('open'));
-  });
+  const _syncJouerOpen=()=>{
+    jouerOpen=playDrawer.classList.contains('open');
+    btnJouer.classList.toggle('active',jouerOpen);
+    buildSoundPanel();
+  };
+  btnJouer.addEventListener('click',()=>{ playDrawer.classList.toggle('open'); _syncJouerOpen(); });
   document.getElementById('play-drawer-close').addEventListener('click',()=>{
-    playDrawer.classList.remove('open');
-    btnJouer.classList.remove('active');
+    playDrawer.classList.remove('open'); _syncJouerOpen();
   });
 
   // ── Mains ──
   document.getElementById('play-thumb-l').addEventListener('pointerdown',e=>{
     e.preventDefault();
-    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}ac.resume();
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
     playConga(false);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
   document.getElementById('play-thumb-r').addEventListener('pointerdown',e=>{
     e.preventDefault();
-    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();}ac.resume();
+    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
     playConga(true);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
@@ -8214,6 +8217,8 @@ const _dragOverlay=(()=>{
 // Lancer l'application
 start();
 attachEvents();
+// Maintenir l'AudioContext actif après retour sur la page (iOS suspend AC en arrière-plan)
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && ac) ac.resume(); });
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
