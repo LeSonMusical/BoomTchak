@@ -743,7 +743,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.66</span>
+      <span class="app-version">v3.4.67</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -3875,7 +3875,7 @@ function buildMetroMgrModal(){
     // Permissions par rôle
     const canRename=isMX||isOwnDraft;
     const canDelete=isMX||isOwnDraft;
-    const canDrag=isMX&&!isBase; // MX réordonne les presets école, pas les presets de base
+    const canDrag=isMX; // MX peut réordonner tous les presets (base inclus)
 
     const item=document.createElement('div');
     item.className='lib-item'+(isCurrent?' mpv-mgr-active':'');
@@ -3939,7 +3939,14 @@ function buildMetroMgrModal(){
     item.addEventListener('drop',e=>{
       e.preventDefault();item.classList.remove('lib-item-drag-over');
       const srcId=e.dataTransfer.getData('text')||_mgrDragId;if(!srcId||srcId===p.id)return;
-      const arr=packCours.metroPresets||[];
+      if(!packCours.metroPresets) packCours.metroPresets=[];
+      // S'assurer que les deux items sont dans packCours (sinon les ajouter depuis metroPresets)
+      [srcId,p.id].forEach(id=>{
+        if(!packCours.metroPresets.find(x=>x.id===id)){
+          const mp=metroPresets.find(x=>x.id===id);if(mp)packCours.metroPresets.push({...mp});
+        }
+      });
+      const arr=packCours.metroPresets;
       const si=arr.findIndex(x=>x.id===srcId),di=arr.findIndex(x=>x.id===p.id);
       if(si<0||di<0)return;
       const[moved]=arr.splice(si,1);arr.splice(di,0,moved);
