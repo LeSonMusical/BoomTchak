@@ -755,7 +755,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.70</span>
+      <span class="app-version">v3.4.71</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -2673,6 +2673,12 @@ function buildLayers(){
       } else {
         // /2 → normal
         state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=true;
+      }
+      // Hors lecture : appliquer immédiatement (pas de cycle à synchroniser)
+      if(!playing){
+        state[li].doubleOn=!!state[li].pendingDouble;
+        state[li].halfOn=!!state[li].pendingHalf;
+        state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;
       }
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
