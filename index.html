@@ -755,7 +755,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.71</span>
+      <span class="app-version">v3.4.72</span>
     </div>
   </div>
   <div class="top-bar-right">
@@ -1689,6 +1689,7 @@ let state=LAYERS.map(()=>({
   stepPos:0, nextStepTime:0, startTime:0,
   muted:false, halfOn:false, doubleOn:false, ternOn:false,
   pendingHalf:false, pendingDouble:false, pendingClear:false,
+  nextSpeedDir:'double',
   wrapped:false,
 }));
 
@@ -2201,6 +2202,7 @@ function applyGroove(grooveId){
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
+    state[li].nextSpeedDir=gl.doubleOn?'half':'double';
     state[li].wrapped=false;
   });
 
@@ -2645,7 +2647,7 @@ function buildLayers(){
     modPanel.id='mod-panel-'+li;
 
     // — Vitesse cyclique = → ×2 → /2 → = —
-    const bSpeed=document.createElement('button');bSpeed.className='btn-mod';bSpeed.id='mod-speed-'+li;bSpeed.title='Vitesse : tap pour cycler = → ×2 → /2 → = (appliqué au prochain cycle)';
+    const bSpeed=document.createElement('button');bSpeed.className='btn-mod';bSpeed.id='mod-speed-'+li;bSpeed.title='Vitesse : tap pour cycler = → ×2 → = → /2 → = … (appliqué au prochain cycle)';
     let bTern; // déclaré ici, initialisé après (guard dans updateSpeedBtns)
     const updateSpeedBtns=()=>{
       let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
@@ -2665,13 +2667,16 @@ function buildLayers(){
       if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
       if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
       if(!nextHalf && !nextDbl){
-        // normal → ×2
-        state[li].pendingDouble=true;state[li].pendingHalf=false;state[li].pendingClear=false;
-      } else if(nextDbl){
-        // ×2 → /2
-        state[li].pendingHalf=true;state[li].pendingDouble=false;state[li].pendingClear=false;
+        // = : aller dans la direction mémorisée, puis mémoriser l'opposé
+        if(state[li].nextSpeedDir==='half'){
+          state[li].pendingHalf=true;state[li].pendingDouble=false;state[li].pendingClear=false;
+          state[li].nextSpeedDir='double';
+        } else {
+          state[li].pendingDouble=true;state[li].pendingHalf=false;state[li].pendingClear=false;
+          state[li].nextSpeedDir='half';
+        }
       } else {
-        // /2 → normal
+        // ×2 ou /2 → toujours revenir à =
         state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=true;
       }
       // Hors lecture : appliquer immédiatement (pas de cycle à synchroniser)
