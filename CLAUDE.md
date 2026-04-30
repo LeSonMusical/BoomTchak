@@ -66,22 +66,21 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.49** (session 2026-04-28)
+**v3.4.77** (session 2026-04-30)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
-| v3.4.32 | Correctif critique groove : `applyGroove` préserve `state[li].patternId` avant early return ; `buildLayers` priorise `patternId` sur `findPatternBySeq` ; handler changement pattern étendu à MX |
-| v3.4.33 | Double affichage BPM + SPM dans la barre tempo ; préférence `sigChangeLock` (SPM constant vs BPM constant sur changement de métrique) |
-| v3.4.34 | Metro pleine largeur en paysage ; slider tempo adaptatif ; sig-sel compact ; défaut `sigChangeLock:'bpm'` |
-| v3.4.35 | Largeur sig-sel corrigée à `4.2ch` (exactement 4 caractères, indépendant du DPI/zoom) |
-| v3.4.36–37 | Vue circulaire : toggle ↺ Pattern / ↺ Mesure ; mode Mesure par défaut ; steps positionnés en fraction de mesure avec répétitions si pattern < mesure |
-| v3.4.38–42 | Anneau "playing" sur l'occurrence active uniquement (`currentRepM`) ; visual ghost : disque fill à 62% du rayon + anneau vide extérieur (même taille totale) |
-| v3.4.43–44 | Step soft (×) : 40 % en vue linéaire sans bordure colorée ; 60 % en vue circulaire |
-| v3.4.45–46 | `buildStepsDOM` rafraîchit le cercle automatiquement (couvre load pattern, mods, rotation, mute, signature) |
-| v3.4.47 | `applyGroove` : resync alignée sur le prochain temps 1 du métronome (fin de mesure courante) |
-| v3.4.48 | Encyclopédie : `misc_tempo` (SPM/BPM dual), `misc_signature` (verrou métrique), `misc_mesure` (↺ Mesure), nouvel article `misc_visualisation` (vues linéaire/circulaire, modes Pattern/Mesure, fantômes) |
 | v3.4.49 | Nouvelles signatures : 7/4 (♩, 7 temps), 7/8 / 11/8 / 13/8 (♪ croche, aksak) ; encyclopédie `misc_signature` étendue |
+| v3.4.69 | Bouton `+` tempo : `min-width:0` pour éviter overflow ; texte 3 colonnes MPV plus visible (noir clair / violet vif sombre) ; séparateur tap tempo |
+| v3.4.70 | Bouton Tap centré, 1/3 de la ligne ; `metrics▶` à droite ; viz pattern centrée |
+| v3.4.71 | Vue circulaire : rafraîchissement immédiat sur changement vitesse ×2/÷2 quand non-playing |
+| v3.4.72 | Cycle vitesse : toujours passer par `=` (= → ×2 → = → ÷2 → = → …) |
+| v3.4.73 | Overlay BPM corrigé ; overlay centré verticalement ; btn-view avant btn-metro ; btn-metro frameless ; approbation MX affiche auteur |
+| v3.4.74 | Top bar grille 3 colonnes ; reset animation métro (`_lastMetroVizStep=-1`) |
+| v3.4.75 | Viz métro toujours visible (hors sous-volet caché) ; `highlightMetroStep` temps-réel via `ac.currentTime - metroStartTime` |
+| v3.4.76 | AudioContext `{latencyHint:'interactive'}` ; Page Visibility AC resume ; btn-vol → volet band ; `jouerOpen` ; Main G/D conditionnel |
+| v3.4.77 | Alignement labels sections : `min-width:44px` sur `.section-bar-lbl` et `.btn-metro-main` (padding:0) |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
