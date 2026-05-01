@@ -828,7 +828,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.3</span>
+      <span class="app-version">v3.5.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1856,6 +1856,12 @@ function beatSymFromUnit(beatUnit, subdivision) {
   if (beatUnit === 8) return '♪';
   return '♩';
 }
+function familleFromUnit(beatUnit, subdivision) {
+  if (beatUnit === 2) return 'breve';
+  if (beatUnit === 8 && subdivision >= 3) return 'ternaire';
+  if (beatUnit === 8) return 'aksak';
+  return 'binaire';
+}
 
 const SIG_FAMILLES=[
   {id:'binaire', label:'Binaire ♩'},
@@ -1890,6 +1896,7 @@ function rebuildMetroPresets() {
     stepsPerBeat: p.stepsPerBeat || p.subdivision,
     beatSteps:    p.beatSteps    || p.subdivision,
     beatSym:      p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
+    famille:      p.famille      || familleFromUnit(p.beatUnit || 4, p.subdivision || 2),
     metroPattern: Array.isArray(p.metroPattern) ? p.metroPattern
                   : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
   });
@@ -5060,7 +5067,7 @@ async function sbSaveMetroPreset(presetId) {
   if (!p) p = metroPresets.find(x => x.id === presetId);
   if (!p || !authSession) return false;
   const isMX = authProfile?.role === 'mx';
-  const preservedSource = isMX ? (p.source || 'school') : 'teacher';
+  const preservedSource = isMX ? 'school' : 'teacher';
   try {
     await sbFetch('/rest/v1/metro_presets', {
       method: 'POST',
@@ -8124,6 +8131,7 @@ function attachEvents(){
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
       stepsPerBeat: sub, beatSteps: sub,
       beatSym: beatSymFromUnit(unit, sub),
+      famille: familleFromUnit(unit, sub),
       metroPattern: pat,
       source: 'teacher', localStatus: 'draft',
     };
