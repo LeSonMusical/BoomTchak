@@ -411,13 +411,27 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-tag-add:hover{border-color:var(--pm-ac,#4a3d8a);color:var(--pm-ac,#4a3d8a);}
 .pm-fam-btn.palette{font-weight:600;color:var(--pm-ac,#4a3d8a);background:var(--pm-bg2,#f5f3f0);border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-fam-btn.pm-fam-cancel{color:#c44;font-weight:600;}
-.pm-fam-btn.pm-fam-new{color:#0a0;border-top:1px dashed #ccc;margin-top:6px;}
+.pm-fam-btn.pm-fam-new{color:#0a0;border-top:1px dashed #ccc;margin-top:6px;text-align:right;}
+/* Fond colonne gauche en mode palette */
+.pm-fam-col.pm-palette{background:var(--pm-bg2,#f5f3f0);border-right-color:var(--pm-ac,#4a3d8a);}
+/* Rangées famille en mode gérer */
+.pm-fam-manage-row{display:flex;align-items:center;padding:6px 8px;border-bottom:1px solid #f0ede8;gap:3px;}
+.pm-fam-manage-row.pm-fam-active{background:var(--pm-bg2,#f5f3f0);border-left:2px solid var(--pm-ac,#4a3d8a);padding-left:6px;}
+.pm-fam-name-el{flex:1;font-size:11px;color:#555;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 0;}
+.pm-fam-name-el:hover{color:var(--pm-ac,#4a3d8a);}
+.pm-fam-ren-btn,.pm-fam-del-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;padding:0 2px;flex-shrink:0;line-height:1;}
+.pm-fam-ren-btn:hover,.pm-fam-del-btn:hover{opacity:1;}
 .pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;}
 .pm-drag-handle{font-size:15px;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;}
-.pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;}
+.pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging{opacity:.4;}
 .pm-reorder.pm-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
+body.dark-mode .pm-fam-col.pm-palette{background:rgba(255,255,255,.04);border-right-color:var(--pm-ac);}
+body.dark-mode .pm-fam-manage-row{border-color:#2a2a28;}
+body.dark-mode .pm-fam-manage-row.pm-fam-active{background:#2a2a28;}
+body.dark-mode .pm-fam-name-el{color:#aaa;}
+body.dark-mode .pm-fam-ren-btn,body.dark-mode .pm-fam-del-btn{color:#aaa;}
 body.dark-mode .pm-mode-btn{border-color:#444;color:#aaa;}
 body.dark-mode .pm-mode-btn.active{background:var(--pm-ac);color:#fff;border-color:var(--pm-ac);}
 body.dark-mode .pm-tag-chip{background:#2a2a28;}
@@ -842,7 +856,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.8</span>
+      <span class="app-version">v3.5.9</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2515,10 +2529,25 @@ function openPresetModal(cfg){
   let _paletteOutHandler=null;
   function cancelPalette(){paletteTarget=null;if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}buildFamCol();buildItems();}
 
+  function pmNewFamille(){
+    const nom=prompt('Nom de la nouvelle famille :');if(!nom?.trim())return;
+    const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
+    packCours.familles.push(fam);
+    saveToStorage();rebuildAllFamFilters();buildPublishSection();
+    buildFamCol();buildItems();
+  }
+
+  function pmDeleteFam(fam){
+    const count=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length
+              +packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
+    libDeleteFamille(fam.id,count);
+  }
+
   function buildFamCol(){
     famCol.innerHTML='';
     if(paletteTarget){
-      // Mode palette : choisir une famille à taguer
+      // Mode palette : fond coloré, familles sélectionnables pour taguer
+      famCol.classList.add('pm-palette');
       const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
       cancel.addEventListener('click',cancelPalette);
       famCol.appendChild(cancel);
@@ -2529,6 +2558,12 @@ function openPresetModal(cfg){
         b.addEventListener('click',()=>{pmAddTag(paletteTarget,f.id);cancelPalette();});
         famCol.appendChild(b);
       });
+      // + Nouvelle famille en mode palette (MX uniquement)
+      if(authProfile?.role==='mx'){
+        const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
+        nf.addEventListener('click',e=>{e.stopPropagation();pmNewFamille();});
+        famCol.appendChild(nf);
+      }
       // Clic sur la colonne items → annuler palette
       if(!_paletteOutHandler){
         _paletteOutHandler=()=>cancelPalette();
@@ -2536,28 +2571,48 @@ function openPresetModal(cfg){
       }
       return;
     }
+    // Hors palette : retirer la classe fond coloré
+    famCol.classList.remove('pm-palette');
     // Nettoyer listener palette si présent
     if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}
-    const mkBtn=(id,lbl)=>{
+
+    // Filtres fixes (Tout / Perso) — toujours visibles
+    const mkFilterBtn=(id,lbl)=>{
       const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
       b.textContent=lbl;
-      b.addEventListener('click',()=>{famFilter=id;paletteTarget=null;buildFamCol();buildItems();});
+      b.addEventListener('click',()=>{famFilter=id;buildFamCol();buildItems();});
       famCol.appendChild(b);
     };
-    mkBtn('all','Tout');
-    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkBtn('__teacher__','Perso');
-    getFams().forEach(f=>mkBtn(f.id,f.nom));
-    // + Nouvelle famille (MX uniquement, en mode gérer)
-    if(manageMode&&authProfile?.role==='mx'){
-      const newFamBtn=document.createElement('button');newFamBtn.className='pm-fam-btn pm-fam-new';newFamBtn.textContent='＋ Nouvelle famille';
-      newFamBtn.addEventListener('click',()=>{
-        const nom=prompt('Nom de la nouvelle famille :');if(!nom?.trim())return;
-        const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
-        packCours.familles.push(fam);
-        saveToStorage();rebuildAllFamFilters();buildPublishSection();
-        buildFamCol();buildItems();
+    mkFilterBtn('all','Tout');
+    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
+
+    if(manageMode&&(cfg.type==='groove'||cfg.type==='pattern')){
+      // Mode gérer : rangées famille avec rename + delete
+      getFams().forEach(f=>{
+        const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
+        const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
+        nameEl.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
+        const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
+        renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
+        const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
+        delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
+        row.appendChild(nameEl);row.appendChild(renBtn);row.appendChild(delBtn);
+        famCol.appendChild(row);
       });
-      famCol.appendChild(newFamBtn);
+      // + Nouvelle famille (MX uniquement)
+      if(authProfile?.role==='mx'){
+        const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
+        nf.addEventListener('click',pmNewFamille);
+        famCol.appendChild(nf);
+      }
+    } else {
+      // Mode normal : boutons filtre simples
+      getFams().forEach(f=>{
+        const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
+        b.textContent=f.nom;
+        b.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
+        famCol.appendChild(b);
+      });
     }
   }
 
