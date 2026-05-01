@@ -61,7 +61,9 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ─── SECTION TEMPS ─── */
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
-.sig-sel{font-size:9px;padding:1px 0;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;width:4.2ch;min-width:20px;appearance:none;-webkit-appearance:none;text-align:center}
+.sig-sel{display:none}
+.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;min-width:28px;text-align:center;white-space:nowrap;}
+.sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
 .spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
 .temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
@@ -438,12 +440,15 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* ─── PANEL ≡ BIBLIOTHÈQUE ─── */
 .lib-overlay{position:fixed;inset:0;z-index:185;background:rgba(0,0,0,.3)}
 .lib-overlay.hidden{display:none}
-.lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
 .lib-panel.hidden{display:none}
-.lib-panel-head{display:flex;align-items:center;gap:6px;padding:9px 12px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0;flex-wrap:wrap}
-.lib-head-label{font-size:11px;font-weight:600;color:#555;flex-shrink:0;white-space:nowrap}
+.lib-panel-head{display:flex;flex-direction:column;gap:6px;padding:9px 12px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.lib-h1{display:flex;align-items:center;gap:6px}
+.lib-h2{display:flex;align-items:center;gap:6px}
+.lib-h1 .lib-head-label{flex:1;min-width:0}
+.lib-h2 .lib-fam-filter-sel{flex:1;min-width:0}
+.lib-head-label{font-size:11px;font-weight:600;color:#555;white-space:nowrap}
 .lib-head-secname{font-weight:800;font-size:12px}
-.lib-panel-head .lib-fam-filter-sel{flex:1;min-width:0}
 /* Familles déplacées en bas — même teinte que l'en-tête */
 .lib-fam-bottom{border-top:none}
 .lib-fam-bottom .lib-fam-summary{border-top:1px solid rgba(0,0,0,.07)}
@@ -667,7 +672,7 @@ body.dark-mode .btn-mute-lbl{background:var(--cc);color:#fff}
 body.dark-mode .btn-mute-lbl.muted{background:#3a3a38;color:#555}
 body.dark-mode .temps-bar{background:#1e1c2a;border-bottom-color:#2a2448}
 body.dark-mode .temps-bar .section-bar-lbl{color:#a89fd0}
-body.dark-mode .sig-sel{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
+body.dark-mode .sig-sel-btn{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .beat-display{color:#a89fd0}
 body.dark-mode .spm-display{color:#555}
 body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
@@ -743,10 +748,9 @@ body.dark-mode .save-sheet-box,body.dark-mode .psp-box{background:#252522;color:
 body.dark-mode .lib-panel{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333330}
 /* Recherche dans lib panels */
-.lib-search-input{flex:0 0 auto;width:72px;font-size:10px;padding:2px 6px 2px 20px;border:1px solid #ccc;border-radius:10px;outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cline x1='21' y1='21' x2='15' y2='15'/%3E%3C/svg%3E") no-repeat 5px center;background-size:11px}
+.lib-search-input{flex:1;width:100%;font-size:10px;padding:2px 6px 2px 20px;border:1px solid #ccc;border-radius:6px;outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cline x1='21' y1='21' x2='15' y2='15'/%3E%3C/svg%3E") no-repeat 5px center;background-size:11px}
 .lib-search-input:focus{border-color:#6B5FA5;box-shadow:0 0 0 2px rgba(107,95,165,.15)}
 body.dark-mode .lib-search-input{background-color:#333;border-color:#555;color:#e0ddd8}
-@media (orientation:portrait),(max-width:480px){.lib-search-input{order:-1;flex:1 0 100%;width:100%;border-radius:6px;padding-left:22px}}
 /* Modal Export MIDI */
 .midi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300}
 .midi-overlay.hidden{display:none}
@@ -821,7 +825,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.1</span>
+      <span class="app-version">v3.5.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -888,9 +892,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
-    <select class="sig-sel" id="sig-sel">
-      <option value="4/4" selected>4/4</option>
-    </select>
+    <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="btn-metro-mgr" id="btn-metro-presets-mgr" title="Gérer les presets métronome">≡</button>
     <span class="beat-display" id="beat-display">♩= 100</span>
     <span class="spm-display" id="spm-display" title="Steps Par Minute (vitesse de la croche)">♪200</span>
@@ -995,8 +997,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="lib-overlay hidden" id="lib-overlay-metro"></div>
   <div class="lib-panel hidden" id="lib-panel-metro">
     <div class="lib-panel-head">
-      <div class="lib-head-label">Gérer les <span class="lib-head-secname">Presets métronome</span></div>
-      <button class="lib-panel-close" id="btn-metro-mgr-close">✕</button>
+      <div class="lib-h1">
+        <div class="lib-head-label">Gérer les <span class="lib-head-secname">Presets métronome</span></div>
+        <button class="lib-panel-close" id="btn-metro-mgr-close">✕</button>
+      </div>
     </div>
     <div class="lib-list" id="metro-mgr-list"></div>
     <div class="lib-batch-bar">
@@ -1062,12 +1066,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-bands"></div>
 <div class="lib-panel hidden" id="lib-panel-bands">
   <div class="lib-panel-head">
-    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Bands</span></div>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-bands">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <input type="search" class="lib-search-input" id="lib-search-bands" placeholder="Rechercher…">
-    <button class="lib-panel-close" id="lib-panel-bands-close">✕</button>
+    <div class="lib-h1">
+      <div class="lib-head-label">Organiser les <span class="lib-head-secname">Bands</span></div>
+      <button class="lib-panel-close" id="lib-panel-bands-close">✕</button>
+    </div>
+    <div class="lib-h2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-bands">
+        <option value="all">Toutes les familles</option>
+      </select>
+      <input type="search" class="lib-search-input" id="lib-search-bands" placeholder="Rechercher…">
+    </div>
   </div>
   <div class="lib-list" id="lib-list-bands"></div>
   <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-bands">
@@ -1095,12 +1103,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-patterns"></div>
 <div class="lib-panel hidden" id="lib-panel-patterns">
   <div class="lib-panel-head">
-    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
-    <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
+    <div class="lib-h1">
+      <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
+      <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
+    </div>
+    <div class="lib-h2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
+        <option value="all">Toutes les familles</option>
+      </select>
+      <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
+    </div>
   </div>
   <div class="lib-list" id="lib-list-patterns"></div>
   <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
@@ -1128,12 +1140,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-grooves"></div>
 <div class="lib-panel hidden" id="lib-panel-grooves">
   <div class="lib-panel-head">
-    <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
-    <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
+    <div class="lib-h1">
+      <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
+      <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
+    </div>
+    <div class="lib-h2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
+        <option value="all">Toutes les familles</option>
+      </select>
+      <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
+    </div>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
   <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
@@ -1161,11 +1177,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-overlay hidden" id="lib-overlay-encyclo"></div>
 <div class="lib-panel hidden" id="lib-panel-encyclo">
   <div class="lib-panel-head">
-    <span class="lib-panel-title">Encyclopédie</span>
-    <select class="lib-fam-filter-sel" id="lib-fam-filter-encyclo">
-      <option value="all">Toutes les familles</option>
-    </select>
-    <button class="lib-panel-close" id="lib-panel-encyclo-close">✕</button>
+    <div class="lib-h1">
+      <div class="lib-head-label"><span class="lib-head-secname">Encyclopédie</span></div>
+      <button class="lib-panel-close" id="lib-panel-encyclo-close">✕</button>
+    </div>
+    <div class="lib-h2">
+      <select class="lib-fam-filter-sel" id="lib-fam-filter-encyclo">
+        <option value="all">Toutes les familles</option>
+      </select>
+    </div>
   </div>
   <div class="lib-list" id="lib-list-encyclo"></div>
   <div class="lib-batch-bar">
@@ -1822,21 +1842,28 @@ function beatSymFromUnit(beatUnit, subdivision) {
   return '♩';
 }
 
+const SIG_FAMILLES=[
+  {id:'binaire', label:'Binaire ♩'},
+  {id:'ternaire',label:'Ternaire ♩.'},
+  {id:'aksak',   label:'Aksak ♪'},
+  {id:'breve',   label:'Alla breve 𝅗𝅥'},
+];
+
 const METRO_PRESETS_DEFAULT = [
-  {id:'2/4',  label:'2/4',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'3/4',  label:'3/4',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'4/4',  label:'4/4',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'5/4',  label:'5/4',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'7/4',  label:'7/4',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'6/8',  label:'6/8',  beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'9/8',  label:'9/8',  beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'12/8', label:'12/8', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'7/8',  label:'7/8',  beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'11/8', label:'11/8', beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'13/8', label:'13/8', beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'2/2',  label:'2/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
-  {id:'3/2',  label:'3/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
-  {id:'4/2',  label:'4/2',  beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'2/4',  label:'2/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'3/4',  label:'3/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
+  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
+  {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
+  {id:'2/2',  label:'2/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'3/2',  label:'3/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'4/2',  label:'4/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
 ].map(p => ({...p, metroPattern: generateMetroPattern(p.beatsPerMeasure, p.subdivision)}));
 
 // Runtime : presets par défaut + presets personnalisés (DB/local, via packCours.metroPresets)
@@ -1877,15 +1904,45 @@ function getSigFallback(presetId) {
 }
 
 function buildSigSelector() {
-  const sel = document.getElementById('sig-sel');
-  if (!sel) return;
-  const cur = currentSig?.id || '4/4';
-  sel.innerHTML = metroPresets.map(p =>
-    `<option value="${p.id}"${p.id === cur ? ' selected' : ''}>${p.label || p.id}</option>`
-  ).join('');
-  if (metroPresets.find(p => p.id === cur)) sel.value = cur;
+  const btn = document.getElementById('sig-sel-btn');
+  if (btn) btn.textContent = currentSig?.label || currentSig?.id || '4/4';
   syncMetroControls();
   renderMetroPatternViz();
+}
+
+function changeSig(id) {
+  const oldSig = currentSig;
+  currentSig = getSigFallback(id);
+  metroStepPos = 0; metroBeatPos = 0;
+  metroPatternDirty = false; _editingMetroPresetId = null;
+  if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
+    const slider = document.getElementById('bpm');
+    const currentSPM = posToSPM(parseInt(slider.value));
+    const oldBPM = currentSPM / oldSig.stepsPerBeat;
+    slider.value = spmToPos(Math.round(oldBPM * currentSig.stepsPerBeat));
+  }
+  updateBeatDisplay();
+  _tapN = currentSig.beatsPerMeasure;
+  const ni = document.getElementById('tap-n-input');
+  if (ni) ni.value = _tapN;
+  const tb = document.getElementById('btn-tap-tempo');
+  if (tb) tb.textContent = 'Tap ' + _tapN;
+  _tapTimes = [];
+  const tc = document.getElementById('tap-count');
+  if (tc) tc.textContent = '';
+  LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
+  syncMetroControls();
+  renderMetroPatternViz();
+  buildSigSelector();
+  if (!_suppressGrooveDirty) {
+    const groove = getGroove(currentGrooveId);
+    if (groove && id !== (groove.signature || '4/4')) {
+      groove.signature = id;
+      grooveDirty = true; updateGrooveSaveBtn();
+      markItemDirty(groove, 'signature');
+      buildPublishSection();
+    }
+  }
 }
 
 // Synchronise les contrôles L1 depuis currentSig
@@ -1912,8 +1969,8 @@ function buildSigFromControls() {
   );
   if (match) {
     currentSig = match;
-    const sel = document.getElementById('sig-sel');
-    if (sel) sel.value = match.id;
+    const btn = document.getElementById('sig-sel-btn');
+    if (btn) btn.textContent = match.label || match.id;
   } else {
     // stepsPerBeat dérivé de l'unité de temps (pas de la subdivision)
     // unit=4 noire→2, unit=6 pointée→3, unit=8 croche→1, unit=2 blanche→4
@@ -1946,6 +2003,7 @@ function buildSigFromControls() {
   if (tb) tb.textContent = 'Tap ' + _tapN;
   LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
   renderMetroPatternViz();
+  buildSigSelector();
 }
 
 let metroPatternDirty = false;
@@ -2324,11 +2382,10 @@ function applyGroove(grooveId){
     if(sig){
       _suppressGrooveDirty=true;
       currentSig=sig;
-      const sigEl=document.getElementById('sig-sel');
-      if(sigEl){
-        if(metroPresets.find(p=>p.id===sig.id)) sigEl.value=sig.id;
-        sigEl.dispatchEvent(new Event('change'));
-      }
+      buildSigSelector();
+      LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
+      syncMetroControls();
+      renderMetroPatternViz();
       _suppressGrooveDirty=false;
     }
   }
@@ -2375,7 +2432,7 @@ function render(){
 
 // ── Modal preset (bottom sheet) ───────────────────────────────────────────
 function openPresetModal(cfg){
-  // cfg: {type, currentId, label, accent, bg, onSelect}
+  // cfg: {type, currentId, label, accent, bg, onSelect, compact}
   const existing=document.getElementById('pm-overlay');
   if(existing)existing.remove();
 
@@ -2385,6 +2442,7 @@ function openPresetModal(cfg){
 
   const sheet=document.createElement('div');
   sheet.className='pm-sheet';
+  if(cfg.compact) sheet.style.height='45vh';
   sheet.style.setProperty('--pm-ac', cfg.accent||'#4a3d8a');
   sheet.style.setProperty('--pm-bg2', cfg.bg||'#f5f3f0');
 
@@ -2416,6 +2474,8 @@ function openPresetModal(cfg){
       const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
+    if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
+    if(cfg.type==='sig') return SIG_FAMILLES.map(f=>({id:f.id,nom:f.label}));
     return packCours.bandFamilles||[];
   }
 
@@ -2428,7 +2488,7 @@ function openPresetModal(cfg){
       famCol.appendChild(b);
     };
     mkBtn('all','Tout');
-    if(authProfile&&cfg.type!=='band')mkBtn('__teacher__','Perso');
+    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkBtn('__teacher__','Perso');
     getFams().forEach(f=>mkBtn(f.id,f.nom));
   }
 
@@ -2444,6 +2504,36 @@ function openPresetModal(cfg){
     } else if(cfg.type==='pattern'){
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       items=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+    } else if(cfg.type==='sound'){
+      const soundItems=Object.entries(SOUND_DEFS)
+        .filter(([,d])=>famFilter==='all'||d.cat===famFilter)
+        .map(([id,d])=>({id,nom:d.label,cat:d.cat}));
+      soundItems.forEach(item=>{
+        const row=document.createElement('button');
+        row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.textContent=item.nom;
+        row.addEventListener('click',()=>{cfg.onSelect(item.id);overlay.remove();});
+        itemsWrap.appendChild(row);
+      });
+      requestAnimationFrame(()=>{
+        const cur=itemsWrap.querySelector('.pm-cur');
+        if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
+      });
+      return;
+    } else if(cfg.type==='sig'){
+      const sigs=metroPresets.filter(p=>famFilter==='all'||p.famille===famFilter);
+      sigs.forEach(p=>{
+        const row=document.createElement('button');
+        row.className='pm-item'+(p.id===cfg.currentId?' pm-cur':'');
+        row.textContent=p.label||p.id;
+        row.addEventListener('click',()=>{cfg.onSelect(p.id);overlay.remove();});
+        itemsWrap.appendChild(row);
+      });
+      requestAnimationFrame(()=>{
+        const cur=itemsWrap.querySelector('.pm-cur');
+        if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
+      });
+      return;
     } else {
       items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
     }
@@ -3660,47 +3750,37 @@ function buildSoundRow(key,label,cls,ss){
   header.appendChild(volWrap);
   header.appendChild(arrow);
 
-  // ── Ligne 2 : filtre famille + ≡ menu + preset son + 💾 ─────────────────
+  // ── Ligne 2 : preset son + ≡ menu + 💾 ──────────────────────────────────
   const editRow=document.createElement('div');editRow.className='sound-edit-row hidden';
 
-  // Filtre famille (réutilise .fam-filter — même style que volet pattern)
-  const famSel=document.createElement('select');
-  famSel.className='fam-filter';famSel.title='Famille de sons';famSel.dataset.filterFor='sound';
-  INSTR_FAMILLES.forEach(f=>{
-    const o=document.createElement('option');o.value=f.id;o.textContent=f.label;famSel.appendChild(o);
+  // Bouton preset son (remplace famSel + instrSel)
+  const soundPresetBtn=document.createElement('button');
+  soundPresetBtn.className='pm-preset-btn';
+  const curSoundDef=SOUND_DEFS[ss.soundId];
+  soundPresetBtn.textContent=curSoundDef?curSoundDef.label:'—';
+  soundPresetBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    openPresetModal({
+      type:'sound', currentId:ss.soundId, label:'Son', accent:'#4a7fa5', bg:'#eef4f8',
+      onSelect:(id)=>{
+        ss.soundId=id;
+        const def=SOUND_DEFS[id];
+        soundPresetBtn.textContent=def?def.label:'—';
+      }
+    });
   });
-  famSel.value=soundFamFilter[key]||naturalCat;
-  famSel.addEventListener('pointerdown',e=>e.stopPropagation());
 
   // Bouton ≡ édition menu band
   const menuIco=document.createElement('button');menuIco.className='btn-sec-ico';menuIco.textContent='≡';
   menuIco.title='Gérer les bands';menuIco.style.cssText='font-size:13px;padding:1px 4px';
   menuIco.addEventListener('click',e=>{e.stopPropagation();openLibPanelBands();});
 
-  // Select instrument filtré
-  const instrSel=document.createElement('select');
-  instrSel.className='instr-sel';instrSel.style.flex='1';
-
-  function rebuildInstrSel(){
-    instrSel.innerHTML='';
-    Object.entries(SOUND_DEFS).filter(([,d])=>d.cat===famSel.value).forEach(([id,d])=>{
-      const o=document.createElement('option');o.value=id;o.textContent=d.label;instrSel.appendChild(o);
-    });
-    instrSel.value=ss.soundId;
-    if(!instrSel.value&&instrSel.options.length)instrSel.selectedIndex=0;
-  }
-  rebuildInstrSel();
-
-  famSel.addEventListener('change',e=>{e.stopPropagation();soundFamFilter[key]=famSel.value;rebuildInstrSel();});
-  instrSel.addEventListener('change',e=>{e.stopPropagation();ss.soundId=instrSel.value;});
-  instrSel.addEventListener('pointerdown',e=>e.stopPropagation());
-
   // Bouton 💾 save band
   const saveIco=document.createElement('button');saveIco.className='btn-sec-ico';saveIco.textContent='💾';
   saveIco.title='Sauvegarder le band';saveIco.style.cssText='font-size:11px;padding:1px 4px';
   saveIco.addEventListener('click',e=>{e.stopPropagation();saveBandState(saveIco);});
 
-  editRow.appendChild(famSel);editRow.appendChild(menuIco);editRow.appendChild(instrSel);editRow.appendChild(saveIco);
+  editRow.appendChild(soundPresetBtn);editRow.appendChild(menuIco);editRow.appendChild(saveIco);
 
   // ── Collapsible : Hauteur + Enveloppe ────────────────────────────────────
   const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
@@ -4024,7 +4104,7 @@ function _mgrSelectPreset(id){
   currentSig=getSigFallback(id)||currentSig;
   metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
   _editingMetroPresetId=authProfile?.role==='mx'?id:null;
-  const sel=document.getElementById('sig-sel');if(sel&&metroPresets.find(p=>p.id===id))sel.value=id;
+  buildSigSelector();
   syncMetroControls();renderMetroPatternViz();buildMetroMgrModal();
 }
 function libStartRenamePreset(nameEl,id){
@@ -7924,38 +8004,12 @@ function attachEvents(){
     saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
   });
   // ── Signature ──
-  document.getElementById('sig-sel').addEventListener('change',function(){
-    const oldSig=currentSig;
-    currentSig=getSigFallback(this.value);
-    metroStepPos=0; metroBeatPos=0; // reset au changement de signature (nouveau pattern)
-    metroPatternDirty=false; _editingMetroPresetId=null;
-    if(prefs.sigChangeLock==='bpm' && oldSig && oldSig.id!==currentSig.id){
-      const slider=document.getElementById('bpm');
-      const currentSPM=posToSPM(parseInt(slider.value));
-      const oldBPM=currentSPM/oldSig.stepsPerBeat;
-      slider.value=spmToPos(Math.round(oldBPM*currentSig.stepsPerBeat));
-    }
-    updateBeatDisplay();
-    _tapN=currentSig.beatsPerMeasure;
-    const ni=document.getElementById('tap-n-input');
-    if(ni) ni.value=_tapN;
-    const tb=document.getElementById('btn-tap-tempo');
-    if(tb) tb.textContent='Tap '+_tapN;
-    _tapTimes=[];
-    const tc=document.getElementById('tap-count');
-    if(tc) tc.textContent='';
-    LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
-    syncMetroControls();
-    renderMetroPatternViz();
-    if(!_suppressGrooveDirty){
-      const groove=getGroove(currentGrooveId);
-      if(groove&&this.value!==(groove.signature||'4/4')){
-        groove.signature=this.value;
-        grooveDirty=true; updateGrooveSaveBtn();
-        markItemDirty(groove,'signature');
-        buildPublishSection();
-      }
-    }
+  document.getElementById('sig-sel-btn').addEventListener('click',()=>{
+    openPresetModal({
+      type:'sig', currentId:currentSig?.id||'4/4',
+      label:'Signature', accent:'#4a3d8a', bg:'#efecf8', compact:true,
+      onSelect:(id)=>changeSig(id)
+    });
   });
   // ── L1 : Beats up/down ──
   document.getElementById('mpv-beats-up').addEventListener('click', () => {
@@ -8054,10 +8108,9 @@ function attachEvents(){
       metroPatternDirty = false;
       _editingMetroPresetId = null;
       document.getElementById('modal-metro-save').style.display = 'none';
-      saveToStorage(); rebuildMetroPresets(); buildSigSelector();
+      saveToStorage(); rebuildMetroPresets();
       currentSig = getSigFallback(existingId);
-      const sel = document.getElementById('sig-sel');
-      if (sel && metroPresets.find(p => p.id === existingId)) sel.value = existingId;
+      buildSigSelector();
       renderMetroPatternViz();
       const btn = document.getElementById('modal-metro-confirm');
       if (btn) btn.textContent = 'Sauvegarder';
@@ -8082,8 +8135,7 @@ function attachEvents(){
     rebuildMetroPresets();
     buildSigSelector();
     currentSig = metroPresets.find(p => p.id === id) || currentSig;
-    const sel = document.getElementById('sig-sel');
-    if (sel) sel.value = id;
+    buildSigSelector();
     metroPatternDirty = false;
     _editingMetroPresetId = null;
     document.getElementById('modal-metro-save').style.display = 'none';
@@ -8464,8 +8516,9 @@ function start(){
   });
   if(prefs.applyGrooveBand&&randomGroove.band_defaut&&getBand(randomGroove.band_defaut)){applyBand(randomGroove.band_defaut);}
   if(prefs.applyGrooveSig&&randomGroove.signature){
-    const sigEl=document.getElementById('sig-sel');
-    if(sigEl){sigEl.value=randomGroove.signature;sigEl.dispatchEvent(new Event('change'));}
+    _suppressGrooveDirty=true;
+    changeSig(randomGroove.signature);
+    _suppressGrooveDirty=false;
   }
   globalSpeedMult=1;
   pendingGlobalMult=globalSpeedMult;
