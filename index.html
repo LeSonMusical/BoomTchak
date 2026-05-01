@@ -426,14 +426,15 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-ren-btn,.pm-fam-del-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;padding:0 2px;flex-shrink:0;line-height:1;}
 .pm-fam-ren-btn:hover,.pm-fam-del-btn:hover{opacity:1;}
 .pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;}
-.pm-drag-handle{font-size:15px;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;}
+.pm-drag-handle{font-size:15px;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:1px;}
+.pm-sheet.pm-reorder-on .pm-drag-handle,.pm-sheet.pm-reorder-on .pm-fam-drag{color:var(--pm-ac,#4a3d8a);font-size:13px;}
 .pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging{opacity:.4;}
-.pm-reorder.pm-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
+.pm-reorder.pm-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
-.pm-fam-manage-row.pm-fam-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
+.pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
 .pm-header-search{font-size:11px;border:1px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 8px;background:#fff;display:none;width:120px;outline:none;}
 .pm-header-search.pm-search-open{display:block;}
@@ -874,7 +875,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.3</span>
+      <span class="app-version">v3.6.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2501,7 +2502,7 @@ function openPresetModal(cfg){
   // Boutons mode gérer/réordonner dans le header (groove et pattern uniquement)
   if(cfg.type==='groove'||cfg.type==='pattern'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
-    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='☰';
+    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='⠿';
     modeManage.addEventListener('click',()=>{
       manageMode=!manageMode;if(manageMode){reorderMode=false;sheet.classList.remove('pm-reorder-on');}paletteTarget=null;
       modeManage.classList.toggle('active',manageMode);modeReorder.classList.remove('active');
@@ -2641,7 +2642,7 @@ function openPresetModal(cfg){
         // Poignée drag : mode réordonner seulement (MX ou non, la persistance est gatée côté sbPushSchoolFamOrder)
         if(reorderMode){
           row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
-          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='≡';drag.title='Déplacer';
+          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
           drag.addEventListener('mousedown',e=>e.stopPropagation());
           row.appendChild(drag);
         }
@@ -2842,7 +2843,7 @@ function openPresetModal(cfg){
       items.forEach(item=>{
         const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');div.style.touchAction='none';
         const name=document.createElement('span');name.style.flex='1';name.textContent=item.nom.replace(/^● modifié /,'');
-        const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='≡';
+        const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='⠿';
         div.appendChild(name);div.appendChild(handle);
         // Drag HTML5
         div.addEventListener('dragstart',e=>{_reorderDragSrcId=item.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>div.classList.add('pm-dragging'),0);});
@@ -5216,7 +5217,7 @@ async function sbPushSchoolOrder(type) {
         body: JSON.stringify({ ordre: idx }),
       })
     ));
-  } catch(e) { console.warn('Ordre non persisté :', e); }
+  } catch(e) { console.error('Ordre non persisté :', e); showToast('⚠ Ordre non sauvegardé en base — vérifier la migration (colonne ordre)', 'warn'); }
 }
 
 async function sbPushSchoolFamOrder() {
@@ -5231,7 +5232,7 @@ async function sbPushSchoolFamOrder() {
         body: JSON.stringify({ ordre: idx }),
       })
     ));
-  } catch(e) { console.warn('Ordre familles non persisté :', e); }
+  } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé — migration requise (ALTER TABLE familles ADD COLUMN ordre int)', 'warn'); }
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
