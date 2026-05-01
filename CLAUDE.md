@@ -71,62 +71,72 @@ Merger vers : `main` après chaque session
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
-| v3.4.49 | Nouvelles signatures : 7/4 (♩, 7 temps), 7/8 / 11/8 / 13/8 (♪ croche, aksak) ; encyclopédie `misc_signature` étendue |
-| v3.4.69 | Bouton `+` tempo : `min-width:0` pour éviter overflow ; texte 3 colonnes MPV plus visible (noir clair / violet vif sombre) ; séparateur tap tempo |
-| v3.4.70 | Bouton Tap centré, 1/3 de la ligne ; `metrics▶` à droite ; viz pattern centrée |
-| v3.4.71 | Vue circulaire : rafraîchissement immédiat sur changement vitesse ×2/÷2 quand non-playing |
-| v3.4.72 | Cycle vitesse : toujours passer par `=` (= → ×2 → = → ÷2 → = → …) |
-| v3.4.73 | Overlay BPM corrigé ; overlay centré verticalement ; btn-view avant btn-metro ; btn-metro frameless ; approbation MX affiche auteur |
-| v3.4.74 | Top bar grille 3 colonnes ; reset animation métro (`_lastMetroVizStep=-1`) |
-| v3.4.75 | Viz métro toujours visible (hors sous-volet caché) ; `highlightMetroStep` temps-réel via `ac.currentTime - metroStartTime` |
-| v3.4.76 | AudioContext `{latencyHint:'interactive'}` ; Page Visibility AC resume ; btn-vol → volet band ; `jouerOpen` ; Main G/D conditionnel |
-| v3.4.77 | Alignement labels sections : `min-width:44px` sur `.section-bar-lbl` et `.btn-metro-main` (padding:0) |
-| v3.4.78 | Recherche en temps réel dans les panels Patterns/Grooves/Bands ; export MIDI (modal note+canal par couche, tempo, signature) dans menu `…` |
-| v3.4.79 | Recherche à droite du filtre famille (portrait : remonte au-dessus) ; ordre familles persisté en DB (MX) ; tap court btn-vol = mute/unmute toutes les couches ; metro subdivision indépendante du stepsPerBeat (stepSec = beatSec/subdivision) |
-| v3.4.80 | Correctif critique : modal MIDI déplacé avant `<script>` (était après `</script>` → null.addEventListener crashait `attachEvents()` → tous les boutons morts) |
-
-## Architecture tempo (slider #bpm)
-- Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
-- Le **BPM** musical est dérivé : `BPM = SPM / currentSig.stepsPerBeat`
-- `stepsPerBeat` dans `SIGNATURES` : 2 pour ♩, 3 pour ♩., 4 pour ♩♩
-- Préférence `prefs.sigChangeLock` : `'spm'` (croche constante) ou `'bpm'` (pulsation constante, défaut)
-- Sur changement de métrique avec `sigChangeLock:'bpm'` : `newSPM = oldBPM × newSig.stepsPerBeat`
-- `getMetroBeatSec()` = `(60/spm) * currentSig.stepsPerBeat` — beat métronome (sans `mult` ni `ternFactor`)
-
-## Architecture vue circulaire
-
-### Modes
-- `circleModeView = 'measure'` (défaut) : 1 tour = 1 mesure complète
-- `circleModeView = 'cycle'` : 1 tour = 1 cycle du pattern
-
-### Mode Mesure — formules clés
-- `measureSec = (60/spm) * stepsPerBeat * beatsPerMeasure`
-- `maxRep = Math.ceil(measureSec / patternSec)` — nombre d'occurrences du pattern dans 1 mesure
-- Angle du step `si` à la répétition `rep` : `frac = (si + rep*n) * getBeatSec(li) / measureSec`
-- Occurrence active : `currentRepM = Math.floor(posInMeasure / patternSec)`
-
-### Visual ghost (occurrences répétées)
-- Même diamètre total que les steps normaux
-- Fill à `dotR * 0.62` (anneau vide sur le bord extérieur)
-- Stroke plein à `dotR`
-- L'anneau "playing" n'est dessiné que sur `rep === currentRepM`
-
-### Rafraîchissement automatique
-`buildStepsDOM(li, wrap)` appelle `if(circleView) drawCircles()` en fin.
-Couvre : chargement de pattern, tous les boutons mod, rotation, mute, changement de signature.
-
-## Familles multi-axes (future session)
-- Concept : tags multi-axes AND-filtrables (`style`, `metrique`, `feeling`, `difficulte`, `pedagogue`)
-- Chaque item peut avoir plusieurs tags de différents axes
-- UI : chips multi-select avec filtrage AND inter-axes
-- DB : champ `category` dans `familles` à standardiser ; champ `scope` item-types optionnel
-- **Ne pas implémenter avant décision archi concertée avec Lamberio**
+| v3.5.3 | Son volet : preset+volume toujours visibles (2 rangées header) ; Encyclopédie : champ `category` sur ENCYCLO_MISC + filtre catégorie (Appli/Concepts/Grooves/Patterns) |
+| v3.5.2 | Preset modal étendu : sons (type:'sound'), signature (type:'sig', compact 45vh) ; lib-panel height fixe ; en-tête lib-panel 2 rangées (titre+✕ / filtre+search) |
+| v3.5.1 | Modal preset : hauteur fixe 72vh, layout 2 colonnes stable, boutons layer neutres |
+| v3.5.0 | Remplacement 2 selects (famille+preset) par 1 bouton → bottom-sheet modal `openPresetModal` |
+| v3.4.80 | Correctif critique : modal MIDI déplacé avant `<script>` |
 
 ## Tâches prioritaires (prochaine session)
-1. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (décision archi requise avec Lamberio)
-2. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher' pour soumission
+1. **Mode "gérer" dans openPresetModal** — voir spec complète ci-dessous
+2. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
 3. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
-4. **Migration DB familles** — appliquer `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;` sur Supabase
+4. **Migration DB familles** — `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;`
+
+## Spec : Mode "gérer" dans openPresetModal (prochaine session)
+
+### Objectif
+Intégrer les opérations CRUD (tag, rename, delete, reorder) directement dans le modal de sélection pour Grooves et Patterns. Supprimer les lib-panels Grooves et Patterns (et leurs boutons ≡).
+
+### UX — 3 états du modal
+Header : `[label] [✎ gérer] [↕ réordonner] [✕]`
+
+**État normal (sélection)**
+- Left : familles (filtre passif)
+- Right : items — tap = sélectionner et fermer
+
+**État "gérer" (toggle ✎)**
+- Left : familles deviennent palette active (cliquables pour ajouter tag)
+- Right : items étendus sur 2 lignes :
+  - L1 : `[nom (tap inline = renommer)] [🗑 supprimer]`
+  - L2 : `[tag-fam ×] [tag-fam ×] [+ ajouter famille]`
+- Tap `[+]` sur un item → left column se met en mode palette ; tap famille = ajoute le tag
+- En bas col gauche : `[+ Nouvelle famille]` (MX seulement)
+- En bas col droite : `[+ Nouveau groove/pattern]`
+- Tap item L1 ne sélectionne plus (éviter accidents)
+
+**État "réordonner" (toggle ↕, exclusif avec gérer)**
+- Left : collapse/dim
+- Right : items du filtre actif uniquement, pleine largeur, avec poignée ≡
+- Drag-drop pour réordonner → appel `sbPushSchoolOrder()` au drop
+
+### Règles TX/MX
+- MX : rename/delete/tag → publish direct (buildPublishSection)
+- TX : rename → `_pendingRename` ; tag → section Tags ; delete → draft cancel
+- Création item : ouvre la save-sheet existante
+
+### Ce qui est supprimé
+- Bouton `≡` dans `buildGrooveSection` et dans `buildLayers`
+- `openLibPanelGrooves()`, `openLibPanelPatterns()` et leurs HTML/CSS
+- `#lib-panel-grooves`, `#lib-panel-patterns`, overlays associés
+- Listeners close associés, recherche patterns/grooves
+- Pas de batch delete (supprimé par décision design)
+
+### Ce qui est conservé
+- `#lib-panel-bands` (sons — refonte future)
+- `#lib-panel-encyclo` (refonte future)
+- `#lib-panel-metro` (refonte future)
+- Toutes les fonctions `sbPushSchoolOrder`, `markItemDirty`, `buildPublishSection` — inchangées
+
+### CSS à ajouter (noms suggérés)
+- `.pm-mode-btn` — boutons ✎ ↕ dans le header modal
+- `.pm-item.pm-manage` — item en mode gérer (flex-column, gap)
+- `.pm-item-name-row` — ligne nom + 🗑
+- `.pm-item-tags` — ligne chips famille
+- `.pm-tag-chip` — chip famille (fond coloré, × pour supprimer)
+- `.pm-tag-add` — bouton + ajouter famille
+- `.pm-drag-handle` — poignée ≡ réordonner
+- `.pm-fam-btn.palette` — famille en attente de sélection (highlight)
 
 ## Résolu (session 2026-05-01)
 - ✅ **Recherche temps réel** — champ search dans panels Patterns/Grooves/Bands (filtre par nom)
