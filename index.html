@@ -842,7 +842,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.7</span>
+      <span class="app-version">v3.5.8</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2472,7 +2472,7 @@ function openPresetModal(cfg){
     modeManage.addEventListener('click',()=>{
       manageMode=!manageMode;if(manageMode)reorderMode=false;paletteTarget=null;
       modeManage.classList.toggle('active',manageMode);modeReorder.classList.remove('active');
-      famCol.style.display='';buildFamCol();buildItems();
+      buildFamCol();buildItems();
     });
     modeReorder.addEventListener('click',()=>{
       reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
@@ -2485,10 +2485,13 @@ function openPresetModal(cfg){
 
   function getFams(){
     if(cfg.type==='groove'){
+      // En mode gérer/palette : toutes les familles (y compris les nouvelles vides)
+      if(manageMode||paletteTarget){return packCours.familles;}
       const used=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
     if(cfg.type==='pattern'){
+      if(manageMode||paletteTarget){return packCours.familles;}
       const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
@@ -2509,24 +2512,32 @@ function openPresetModal(cfg){
     return famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
   }
 
+  let _paletteOutHandler=null;
+  function cancelPalette(){paletteTarget=null;if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}buildFamCol();buildItems();}
+
   function buildFamCol(){
     famCol.innerHTML='';
-    if(reorderMode){famCol.style.display='none';return;}
-    famCol.style.display='';
     if(paletteTarget){
       // Mode palette : choisir une famille à taguer
       const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
-      cancel.addEventListener('click',()=>{paletteTarget=null;buildFamCol();buildItems();});
+      cancel.addEventListener('click',cancelPalette);
       famCol.appendChild(cancel);
       const assigned=new Set(paletteTarget.familles||[]);
       getFams().forEach(f=>{
         if(assigned.has(f.id))return;
         const b=document.createElement('button');b.className='pm-fam-btn palette';b.textContent=f.nom;
-        b.addEventListener('click',()=>{pmAddTag(paletteTarget,f.id);paletteTarget=null;buildFamCol();buildItems();});
+        b.addEventListener('click',()=>{pmAddTag(paletteTarget,f.id);cancelPalette();});
         famCol.appendChild(b);
       });
+      // Clic sur la colonne items → annuler palette
+      if(!_paletteOutHandler){
+        _paletteOutHandler=()=>cancelPalette();
+        setTimeout(()=>itemsWrap.addEventListener('click',_paletteOutHandler),0);
+      }
       return;
     }
+    // Nettoyer listener palette si présent
+    if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}
     const mkBtn=(id,lbl)=>{
       const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
       b.textContent=lbl;
@@ -2688,27 +2699,28 @@ function openPresetModal(cfg){
     const items=getFilteredItems();
 
     if(reorderMode){
-      // Mode réordonner : pleine largeur, poignée drag
+      // Mode réordonner : poignée ≡ à droite, touch-action none pour éviter scroll parasite
+      itemsWrap.style.touchAction='none';itemsWrap.style.overflowY='auto';
       items.forEach(item=>{
-        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');
+        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');div.style.touchAction='none';
+        const name=document.createElement('span');name.style.flex='1';name.textContent=item.nom.replace(/^● modifié /,'');
         const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='≡';
-        const name=document.createElement('span');name.textContent=item.nom.replace(/^● modifié /,'');
-        div.appendChild(handle);div.appendChild(name);
+        div.appendChild(name);div.appendChild(handle);
         // Drag HTML5
         div.addEventListener('dragstart',e=>{_reorderDragSrcId=item.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>div.classList.add('pm-dragging'),0);});
         div.addEventListener('dragend',()=>{div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));_reorderDragSrcId=null;});
         div.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(item.id!==_reorderDragSrcId)div.classList.add('pm-drag-over');});
         div.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId&&_reorderDragSrcId!==item.id)pmDrop(_reorderDragSrcId,item.id);});
-        // Drag tactile
-        handle.addEventListener('touchstart',e=>{e.preventDefault();_reorderDragSrcId=item.id;div.classList.add('pm-dragging');},{passive:false});
-        handle.addEventListener('touchmove',e=>{
+        // Drag tactile — sur le div entier (touch-action:none déjà défini)
+        div.addEventListener('touchstart',e=>{e.preventDefault();_reorderDragSrcId=item.id;div.classList.add('pm-dragging');},{passive:false});
+        div.addEventListener('touchmove',e=>{
           e.preventDefault();if(!_reorderDragSrcId)return;
           const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
           const tgt=el?.closest('.pm-reorder');
           itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
           if(tgt&&tgt.dataset.id!==_reorderDragSrcId)tgt.classList.add('pm-drag-over');
         },{passive:false});
-        handle.addEventListener('touchend',e=>{
+        div.addEventListener('touchend',e=>{
           e.preventDefault();const over=itemsWrap.querySelector('.pm-drag-over');
           div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
           if(over&&_reorderDragSrcId&&over.dataset.id!==_reorderDragSrcId)pmDrop(_reorderDragSrcId,over.dataset.id);
@@ -2718,6 +2730,7 @@ function openPresetModal(cfg){
       });
       return;
     }
+    itemsWrap.style.touchAction='';itemsWrap.style.overflowY='';
 
     if(!items.length&&!manageMode){
       const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';itemsWrap.appendChild(e);
