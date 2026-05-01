@@ -291,5 +291,13 @@ alter table public.metro_presets
 */
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.6.3 — Colonne ordre pour patterns, grooves, familles
+-- À exécuter dans Supabase SQL Editor (une seule fois)
+-- ═══════════════════════════════════════════════════════════════════════════
+alter table public.patterns  add column if not exists ordre int default 0;
+alter table public.grooves   add column if not exists ordre int default 0;
+alter table public.familles  add column if not exists ordre int default 0;
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════

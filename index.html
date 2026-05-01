@@ -874,7 +874,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.2</span>
+      <span class="app-version">v3.6.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2634,10 +2634,12 @@ function openPresetModal(cfg){
 
     if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern')){
       const isMx=authProfile?.role==='mx';
+      // Bloquer le scroll du container en mode réordonner (sinon le touch scroll prend la main)
+      famCol.style.touchAction=reorderMode?'none':'';
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-        // Poignée drag : mode réordonner seulement (MX)
-        if(isMx&&reorderMode){
+        // Poignée drag : mode réordonner seulement (MX ou non, la persistance est gatée côté sbPushSchoolFamOrder)
+        if(reorderMode){
           row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
           const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='≡';drag.title='Déplacer';
           drag.addEventListener('mousedown',e=>e.stopPropagation());
@@ -2654,8 +2656,8 @@ function openPresetModal(cfg){
           delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
           row.appendChild(renBtn);row.appendChild(delBtn);
         }
-        // Drag HTML5 : mode réordonner seulement (MX)
-        if(isMx&&reorderMode){
+        // Drag HTML5 : mode réordonner seulement
+        if(reorderMode){
           row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
           row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
@@ -2686,6 +2688,7 @@ function openPresetModal(cfg){
         famCol.appendChild(nf);
       }
     } else {
+      famCol.style.touchAction='';
       // Mode normal : boutons filtre simples
       getFams().forEach(f=>{
         const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
@@ -5008,8 +5011,8 @@ async function sbSyncSchoolPool() {
   updateSyncStatus('Synchronisation…');
   try {
     const [patterns, grooves, familles, encyclo, metroPres] = await Promise.all([
-      sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*'),
-      sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*'),
+      sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
+      sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
       sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]),
