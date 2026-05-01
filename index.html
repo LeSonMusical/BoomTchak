@@ -413,7 +413,11 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-btn.pm-fam-cancel{color:#c44;font-weight:600;}
 .pm-fam-btn.pm-fam-new{color:#0a0;border-top:1px dashed #ccc;margin-top:6px;text-align:right;}
 /* Fond colonne gauche en mode palette */
-.pm-fam-col.pm-palette{background:var(--pm-bg2,#f5f3f0);border-right-color:var(--pm-ac,#4a3d8a);}
+.pm-fam-col.pm-palette{background:var(--pm-ac,#4a3d8a);border-right-color:var(--pm-ac,#4a3d8a);}
+.pm-fam-col.pm-palette .pm-fam-btn{color:#fff;border-color:rgba(255,255,255,.18);}
+.pm-fam-col.pm-palette .pm-fam-btn.palette{background:rgba(255,255,255,.18);}
+.pm-fam-col.pm-palette .pm-fam-btn.pm-fam-cancel{color:#ffd0d0;}
+.pm-fam-col.pm-palette .pm-fam-btn.pm-fam-new{color:#d0ffd0;border-top-color:rgba(255,255,255,.25);}
 /* Rangées famille en mode gérer */
 .pm-fam-manage-row{display:flex;align-items:center;padding:6px 8px;border-bottom:1px solid #f0ede8;gap:3px;}
 .pm-fam-manage-row.pm-fam-active{background:var(--pm-bg2,#f5f3f0);border-left:2px solid var(--pm-ac,#4a3d8a);padding-left:6px;}
@@ -427,7 +431,13 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging{opacity:.4;}
 .pm-reorder.pm-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
-body.dark-mode .pm-fam-col.pm-palette{background:rgba(255,255,255,.04);border-right-color:var(--pm-ac);}
+.pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
+.pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
+.pm-fam-manage-row.pm-fam-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
+.pm-search{font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 7px;min-width:0;flex:1;max-width:140px;background:#fff;}
+body.dark-mode .pm-search{background:#2a2a28;border-color:#444;color:#e0ddd8;}
+.pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+body.dark-mode .pm-fam-col.pm-palette{background:var(--pm-ac);border-right-color:var(--pm-ac);}
 body.dark-mode .pm-fam-manage-row{border-color:#2a2a28;}
 body.dark-mode .pm-fam-manage-row.pm-fam-active{background:#2a2a28;}
 body.dark-mode .pm-fam-name-el{color:#aaa;}
@@ -856,7 +866,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.9</span>
+      <span class="app-version">v3.6.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2470,7 +2480,8 @@ function openPresetModal(cfg){
   let famFilter='all';
   // États modes gérer/réordonner (groove et pattern uniquement)
   let manageMode=false, reorderMode=false, paletteTarget=null;
-  let _reorderDragSrcId=null;
+  let _reorderDragSrcId=null, _famDragSrcId=null;
+  let searchQuery='';
 
   // Corps 2 colonnes : familles à gauche (fixe), items à droite (scroll)
   const body=document.createElement('div');body.className='pm-body';
@@ -2493,8 +2504,13 @@ function openPresetModal(cfg){
       modeReorder.classList.toggle('active',reorderMode);modeManage.classList.remove('active');
       buildFamCol();buildItems();
     });
-    hdr.insertBefore(modeManage,hclose);
-    hdr.insertBefore(modeReorder,hclose);
+    // Champ recherche
+    const searchInp=document.createElement('input');searchInp.className='pm-search';searchInp.type='search';searchInp.placeholder='Chercher…';
+    searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
+    // Groupe boutons mode
+    const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
+    modeGroup.appendChild(searchInp);modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);
+    hdr.insertBefore(modeGroup,hclose);
   }
 
   function getFams(){
@@ -2515,15 +2531,19 @@ function openPresetModal(cfg){
   }
 
   function getFilteredItems(){
+    let result;
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
       const base=allG.filter(g=>g.source!=='pending');
       const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
-      return[...filtered,...pending];
+      result=[...filtered,...pending];
+    } else {
+      const all=packCours.patterns.filter(p=>!p.localDeletePending);
+      result=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
     }
-    const all=packCours.patterns.filter(p=>!p.localDeletePending);
-    return famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+    if(searchQuery){const q=searchQuery.toLowerCase();result=result.filter(i=>i.nom.toLowerCase().includes(q));}
+    return result;
   }
 
   let _paletteOutHandler=null;
@@ -2541,6 +2561,16 @@ function openPresetModal(cfg){
     const count=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length
               +packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
     libDeleteFamille(fam.id,count);
+  }
+
+  function pmDropFam(srcId,tgtId){
+    const fams=packCours.familles;
+    const si=fams.findIndex(f=>f.id===srcId);const ti=fams.findIndex(f=>f.id===tgtId);
+    if(si<0||ti<0)return;
+    const [moved]=fams.splice(si,1);fams.splice(si<ti?ti-1:ti,0,moved);
+    saveToStorage();rebuildAllFamFilters();
+    sbPushSchoolFamOrder();
+    buildFamCol();
   }
 
   function buildFamCol(){
@@ -2587,9 +2617,17 @@ function openPresetModal(cfg){
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
     if(manageMode&&(cfg.type==='groove'||cfg.type==='pattern')){
-      // Mode gérer : rangées famille avec rename + delete
+      const isMx=authProfile?.role==='mx';
+      // Mode gérer : rangées famille avec rename + delete (+ drag MX)
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
+        if(isMx){row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';}
+        // Poignée drag (MX seulement)
+        if(isMx){
+          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='≡';drag.title='Déplacer';
+          drag.addEventListener('mousedown',e=>e.stopPropagation());
+          row.appendChild(drag);
+        }
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
         nameEl.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
         const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
@@ -2597,10 +2635,33 @@ function openPresetModal(cfg){
         const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
         delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
         row.appendChild(nameEl);row.appendChild(renBtn);row.appendChild(delBtn);
+        // Drag HTML5 (MX)
+        if(isMx){
+          row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
+          row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
+          row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
+          row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
+          // Touch drag
+          row.addEventListener('touchstart',e=>{_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:true});
+          row.addEventListener('touchmove',e=>{
+            e.preventDefault();if(!_famDragSrcId)return;
+            const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+            const tgt=el?.closest('.pm-fam-manage-row');
+            famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+            if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
+          },{passive:false});
+          row.addEventListener('touchend',e=>{
+            row.classList.remove('pm-fam-dragging');
+            const over=famCol.querySelector('.pm-fam-drag-over');
+            famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+            if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
+            _famDragSrcId=null;
+          },{passive:true});
+        }
         famCol.appendChild(row);
       });
       // + Nouvelle famille (MX uniquement)
-      if(authProfile?.role==='mx'){
+      if(isMx){
         const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
         nf.addEventListener('click',pmNewFamille);
         famCol.appendChild(nf);
