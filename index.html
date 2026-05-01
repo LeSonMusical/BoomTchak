@@ -828,7 +828,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.5</span>
+      <span class="app-version">v3.5.6</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1997,6 +1997,13 @@ function previewMetroPreset(id) {
   LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
   syncMetroControls(); renderMetroPatternViz(); buildSigSelector();
   _suppressGrooveDirty = false;
+  // Ouvrir le volet métro s'il est fermé
+  const tempsContent = document.getElementById('temps-content');
+  if (tempsContent && !tempsContent.classList.contains('open')) {
+    tempsContent.classList.add('open');
+    const voletBtn = document.getElementById('btn-metro-volet');
+    if (voletBtn) { voletBtn.textContent = 'tempo ▼'; voletBtn.classList.add('open'); }
+  }
 }
 
 // Synchronise les contrôles L1 depuis currentSig
