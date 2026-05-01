@@ -789,7 +789,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.79</span>
+      <span class="app-version">v3.4.80</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1189,6 +1189,28 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-jouer-wrap" id="btn-jouer">
       <span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>
     </button>
+  </div>
+</div>
+
+<!-- Modal Export MIDI -->
+<div class="midi-overlay hidden" id="midi-overlay"></div>
+<div class="midi-modal hidden" id="midi-modal">
+  <div class="midi-modal-head">
+    <span>Export MIDI</span>
+    <button class="midi-modal-close" id="midi-modal-close">✕</button>
+  </div>
+  <div class="midi-modal-body">
+    <div class="midi-layer-hdr">
+      <span>Couche</span><span>Note MIDI</span><span>Canal</span>
+    </div>
+    <div id="midi-layer-grid"></div>
+    <div class="midi-opts">
+      <label><input type="checkbox" id="midi-opt-tempo" checked> Inclure le tempo</label>
+      <label><input type="checkbox" id="midi-opt-sig" checked> Inclure la signature</label>
+    </div>
+  </div>
+  <div class="midi-modal-footer">
+    <button class="midi-export-btn" id="midi-export-confirm">⬇ Télécharger .mid</button>
   </div>
 </div>
 
@@ -8448,26 +8470,5 @@ setMetroGlobal(!metro.muted);
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
-<!-- Modal Export MIDI -->
-<div class="midi-overlay hidden" id="midi-overlay"></div>
-<div class="midi-modal hidden" id="midi-modal">
-  <div class="midi-modal-head">
-    <span>Export MIDI</span>
-    <button class="midi-modal-close" id="midi-modal-close">✕</button>
-  </div>
-  <div class="midi-modal-body">
-    <div class="midi-layer-hdr">
-      <span>Couche</span><span>Note MIDI</span><span>Canal</span>
-    </div>
-    <div id="midi-layer-grid"></div>
-    <div class="midi-opts">
-      <label><input type="checkbox" id="midi-opt-tempo" checked> Inclure le tempo</label>
-      <label><input type="checkbox" id="midi-opt-sig" checked> Inclure la signature</label>
-    </div>
-  </div>
-  <div class="midi-modal-footer">
-    <button class="midi-export-btn" id="midi-export-confirm">⬇ Télécharger .mid</button>
-  </div>
-</div>
 </body>
 </html>

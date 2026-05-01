@@ -64,8 +64,12 @@ packCours = {
 ### `familles`
 ```
 id text PK, nom text, scope ('school'|'teacher'),
-owner_id uuid FK profiles, created_at
+owner_id uuid FK profiles, created_at,
+ordre int DEFAULT 0     -- ordre d'affichage (ajouté v3.4.79)
 ```
+Migration si table existante : `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;`
+Fetch school : `?scope=eq.school&select=*&order=ordre.asc,created_at.asc`
+Persistance : `sbPushSchoolFamOrder()` appelé après drag-drop dans `libDropFamille()`
 
 ### `patterns`
 ```

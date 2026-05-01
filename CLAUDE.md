@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.79** (session 2026-05-01)
+**v3.4.80** (session 2026-05-01)
 
 ## Historique récent
 | Version | Changements |
@@ -83,6 +83,7 @@ Merger vers : `main` après chaque session
 | v3.4.77 | Alignement labels sections : `min-width:44px` sur `.section-bar-lbl` et `.btn-metro-main` (padding:0) |
 | v3.4.78 | Recherche en temps réel dans les panels Patterns/Grooves/Bands ; export MIDI (modal note+canal par couche, tempo, signature) dans menu `…` |
 | v3.4.79 | Recherche à droite du filtre famille (portrait : remonte au-dessus) ; ordre familles persisté en DB (MX) ; tap court btn-vol = mute/unmute toutes les couches ; metro subdivision indépendante du stepsPerBeat (stepSec = beatSec/subdivision) |
+| v3.4.80 | Correctif critique : modal MIDI déplacé avant `<script>` (était après `</script>` → null.addEventListener crashait `attachEvents()` → tous les boutons morts) |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)
@@ -122,15 +123,23 @@ Couvre : chargement de pattern, tous les boutons mod, rotation, mute, changement
 - **Ne pas implémenter avant décision archi concertée avec Lamberio**
 
 ## Tâches prioritaires (prochaine session)
-1. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (voir section ci-dessus — décision archi requise avec Lamberio)
+1. **Familles multi-axes** — refactor tags multi-axes AND-filtrables (décision archi requise avec Lamberio)
 2. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher' pour soumission
-3. **G6 Édition tempo/signature post-création** — groove figé après création
-4. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
+3. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
+4. **Migration DB familles** — appliquer `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;` sur Supabase
 
-## Résolu (vérification session 2026-04-28)
-- ✅ **G0** — `initAuth()` invalide `authSession` si `authProfile` null (ll. 5291–5296)
-- ✅ **G8** — Ordre patterns/grooves persisté via `sbPushSchoolOrder()` après drag-drop (ll. 4123–4137)
-- ✅ **GAP_FAM_RENAME_TX** — Renommage TX soumis indépendamment via `_pendingRename` + section "Tags familles" (ll. 5117–5126)
+## Résolu (session 2026-05-01)
+- ✅ **Recherche temps réel** — champ search dans panels Patterns/Grooves/Bands (filtre par nom)
+- ✅ **Export MIDI** — modal note+canal par couche, tempo, signature ; SMF Type 0, 96 PPQ (menu `···`)
+- ✅ **Ordre familles MX** — `sbPushSchoolFamOrder()` après drag-drop ; fetch trié `ordre.asc`
+- ✅ **Mute/unmute couches** — tap court btn-vol bascule toutes les couches groove
+- ✅ **Subdivision métro indépendante** — `stepSec = (60/spm)×spb/sub` ; patterns non affectés
+- ✅ **Correctif critique attachEvents** — modal MIDI déplacé avant `<script>` (null crash fixé)
+
+## Résolu (session 2026-04-28)
+- ✅ **G0** — `initAuth()` invalide `authSession` si `authProfile` null
+- ✅ **G8** — Ordre patterns/grooves persisté via `sbPushSchoolOrder()` après drag-drop
+- ✅ **GAP_FAM_RENAME_TX** — Renommage TX soumis via `_pendingRename` + section "Tags familles"
 
 ## Futur chantier — Metro comme pattern (à valider avec Lamberio)
 
