@@ -710,6 +710,38 @@ body.dark-mode .encyclo-bar .fam-filter{background:#202020;color:#888;border-col
 body.dark-mode .save-sheet-box,body.dark-mode .psp-box{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel{background:#252522;color:#e0ddd8}
 body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333330}
+/* Recherche dans lib panels */
+.lib-search-input{flex:0 0 auto;width:72px;font-size:10px;padding:2px 6px 2px 20px;border:1px solid #ccc;border-radius:10px;outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cline x1='21' y1='21' x2='15' y2='15'/%3E%3C/svg%3E") no-repeat 5px center;background-size:11px}
+.lib-search-input:focus{border-color:#6B5FA5;box-shadow:0 0 0 2px rgba(107,95,165,.15)}
+body.dark-mode .lib-search-input{background-color:#333;border-color:#555;color:#e0ddd8}
+/* Modal Export MIDI */
+.midi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300}
+.midi-overlay.hidden{display:none}
+.midi-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;z-index:301;min-width:270px;max-width:min(340px,94vw);box-shadow:0 6px 32px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.midi-modal.hidden{display:none}
+.midi-modal-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid #e8e5e0;font-weight:700;font-size:13px;flex-shrink:0}
+.midi-modal-close{background:none;border:none;cursor:pointer;font-size:14px;color:#888;line-height:1;padding:2px 6px;border-radius:50%}
+.midi-modal-close:hover{background:#f0ede8}
+.midi-modal-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.midi-layer-hdr{display:grid;grid-template-columns:58px 1fr 60px;gap:8px;font-size:9px;font-weight:600;color:#888;text-align:center;padding-bottom:4px;border-bottom:1px solid #f0ede8}
+.midi-layer-hdr span:first-child{text-align:left}
+.midi-layer-row{display:grid;grid-template-columns:58px 1fr 60px;align-items:center;gap:8px;font-size:11px}
+.midi-layer-lbl{font-weight:600;color:#444}
+.midi-note-wrap{display:flex;flex-direction:column;align-items:center;gap:1px}
+.midi-note-name{font-size:9px;color:#888;letter-spacing:.03em}
+.midi-cfg-input{width:100%;font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:4px;text-align:center;box-sizing:border-box}
+.midi-opts{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #f0ede8;font-size:11px}
+.midi-opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.midi-modal-footer{padding:8px 14px;border-top:1px solid #e8e5e0;display:flex;justify-content:flex-end;flex-shrink:0}
+.midi-export-btn{padding:6px 16px;font-size:12px;font-weight:600;background:#6B5FA5;color:#fff;border:none;border-radius:6px;cursor:pointer;transition:background .12s}
+.midi-export-btn:hover{background:#4a3d8a}
+body.dark-mode .midi-modal{background:#252522;color:#e0ddd8}
+body.dark-mode .midi-modal-head{border-color:#333}
+body.dark-mode .midi-modal-footer{border-color:#333}
+body.dark-mode .midi-layer-hdr{border-color:#333}
+body.dark-mode .midi-opts{border-color:#333}
+body.dark-mode .midi-cfg-input{background:#333;border-color:#555;color:#e0ddd8}
+body.dark-mode .midi-modal-close:hover{background:#333}
 body.dark-mode .lib-fam-band{border-color:rgba(255,255,255,.07)}
 body.dark-mode .lib-fam-band-pat{background:rgba(107,95,165,.18)}
 body.dark-mode .lib-fam-band-groove{background:rgba(200,150,26,.15)}
@@ -756,7 +788,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.77</span>
+      <span class="app-version">v3.4.78</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -808,6 +840,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <span id="smenu-appro-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
         <div id="appro-section" class="smenu-sub" style="display:none"></div>
+        <!-- Ligne 6 : Export MIDI -->
+        <div class="smenu-row smenu-row-btn" id="smenu-midi-export">
+          <span>🎵 Export MIDI</span>
+        </div>
       </div>
     </div>
   </div>
@@ -994,6 +1030,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-bands">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Bands</span></div>
+    <input type="search" class="lib-search-input" id="lib-search-bands" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-bands">
       <option value="all">Toutes les familles</option>
     </select>
@@ -1026,6 +1063,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-patterns">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
+    <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
       <option value="all">Toutes les familles</option>
     </select>
@@ -1058,6 +1096,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-grooves">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
+    <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
       <option value="all">Toutes les familles</option>
     </select>
@@ -6163,7 +6202,7 @@ function createUserPattern(seq,sourcePat){
 // ═══════════════════════════════════════════════════════════════════════════
 
 function openLibPanelPatterns(){
-  // Peupler le filtre famille en tête de panel
+  const s=document.getElementById('lib-search-patterns');if(s)s.value='';
   rebuildAllFamFilters();
   buildLibListPatterns();
   buildLibFamListPatterns();
@@ -6189,12 +6228,14 @@ function buildLibListPatterns(){
   // Filtre famille courant (sélect en tête du panel) — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-patterns');
   const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
+  const qPat = (document.getElementById('lib-search-patterns')?.value||'').toLowerCase().trim();
   const allPatsVisible = packCours.patterns.filter(p => !p.localDeletePending && p.source !== 'pending');
-  const patterns = filtreId === '__teacher__'
+  const patsByFam = filtreId === '__teacher__'
     ? allPatsVisible.filter(p=>p.source==='teacher')
     : filtreId && filtreId !== 'all'
       ? allPatsVisible.filter(p=>(p.familles||[]).includes(filtreId))
       : allPatsVisible;
+  const patterns = qPat ? patsByFam.filter(p=>p.nom.toLowerCase().includes(qPat)) : patsByFam;
 
   patterns.forEach(pat=>{
     const item = document.createElement('div');
@@ -6627,6 +6668,7 @@ function libDeleteFamille(famId, count){
 // ═══════════════════════════════════════════════════════════════════════════
 
 function openLibPanelBands(){
+  const s=document.getElementById('lib-search-bands');if(s)s.value='';
   rebuildBandFamFilter();
   buildLibListBands();
   buildLibFamListBands();
@@ -6648,9 +6690,11 @@ function buildLibListBands(){
   const list=document.getElementById('lib-list-bands');if(!list)return;
   list.innerHTML='';
   const filtreId=document.getElementById('lib-fam-filter-bands')?.value||'all';
-  const bands=filtreId==='all'?(packCours.bands||[]):(packCours.bands||[]).filter(b=>(b.familles||[]).includes(filtreId));
+  const q=(document.getElementById('lib-search-bands')?.value||'').toLowerCase().trim();
+  const bandsAll=filtreId==='all'?(packCours.bands||[]):(packCours.bands||[]).filter(b=>(b.familles||[]).includes(filtreId));
+  const bands=q?bandsAll.filter(b=>b.nom.toLowerCase().includes(q)):bandsAll;
   if(!bands.length){
-    const empty=document.createElement('div');empty.className='lib-empty';empty.textContent='Aucun band dans cette famille.';list.appendChild(empty);return;
+    const empty=document.createElement('div');empty.className='lib-empty';empty.textContent=q?'Aucun résultat.':'Aucun band dans cette famille.';list.appendChild(empty);return;
   }
   bands.forEach(band=>{
     const item=document.createElement('div');item.className='lib-item';item.dataset.bandId=band.id;
@@ -6885,6 +6929,7 @@ function attachLibPanelEvents(){
 // ═══════════════════════════════════════════════════════════════════════════
 
 function openLibPanelGrooves(){
+  const s=document.getElementById('lib-search-grooves');if(s)s.value='';
   rebuildGrooveFamFilter();
   buildLibListGrooves();
   buildLibFamListGrooves();
@@ -6949,12 +6994,14 @@ function buildLibListGrooves(){
   // Filtre famille courant — SX : perso uniquement
   const filtreEl = document.getElementById('lib-fam-filter-grooves');
   const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
+  const qGrv = (document.getElementById('lib-search-grooves')?.value||'').toLowerCase().trim();
   const allGroovesVisible = packCours.grooves.filter(g => !g.localDeletePending && g.source !== 'pending');
-  const grooves = filtreId === '__teacher__'
+  const groovesByFam = filtreId === '__teacher__'
     ? allGroovesVisible.filter(g=>g.source==='teacher')
     : filtreId && filtreId !== 'all'
       ? allGroovesVisible.filter(g=>(g.familles||[]).includes(filtreId))
       : allGroovesVisible;
+  const grooves = qGrv ? groovesByFam.filter(g=>g.nom.toLowerCase().includes(qGrv)) : groovesByFam;
 
   grooves.forEach(groove=>{
     const item = document.createElement('div');
@@ -7460,6 +7507,135 @@ function loadFromStorage(){
     const sp=localStorage.getItem('btk_prefs');
     if(sp)prefs=Object.assign(prefs,JSON.parse(sp));
   }catch(e){}
+}
+
+// ── MIDI Export ──────────────────────────────────────────────────────────────
+let _midiLayerCfg=[
+  {note:36,channel:10}, // Low  — Kick (C1 GM)
+  {note:38,channel:10}, // High — Snare (D1 GM)
+  {note:42,channel:10}, // Noise — Closed Hi-Hat (F#1 GM)
+];
+
+function midiNoteName(n){
+  const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  return names[n%12]+(Math.floor(n/12)-2);
+}
+
+function vlqEncode(n){
+  if(n===0)return[0];
+  const bytes=[];
+  while(n>0){bytes.unshift(n&0x7F);n>>=7;}
+  for(let i=0;i<bytes.length-1;i++)bytes[i]|=0x80;
+  return bytes;
+}
+
+function openMidiExportModal(){
+  const grid=document.getElementById('midi-layer-grid');
+  grid.innerHTML='';
+  LAYERS.forEach((layer,li)=>{
+    const cfg=_midiLayerCfg[li];
+    const row=document.createElement('div');row.className='midi-layer-row';
+    const lbl=document.createElement('span');lbl.className='midi-layer-lbl';lbl.textContent=layer.label;
+    const noteWrap=document.createElement('div');noteWrap.className='midi-note-wrap';
+    const noteInp=document.createElement('input');
+    noteInp.type='number';noteInp.min=0;noteInp.max=127;
+    noteInp.className='midi-cfg-input';noteInp.id='midi-note-'+li;noteInp.value=cfg.note;
+    const noteName=document.createElement('span');noteName.className='midi-note-name';
+    noteName.id='midi-note-name-'+li;noteName.textContent=midiNoteName(cfg.note);
+    noteInp.addEventListener('input',()=>{
+      const v=parseInt(noteInp.value);
+      if(!isNaN(v)&&v>=0&&v<=127){noteName.textContent=midiNoteName(v);_midiLayerCfg[li].note=v;}
+    });
+    noteWrap.appendChild(noteInp);noteWrap.appendChild(noteName);
+    const chInp=document.createElement('input');
+    chInp.type='number';chInp.min=1;chInp.max=16;
+    chInp.className='midi-cfg-input';chInp.id='midi-ch-'+li;chInp.value=cfg.channel;
+    chInp.addEventListener('change',()=>{
+      const v=parseInt(chInp.value);
+      if(!isNaN(v)&&v>=1&&v<=16)_midiLayerCfg[li].channel=v;
+    });
+    row.appendChild(lbl);row.appendChild(noteWrap);row.appendChild(chInp);
+    grid.appendChild(row);
+  });
+  document.getElementById('midi-overlay').classList.remove('hidden');
+  document.getElementById('midi-modal').classList.remove('hidden');
+}
+
+function closeMidiExportModal(){
+  document.getElementById('midi-overlay').classList.add('hidden');
+  document.getElementById('midi-modal').classList.add('hidden');
+}
+
+function exportMidi(){
+  // Lire config finale depuis les inputs
+  LAYERS.forEach((_,li)=>{
+    const nEl=document.getElementById('midi-note-'+li);
+    const cEl=document.getElementById('midi-ch-'+li);
+    if(nEl)_midiLayerCfg[li].note=Math.min(127,Math.max(0,parseInt(nEl.value)||0));
+    if(cEl)_midiLayerCfg[li].channel=Math.min(16,Math.max(1,parseInt(cEl.value)||10));
+  });
+  const includeTempo=document.getElementById('midi-opt-tempo').checked;
+  const includeSig=document.getElementById('midi-opt-sig').checked;
+  const PPQ=96, STEP_TICKS=48; // 1 croche = PPQ/2 = 48 ticks
+
+  const spm=posToSPM(parseInt(document.getElementById('bpm').value));
+  const sig=currentSig;
+  const bpm=spm/sig.stepsPerBeat;
+  const uspb=Math.round(60000000/bpm); // microsecondes par battement
+
+  const trackBytes=[];
+  function wr(delta,...bytes){trackBytes.push(...vlqEncode(delta),...bytes);}
+
+  if(includeTempo)wr(0,0xFF,0x51,0x03,(uspb>>16)&0xFF,(uspb>>8)&0xFF,uspb&0xFF);
+  if(includeSig){
+    // dd = log2(dénominateur) : noire=2, croche=3
+    const dd=sig.stepsPerBeat===1?3:2;
+    wr(0,0xFF,0x58,0x04,sig.beatsPerMeasure,dd,24,8);
+  }
+
+  // Collecter tous les events note, triés par tick
+  const evts=[];
+  let maxTick=0;
+  LAYERS.forEach((_,li)=>{
+    const cfg=_midiLayerCfg[li];
+    const pat=state[li].pattern;
+    const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
+    const tickStep=Math.round(STEP_TICKS/mult);
+    const ch=(cfg.channel-1)&0x0F;
+    const note=cfg.note&0x7F;
+    const patTicks=pat.length*tickStep;
+    if(patTicks>maxTick)maxTick=patTicks;
+    pat.forEach((s,si)=>{
+      if(s==='.')return;
+      const vel=s==='x'?70:100;
+      const t=si*tickStep;
+      evts.push({tick:t,on:true,ch,note,vel});
+      evts.push({tick:t+Math.round(tickStep*0.45),on:false,ch,note});
+    });
+  });
+  evts.sort((a,b)=>a.tick!==b.tick?a.tick-b.tick:(a.on?1:-1));
+
+  let cur=0;
+  evts.forEach(e=>{
+    wr(e.tick-cur,e.on?(0x90|e.ch):(0x80|e.ch),e.note,e.on?e.vel:0);
+    cur=e.tick;
+  });
+  wr(maxTick-cur,0xFF,0x2F,0x00); // End of track
+
+  const tLen=trackBytes.length;
+  const bytes=new Uint8Array([
+    0x4D,0x54,0x68,0x64, 0,0,0,6, 0,0, 0,1, 0,PPQ, // MThd
+    0x4D,0x54,0x72,0x6B, (tLen>>24)&0xFF,(tLen>>16)&0xFF,(tLen>>8)&0xFF,tLen&0xFF, // MTrk
+    ...trackBytes,
+  ]);
+  const blob=new Blob([bytes],{type:'audio/midi'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(getGroove(currentGrooveId)?.nom||'groove').replace(/[^a-z0-9_\-]/gi,'_')+'.mid';
+  a.click();
+  URL.revokeObjectURL(url);
+  closeMidiExportModal();
 }
 
 function attachEvents(){
@@ -7995,6 +8171,20 @@ function attachEvents(){
     if (open) buildApprobationsSection();
   });
 
+  // Export MIDI
+  document.getElementById('smenu-midi-export').addEventListener('click',()=>{
+    document.getElementById('panel-settings').classList.remove('open');
+    document.getElementById('btn-settings').classList.remove('active');
+    openMidiExportModal();
+  });
+  document.getElementById('midi-modal-close').addEventListener('click',closeMidiExportModal);
+  document.getElementById('midi-overlay').addEventListener('click',closeMidiExportModal);
+  document.getElementById('midi-export-confirm').addEventListener('click',exportMidi);
+  // Recherche en temps réel dans les panels
+  document.getElementById('lib-search-patterns').addEventListener('input',buildLibListPatterns);
+  document.getElementById('lib-search-grooves').addEventListener('input',buildLibListGrooves);
+  document.getElementById('lib-search-bands').addEventListener('input',buildLibListBands);
+
   // Préférences groove (checkboxes)
   {
     const pSig = document.getElementById('pref-apply-sig');
@@ -8226,5 +8416,26 @@ setMetroGlobal(!metro.muted);
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
+<!-- Modal Export MIDI -->
+<div class="midi-overlay hidden" id="midi-overlay"></div>
+<div class="midi-modal hidden" id="midi-modal">
+  <div class="midi-modal-head">
+    <span>Export MIDI</span>
+    <button class="midi-modal-close" id="midi-modal-close">✕</button>
+  </div>
+  <div class="midi-modal-body">
+    <div class="midi-layer-hdr">
+      <span>Couche</span><span>Note MIDI</span><span>Canal</span>
+    </div>
+    <div id="midi-layer-grid"></div>
+    <div class="midi-opts">
+      <label><input type="checkbox" id="midi-opt-tempo" checked> Inclure le tempo</label>
+      <label><input type="checkbox" id="midi-opt-sig" checked> Inclure la signature</label>
+    </div>
+  </div>
+  <div class="midi-modal-footer">
+    <button class="midi-export-btn" id="midi-export-confirm">⬇ Télécharger .mid</button>
+  </div>
+</div>
 </body>
 </html>
