@@ -393,6 +393,36 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
 .pm-preset-dirty{border-color:#D85A30!important;color:#D85A30!important;}
 .pm-preset-dirty::before{content:'● ';}
+/* Mode gérer / réordonner */
+.pm-mode-btn{background:none;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:13px;padding:2px 7px;color:#666;margin-right:4px;}
+.pm-mode-btn.active{background:var(--pm-ac,#4a3d8a);color:#fff;border-color:var(--pm-ac,#4a3d8a);}
+.pm-item.pm-manage{display:flex;flex-direction:column;gap:3px;padding:8px 10px;cursor:default;}
+.pm-item.pm-manage:hover{background:none;}
+.pm-item-name-row{display:flex;align-items:center;gap:6px;}
+.pm-item-name{flex:1;font-size:12px;cursor:text;border-radius:3px;padding:1px 3px;}
+.pm-item-name:focus{outline:1px solid var(--pm-ac,#4a3d8a);background:#fff;}
+.pm-item-del{background:none;border:none;cursor:pointer;font-size:13px;opacity:.55;padding:0 2px;flex-shrink:0;}
+.pm-item-del:hover{opacity:1;}
+.pm-item-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.pm-tag-chip{display:inline-flex;align-items:center;gap:2px;background:var(--pm-bg2,#f0ece0);border:1px solid var(--pm-ac,#4a3d8a);border-radius:10px;padding:1px 6px;font-size:10px;color:var(--pm-ac,#4a3d8a);}
+.pm-tag-x{background:none;border:none;cursor:pointer;font-size:11px;color:inherit;opacity:.6;padding:0;line-height:1;}
+.pm-tag-x:hover{opacity:1;}
+.pm-tag-add{background:none;border:1px dashed #bbb;border-radius:10px;padding:1px 6px;font-size:10px;color:#888;cursor:pointer;}
+.pm-tag-add:hover{border-color:var(--pm-ac,#4a3d8a);color:var(--pm-ac,#4a3d8a);}
+.pm-fam-btn.palette{font-weight:600;color:var(--pm-ac,#4a3d8a);background:var(--pm-bg2,#f5f3f0);border-left:3px solid var(--pm-ac,#4a3d8a);}
+.pm-fam-btn.pm-fam-cancel{color:#c44;font-weight:600;}
+.pm-fam-btn.pm-fam-new{color:#0a0;border-top:1px dashed #ccc;margin-top:6px;}
+.pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;}
+.pm-drag-handle{font-size:15px;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;}
+.pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;}
+.pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
+.pm-reorder.pm-dragging{opacity:.4;}
+.pm-reorder.pm-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
+body.dark-mode .pm-mode-btn{border-color:#444;color:#aaa;}
+body.dark-mode .pm-mode-btn.active{background:var(--pm-ac);color:#fff;border-color:var(--pm-ac);}
+body.dark-mode .pm-tag-chip{background:#2a2a28;}
+body.dark-mode .pm-item-name:focus{background:#2a2a28;}
+body.dark-mode .pm-item.pm-reorder{border-color:#2a2a28;}
 /* Dark mode */
 body.dark-mode #pm-overlay{background:rgba(0,0,0,.6);}
 body.dark-mode .pm-sheet{background:#1a1a18;}
@@ -456,18 +486,6 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .lib-fam-bottom{border-top:none}
 .lib-fam-bottom .lib-fam-summary{border-top:1px solid rgba(0,0,0,.07)}
 /* Couleurs par section */
-#lib-panel-patterns .lib-panel-head,
-#lib-panel-patterns .lib-fam-bottom{background:rgba(107,95,165,.09)}
-#lib-panel-patterns .lib-head-secname{color:#4a3d8a}
-#lib-panel-grooves .lib-panel-head,
-#lib-panel-grooves .lib-fam-bottom{background:rgba(200,150,26,.09)}
-#lib-panel-grooves .lib-head-secname{color:#8B6914}
-body.dark-mode #lib-panel-patterns .lib-panel-head,
-body.dark-mode #lib-panel-patterns .lib-fam-bottom{background:rgba(107,95,165,.15)}
-body.dark-mode #lib-panel-patterns .lib-head-secname{color:#b0a0e0}
-body.dark-mode #lib-panel-grooves .lib-panel-head,
-body.dark-mode #lib-panel-grooves .lib-fam-bottom{background:rgba(200,150,26,.15)}
-body.dark-mode #lib-panel-grooves .lib-head-secname{color:#c8961a}
 .lib-fam-filter-sel{font-size:10px;flex:1;min-width:0;padding:2px 4px;border:1px solid #c0bdb7;border-radius:5px;background:#fff;color:#555;cursor:pointer}
 .lib-panel-close{width:26px;height:26px;border-radius:50%;border:none;background:#f0ede8;cursor:pointer;font-size:13px;color:#666;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .lib-panel-close:hover{background:#e0ddd8}
@@ -555,8 +573,6 @@ details[open]>.lib-fam-band .lib-fam-band-chevron{transform:rotate(90deg)}
 .fam-tag-pat{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
 .fam-tag-groove{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
 /* Select filtre famille : fond = couleur des tags de la section */
-#lib-panel-patterns .lib-fam-filter-sel{background:#f5eae4;border-color:#d4b0a0;color:#7A4A30}
-#lib-panel-grooves .lib-fam-filter-sel{background:#fdf3dc;border-color:#dfc870;color:#7A5910}
 /* Band lib panel — bleu */
 #lib-panel-bands .lib-panel-head,
 #lib-panel-bands .lib-fam-bottom{background:rgba(74,127,165,.09)}
@@ -791,8 +807,6 @@ body.dark-mode .lib-fam-create-input{background:#2a2a28;color:#e0ddd8;border-col
 body.dark-mode .lib-fam-create-cancel{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .fam-tag-pat{background:#3a2820;border-color:#7A4A30;color:#e0a080}
 body.dark-mode .fam-tag-groove{background:#2e2410;border-color:#8B6914;color:#e0c060}
-body.dark-mode #lib-panel-patterns .lib-fam-filter-sel{background:#3a2820;border-color:#7A4A30;color:#e0a080}
-body.dark-mode #lib-panel-grooves .lib-fam-filter-sel{background:#2e2410;border-color:#8B6914;color:#e0c060}
 body.dark-mode .lib-item{border-bottom-color:#333330}
 body.dark-mode .lib-item-name{color:#e0ddd8}
 body.dark-mode .lib-drag-handle{color:#444440}
@@ -828,7 +842,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.5.6</span>
+      <span class="app-version">v3.5.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1099,80 +1113,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="lib-batch-bar">
     <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-bands"> Tout sélectionner</label>
     <button class="lib-batch-del" id="lib-batch-del-bands" disabled>🗑 Supprimer</button>
-  </div>
-</div>
-
-<!-- Panel ≡ bibliothèque patterns -->
-<div class="lib-overlay hidden" id="lib-overlay-patterns"></div>
-<div class="lib-panel hidden" id="lib-panel-patterns">
-  <div class="lib-panel-head">
-    <div class="lib-h1">
-      <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
-      <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
-    </div>
-    <div class="lib-h2">
-      <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
-        <option value="all">Toutes les familles</option>
-      </select>
-      <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
-    </div>
-  </div>
-  <div class="lib-list" id="lib-list-patterns"></div>
-  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-patterns">
-    <summary class="lib-fam-band lib-fam-band-pat">
-      <span class="lib-fam-band-chevron">▶</span>
-      <span class="lib-fam-band-title">Organiser les Familles de <span class="lib-fam-band-secname">Patterns</span></span>
-      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn">＋</button>
-    </summary>
-    <div class="lib-fam-create-box hidden" id="lib-fam-create-box-patterns">
-      <input type="text" class="lib-fam-create-input" id="lib-fam-new-input" placeholder="Nom de la famille…">
-      <div class="lib-fam-create-actions">
-        <button class="lib-fam-create-cancel" id="lib-fam-create-cancel-patterns">Annuler</button>
-        <button class="lib-fam-create-ok" id="lib-fam-create-ok-patterns">Créer</button>
-      </div>
-    </div>
-    <div class="lib-fam-list" id="lib-fam-list-patterns"></div>
-  </details>
-  <div class="lib-batch-bar">
-    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-patterns"> Tout sélectionner</label>
-    <button class="lib-batch-del" id="lib-batch-del-patterns" disabled>🗑 Supprimer</button>
-  </div>
-</div>
-
-<!-- Panel ≡ bibliothèque grooves -->
-<div class="lib-overlay hidden" id="lib-overlay-grooves"></div>
-<div class="lib-panel hidden" id="lib-panel-grooves">
-  <div class="lib-panel-head">
-    <div class="lib-h1">
-      <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
-      <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
-    </div>
-    <div class="lib-h2">
-      <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
-        <option value="all">Toutes les familles</option>
-      </select>
-      <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
-    </div>
-  </div>
-  <div class="lib-list" id="lib-list-grooves"></div>
-  <details class="lib-fam-section lib-fam-bottom" id="lib-fam-details-grooves">
-    <summary class="lib-fam-band lib-fam-band-groove">
-      <span class="lib-fam-band-chevron">▶</span>
-      <span class="lib-fam-band-title">Organiser les Familles de <span class="lib-fam-band-secname">Grooves</span></span>
-      <button class="lib-fam-add-btn-icon" id="lib-fam-add-btn-grooves">＋</button>
-    </summary>
-    <div class="lib-fam-create-box hidden" id="lib-fam-create-box-grooves">
-      <input type="text" class="lib-fam-create-input" id="lib-fam-new-input-grooves" placeholder="Nom de la famille…">
-      <div class="lib-fam-create-actions">
-        <button class="lib-fam-create-cancel" id="lib-fam-create-cancel-grooves">Annuler</button>
-        <button class="lib-fam-create-ok" id="lib-fam-create-ok-grooves">Créer</button>
-      </div>
-    </div>
-    <div class="lib-fam-list" id="lib-fam-list-grooves"></div>
-  </details>
-  <div class="lib-batch-bar">
-    <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-grooves"> Tout sélectionner</label>
-    <button class="lib-batch-del" id="lib-batch-del-grooves" disabled>🗑 Supprimer</button>
   </div>
 </div>
 
@@ -2305,6 +2245,7 @@ function togglePlay(){
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
+let _pmRefresh = null; // callback pour rafraîchir le modal preset ouvert
 let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='sx'?'sx':'tx';
 let dirtyLayers = [false, false, false];
@@ -2354,13 +2295,7 @@ function updateEncycloSaveBtn(){
   updateSettingsBadge();
 }
 function refreshMenuBtnStates(){
-  // Tous les menus restent actifs en permanence (TX et SX)
-  document.querySelectorAll('.menu-btn-groove').forEach(b=>{
-    b.disabled=false;b.style.opacity='';b.title='Gérer le menu';
-  });
-  document.querySelectorAll('.menu-btn-pat').forEach(b=>{
-    b.disabled=false;b.style.opacity='';b.title='Gérer le menu';
-  });
+  // Boutons ≡ groove/pattern supprimés (gestion intégrée dans openPresetModal)
 }
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
 let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
@@ -2495,11 +2430,12 @@ function render(){
 function openPresetModal(cfg){
   // cfg: {type, currentId, label, accent, bg, onSelect, compact}
   const existing=document.getElementById('pm-overlay');
-  if(existing)existing.remove();
+  if(existing){_pmRefresh=null;existing.remove();}
 
   const overlay=document.createElement('div');
   overlay.id='pm-overlay';
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  const _closeOverlay=()=>{_pmRefresh=null;overlay.remove();};
+  overlay.addEventListener('click',e=>{if(e.target===overlay)_closeOverlay();});
 
   const sheet=document.createElement('div');
   sheet.className='pm-sheet';
@@ -2513,11 +2449,14 @@ function openPresetModal(cfg){
   const hdr=document.createElement('div');hdr.className='pm-header';
   const htitle=document.createElement('span');htitle.textContent=cfg.label||'Sélectionner';
   const hclose=document.createElement('button');hclose.className='pm-close';hclose.textContent='✕';
-  hclose.addEventListener('click',()=>overlay.remove());
+  hclose.addEventListener('click',_closeOverlay);
   hdr.appendChild(htitle);hdr.appendChild(hclose);
   sheet.appendChild(hdr);
 
   let famFilter='all';
+  // États modes gérer/réordonner (groove et pattern uniquement)
+  let manageMode=false, reorderMode=false, paletteTarget=null;
+  let _reorderDragSrcId=null;
 
   // Corps 2 colonnes : familles à gauche (fixe), items à droite (scroll)
   const body=document.createElement('div');body.className='pm-body';
@@ -2525,6 +2464,24 @@ function openPresetModal(cfg){
   const itemsWrap=document.createElement('div');itemsWrap.className='pm-items';
   body.appendChild(famCol);body.appendChild(itemsWrap);
   sheet.appendChild(body);
+
+  // Boutons mode gérer/réordonner dans le header (groove et pattern uniquement)
+  if(cfg.type==='groove'||cfg.type==='pattern'){
+    const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
+    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='↕';
+    modeManage.addEventListener('click',()=>{
+      manageMode=!manageMode;if(manageMode)reorderMode=false;paletteTarget=null;
+      modeManage.classList.toggle('active',manageMode);modeReorder.classList.remove('active');
+      famCol.style.display='';buildFamCol();buildItems();
+    });
+    modeReorder.addEventListener('click',()=>{
+      reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
+      modeReorder.classList.toggle('active',reorderMode);modeManage.classList.remove('active');
+      buildFamCol();buildItems();
+    });
+    hdr.insertBefore(modeManage,hclose);
+    hdr.insertBefore(modeReorder,hclose);
+  }
 
   function getFams(){
     if(cfg.type==='groove'){
@@ -2540,79 +2497,269 @@ function openPresetModal(cfg){
     return packCours.bandFamilles||[];
   }
 
-  function buildFamCol(){
-    famCol.innerHTML='';
-    const mkBtn=(id,lbl)=>{
-      const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
-      b.textContent=lbl;
-      b.addEventListener('click',()=>{famFilter=id;buildFamCol();buildItems();});
-      famCol.appendChild(b);
-    };
-    mkBtn('all','Tout');
-    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkBtn('__teacher__','Perso');
-    getFams().forEach(f=>mkBtn(f.id,f.nom));
-  }
-
-  function buildItems(){
-    itemsWrap.innerHTML='';
-    let items=[];
+  function getFilteredItems(){
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
       const base=allG.filter(g=>g.source!=='pending');
       const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
-      items=[...filtered,...pending];
-    } else if(cfg.type==='pattern'){
-      const all=packCours.patterns.filter(p=>!p.localDeletePending);
-      items=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
-    } else if(cfg.type==='sound'){
+      return[...filtered,...pending];
+    }
+    const all=packCours.patterns.filter(p=>!p.localDeletePending);
+    return famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+  }
+
+  function buildFamCol(){
+    famCol.innerHTML='';
+    if(reorderMode){famCol.style.display='none';return;}
+    famCol.style.display='';
+    if(paletteTarget){
+      // Mode palette : choisir une famille à taguer
+      const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
+      cancel.addEventListener('click',()=>{paletteTarget=null;buildFamCol();buildItems();});
+      famCol.appendChild(cancel);
+      const assigned=new Set(paletteTarget.familles||[]);
+      getFams().forEach(f=>{
+        if(assigned.has(f.id))return;
+        const b=document.createElement('button');b.className='pm-fam-btn palette';b.textContent=f.nom;
+        b.addEventListener('click',()=>{pmAddTag(paletteTarget,f.id);paletteTarget=null;buildFamCol();buildItems();});
+        famCol.appendChild(b);
+      });
+      return;
+    }
+    const mkBtn=(id,lbl)=>{
+      const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
+      b.textContent=lbl;
+      b.addEventListener('click',()=>{famFilter=id;paletteTarget=null;buildFamCol();buildItems();});
+      famCol.appendChild(b);
+    };
+    mkBtn('all','Tout');
+    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkBtn('__teacher__','Perso');
+    getFams().forEach(f=>mkBtn(f.id,f.nom));
+    // + Nouvelle famille (MX uniquement, en mode gérer)
+    if(manageMode&&authProfile?.role==='mx'){
+      const newFamBtn=document.createElement('button');newFamBtn.className='pm-fam-btn pm-fam-new';newFamBtn.textContent='＋ Nouvelle famille';
+      newFamBtn.addEventListener('click',()=>{
+        const nom=prompt('Nom de la nouvelle famille :');if(!nom?.trim())return;
+        const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
+        packCours.familles.push(fam);
+        saveToStorage();rebuildAllFamFilters();buildPublishSection();
+        buildFamCol();buildItems();
+      });
+      famCol.appendChild(newFamBtn);
+    }
+  }
+
+  // Construit les chips de tags dans la div container (mode gérer)
+  function pmBuildTags(container,item){
+    container.innerHTML='';
+    (item.familles||[]).forEach(fid=>{
+      const fam=getFamille(fid);if(!fam)return;
+      const chip=document.createElement('span');chip.className='pm-tag-chip';chip.textContent=fam.nom;
+      const x=document.createElement('button');x.className='pm-tag-x';x.textContent='×';
+      x.addEventListener('click',e=>{e.stopPropagation();pmRemoveTag(item,fid);});
+      chip.appendChild(x);container.appendChild(chip);
+    });
+    const addBtn=document.createElement('button');addBtn.className='pm-tag-add';addBtn.textContent='＋';
+    addBtn.addEventListener('click',e=>{e.stopPropagation();paletteTarget=item;buildFamCol();});
+    container.appendChild(addBtn);
+  }
+
+  function pmAddTag(item,famId){
+    if((item.familles||[]).includes(famId))return;
+    if(item.source==='school'&&authProfile?.role!=='mx'){
+      const fork=txForkItem(cfg.type,item);
+      if(!fork.familles)fork.familles=[];fork.familles.push(famId);
+      if(!fork.localChangedFields)fork.localChangedFields=[];
+      if(!fork.localChangedFields.includes('famille_add'))fork.localChangedFields.push('famille_add');
+      saveToStorage();buildPublishSection();
+      if(cfg.type==='groove')buildGrooveSection();else buildLayers();
+      showToast('Modification sauvegardée — soumettez-la via ···','info');
+    } else {
+      if(!item.familles)item.familles=[];item.familles.push(famId);
+      markItemDirty(item,'famille_add');saveToStorage();buildPublishSection();
+    }
+  }
+
+  function pmRemoveTag(item,famId){
+    if(item.source==='school'&&authProfile?.role!=='mx'){
+      const fork=txForkItem(cfg.type,item);
+      fork.familles=(fork.familles||[]).filter(id=>id!==famId);
+      if(!fork.localChangedFields)fork.localChangedFields=[];
+      if(!fork.localChangedFields.includes('famille_remove'))fork.localChangedFields.push('famille_remove');
+      saveToStorage();buildPublishSection();
+      if(cfg.type==='groove')buildGrooveSection();else buildLayers();
+      showToast('Modification sauvegardée — soumettez-la via ···','info');
+    } else {
+      item.familles=(item.familles||[]).filter(id=>id!==famId);
+      markItemDirty(item,'famille_remove');saveToStorage();buildPublishSection();
+    }
+    buildFamCol();buildItems();
+  }
+
+  function pmStartRename(nameEl,item){
+    nameEl.contentEditable='true';nameEl.focus();
+    const range=document.createRange();range.selectNodeContents(nameEl);
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+    nameEl.dataset.orig=nameEl.textContent;
+    const commit=()=>{
+      nameEl.contentEditable='false';
+      const newNom=nameEl.textContent.trim();
+      if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
+      if(newNom===nameEl.dataset.orig)return;
+      if(item.source==='school'&&authProfile?.role!=='mx'){
+        const fork=txForkItem(cfg.type,item);fork.nom=newNom;
+        if(cfg.type==='groove'&&currentGrooveId===item.id)currentGrooveId=fork.id;
+        saveToStorage();buildPublishSection();
+        if(cfg.type==='groove')buildGrooveSection();else buildLayers();
+        showToast('Modification sauvegardée — soumettez-la via ···','info');
+      } else {
+        item.nom=newNom;markItemDirty(item,'nom');saveToStorage();buildPublishSection();
+        if(cfg.type==='groove')buildGrooveSection();else buildLayers();
+      }
+      buildItems();
+    };
+    nameEl.addEventListener('blur',commit,{once:true});
+    nameEl.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
+      if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
+    });
+  }
+
+  function pmCreateNew(){
+    if(cfg.type==='groove'){_closeOverlay();openGrooveSavePop(null);return;}
+    // Pattern : crée un pattern vide teacher et l'affiche en rename
+    const newPat={id:'user_pat_'+Date.now(),nom:'Nouveau pattern',sequence:'0000',pas:4,familles:[],source:'teacher',localChangeType:'create'};
+    packCours.patterns.push(newPat);
+    if(!packCours.encyclo)packCours.encyclo={};
+    if(!packCours.encyclo[newPat.id])packCours.encyclo[newPat.id]={chapo:'',bullets:[]};
+    saveToStorage();buildPublishSection();buildLayers();
+    buildItems();
+    requestAnimationFrame(()=>{
+      const el=itemsWrap.querySelector('[data-pm-id="'+newPat.id+'"] .pm-item-name');
+      if(el)pmStartRename(el,newPat);
+    });
+  }
+
+  function pmDrop(srcId,tgtId){
+    if(cfg.type==='groove')libDropGroove(srcId,tgtId);
+    else libDropPattern(srcId,tgtId);
+  }
+
+  function buildItems(){
+    itemsWrap.innerHTML='';
+    // Types non-gérables : logique inchangée
+    if(cfg.type==='sound'){
       const soundItems=Object.entries(SOUND_DEFS)
         .filter(([,d])=>famFilter==='all'||d.cat===famFilter)
         .map(([id,d])=>({id,nom:d.label,cat:d.cat}));
       soundItems.forEach(item=>{
-        const row=document.createElement('button');
-        row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.textContent=item.nom;
-        row.addEventListener('click',()=>{cfg.onSelect(item.id);overlay.remove();});
+        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.textContent=item.nom;row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
         itemsWrap.appendChild(row);
       });
-      requestAnimationFrame(()=>{
-        const cur=itemsWrap.querySelector('.pm-cur');
-        if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
-      });
+      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
       return;
-    } else if(cfg.type==='sig'){
+    }
+    if(cfg.type==='sig'){
       const sigs=metroPresets.filter(p=>famFilter==='all'||p.famille===famFilter);
       sigs.forEach(p=>{
-        const row=document.createElement('button');
-        row.className='pm-item'+(p.id===cfg.currentId?' pm-cur':'');
-        row.textContent=p.label||p.id;
-        row.addEventListener('click',()=>{cfg.onSelect(p.id);overlay.remove();});
+        const row=document.createElement('button');row.className='pm-item'+(p.id===cfg.currentId?' pm-cur':'');
+        row.textContent=p.label||p.id;row.addEventListener('click',()=>{cfg.onSelect(p.id);_closeOverlay();});
         itemsWrap.appendChild(row);
       });
-      requestAnimationFrame(()=>{
-        const cur=itemsWrap.querySelector('.pm-cur');
-        if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
+      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      return;
+    }
+    if(cfg.type==='band'){
+      const items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
+      if(!items.length){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';itemsWrap.appendChild(e);return;}
+      items.forEach(item=>{
+        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
+        row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+        itemsWrap.appendChild(row);
+      });
+      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      return;
+    }
+
+    // groove / pattern
+    const items=getFilteredItems();
+
+    if(reorderMode){
+      // Mode réordonner : pleine largeur, poignée drag
+      items.forEach(item=>{
+        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');
+        const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='≡';
+        const name=document.createElement('span');name.textContent=item.nom.replace(/^● modifié /,'');
+        div.appendChild(handle);div.appendChild(name);
+        // Drag HTML5
+        div.addEventListener('dragstart',e=>{_reorderDragSrcId=item.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>div.classList.add('pm-dragging'),0);});
+        div.addEventListener('dragend',()=>{div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));_reorderDragSrcId=null;});
+        div.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(item.id!==_reorderDragSrcId)div.classList.add('pm-drag-over');});
+        div.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId&&_reorderDragSrcId!==item.id)pmDrop(_reorderDragSrcId,item.id);});
+        // Drag tactile
+        handle.addEventListener('touchstart',e=>{e.preventDefault();_reorderDragSrcId=item.id;div.classList.add('pm-dragging');},{passive:false});
+        handle.addEventListener('touchmove',e=>{
+          e.preventDefault();if(!_reorderDragSrcId)return;
+          const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+          const tgt=el?.closest('.pm-reorder');
+          itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
+          if(tgt&&tgt.dataset.id!==_reorderDragSrcId)tgt.classList.add('pm-drag-over');
+        },{passive:false});
+        handle.addEventListener('touchend',e=>{
+          e.preventDefault();const over=itemsWrap.querySelector('.pm-drag-over');
+          div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
+          if(over&&_reorderDragSrcId&&over.dataset.id!==_reorderDragSrcId)pmDrop(_reorderDragSrcId,over.dataset.id);
+          _reorderDragSrcId=null;
+        },{passive:false});
+        itemsWrap.appendChild(div);
       });
       return;
-    } else {
-      items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
     }
-    if(!items.length){
-      const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';
-      itemsWrap.appendChild(e);return;
+
+    if(!items.length&&!manageMode){
+      const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';itemsWrap.appendChild(e);
     }
+
     items.forEach(item=>{
-      const row=document.createElement('button');
-      row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-      row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
-      row.addEventListener('click',()=>{cfg.onSelect(item.id);overlay.remove();});
-      itemsWrap.appendChild(row);
+      if(manageMode){
+        // Mode gérer : 2 lignes (nom+🗑 / chips tags)
+        const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
+        const row1=document.createElement('div');row1.className='pm-item-name-row';
+        const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=item.nom.replace(/^● modifié /,'');
+        nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+        const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';
+        delBtn.addEventListener('click',e=>{e.stopPropagation();if(cfg.type==='groove')libDeleteGroove(item.id);else libDeletePattern(item.id);});
+        row1.appendChild(nameEl);row1.appendChild(delBtn);div.appendChild(row1);
+        const tagsDiv=document.createElement('div');tagsDiv.className='pm-item-tags';
+        pmBuildTags(tagsDiv,item);div.appendChild(tagsDiv);
+        itemsWrap.appendChild(div);
+      } else {
+        // Mode normal : sélection
+        const row=document.createElement('button');
+        row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
+        row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+        itemsWrap.appendChild(row);
+      }
     });
-    requestAnimationFrame(()=>{
-      const cur=itemsWrap.querySelector('.pm-cur');
-      if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
-    });
+
+    if(manageMode){
+      // Bouton + Nouveau en bas
+      const newBtn=document.createElement('button');newBtn.className='pm-item pm-item-new';
+      newBtn.textContent='＋ Nouveau '+(cfg.type==='groove'?'groove':'pattern');
+      newBtn.addEventListener('click',pmCreateNew);
+      itemsWrap.appendChild(newBtn);
+    } else {
+      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+    }
+  }
+
+  // Enregistrer le callback de rafraîchissement (groove/pattern uniquement)
+  if(cfg.type==='groove'||cfg.type==='pattern'){
+    _pmRefresh=()=>{buildFamCol();buildItems();};
   }
 
   buildFamCol();buildItems();
@@ -2743,11 +2890,6 @@ function buildGrooveSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
   bar.appendChild(lbl);
 
-  // ≡ menu grooves
-  const menuBtnGrooveEarly=mkBtnMenu(()=>openLibPanelGrooves());
-  menuBtnGrooveEarly.classList.add('menu-btn-groove');
-  bar.appendChild(menuBtnGrooveEarly);
-
   // Bouton preset groove (remplace filtre famille + select)
   const curGroove=getGroove(currentGrooveId);
   const groovePresetBtn=document.createElement('button');
@@ -2867,12 +3009,6 @@ function buildLayers(){
       btnI.onclick=has?()=>{showEncycloEntry(eKey);if(!encycloOuvert)toggleEncyclo(true);}:null;
     }
     updateBtnI();
-
-    // ≡ gestion bibliothèque patterns
-    const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
-    menuBtnPat.classList.add('menu-btn-pat');
-    if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='teacher')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern enseignant';}
-    row1.appendChild(menuBtnPat);
 
     // Bouton preset pattern (remplace filtre famille + select)
     const curPat0=state[li].patternId?getPattern(state[li].patternId):findPatternBySeq(state[li].pattern);
@@ -6454,135 +6590,13 @@ function createUserPattern(seq,sourcePat){
 // MODULE LIB — Gestion bibliothèque patterns (panel ≡ générique, instancié pour patterns)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function openLibPanelPatterns(){
-  const s=document.getElementById('lib-search-patterns');if(s)s.value='';
-  rebuildAllFamFilters();
-  buildLibListPatterns();
-  buildLibFamListPatterns();
-  document.getElementById('lib-overlay-patterns').classList.remove('hidden');
-  document.getElementById('lib-panel-patterns').classList.remove('hidden');
-}
 
-function closeLibPanelPatterns(){
-  document.getElementById('lib-overlay-patterns').classList.add('hidden');
-  document.getElementById('lib-panel-patterns').classList.add('hidden');
-}
 
 // ── État drag bibliothèque ────────────────────────────────────────────────
 let _libDragSrcId = null;
 
 // ── Liste des patterns ────────────────────────────────────────────────────
-function buildLibListPatterns(){
-  const list = document.getElementById('lib-list-patterns');
-  list.innerHTML = '';
-  document.getElementById('lib-select-all-patterns').checked = false;
-  document.getElementById('lib-batch-del-patterns').disabled = true;
-
-  // Filtre famille courant (sélect en tête du panel) — SX : perso uniquement
-  const filtreEl = document.getElementById('lib-fam-filter-patterns');
-  const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
-  const qPat = (document.getElementById('lib-search-patterns')?.value||'').toLowerCase().trim();
-  const allPatsVisible = packCours.patterns.filter(p => !p.localDeletePending && p.source !== 'pending');
-  const patsByFam = filtreId === '__teacher__'
-    ? allPatsVisible.filter(p=>p.source==='teacher')
-    : filtreId && filtreId !== 'all'
-      ? allPatsVisible.filter(p=>(p.familles||[]).includes(filtreId))
-      : allPatsVisible;
-  const patterns = qPat ? patsByFam.filter(p=>p.nom.toLowerCase().includes(qPat)) : patsByFam;
-
-  patterns.forEach(pat=>{
-    const item = document.createElement('div');
-    item.className = 'lib-item';
-    item.dataset.patId = pat.id;
-    item.setAttribute('draggable', 'true');
-
-    // Checkbox
-    const chk = document.createElement('input');
-    chk.type = 'checkbox'; chk.className = 'lib-item-check';
-    chk.addEventListener('change', updateLibBatchBar);
-    item.appendChild(chk);
-
-    // Poignée drag — grande zone tactile, toute hauteur
-    const handle = document.createElement('span');
-    handle.className = 'lib-drag-handle';
-    handle.textContent = '⠿'; handle.title = 'Glisser pour réordonner';
-    item.appendChild(handle);
-
-    // Colonne principale 2 lignes
-    const main = document.createElement('div'); main.className = 'lib-item-main';
-
-    // Ligne 1 : nom + ✎ + 🗑 (ou bouton Fork pour items école en mode TX)
-    const row1 = document.createElement('div'); row1.className = 'lib-item-row1';
-    const nameEl = document.createElement('span');
-    nameEl.className = 'lib-item-name';
-    nameEl.textContent = pat.nom.replace(/^● modifié /,'');
-    row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className = 'lib-item-rename';
-    renameBtn.textContent = '✎'; renameBtn.title = 'Renommer';
-    renameBtn.addEventListener('click', e=>{ e.stopPropagation(); libStartRenamePattern(nameEl, pat.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className = 'lib-item-del';
-    delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-    delBtn.addEventListener('click', ()=>libDeletePattern(pat.id));
-    row1.appendChild(delBtn);
-    main.appendChild(row1);
-
-    // Ligne 2 : tags famille
-    const tagsWrap = document.createElement('div'); tagsWrap.className = 'lib-item-tags';
-    libBuildPatternTags(tagsWrap, pat);
-    main.appendChild(tagsWrap);
-    item.appendChild(main);
-
-    // ── Drag HTML5 (souris) ───────────────────────────────────────────────
-    item.addEventListener('dragstart', e=>{
-      _libDragSrcId = pat.id;
-      e.dataTransfer.effectAllowed = 'move';
-      setTimeout(()=>item.classList.add('lib-item-dragging'), 0);
-    });
-    item.addEventListener('dragend', ()=>{
-      item.classList.remove('lib-item-dragging');
-      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      _libDragSrcId = null;
-    });
-    item.addEventListener('dragover', e=>{
-      e.preventDefault(); e.dataTransfer.dropEffect='move';
-      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      if(pat.id !== _libDragSrcId) item.classList.add('lib-item-drag-over');
-    });
-    item.addEventListener('drop', e=>{
-      e.preventDefault();
-      if(_libDragSrcId && _libDragSrcId !== pat.id) libDropPattern(_libDragSrcId, pat.id);
-    });
-
-    // ── Drag Touch (mobile) ───────────────────────────────────────────────
-    handle.addEventListener('touchstart', e=>{
-      e.preventDefault();
-      _libDragSrcId = pat.id;
-      item.classList.add('lib-item-dragging');
-    }, {passive:false});
-    handle.addEventListener('touchmove', e=>{
-      e.preventDefault();
-      if(!_libDragSrcId) return;
-      const touch = e.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      const target = el ? el.closest('.lib-item') : null;
-      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      if(target && target.dataset.patId !== _libDragSrcId) target.classList.add('lib-item-drag-over');
-    }, {passive:false});
-    handle.addEventListener('touchend', e=>{
-      e.preventDefault();
-      const over = list.querySelector('.lib-item-drag-over');
-      item.classList.remove('lib-item-dragging');
-      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      if(over && _libDragSrcId && over.dataset.patId !== _libDragSrcId){
-        libDropPattern(_libDragSrcId, over.dataset.patId);
-      }
-      _libDragSrcId = null;
-    }, {passive:false});
-
-    list.appendChild(item);
-  });
-}
+function buildLibListPatterns(){ _pmRefresh?.(); }
 
 function libBuildPatternTags(container, pat){
   container.innerHTML = '';
@@ -6794,51 +6808,9 @@ async function libDeletePattern(patId){
   showToast('Pattern supprimé', 'info');
 }
 
-function updateLibBatchBar(){
-  const checks = document.querySelectorAll('#lib-list-patterns .lib-item-check');
-  const anyChecked = [...checks].some(c=>c.checked);
-  document.getElementById('lib-batch-del-patterns').disabled = !anyChecked;
-}
 
 // ── Gestion des familles dans le panel ≡ ─────────────────────────────────
-function buildLibFamListPatterns(){
-  const list = document.getElementById('lib-fam-list-patterns');
-  list.innerHTML = '';
-  let _famDragSrc = null;
-  packCours.familles.forEach(fam=>{
-    const count = packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
-    const row = document.createElement('div'); row.className = 'lib-fam-item'; row.dataset.famId = fam.id;
-    // Poignée drag
-    const hdl = document.createElement('span'); hdl.className = 'lib-fam-handle'; hdl.textContent = '⠿'; hdl.title = 'Réordonner';
-    hdl.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrc=fam.id;row.classList.add('lib-fam-dragging');},{passive:false});
-    hdl.addEventListener('touchmove',e=>{e.preventDefault();if(!_famDragSrc)return;const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tgt=el?el.closest('.lib-fam-item'):null;list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(tgt&&tgt.dataset.famId!==_famDragSrc)tgt.classList.add('lib-fam-drag-over');},{passive:false});
-    hdl.addEventListener('touchend',e=>{e.preventDefault();const over=list.querySelector('.lib-fam-drag-over');row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(over&&_famDragSrc&&over.dataset.famId!==_famDragSrc)libDropFamille(_famDragSrc,over.dataset.famId);_famDragSrc=null;},{passive:false});
-    row.appendChild(hdl);
-    // Nom (lecture seule, rename via bouton)
-    const nameEl = document.createElement('span'); nameEl.className = 'lib-fam-name';
-    nameEl.textContent = fam.nom;
-    row.appendChild(nameEl);
-    // Bouton ✎ renommer — masqué pour les familles école en mode TX (TX ne peut pas les modifier)
-    const renBtn = document.createElement('button'); renBtn.className = 'lib-fam-rename'; renBtn.textContent = '✎'; renBtn.title = 'Renommer';
-    renBtn.addEventListener('click', ()=>libStartRenameFamille(nameEl, fam, buildLibFamListPatterns));
-    if (fam.source === 'school' && authProfile?.role !== 'mx') renBtn.style.display = 'none';
-    row.appendChild(renBtn);
-    // Compteur
-    const cntEl = document.createElement('span'); cntEl.className = 'lib-fam-count'; cntEl.textContent = count+'P';
-    row.appendChild(cntEl);
-    // Supprimer
-    const delBtn = document.createElement('button'); delBtn.className = 'lib-fam-del'; delBtn.textContent = '🗑'; delBtn.title = 'Supprimer';
-    delBtn.addEventListener('click', ()=>libDeleteFamille(fam.id, count));
-    row.appendChild(delBtn);
-    // Drag HTML5 souris
-    row.setAttribute('draggable','true');
-    row.addEventListener('dragstart',e=>{_famDragSrc=fam.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('lib-fam-dragging'),0);});
-    row.addEventListener('dragend',()=>{row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));_famDragSrc=null;});
-    row.addEventListener('dragover',e=>{e.preventDefault();list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(fam.id!==_famDragSrc)row.classList.add('lib-fam-drag-over');});
-    row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrc&&_famDragSrc!==fam.id)libDropFamille(_famDragSrc,fam.id);});
-    list.appendChild(row);
-  });
-}
+function buildLibFamListPatterns(){ _pmRefresh?.(); }
 
 function libStartRenameFamille(nameEl, fam, afterSave){
   nameEl.contentEditable = 'true'; nameEl.focus();
@@ -6907,8 +6879,7 @@ function libDeleteFamille(famId, count){
     packCours.grooves.forEach(g=>{ g.familles=(g.familles||[]).filter(id=>id!==famId); });
   }
   packCours.familles = packCours.familles.filter(f=>f.id!==famId);
-  saveToStorage(); rebuildAllFamFilters(); buildLibFamListPatterns(); buildLibListPatterns();
-  if(!document.getElementById('lib-panel-grooves').classList.contains('hidden')){ buildLibFamListGrooves(); buildLibListGrooves(); }
+  saveToStorage(); rebuildAllFamFilters(); _pmRefresh?.();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -7107,191 +7078,14 @@ function initLibPanelBands(){
 }
 
 // ── Events panel ≡ (attachés une seule fois dans attachEvents) ────────────
-function attachLibPanelEvents(){
-  document.getElementById('lib-overlay-patterns').addEventListener('click', closeLibPanelPatterns);
-  document.getElementById('lib-panel-patterns-close').addEventListener('click', closeLibPanelPatterns);
 
-  // Filtre famille en tête du panel → rebuild la liste
-  document.getElementById('lib-fam-filter-patterns').addEventListener('change', buildLibListPatterns);
 
-  // Checkbox tout sélectionner
-  document.getElementById('lib-select-all-patterns').addEventListener('change', e=>{
-    document.querySelectorAll('#lib-list-patterns .lib-item-check')
-      .forEach(c=>{ c.checked=e.target.checked; });
-    updateLibBatchBar();
-  });
 
-  // Supprimer la sélection
-  document.getElementById('lib-batch-del-patterns').addEventListener('click', ()=>{
-    const toDelete = [...document.querySelectorAll('#lib-list-patterns .lib-item-check:checked')]
-      .map(c=>c.closest('.lib-item').dataset.patId);
-    const blocked = toDelete.filter(id=>packCours.grooves.some(g=>g.layers.some(l=>l.patternId===id)));
-    if(blocked.length){
-      const noms = blocked.map(id=>{ const p=packCours.patterns.find(p=>p.id===id); return p?p.nom:id; });
-      alert('Ces patterns sont utilisés dans des grooves et ne peuvent pas être supprimés :\n'+noms.join(', '));
-      return;
-    }
-    if(!confirm('Supprimer '+toDelete.length+' pattern'+(toDelete.length!==1?'s':'')+' ?')) return;
-    toDelete.forEach(id=>{ packCours.patterns=packCours.patterns.filter(p=>p.id!==id); });
-    saveToStorage();
-    buildLibListPatterns();
-    buildLayers();
-  });
+function buildLibFamListGrooves(){ _pmRefresh?.(); }
 
-  // ＋ → affiche le mini formulaire de création
-  document.getElementById('lib-fam-add-btn').addEventListener('click', e=>{
-    e.stopPropagation(); // ne pas toggler le <details>
-    const box = document.getElementById('lib-fam-create-box-patterns');
-    const details = document.getElementById('lib-fam-details-patterns');
-    box.classList.remove('hidden');
-    details.open = true;
-    document.getElementById('lib-fam-new-input').focus();
-  });
-  // Créer
-  function _doCreateFamPattern(){
-    if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
-    const input = document.getElementById('lib-fam-new-input');
-    const nom = input.value.trim(); if(!nom) return;
-    const fam = {id:'fam_user_'+Date.now(), nom, category:'rytm', source:'school', localDirty:true};
-    packCours.familles.push(fam);
-    saveToStorage(); input.value='';
-    document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
-    buildLibFamListPatterns(); rebuildAllFamFilters(); buildPublishSection();
-  }
-  document.getElementById('lib-fam-create-ok-patterns').addEventListener('click', _doCreateFamPattern);
-  document.getElementById('lib-fam-new-input').addEventListener('keydown', e=>{
-    if(e.key==='Enter') _doCreateFamPattern();
-    if(e.key==='Escape') document.getElementById('lib-fam-create-cancel-patterns').click();
-  });
-  document.getElementById('lib-fam-create-cancel-patterns').addEventListener('click', ()=>{
-    document.getElementById('lib-fam-new-input').value='';
-    document.getElementById('lib-fam-create-box-patterns').classList.add('hidden');
-  });
-}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MODULE LIB — Grooves (panel ≡)
-// ═══════════════════════════════════════════════════════════════════════════
 
-function openLibPanelGrooves(){
-  const s=document.getElementById('lib-search-grooves');if(s)s.value='';
-  rebuildGrooveFamFilter();
-  buildLibListGrooves();
-  buildLibFamListGrooves();
-  document.getElementById('lib-overlay-grooves').classList.remove('hidden');
-  document.getElementById('lib-panel-grooves').classList.remove('hidden');
-}
-
-function buildLibFamListGrooves(){
-  const list=document.getElementById('lib-fam-list-grooves'); if(!list) return;
-  list.innerHTML='';
-  let _famDragSrc=null;
-  packCours.familles.forEach(fam=>{
-    const pCnt=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length;
-    const gCnt=packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
-    const row=document.createElement('div'); row.className='lib-fam-item'; row.dataset.famId=fam.id;
-    const hdl=document.createElement('span'); hdl.className='lib-fam-handle'; hdl.textContent='⠿'; hdl.title='Réordonner';
-    hdl.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrc=fam.id;row.classList.add('lib-fam-dragging');},{passive:false});
-    hdl.addEventListener('touchmove',e=>{e.preventDefault();if(!_famDragSrc)return;const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tgt=el?el.closest('.lib-fam-item'):null;list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(tgt&&tgt.dataset.famId!==_famDragSrc)tgt.classList.add('lib-fam-drag-over');},{passive:false});
-    hdl.addEventListener('touchend',e=>{e.preventDefault();const over=list.querySelector('.lib-fam-drag-over');row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(over&&_famDragSrc&&over.dataset.famId!==_famDragSrc)libDropFamille(_famDragSrc,over.dataset.famId);_famDragSrc=null;},{passive:false});
-    row.appendChild(hdl);
-    const nameEl=document.createElement('span'); nameEl.className='lib-fam-name'; nameEl.textContent=fam.nom;
-    row.appendChild(nameEl);
-    const renBtn=document.createElement('button'); renBtn.className='lib-fam-rename'; renBtn.textContent='✎'; renBtn.title='Renommer';
-    renBtn.addEventListener('click',()=>libStartRenameFamille(nameEl,fam,buildLibFamListGrooves));
-    if(fam.source==='school'&&authProfile?.role!=='mx')renBtn.style.display='none';
-    row.appendChild(renBtn);
-    const cntEl=document.createElement('span'); cntEl.className='lib-fam-count'; cntEl.textContent=gCnt+'G '+pCnt+'P';
-    row.appendChild(cntEl);
-    const delBtn=document.createElement('button'); delBtn.className='lib-fam-del'; delBtn.textContent='🗑';
-    delBtn.addEventListener('click',()=>libDeleteFamille(fam.id,pCnt+gCnt));
-    row.appendChild(delBtn);
-    row.setAttribute('draggable','true');
-    row.addEventListener('dragstart',e=>{_famDragSrc=fam.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('lib-fam-dragging'),0);});
-    row.addEventListener('dragend',()=>{row.classList.remove('lib-fam-dragging');list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));_famDragSrc=null;});
-    row.addEventListener('dragover',e=>{e.preventDefault();list.querySelectorAll('.lib-fam-drag-over').forEach(r=>r.classList.remove('lib-fam-drag-over'));if(fam.id!==_famDragSrc)row.classList.add('lib-fam-drag-over');});
-    row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrc&&_famDragSrc!==fam.id)libDropFamille(_famDragSrc,fam.id);});
-    list.appendChild(row);
-  });
-}
-
-function closeLibPanelGrooves(){
-  document.getElementById('lib-overlay-grooves').classList.add('hidden');
-  document.getElementById('lib-panel-grooves').classList.add('hidden');
-}
-
-function rebuildGrooveFamFilter(){
-  const sel = document.getElementById('lib-fam-filter-grooves'); if(!sel) return;
-  const prev = sel.value;
-  sel.innerHTML = '<option value="all">Toutes les familles</option>';
-  const _gp=document.createElement('option');_gp.value='__teacher__';_gp.textContent='— Enseignant —';_gp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';sel.appendChild(_gp);
-  packCours.familles.forEach(f=>{
-    const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
-  });
-  if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
-}
-
-function buildLibListGrooves(){
-  const list = document.getElementById('lib-list-grooves'); list.innerHTML='';
-  document.getElementById('lib-select-all-grooves').checked = false;
-  document.getElementById('lib-batch-del-grooves').disabled = true;
-
-  // Filtre famille courant — SX : perso uniquement
-  const filtreEl = document.getElementById('lib-fam-filter-grooves');
-  const filtreId = currentMode !== 'tx' ? '__teacher__' : (filtreEl ? filtreEl.value : 'all');
-  const qGrv = (document.getElementById('lib-search-grooves')?.value||'').toLowerCase().trim();
-  const allGroovesVisible = packCours.grooves.filter(g => !g.localDeletePending && g.source !== 'pending');
-  const groovesByFam = filtreId === '__teacher__'
-    ? allGroovesVisible.filter(g=>g.source==='teacher')
-    : filtreId && filtreId !== 'all'
-      ? allGroovesVisible.filter(g=>(g.familles||[]).includes(filtreId))
-      : allGroovesVisible;
-  const grooves = qGrv ? groovesByFam.filter(g=>g.nom.toLowerCase().includes(qGrv)) : groovesByFam;
-
-  grooves.forEach(groove=>{
-    const item = document.createElement('div');
-    item.className = 'lib-item'; item.dataset.grooveId = groove.id;
-    item.setAttribute('draggable','true');
-
-    const chk = document.createElement('input'); chk.type='checkbox'; chk.className='lib-item-check';
-    chk.addEventListener('change', updateLibGrooveBatchBar);
-    item.appendChild(chk);
-
-    const handle = document.createElement('span'); handle.className='lib-drag-handle'; handle.textContent='⠿';
-    handle.title='Glisser pour réordonner'; item.appendChild(handle);
-
-    // Colonne principale 2 lignes
-    const main = document.createElement('div'); main.className='lib-item-main';
-    const row1 = document.createElement('div'); row1.className='lib-item-row1';
-    const nameEl = document.createElement('span'); nameEl.className='lib-item-name';
-    nameEl.textContent = groove.nom.replace(/^● modifié /,'');
-    row1.appendChild(nameEl);
-    const renameBtn = document.createElement('button'); renameBtn.className='lib-item-rename';
-    renameBtn.textContent='✎'; renameBtn.title='Renommer';
-    renameBtn.addEventListener('click',e=>{ e.stopPropagation(); libStartRenameGroove(nameEl,groove.id); });
-    row1.appendChild(renameBtn);
-    const delBtn = document.createElement('button'); delBtn.className='lib-item-del'; delBtn.textContent='🗑';
-    delBtn.addEventListener('click',()=>libDeleteGroove(groove.id));
-    row1.appendChild(delBtn);
-    main.appendChild(row1);
-    const tagsWrap = document.createElement('div'); tagsWrap.className='lib-item-tags';
-    libBuildGrooveTags(tagsWrap,groove); main.appendChild(tagsWrap);
-    item.appendChild(main);
-
-    // Drag HTML5
-    item.addEventListener('dragstart',e=>{ _libDragSrcId=groove.id; e.dataTransfer.effectAllowed='move'; setTimeout(()=>item.classList.add('lib-item-dragging'),0); });
-    item.addEventListener('dragend',()=>{ item.classList.remove('lib-item-dragging'); list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); _libDragSrcId=null; });
-    item.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(groove.id!==_libDragSrcId)item.classList.add('lib-item-drag-over'); });
-    item.addEventListener('drop',e=>{ e.preventDefault(); if(_libDragSrcId&&_libDragSrcId!==groove.id)libDropGroove(_libDragSrcId,groove.id); });
-
-    // Drag Touch
-    handle.addEventListener('touchstart',e=>{ e.preventDefault(); _libDragSrcId=groove.id; item.classList.add('lib-item-dragging'); },{passive:false});
-    handle.addEventListener('touchmove',e=>{ e.preventDefault(); if(!_libDragSrcId)return; const t=e.touches[0]; const el=document.elementFromPoint(t.clientX,t.clientY); const tgt=el?el.closest('.lib-item'):null; list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(tgt&&tgt.dataset.grooveId!==_libDragSrcId)tgt.classList.add('lib-item-drag-over'); },{passive:false});
-    handle.addEventListener('touchend',e=>{ e.preventDefault(); const over=list.querySelector('.lib-item-drag-over'); item.classList.remove('lib-item-dragging'); list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over')); if(over&&_libDragSrcId&&over.dataset.grooveId!==_libDragSrcId)libDropGroove(_libDragSrcId,over.dataset.grooveId); _libDragSrcId=null; },{passive:false});
-
-    list.appendChild(item);
-  });
-}
+function buildLibListGrooves(){ _pmRefresh?.(); }
 
 function libBuildGrooveTags(container, groove){
   container.innerHTML='';
@@ -7441,55 +7235,7 @@ async function libDeleteGroove(grooveId){
   showToast('Groove supprimé', 'info');
 }
 
-function updateLibGrooveBatchBar(){
-  const checks=document.querySelectorAll('#lib-list-grooves .lib-item-check');
-  document.getElementById('lib-batch-del-grooves').disabled=[...checks].every(c=>!c.checked);
-}
 
-function attachGrooveLibEvents(){
-  document.getElementById('lib-overlay-grooves').addEventListener('click',closeLibPanelGrooves);
-  document.getElementById('lib-panel-grooves-close').addEventListener('click',closeLibPanelGrooves);
-  document.getElementById('lib-fam-filter-grooves').addEventListener('change',buildLibListGrooves);
-  document.getElementById('lib-select-all-grooves').addEventListener('change',e=>{
-    document.querySelectorAll('#lib-list-grooves .lib-item-check').forEach(c=>{ c.checked=e.target.checked; });
-    updateLibGrooveBatchBar();
-  });
-  document.getElementById('lib-batch-del-grooves').addEventListener('click',()=>{
-    const toDelete=[...document.querySelectorAll('#lib-list-grooves .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.grooveId);
-    if(packCours.grooves.length-toDelete.length<1){ alert('Impossible de supprimer tous les grooves.'); return; }
-    if(!confirm('Supprimer '+toDelete.length+' groove'+(toDelete.length!==1?'s':'')+' ?')) return;
-    toDelete.forEach(id=>libDeleteGroove(id));
-  });
-  // ＋ → affiche le mini formulaire de création
-  document.getElementById('lib-fam-add-btn-grooves').addEventListener('click',e=>{
-    e.stopPropagation();
-    const box=document.getElementById('lib-fam-create-box-grooves');
-    const details=document.getElementById('lib-fam-details-grooves');
-    box.classList.remove('hidden');
-    details.open=true;
-    document.getElementById('lib-fam-new-input-grooves').focus();
-  });
-  // Créer
-  function _doCreateFamGroove(){
-    if (authProfile?.role !== 'mx') { showToast('La création de famille est réservée aux administrateurs', 'warn'); return; }
-    const input=document.getElementById('lib-fam-new-input-grooves');
-    const nom=input.value.trim(); if(!nom) return;
-    const fam={id:'fam_user_'+Date.now(),nom,category:'rytm',source:'school',localDirty:true};
-    packCours.familles.push(fam);
-    saveToStorage(); input.value='';
-    document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
-    buildLibFamListGrooves(); rebuildAllFamFilters(); buildPublishSection();
-  }
-  document.getElementById('lib-fam-create-ok-grooves').addEventListener('click',_doCreateFamGroove);
-  document.getElementById('lib-fam-new-input-grooves').addEventListener('keydown',e=>{
-    if(e.key==='Enter') _doCreateFamGroove();
-    if(e.key==='Escape') document.getElementById('lib-fam-create-cancel-grooves').click();
-  });
-  document.getElementById('lib-fam-create-cancel-grooves').addEventListener('click',()=>{
-    document.getElementById('lib-fam-new-input-grooves').value='';
-    document.getElementById('lib-fam-create-box-grooves').classList.add('hidden');
-  });
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MODULE LIB — Encyclopédie (panel ≡)
@@ -8398,9 +8144,7 @@ function attachEvents(){
   document.getElementById('midi-modal-close').addEventListener('click',closeMidiExportModal);
   document.getElementById('midi-overlay').addEventListener('click',closeMidiExportModal);
   document.getElementById('midi-export-confirm').addEventListener('click',exportMidi);
-  // Recherche en temps réel dans les panels
-  document.getElementById('lib-search-patterns').addEventListener('input',buildLibListPatterns);
-  document.getElementById('lib-search-grooves').addEventListener('input',buildLibListGrooves);
+  // Recherche en temps réel dans le panel bands
   document.getElementById('lib-search-bands').addEventListener('input',buildLibListBands);
 
   // Préférences groove (checkboxes)
@@ -8550,10 +8294,7 @@ function attachEvents(){
     dialogCallback=null;
   });
 
-  // ── Panel ≡ bibliothèque patterns ──
-  attachLibPanelEvents();
-  // ── Panel ≡ grooves + encyclopédie ──
-  attachGrooveLibEvents();
+  // ── Panel ≡ encyclopédie ──
   attachEncycloLibEvents();
   // ── Panel ≡ bibliothèque bands ──
   initLibPanelBands();
