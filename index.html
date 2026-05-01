@@ -367,6 +367,38 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .fam-filter{font-size:8px;padding:1px 2px;border-radius:4px;border:1px solid var(--cs);background:var(--cl);color:var(--cb);flex-shrink:0;max-width:58px;cursor:pointer;opacity:.75}
 .fam-filter:focus{opacity:1}
 
+/* ─── PRESET MODAL (bottom sheet) ─── */
+#pm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:flex-end;justify-content:center;}
+.pm-sheet{width:100%;max-width:600px;max-height:78vh;display:flex;flex-direction:column;background:#fff;border-radius:14px 14px 0 0;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s ease-out;}
+.pm-sheet.pm-open{transform:translateY(0);}
+.pm-handle{width:36px;height:4px;background:#ccc;border-radius:2px;margin:8px auto 0;flex-shrink:0;}
+.pm-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid #e0ddd8;font-weight:600;font-size:13px;flex-shrink:0;color:var(--pm-ac,#4a3d8a);}
+.pm-close{background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:2px 8px;border-radius:4px;}
+.pm-chips{display:flex;gap:6px;padding:6px 10px;overflow-x:auto;flex-shrink:0;border-bottom:1px solid #e0ddd8;scrollbar-width:none;}
+.pm-chips::-webkit-scrollbar{display:none;}
+.pm-chip{white-space:nowrap;padding:3px 10px;border-radius:14px;font-size:11px;cursor:pointer;flex-shrink:0;border:1px solid var(--pm-ac,#4a3d8a);background:transparent;color:var(--pm-ac,#4a3d8a);}
+.pm-chip.active{background:var(--pm-ac,#4a3d8a);color:#fff;}
+.pm-items{overflow-y:auto;flex:1;}
+.pm-item{display:block;width:100%;text-align:left;padding:10px 16px;font-size:12px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#1a1a18;}
+.pm-item:hover,.pm-item:active{background:var(--pm-bg2,#f5f3f0);}
+.pm-item.pm-cur{font-weight:700;color:var(--pm-ac,#4a3d8a);}
+.pm-empty{padding:18px;text-align:center;color:#888;font-size:12px;}
+/* Bouton preset (remplace les 2 selects) */
+.pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:160px;padding:2px 5px;border-radius:4px;background:#fff;border:1px solid #ccc;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1a1a18;}
+.pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
+.pm-preset-dirty{border-color:#D85A30!important;color:#D85A30!important;}
+.pm-preset-dirty::before{content:'● ';}
+/* Dark mode */
+body.dark-mode #pm-overlay{background:rgba(0,0,0,.6);}
+body.dark-mode .pm-sheet{background:#1a1a18;}
+body.dark-mode .pm-header{border-color:#333;}
+body.dark-mode .pm-chips{border-color:#333;}
+body.dark-mode .pm-chip{background:#2a2a28;}
+body.dark-mode .pm-chip.active{background:var(--pm-ac);}
+body.dark-mode .pm-item{color:#e0ddd8;border-color:#2a2a28;}
+body.dark-mode .pm-item:hover{background:#2a2a28;}
+body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444;}
+
 /* ─── FAMILY TAG CHIPS ─── */
 .fam-tags{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 2px}
 .fam-tag{display:inline-flex;align-items:center;gap:2px;background:#e8f0fb;border:1px solid #b0c4e8;border-radius:10px;padding:1px 6px 1px 7px;font-size:10px;color:#2d5f80;line-height:1.4;white-space:nowrap}
@@ -789,7 +821,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.80</span>
+      <span class="app-version">v3.5.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2165,37 +2197,37 @@ let _encPreview = null; // { canonicalKey, chapo, bullets } — aperçu TX sans 
 // ── Gestion unifiée des états "modifié" ──────────────────────────────────
 // bouton 💾 → classe .dirty (rouge + !)
 // option courante du select → préfixe "● modifié : " + rouge
-function setDirtyUI(selectId, btnId, isDirty){
-  const btn=document.getElementById(btnId);
-  if(btn)btn.classList.toggle('dirty',isDirty);
-  const sel=document.getElementById(selectId);
-  if(!sel) return;
-  if(isDirty){
-    const opt=sel.options[sel.selectedIndex];
-    if(opt){
-      opt.style.color='#D85A30';
-      if(!opt.dataset.origName) opt.dataset.origName=opt.textContent;
-      opt.textContent='● '+opt.dataset.origName+' (modifié)';
+function setDirtyUI(elemId, btnId, isDirty){
+  const saveBtn=document.getElementById(btnId);
+  if(saveBtn)saveBtn.classList.toggle('dirty',isDirty);
+  const el=document.getElementById(elemId);
+  if(!el)return;
+  if(el.tagName==='SELECT'){
+    if(isDirty){
+      const opt=el.options[el.selectedIndex];
+      if(opt){
+        opt.style.color='#D85A30';
+        if(!opt.dataset.origName)opt.dataset.origName=opt.textContent;
+        opt.textContent='● '+opt.dataset.origName+' (modifié)';
+      }
+    } else {
+      [...el.options].forEach(opt=>{
+        if(opt.dataset.origName){opt.style.color='';opt.textContent=opt.dataset.origName;delete opt.dataset.origName;}
+      });
     }
   } else {
-    // Réinitialiser toutes les options marquées (pas seulement la sélectionnée)
-    [...sel.options].forEach(opt=>{
-      if(opt.dataset.origName){
-        opt.style.color='';
-        opt.textContent=opt.dataset.origName;
-        delete opt.dataset.origName;
-      }
-    });
+    // Bouton preset : indicateur dirty via classe CSS
+    el.classList.toggle('pm-preset-dirty',isDirty);
   }
 }
 
 function setLayerDirty(li, isDirty){
   dirtyLayers[li]=isDirty;
-  setDirtyUI('sel-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
+  setDirtyUI('preset-btn-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
 }
 
 function updateGrooveSaveBtn(){
-  setDirtyUI('groove-select', 'save-btn-groove', grooveDirty);
+  setDirtyUI('groove-preset-btn', 'save-btn-groove', grooveDirty);
 }
 
 function updateEncycloSaveBtn(){
@@ -2341,6 +2373,103 @@ function render(){
   buildSoundPanel();
 }
 
+// ── Modal preset (bottom sheet) ───────────────────────────────────────────
+function openPresetModal(cfg){
+  // cfg: {type, currentId, label, accent, bg, onSelect}
+  const existing=document.getElementById('pm-overlay');
+  if(existing)existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='pm-overlay';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+
+  const sheet=document.createElement('div');
+  sheet.className='pm-sheet';
+  sheet.style.setProperty('--pm-ac', cfg.accent||'#4a3d8a');
+  sheet.style.setProperty('--pm-bg2', cfg.bg||'#f5f3f0');
+
+  const handle=document.createElement('div');handle.className='pm-handle';
+  sheet.appendChild(handle);
+
+  const hdr=document.createElement('div');hdr.className='pm-header';
+  const htitle=document.createElement('span');htitle.textContent=cfg.label||'Sélectionner';
+  const hclose=document.createElement('button');hclose.className='pm-close';hclose.textContent='✕';
+  hclose.addEventListener('click',()=>overlay.remove());
+  hdr.appendChild(htitle);hdr.appendChild(hclose);
+  sheet.appendChild(hdr);
+
+  let famFilter='all';
+
+  // Chips familles (pas pour les bands)
+  let chipsRow;
+  if(cfg.type!=='band'){
+    chipsRow=document.createElement('div');chipsRow.className='pm-chips';
+    sheet.appendChild(chipsRow);
+  }
+
+  const itemsWrap=document.createElement('div');itemsWrap.className='pm-items';
+  sheet.appendChild(itemsWrap);
+
+  function buildChips(){
+    if(!chipsRow)return;
+    chipsRow.innerHTML='';
+    let fams=[];
+    if(cfg.type==='groove'){
+      const used=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
+      fams=packCours.familles.filter(f=>used.has(f.id));
+    } else {
+      const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
+      fams=packCours.familles.filter(f=>used.has(f.id));
+    }
+    const mkChip=(id,lbl)=>{
+      const c=document.createElement('button');c.className='pm-chip'+(famFilter===id?' active':'');
+      c.textContent=lbl;
+      c.addEventListener('click',()=>{famFilter=id;buildChips();buildItems();});
+      chipsRow.appendChild(c);
+    };
+    mkChip('all','Tout');
+    if(authProfile)mkChip('__teacher__','Perso');
+    fams.forEach(f=>mkChip(f.id,f.nom));
+  }
+
+  function buildItems(){
+    itemsWrap.innerHTML='';
+    let items=[];
+    if(cfg.type==='groove'){
+      const allG=packCours.grooves.filter(g=>!g.localDeletePending);
+      const base=allG.filter(g=>g.source!=='pending');
+      const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
+      const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
+      items=[...filtered,...pending];
+    } else if(cfg.type==='pattern'){
+      const all=packCours.patterns.filter(p=>!p.localDeletePending);
+      items=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+    } else {
+      items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
+    }
+    if(!items.length){
+      const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';
+      itemsWrap.appendChild(e);return;
+    }
+    items.forEach(item=>{
+      const row=document.createElement('button');
+      row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+      row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
+      row.addEventListener('click',()=>{cfg.onSelect(item.id);overlay.remove();});
+      itemsWrap.appendChild(row);
+    });
+    requestAnimationFrame(()=>{
+      const cur=itemsWrap.querySelector('.pm-cur');
+      if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});
+    });
+  }
+
+  buildChips();buildItems();
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>sheet.classList.add('pm-open'));
+}
+
 // ── Section Band ──────────────────────────────────────────────────────────
 function buildBandSection(){
   const cont=document.getElementById('section-band');
@@ -2353,16 +2482,6 @@ function buildBandSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
   bar.appendChild(lbl);
 
-  // Filtre famille band
-  const famSel=document.createElement('select');
-  famSel.className='fam-filter';famSel.title='Filtrer par famille';famSel.dataset.filterFor='band';
-  famSel.style.cssText='border-color:#8ab4d0;background:#eef4f8;color:#2d5f80';
-  const fAll=document.createElement('option');fAll.value='all';fAll.textContent='Tout';famSel.appendChild(fAll);
-  (packCours.bandFamilles||[]).forEach(f=>{
-    const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
-  });
-  bar.appendChild(famSel);
-
   // Bouton menu ≡
   const menuBtn=document.createElement('button');
   menuBtn.className='btn-sec-ico';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
@@ -2370,41 +2489,24 @@ function buildBandSection(){
   menuBtn.addEventListener('click',()=>openLibPanelBands());
   bar.appendChild(menuBtn);
 
-  // Select band (filtré)
-  const sel=document.createElement('select');
-  sel.id='band-sel';
-  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #8ab4d0;border-radius:4px;background:#fff;color:#1a1a18';
-
-  function buildBandOpts(filtreId){
-    sel.innerHTML='';
-    const bands=filtreId&&filtreId!=='all'
-      ?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(filtreId))
-      :(packCours.bands||[]);
-    bands.forEach(b=>{
-      const o=document.createElement('option');o.value=b.id;
-      o.textContent=b.nom+(b.source==='teacher'?' ✎':'');
-      sel.appendChild(o);
-    });
-  }
-  buildBandOpts('all');
-  if(currentBandId)sel.value=currentBandId;
-  famSel.addEventListener('change',()=>{
-    const prev=sel.value;buildBandOpts(famSel.value);
-    if([...sel.options].some(o=>o.value===prev))sel.value=prev;
-  });
-  sel.addEventListener('change',()=>{
-    if(sel.value){
-      applyBand(sel.value);
-      const groove=getGroove(currentGrooveId);
-      if(groove&&sel.value!==groove.band_defaut){
-        groove.band_defaut=sel.value;
-        grooveDirty=true; updateGrooveSaveBtn();
-        markItemDirty(groove,'band');
-        buildPublishSection();
+  // Bouton preset band (remplace filtre famille + select)
+  const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
+  const bandPresetBtn=document.createElement('button');
+  bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='pm-preset-btn';
+  bandPresetBtn.style.cssText='border-color:#8ab4d0;color:#2d5f80';
+  bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' ✎':''):'—';
+  bandPresetBtn.addEventListener('click',()=>{
+    openPresetModal({
+      type:'band',currentId:currentBandId,label:'Band',accent:'#2d5f80',bg:'#eef4f8',
+      onSelect:(id)=>{
+        applyBand(id);
+        const groove=getGroove(currentGrooveId);
+        if(groove&&id!==groove.band_defaut){groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
+        buildBandSection();
       }
-    }
+    });
   });
-  bar.appendChild(sel);
+  bar.appendChild(bandPresetBtn);
 
   // Bouton 💾 sauvegarder band
   const saveBtn=document.createElement('button');
@@ -2490,41 +2592,29 @@ function buildGrooveSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
   bar.appendChild(lbl);
 
-  // Filtre famille (compact, avant le select groove)
-  const grooveFamSel=document.createElement('select');
-  grooveFamSel.className='fam-filter';grooveFamSel.title='Filtrer par famille';grooveFamSel.dataset.filterFor='groove';
-  grooveFamSel.style.cssText='border-color:#d4b86a;background:#faf3e0;color:#8B6914';
-  const gfAll=document.createElement('option');gfAll.value='all';gfAll.textContent='Tout';grooveFamSel.appendChild(gfAll);
-  const gfPerso=document.createElement('option');gfPerso.value='__teacher__';gfPerso.textContent='Enseignant';gfPerso.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';grooveFamSel.appendChild(gfPerso);
-  {const _gfFams=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
-  packCours.familles.filter(f=>_gfFams.has(f.id)).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;grooveFamSel.appendChild(o);});}
-  bar.appendChild(grooveFamSel);
-  // ≡ avant le select groove
+  // ≡ menu grooves
   const menuBtnGrooveEarly=mkBtnMenu(()=>openLibPanelGrooves());
   menuBtnGrooveEarly.classList.add('menu-btn-groove');
   bar.appendChild(menuBtnGrooveEarly);
 
-  const sel=document.createElement('select');
-  sel.id='groove-select';
-  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:130px;padding:1px 3px;border:1px solid #d4b86a;border-radius:4px;background:#fff;color:#1a1a18';
-  function buildGrooveSelectOpts(filtreId){
-    sel.innerHTML='';
-    const allG=packCours.grooves.filter(g=>!g.localDeletePending);
-    const baseG=allG.filter(g=>g.source!=='pending');
-    const grooves=filtreId==='__teacher__'?baseG.filter(g=>g.source==='teacher'):filtreId&&filtreId!=='all'?baseG.filter(g=>(g.familles||[]).includes(filtreId)):baseG;
-    grooves.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;sel.appendChild(o);});
-    // Ajouter les aperçus pending (non filtrés par famille, marqués visuellement)
-    allG.filter(g=>g.source==='pending').forEach(g=>{
-      if(![...sel.options].some(o=>o.value===g.id)){
-        const o=document.createElement('option');o.value=g.id;o.textContent='👁 '+g.nom;o.style.color='#a06010';sel.appendChild(o);
+  // Bouton preset groove (remplace filtre famille + select)
+  const curGroove=getGroove(currentGrooveId);
+  const groovePresetBtn=document.createElement('button');
+  groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
+  groovePresetBtn.style.cssText='border-color:#d4b86a;color:#8B6914';
+  groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
+  groovePresetBtn.addEventListener('click',()=>{
+    openPresetModal({
+      type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',
+      onSelect:(id)=>{
+        applyGroove(id);refreshGrooveClass();
+        const pb=document.getElementById('groove-preset-btn');
+        const g=getGroove(id);
+        if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
       }
     });
-  }
-  buildGrooveSelectOpts('all');
-  if(currentGrooveId)sel.value=currentGrooveId;
-  grooveFamSel.addEventListener('change',()=>{const prev=sel.value;buildGrooveSelectOpts(grooveFamSel.value);if([...sel.options].some(o=>o.value===prev))sel.value=prev;});
-  sel.addEventListener('change',()=>{if(sel.value){applyGroove(sel.value);refreshGrooveClass();}});
-  bar.appendChild(sel);
+  });
+  bar.appendChild(groovePresetBtn);
 
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
@@ -2615,31 +2705,6 @@ function buildLayers(){
     });
     row1.appendChild(btnMute);
 
-    // Filtre famille (compact select avant le select pattern)
-    const famSel=document.createElement('select');
-    famSel.className='fam-filter';famSel.title='Filtrer par famille';famSel.dataset.filterFor='pattern';
-    const optAll=document.createElement('option');optAll.value='all';optAll.textContent='Tout';famSel.appendChild(optAll);
-    const optPersoFam=document.createElement('option');optPersoFam.value='__teacher__';optPersoFam.textContent='Enseignant';optPersoFam.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';famSel.appendChild(optPersoFam);
-    {const _pfFams=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
-    packCours.familles.filter(f=>_pfFams.has(f.id)).forEach(f=>{
-      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;famSel.appendChild(o);
-    });}
-    row1.appendChild(famSel);
-
-    // Select pattern
-    const sel=document.createElement('select');
-    sel.className='layer-select';sel.id='sel-'+layer.id;
-    buildPatternSelect(sel,'all');
-    if(state[li].patternId&&[...sel.options].some(o=>o.value===state[li].patternId)){sel.value=state[li].patternId;}
-    else{const curPat=findPatternBySeq(state[li].pattern);if(curPat)[...sel.options].forEach(o=>{if(o.value===curPat.id)o.selected=true;});}
-
-    // Filtre → rebuild le select en gardant la sélection courante
-    famSel.addEventListener('change',()=>{
-      const prev=sel.value;
-      buildPatternSelect(sel, famSel.value);
-      if([...sel.options].some(o=>o.value===prev))sel.value=prev;
-    });
-
     // Bouton i (lien encyclo pattern courant)
     const btnI=document.createElement('button');btnI.className='btn-info-ico';btnI.textContent='i';
     function updateBtnI(){
@@ -2652,30 +2717,42 @@ function buildLayers(){
     }
     updateBtnI();
 
-    sel.addEventListener('change',()=>{
-      const pat=getPattern(sel.value);if(!pat)return;
-      state[li].pattern=pat.sequence.split('');
-      state[li].patternId=pat.id;
-      state[li].stepPos=0;state[li].wrapped=false;
-      {
-        const groove=getGroove(currentGrooveId);
-        if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
-        grooveDirty=true; updateGrooveSaveBtn();
-        if(currentMode==='tx')saveToStorage();
-      }
-      updateBtnI();
-      updateEncycloSelect(pat.encyclo_ref||pat.id);
-      setLayerDirty(li,false); // reset dirty sur changement de pattern
-      refreshLayerClass();
-      buildStepsDOM(li,false);
-      setTimeout(()=>checkWrap(li),0);
-    });
-    // ≡ gestion bibliothèque patterns (avant le select)
+    // ≡ gestion bibliothèque patterns
     const menuBtnPat=mkBtnMenu(()=>openLibPanelPatterns());
     menuBtnPat.classList.add('menu-btn-pat');
     if(currentMode!=='tx'&&!packCours.patterns.some(p=>p.source==='teacher')){menuBtnPat.disabled=true;menuBtnPat.style.opacity='0.25';menuBtnPat.title='Aucun pattern enseignant';}
     row1.appendChild(menuBtnPat);
-    row1.appendChild(sel);
+
+    // Bouton preset pattern (remplace filtre famille + select)
+    const curPat0=state[li].patternId?getPattern(state[li].patternId):findPatternBySeq(state[li].pattern);
+    const patPresetBtn=document.createElement('button');
+    patPresetBtn.id='preset-btn-'+layer.id;patPresetBtn.className='pm-preset-btn';
+    patPresetBtn.style.cssText='border-color:#a89fd0;color:#4a3d8a';
+    patPresetBtn.textContent=curPat0?curPat0.nom+(curPat0.source==='teacher'?' ✎':''):'—';
+    patPresetBtn.addEventListener('click',()=>{
+      openPresetModal({
+        type:'pattern',currentId:state[li].patternId,label:'Pattern',accent:'#6B5FA5',bg:'#efecf8',
+        onSelect:(patId)=>{
+          const pat=getPattern(patId);if(!pat)return;
+          state[li].pattern=pat.sequence.split('');
+          state[li].patternId=pat.id;
+          state[li].stepPos=0;state[li].wrapped=false;
+          {const groove=getGroove(currentGrooveId);
+           if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
+           grooveDirty=true;updateGrooveSaveBtn();
+           if(currentMode==='tx')saveToStorage();}
+          updateBtnI();
+          updateEncycloSelect(pat.encyclo_ref||pat.id);
+          setLayerDirty(li,false);
+          refreshLayerClass();
+          // Mettre à jour le label du bouton preset
+          patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
+          buildStepsDOM(li,false);
+          setTimeout(()=>checkWrap(li),0);
+        }
+      });
+    });
+    row1.appendChild(patPresetBtn);
 
     // 💾 sauvegarde du pattern → popover
     const saveBtn=document.createElement('button');
@@ -3123,9 +3200,8 @@ function pspDoOverwritePattern(){
     state[li].patternId = fork.id;
     const groove = getGroove(currentGrooveId);
     if(groove && groove.layers[li]) groove.layers[li].patternId = fork.id;
-    const sel = document.getElementById('sel-' + LAYERS[li].id);
-    if(sel){ buildPatternSelect(sel,'all'); sel.value = fork.id; }
     saveToStorage(); setLayerDirty(li, false);
+    buildLayers();
     refreshMenuBtnStates(); buildPublishSection();
     showToast('Modification sauvegardée — soumettez-la via ···','info');
     if(btn) flashSave(btn);
@@ -3178,10 +3254,8 @@ function pspDoSaveNewPattern(){
   if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
   state[li].patternId = newPat.id;
 
-  const sel = document.getElementById('sel-' + LAYERS[li].id);
-  if(sel){ buildPatternSelect(sel,'all'); sel.value = newPat.id; }
-
   saveToStorage(); setLayerDirty(li,false);
+  buildLayers();
   refreshMenuBtnStates();
   buildPublishSection();
   if(btn) flashSave(btn);
@@ -3243,13 +3317,8 @@ function pspDoOverwriteGroove(){
     if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
     currentGrooveId=fork.id;
     grooveDirty=false; updateGrooveSaveBtn();
-    const grooveSel=document.getElementById('groove-select');
-    if(grooveSel){
-      [...grooveSel.options].forEach(o=>{if(o.value===schoolId)grooveSel.removeChild(o);});
-      const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
-      grooveSel.appendChild(o); grooveSel.value=fork.id;
-    }
     saveToStorage(); buildLibListGrooves(); buildPublishSection();
+    buildGrooveSection();
     showToast('Modification sauvegardée — soumettez-la via ···','info');
     if(btn)flashSave(btn);
     return;
@@ -3384,15 +3453,8 @@ function doOverwriteGroove(){
     currentGrooveId=fork.id;
     saveToStorage();
     grooveDirty=false; updateGrooveSaveBtn();
-    // Mettre à jour le select groove : retirer l'école, ajouter le fork
-    const grooveSel=document.getElementById('groove-select');
-    if(grooveSel){
-      [...grooveSel.options].forEach(o=>{if(o.value===schoolId)grooveSel.removeChild(o);});
-      const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
-      grooveSel.appendChild(o);
-      grooveSel.value=fork.id;
-    }
     buildLibListGrooves(); buildPublishSection();
+    buildGrooveSection();
     showToast('Modification sauvegardée — soumettez-la via ···', 'info');
     if(btn)flashSave(btn);
     return;
@@ -3872,8 +3934,9 @@ function mkBtnMenu(onClick){
 
 // ── Mises à jour partielles (sans rebuild complet) ─────────────────────────
 function updateGrooveSelect(){
-  const sel=document.getElementById('groove-select');
-  if(sel&&currentGrooveId)sel.value=currentGrooveId;
+  // Mettre à jour le label du bouton preset groove
+  const pb=document.getElementById('groove-preset-btn');
+  if(pb&&currentGrooveId){const g=getGroove(currentGrooveId);if(g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');}
   // Mettre à jour le marquage perso sur la barre groove
   const grooveBar=document.getElementById('groove-bar');
   if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));}
@@ -5206,15 +5269,9 @@ function loadPendingGroove(g) {
       layers: typeof g.layers === 'string' ? JSON.parse(g.layers) : (g.layers || []),
       source: 'pending',
     });
-    // Ajouter l'option dans le select groove si absent
-    const grooveSel = document.getElementById('groove-select');
-    if (grooveSel && ![...grooveSel.options].some(o => o.value === g.id)) {
-      const o = document.createElement('option');
-      o.value = g.id; o.textContent = g.nom;
-      grooveSel.appendChild(o);
-    }
   }
   applyGroove(g.id);
+  buildGrooveSection();
 }
 
 function buildApprobationsSection() {
@@ -5527,12 +5584,7 @@ function markItemDirty(item, changeField) {
       const fork = txForkItem(type, item);
       if (isGroove && currentGrooveId === item.id) {
         currentGrooveId = fork.id;
-        const grooveSel = document.getElementById('groove-select');
-        if (grooveSel) {
-          [...grooveSel.options].forEach(o => { if (o.value === item.id) grooveSel.removeChild(o); });
-          const o = document.createElement('option'); o.value = fork.id; o.textContent = fork.nom;
-          grooveSel.appendChild(o); grooveSel.value = fork.id;
-        }
+        buildGrooveSection();
       }
       // Marquer le fork comme dirty
       fork.localChangeType = fork.localChangeType || 'update';
@@ -5979,7 +6031,7 @@ function buildPublishSection() {
         if (type === 'pattern') {
           packCours.patterns = packCours.patterns.filter(p => p.id !== id);
           buildLibListPatterns();
-          LAYERS.forEach((_,li) => { const s = document.getElementById('sel-'+LAYERS[li].id); if(s) buildPatternSelect(s,'all'); });
+          buildLayers();
         } else {
           const wasActive = currentGrooveId === id;
           packCours.grooves = packCours.grooves.filter(g => g.id !== id);
@@ -6389,7 +6441,7 @@ function libBuildPatternTags(container, pat){
         if (!fork.localChangedFields) fork.localChangedFields = [];
         if (!fork.localChangedFields.includes('famille_remove')) fork.localChangedFields.push('famille_remove');
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
-        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        buildLayers();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         pat.familles = (pat.familles||[]).filter(id=>id!==fid);
@@ -6423,7 +6475,7 @@ function libBuildPatternTags(container, pat){
         if (!fork.localChangedFields) fork.localChangedFields = [];
         if (!fork.localChangedFields.includes('famille_add')) fork.localChangedFields.push('famille_add');
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
-        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        buildLayers();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         if(!pat.familles) pat.familles = [];
@@ -6458,16 +6510,13 @@ function libStartRenamePattern(nameEl, patId){
         const fork=txForkItem('pattern', pat);
         fork.nom=newNom;
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
-        LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+        buildLayers();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         pat.nom = newNom;
         markItemDirty(pat, 'nom');
         saveToStorage(); buildPublishSection();
-        LAYERS.forEach((_,li)=>{
-          const s = document.getElementById('sel-'+LAYERS[li].id);
-          if(s) [...s.options].forEach(o=>{ if(o.value===patId) o.textContent=newNom; });
-        });
+        buildLayers();
       }
     }
   };
@@ -6542,10 +6591,7 @@ function libDropPattern(srcId, tgtId){
   saveToStorage();
   buildLibListPatterns();
   sbPushSchoolOrder('patterns');
-  LAYERS.forEach((_,li)=>{
-    const s = document.getElementById('sel-'+LAYERS[li].id);
-    if(s){ const prev=s.value; buildPatternSelect(s,'all'); s.value=prev; }
-  });
+  buildLayers();
 }
 
 async function libDeletePattern(patId){
@@ -6572,7 +6618,7 @@ async function libDeletePattern(patId){
     pat.localDeletePending = true;
     pat.localChangeType = 'delete';
     saveToStorage(); buildLibListPatterns(); buildPublishSection();
-    LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+    buildLayers();
     showToast('Suppression en attente de publication', 'warn');
     return;
   }
@@ -6585,7 +6631,7 @@ async function libDeletePattern(patId){
   }
   packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
   saveToStorage(); buildLibListPatterns();
-  LAYERS.forEach((_,li)=>{ const s=document.getElementById('sel-'+LAYERS[li].id); if(s)buildPatternSelect(s,'all'); });
+  buildLayers();
   buildPublishSection();
   showToast('Pattern supprimé', 'info');
 }
@@ -6931,10 +6977,7 @@ function attachLibPanelEvents(){
     toDelete.forEach(id=>{ packCours.patterns=packCours.patterns.filter(p=>p.id!==id); });
     saveToStorage();
     buildLibListPatterns();
-    LAYERS.forEach((_,li)=>{
-      const s=document.getElementById('sel-'+LAYERS[li].id);
-      if(s) buildPatternSelect(s,'all');
-    });
+    buildLayers();
   });
 
   // ＋ → affiche le mini formulaire de création
@@ -7152,19 +7195,13 @@ function libStartRenameGroove(nameEl, grooveId){
         // TX renomme un groove école → fork implicite
         const fork=txForkItem('groove', g);
         fork.nom=newNom;
+        if(currentGrooveId===grooveId)currentGrooveId=fork.id;
         saveToStorage(); buildLibListGrooves(); buildPublishSection();
-        const s=document.getElementById('groove-select');
-        if(s){
-          [...s.options].forEach(o=>{if(o.value===grooveId)s.removeChild(o);});
-          const o=document.createElement('option');o.value=fork.id;o.textContent=fork.nom;
-          s.appendChild(o);
-          if(currentGrooveId===grooveId){currentGrooveId=fork.id;s.value=fork.id;}
-        }
+        buildGrooveSection();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         g.nom=newNom; markItemDirty(g,'nom'); saveToStorage(); buildPublishSection();
-        const s=document.getElementById('groove-select');
-        if(s) [...s.options].forEach(o=>{ if(o.value===grooveId)o.textContent=newNom; });
+        buildGrooveSection();
       }
     }
   };
@@ -7202,8 +7239,7 @@ function libDropGroove(srcId, tgtId){
   arr.splice(newTgt,0,moved);
   saveToStorage(); buildLibListGrooves();
   sbPushSchoolOrder('grooves');
-  const s=document.getElementById('groove-select');
-  if(s){ const prev=s.value; s.innerHTML=''; packCours.grooves.forEach(g=>{ const o=document.createElement('option');o.value=g.id;o.textContent=g.nom;s.appendChild(o); }); s.value=prev; }
+  buildGrooveSection();
 }
 
 async function libDeleteGroove(grooveId){
@@ -7241,8 +7277,8 @@ async function libDeleteGroove(grooveId){
   }
   packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
   saveToStorage(); buildLibListGrooves();
-  if(currentGrooveId===grooveId){ applyGroove(packCours.grooves.filter(g=>!g.localDeletePending)[0]?.id||packCours.grooves[0].id); buildGrooveSection(); }
-  else { const s=document.getElementById('groove-select'); if(s){ [...s.options].forEach(o=>{ if(o.value===grooveId)s.removeChild(o); }); } }
+  if(currentGrooveId===grooveId){ applyGroove(packCours.grooves.filter(g=>!g.localDeletePending)[0]?.id||packCours.grooves[0].id); }
+  buildGrooveSection();
   buildPublishSection();
   showToast('Groove supprimé', 'info');
 }
