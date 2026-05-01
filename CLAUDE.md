@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.5.2** (session 2026-05-01)
+**v3.5.3** (session 2026-05-01)
 
 ## Historique récent
 | Version | Changements |
