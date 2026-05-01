@@ -377,8 +377,8 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-sheet{width:100%;max-width:600px;height:72vh;display:flex;flex-direction:column;background:#fff;border-radius:14px 14px 0 0;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s ease-out;}
 .pm-sheet.pm-open{transform:translateY(0);}
 .pm-handle{width:36px;height:4px;background:#ccc;border-radius:2px;margin:8px auto 0;flex-shrink:0;}
-.pm-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid #e0ddd8;font-weight:600;font-size:13px;flex-shrink:0;color:var(--pm-ac,#4a3d8a);}
-.pm-close{background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:2px 8px;border-radius:4px;}
+.pm-header{display:flex;align-items:center;gap:6px;padding:10px 14px 8px;border-bottom:1px solid #e0ddd8;font-weight:600;font-size:13px;flex-shrink:0;color:var(--pm-ac,#4a3d8a);}
+.pm-close{background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:2px 8px;border-radius:4px;margin-left:auto;}
 .pm-body{display:flex;flex:1;overflow:hidden;}
 .pm-fam-col{width:32%;border-right:1px solid #e0ddd8;overflow-y:auto;flex-shrink:0;}
 .pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;}
@@ -434,13 +434,11 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
-.pm-search-row{padding:5px 14px;border-bottom:1px solid #e0ddd8;display:none;flex-shrink:0;}
-.pm-search-row.pm-search-open{display:flex;}
-.pm-search-inp{flex:1;font-size:12px;border:1px solid #ddd;border-radius:5px;padding:5px 9px;background:#fff;outline:none;}
-.pm-search-inp:focus{border-color:var(--pm-ac,#4a3d8a);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
-body.dark-mode .pm-search-row{border-color:#333;}
-body.dark-mode .pm-search-inp{background:#2a2a28;border-color:#444;color:#e0ddd8;}
+.pm-header-search{font-size:11px;border:1px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 8px;background:#fff;display:none;width:120px;outline:none;}
+.pm-header-search.pm-search-open{display:block;}
+.pm-header-search:focus{border-color:var(--pm-ac,#4a3d8a);}
+body.dark-mode .pm-header-search{background:#2a2a28;border-color:#555;color:#e0ddd8;}
 body.dark-mode .pm-fam-col.pm-palette{background:var(--pm-ac);border-right-color:var(--pm-ac);}
 body.dark-mode .pm-fam-manage-row{border-color:#2a2a28;}
 body.dark-mode .pm-fam-manage-row.pm-fam-active{background:#2a2a28;}
@@ -452,6 +450,12 @@ body.dark-mode .pm-tag-chip{background:#2a2a28;}
 body.dark-mode .pm-item-name:focus{background:#2a2a28;}
 body.dark-mode .pm-item.pm-reorder{border-color:#2a2a28;}
 /* Dark mode */
+.pm-sheet.pm-reorder-on .pm-header{background:var(--pm-ac,#4a3d8a);color:#fff;border-bottom-color:transparent;}
+.pm-sheet.pm-reorder-on .pm-close{color:rgba(255,255,255,.8);}
+.pm-sheet.pm-reorder-on .pm-mode-btn{color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.28);}
+.pm-sheet.pm-reorder-on .pm-mode-btn.active{background:rgba(255,255,255,.22);color:#fff;border-color:rgba(255,255,255,.5);}
+.pm-sheet.pm-reorder-on .pm-header-search{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:#fff;}
+.pm-sheet.pm-reorder-on .pm-header-search::placeholder{color:rgba(255,255,255,.55);}
 body.dark-mode #pm-overlay{background:rgba(0,0,0,.6);}
 body.dark-mode .pm-sheet{background:#1a1a18;}
 body.dark-mode .pm-header{border-color:#333;}
@@ -870,7 +874,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.1</span>
+      <span class="app-version">v3.6.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2497,34 +2501,31 @@ function openPresetModal(cfg){
   // Boutons mode gérer/réordonner dans le header (groove et pattern uniquement)
   if(cfg.type==='groove'||cfg.type==='pattern'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
-    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='↕';
+    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='☰';
     modeManage.addEventListener('click',()=>{
-      manageMode=!manageMode;if(manageMode)reorderMode=false;paletteTarget=null;
+      manageMode=!manageMode;if(manageMode){reorderMode=false;sheet.classList.remove('pm-reorder-on');}paletteTarget=null;
       modeManage.classList.toggle('active',manageMode);modeReorder.classList.remove('active');
       buildFamCol();buildItems();
     });
     modeReorder.addEventListener('click',()=>{
       reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
       modeReorder.classList.toggle('active',reorderMode);modeManage.classList.remove('active');
+      sheet.classList.toggle('pm-reorder-on',reorderMode);
       buildFamCol();buildItems();
     });
-    // Rangée recherche (sous le header, masquée par défaut)
-    const searchRow=document.createElement('div');searchRow.className='pm-search-row';
-    const searchInp=document.createElement('input');searchInp.className='pm-search-inp';searchInp.type='search';searchInp.placeholder='Chercher un '+(cfg.type==='groove'?'groove':'pattern')+'…';
+    // Champ recherche inline (à droite de 🔍, caché par défaut)
+    const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
     searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
-    searchRow.appendChild(searchInp);
-    // Insérer la rangée après le header (avant le body)
-    sheet.insertBefore(searchRow,body);
     // Bouton toggle recherche
     const modeSearch=document.createElement('button');modeSearch.className='pm-mode-btn';modeSearch.title='Rechercher';modeSearch.textContent='🔍';
     modeSearch.addEventListener('click',()=>{
-      const open=searchRow.classList.toggle('pm-search-open');
+      const open=searchInp.classList.toggle('pm-search-open');
       modeSearch.classList.toggle('active',open);
       if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
     });
-    // Groupe boutons mode
+    // Groupe : [✎][☰][🔍][champ] — tout à gauche, ✕ poussé à droite par margin-left:auto
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);
+    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
     hdr.insertBefore(modeGroup,hclose);
   }
 
@@ -2633,12 +2634,11 @@ function openPresetModal(cfg){
 
     if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern')){
       const isMx=authProfile?.role==='mx';
-      // Mode gérer : rangées famille avec rename + delete (+ drag MX)
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-        if(isMx){row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';}
-        // Poignée drag (MX seulement)
-        if(isMx){
+        // Poignée drag : mode réordonner seulement (MX)
+        if(isMx&&reorderMode){
+          row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
           const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='≡';drag.title='Déplacer';
           drag.addEventListener('mousedown',e=>e.stopPropagation());
           row.appendChild(drag);
@@ -2646,6 +2646,7 @@ function openPresetModal(cfg){
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
         nameEl.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
         row.appendChild(nameEl);
+        // Rename / delete : mode gérer seulement
         if(manageMode){
           const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
           renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
@@ -2653,8 +2654,8 @@ function openPresetModal(cfg){
           delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
           row.appendChild(renBtn);row.appendChild(delBtn);
         }
-        // Drag HTML5 (MX)
-        if(isMx){
+        // Drag HTML5 : mode réordonner seulement (MX)
+        if(isMx&&reorderMode){
           row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
           row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
