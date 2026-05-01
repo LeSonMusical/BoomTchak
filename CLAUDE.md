@@ -66,7 +66,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.4.78** (session 2026-05-01)
+**v3.4.79** (session 2026-05-01)
 
 ## Historique récent
 | Version | Changements |
@@ -82,6 +82,7 @@ Merger vers : `main` après chaque session
 | v3.4.76 | AudioContext `{latencyHint:'interactive'}` ; Page Visibility AC resume ; btn-vol → volet band ; `jouerOpen` ; Main G/D conditionnel |
 | v3.4.77 | Alignement labels sections : `min-width:44px` sur `.section-bar-lbl` et `.btn-metro-main` (padding:0) |
 | v3.4.78 | Recherche en temps réel dans les panels Patterns/Grooves/Bands ; export MIDI (modal note+canal par couche, tempo, signature) dans menu `…` |
+| v3.4.79 | Recherche à droite du filtre famille (portrait : remonte au-dessus) ; ordre familles persisté en DB (MX) ; tap court btn-vol = mute/unmute toutes les couches ; metro subdivision indépendante du stepsPerBeat (stepSec = beatSec/subdivision) |
 
 ## Architecture tempo (slider #bpm)
 - Le slider `#bpm` stocke des **SPM** (Steps Per Minute = vitesse de la croche)

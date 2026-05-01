@@ -408,7 +408,7 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .lib-overlay.hidden{display:none}
 .lib-panel{position:fixed;bottom:0;left:8px;right:8px;z-index:186;background:#fff;border-radius:16px 16px 0 0;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
 .lib-panel.hidden{display:none}
-.lib-panel-head{display:flex;align-items:center;gap:6px;padding:9px 12px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0}
+.lib-panel-head{display:flex;align-items:center;gap:6px;padding:9px 12px 8px;border-bottom:1px solid #e8e5e0;flex-shrink:0;flex-wrap:wrap}
 .lib-head-label{font-size:11px;font-weight:600;color:#555;flex-shrink:0;white-space:nowrap}
 .lib-head-secname{font-weight:800;font-size:12px}
 .lib-panel-head .lib-fam-filter-sel{flex:1;min-width:0}
@@ -714,6 +714,7 @@ body.dark-mode .lib-panel-head,body.dark-mode .lib-fam-section{border-color:#333
 .lib-search-input{flex:0 0 auto;width:72px;font-size:10px;padding:2px 6px 2px 20px;border:1px solid #ccc;border-radius:10px;outline:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Ccircle cx='10' cy='10' r='7'/%3E%3Cline x1='21' y1='21' x2='15' y2='15'/%3E%3C/svg%3E") no-repeat 5px center;background-size:11px}
 .lib-search-input:focus{border-color:#6B5FA5;box-shadow:0 0 0 2px rgba(107,95,165,.15)}
 body.dark-mode .lib-search-input{background-color:#333;border-color:#555;color:#e0ddd8}
+@media (orientation:portrait),(max-width:480px){.lib-search-input{order:-1;flex:1 0 100%;width:100%;border-radius:6px;padding-left:22px}}
 /* Modal Export MIDI */
 .midi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300}
 .midi-overlay.hidden{display:none}
@@ -788,7 +789,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.4.78</span>
+      <span class="app-version">v3.4.79</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1030,10 +1031,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-bands">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Bands</span></div>
-    <input type="search" class="lib-search-input" id="lib-search-bands" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-bands">
       <option value="all">Toutes les familles</option>
     </select>
+    <input type="search" class="lib-search-input" id="lib-search-bands" placeholder="Rechercher…">
     <button class="lib-panel-close" id="lib-panel-bands-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-bands"></div>
@@ -1063,10 +1064,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-patterns">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Patterns</span></div>
-    <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-patterns">
       <option value="all">Toutes les familles</option>
     </select>
+    <input type="search" class="lib-search-input" id="lib-search-patterns" placeholder="Rechercher…">
     <button class="lib-panel-close" id="lib-panel-patterns-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-patterns"></div>
@@ -1096,10 +1097,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="lib-panel hidden" id="lib-panel-grooves">
   <div class="lib-panel-head">
     <div class="lib-head-label">Organiser les <span class="lib-head-secname">Grooves</span></div>
-    <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
     <select class="lib-fam-filter-sel" id="lib-fam-filter-grooves">
       <option value="all">Toutes les familles</option>
     </select>
+    <input type="search" class="lib-search-input" id="lib-search-grooves" placeholder="Rechercher…">
     <button class="lib-panel-close" id="lib-panel-grooves-close">✕</button>
   </div>
   <div class="lib-list" id="lib-list-grooves"></div>
@@ -1860,10 +1861,14 @@ function buildSigFromControls() {
     const sel = document.getElementById('sig-sel');
     if (sel) sel.value = match.id;
   } else {
+    // stepsPerBeat dérivé de l'unité de temps (pas de la subdivision)
+    // unit=4 noire→2, unit=6 pointée→3, unit=8 croche→1, unit=2 blanche→4
+    const spbMap={4:2,6:3,8:1,2:4};
+    const spb=spbMap[unit]||2;
     currentSig = {
       id: '_custom', label: `${beats}/${unit}×${sub}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: sub, beatSteps: sub,
+      stepsPerBeat: spb, beatSteps: spb,
       beatSym: beatSymFromUnit(unit, sub),
       metroPattern: generateMetroPattern(beats, sub),
     };
@@ -1899,7 +1904,7 @@ function highlightMetroStep() {
   // Calcul temps-réel (comme les layers) pour éviter le décalage du lookahead
   const now = ac ? ac.currentTime : 0;
   const spm = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
-  const stepSec = 60 / spm;
+  const stepSec = (60/spm)*(currentSig?.stepsPerBeat||2)/(currentSig?.subdivision||2);
   const curStep = Math.floor((now - metroStartTime) / stepSec) % mpv.length;
   if (curStep === _lastMetroVizStep) return;
   _lastMetroVizStep = curStep;
@@ -1939,9 +1944,9 @@ function renderMetroPatternViz() {
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
   const SYM = { A: '^', P: '>', p: '', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
-  const spb = currentSig?.stepsPerBeat || 2;
+  const sub = currentSig?.subdivision || 2;
   wrap.innerHTML = mp.map((v, i) => {
-    const sep = (i > 0 && i % spb === 0)
+    const sep = (i > 0 && i % sub === 0)
       ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
     return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
   }).join('');
@@ -2016,7 +2021,8 @@ function scheduler(){
   {
     const nowM=getAC().currentTime;
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const stepSec=60/spmNow;
+    // Durée d'un step métro = durée du temps / subdivision (indépendant du groove)
+    const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
     const mp=currentSig.metroPattern;
     while(metroNextBeatTime<nowM+LOOKAHEAD){
       if(!metro.muted){
@@ -2283,7 +2289,7 @@ function applyGroove(grooveId){
     const now=getAC().currentTime;
     // Steps restants jusqu'au prochain temps 1 (début de mesure)
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const stepSec=60/spmNow;
+    const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
     const totalSteps=currentSig.metroPattern.length;
     const stepsLeft=(totalSteps-metroStepPos)%totalSteps;
     // syncTime = début de la prochaine mesure selon la grille du métronome
@@ -4509,7 +4515,7 @@ async function sbSyncSchoolPool() {
     const [patterns, grooves, familles, encyclo, metroPres] = await Promise.all([
       sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*'),
       sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*'),
-      sbFetch('/rest/v1/familles?scope=eq.school&select=*'),
+      sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
       sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]),
     ]);
@@ -4713,6 +4719,21 @@ async function sbPushSchoolOrder(type) {
       })
     ));
   } catch(e) { console.warn('Ordre non persisté :', e); }
+}
+
+async function sbPushSchoolFamOrder() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const fams = packCours.familles.filter(f => f.source === 'school' && !f._deletePending);
+  if (!fams.length) return;
+  try {
+    await Promise.all(fams.map((f, idx) =>
+      sbFetch(`/rest/v1/familles?id=eq.${f.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+  } catch(e) { console.warn('Ordre familles non persisté :', e); }
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
@@ -6631,6 +6652,7 @@ function libDropFamille(srcId, tgtId){
   arr.splice(nt,0,moved);
   saveToStorage(); rebuildAllFamFilters();
   buildLibFamListPatterns(); buildLibFamListGrooves();
+  sbPushSchoolFamOrder();
 }
 
 function libDeleteFamille(famId, count){
@@ -7735,7 +7757,17 @@ function attachEvents(){
     btnV.addEventListener('pointerup',()=>{
       clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
       if(_dragMoved||_longFired) return;
-      toggleBandSection();
+      // Court tap : mute/unmute toutes les couches du groove
+      const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
+      LAYERS.forEach((_,li)=>{
+        state[li].muted=anyUnmuted;
+        const layerDiv=document.querySelector('.layer.'+LAYERS[li].cls);
+        if(layerDiv)layerDiv.classList.toggle('muted-layer',anyUnmuted);
+        const btnM=document.getElementById('btn-mute-lbl-'+li);
+        if(btnM){btnM.classList.toggle('muted',anyUnmuted);btnM.title=(anyUnmuted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+      });
+      btnV.textContent=anyUnmuted?'🔇':'🔊';
+      btnV.classList.toggle('muted',anyUnmuted);
     });
 
     btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });

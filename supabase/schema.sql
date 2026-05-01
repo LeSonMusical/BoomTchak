@@ -44,8 +44,10 @@ create table public.familles (
   nom         text not null,
   scope       text not null default 'school' check (scope in ('school','teacher')),
   owner_id    uuid references public.profiles(id) on delete cascade,
-  created_at  timestamptz default now()
+  created_at  timestamptz default now(),
+  ordre       int default 0
 );
+-- Migration si table déjà existante : ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;
 
 -- ── Patterns ─────────────────────────────────────────────────────────────────
 create table public.patterns (
