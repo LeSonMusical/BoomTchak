@@ -434,9 +434,13 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:2px solid var(--pm-ac,#4a3d8a);}
-.pm-search{font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 7px;min-width:0;flex:1;max-width:140px;background:#fff;}
-body.dark-mode .pm-search{background:#2a2a28;border-color:#444;color:#e0ddd8;}
+.pm-search-row{padding:5px 14px;border-bottom:1px solid #e0ddd8;display:none;flex-shrink:0;}
+.pm-search-row.pm-search-open{display:flex;}
+.pm-search-inp{flex:1;font-size:12px;border:1px solid #ddd;border-radius:5px;padding:5px 9px;background:#fff;outline:none;}
+.pm-search-inp:focus{border-color:var(--pm-ac,#4a3d8a);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+body.dark-mode .pm-search-row{border-color:#333;}
+body.dark-mode .pm-search-inp{background:#2a2a28;border-color:#444;color:#e0ddd8;}
 body.dark-mode .pm-fam-col.pm-palette{background:var(--pm-ac);border-right-color:var(--pm-ac);}
 body.dark-mode .pm-fam-manage-row{border-color:#2a2a28;}
 body.dark-mode .pm-fam-manage-row.pm-fam-active{background:#2a2a28;}
@@ -866,7 +870,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.0</span>
+      <span class="app-version">v3.6.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2504,24 +2508,35 @@ function openPresetModal(cfg){
       modeReorder.classList.toggle('active',reorderMode);modeManage.classList.remove('active');
       buildFamCol();buildItems();
     });
-    // Champ recherche
-    const searchInp=document.createElement('input');searchInp.className='pm-search';searchInp.type='search';searchInp.placeholder='Chercher…';
+    // Rangée recherche (sous le header, masquée par défaut)
+    const searchRow=document.createElement('div');searchRow.className='pm-search-row';
+    const searchInp=document.createElement('input');searchInp.className='pm-search-inp';searchInp.type='search';searchInp.placeholder='Chercher un '+(cfg.type==='groove'?'groove':'pattern')+'…';
     searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
+    searchRow.appendChild(searchInp);
+    // Insérer la rangée après le header (avant le body)
+    sheet.insertBefore(searchRow,body);
+    // Bouton toggle recherche
+    const modeSearch=document.createElement('button');modeSearch.className='pm-mode-btn';modeSearch.title='Rechercher';modeSearch.textContent='🔍';
+    modeSearch.addEventListener('click',()=>{
+      const open=searchRow.classList.toggle('pm-search-open');
+      modeSearch.classList.toggle('active',open);
+      if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
+    });
     // Groupe boutons mode
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(searchInp);modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);
+    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);
     hdr.insertBefore(modeGroup,hclose);
   }
 
   function getFams(){
     if(cfg.type==='groove'){
-      // En mode gérer/palette : toutes les familles (y compris les nouvelles vides)
-      if(manageMode||paletteTarget){return packCours.familles;}
+      // En mode gérer/réordonner/palette : toutes les familles
+      if(manageMode||reorderMode||paletteTarget){return packCours.familles;}
       const used=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
     if(cfg.type==='pattern'){
-      if(manageMode||paletteTarget){return packCours.familles;}
+      if(manageMode||reorderMode||paletteTarget){return packCours.familles;}
       const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
@@ -2616,7 +2631,7 @@ function openPresetModal(cfg){
     mkFilterBtn('all','Tout');
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
-    if(manageMode&&(cfg.type==='groove'||cfg.type==='pattern')){
+    if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern')){
       const isMx=authProfile?.role==='mx';
       // Mode gérer : rangées famille avec rename + delete (+ drag MX)
       getFams().forEach(f=>{
@@ -2630,11 +2645,14 @@ function openPresetModal(cfg){
         }
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
         nameEl.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
-        const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
-        renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
-        const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
-        delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
-        row.appendChild(nameEl);row.appendChild(renBtn);row.appendChild(delBtn);
+        row.appendChild(nameEl);
+        if(manageMode){
+          const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
+          renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
+          const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
+          delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
+          row.appendChild(renBtn);row.appendChild(delBtn);
+        }
         // Drag HTML5 (MX)
         if(isMx){
           row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
@@ -2660,8 +2678,8 @@ function openPresetModal(cfg){
         }
         famCol.appendChild(row);
       });
-      // + Nouvelle famille (MX uniquement)
-      if(isMx){
+      // + Nouvelle famille (MX, mode gérer uniquement)
+      if(isMx&&manageMode){
         const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
         nf.addEventListener('click',pmNewFamille);
         famCol.appendChild(nf);
