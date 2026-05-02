@@ -153,7 +153,7 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .beat-val-inp{width:36px;font-size:10px;font-weight:700;text-align:center;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;padding:1px 3px;flex-shrink:0;outline:none}
 .beat-val-inp:focus{border-color:#6B5FA5;box-shadow:0 0 0 2px rgba(107,95,165,.15)}
 /* ── Volume dans section bar ── */
-.top-vol-block{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;min-width:40px}
+.top-vol-block{display:flex;flex-direction:row;align-items:center;gap:3px;flex:1;min-width:40px}
 .top-vol-lbl{font-size:8px;color:#888;white-space:nowrap;line-height:1;letter-spacing:.02em}
 /* ── Ligne 1 volet : info + battue ── */
 .mpv-tempo-top-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:.15rem 0 .05rem}
@@ -320,8 +320,8 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo{color:#ccc;border-color:#e8e8e8;background:#fafafa;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.45}
 #btn-tempo .metro-icon{font-size:14px;line-height:1}
 #btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
-#btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
-#btn-tempo.active{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
+#btn-tempo.active{background:#f5f2fb;color:#998fc8;border-color:#c8c0e0;opacity:.65}
+#btn-tempo.metro-on,#btn-tempo.active.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:none;border-color:var(--cs);color:var(--cb)}
@@ -816,8 +816,8 @@ body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
 body.dark-mode #btn-tempo{color:#444;border-color:#333;background:#1a1a18;opacity:.4}
-body.dark-mode #btn-tempo.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
-body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
+body.dark-mode #btn-tempo.active{background:#1e1c22;color:#6858a8;border-color:#3a3448;opacity:.6}
+body.dark-mode #btn-tempo.metro-on,body.dark-mode #btn-tempo.active.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.6</span>
+      <span class="app-version">v3.8.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2599,7 +2599,8 @@ function openPresetModal(cfg){
     }
     if(cfg.type==='sig'){
       if(manageMode||reorderMode||paletteTarget) return getMetroFamilles();
-      const used=new Set(metroPresets.flatMap(p=>p.familles_ids||[]));
+      // Fallback sur .famille si familles_ids pas encore normalisé (mode hors connexion)
+      const used=new Set(metroPresets.flatMap(p=>p.familles_ids?.length?p.familles_ids:(p.famille?[p.famille]:[])));
       return getMetroFamilles().filter(f=>used.has(f.id));
     }
     if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
@@ -3138,17 +3139,22 @@ function buildBandSection(){
   bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='pm-preset-btn';
   bandPresetBtn.style.cssText='border-color:#8ab4d0;color:#2d5f80';
   bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' ✎':''):'—';
+  const _bandOnSelect=(id)=>{
+    applyBand(id);
+    const groove=getGroove(currentGrooveId);
+    if(groove&&id!==groove.band_defaut){groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
+    buildBandSection();
+  };
   bandPresetBtn.addEventListener('click',()=>{
     openPresetModal({
       type:'band',currentId:currentBandId,label:'Band',accent:'#2d5f80',bg:'#eef4f8',
-      onSelect:(id)=>{
-        applyBand(id);
-        const groove=getGroove(currentGrooveId);
-        if(groove&&id!==groove.band_defaut){groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
-        buildBandSection();
-      }
+      onSelect:_bandOnSelect
     });
   });
+  attachSwipe(bandPresetBtn,
+    ()=>(packCours.bands||[]).filter(b=>!b.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
+    ()=>currentBandId, _bandOnSelect
+  );
   bar.appendChild(bandPresetBtn);
 
   // Bouton 💾 sauvegarder band
@@ -3241,17 +3247,22 @@ function buildGrooveSection(){
   groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
   groovePresetBtn.style.cssText='border-color:#d4b86a;color:#8B6914';
   groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
+  const _grooveOnSelect=(id)=>{
+    applyGroove(id);refreshGrooveClass();
+    const pb=document.getElementById('groove-preset-btn');
+    const g=getGroove(id);
+    if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
+  };
   groovePresetBtn.addEventListener('click',()=>{
     openPresetModal({
       type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',
-      onSelect:(id)=>{
-        applyGroove(id);refreshGrooveClass();
-        const pb=document.getElementById('groove-preset-btn');
-        const g=getGroove(id);
-        if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
-      }
+      onSelect:_grooveOnSelect
     });
   });
+  attachSwipe(groovePresetBtn,
+    ()=>(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending').sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
+    ()=>currentGrooveId, _grooveOnSelect
+  );
   bar.appendChild(groovePresetBtn);
 
   const saveBtnGroove=document.createElement('button');
@@ -3360,29 +3371,33 @@ function buildLayers(){
     const patPresetBtn=document.createElement('button');
     patPresetBtn.id='preset-btn-'+layer.id;patPresetBtn.className='pm-preset-btn';
     patPresetBtn.textContent=curPat0?curPat0.nom+(curPat0.source==='teacher'?' ✎':''):'—';
+    const _patOnSelect=(patId)=>{
+      const pat=getPattern(patId);if(!pat)return;
+      state[li].pattern=pat.sequence.split('');
+      state[li].patternId=pat.id;
+      state[li].stepPos=0;state[li].wrapped=false;
+      {const groove=getGroove(currentGrooveId);
+       if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
+       grooveDirty=true;updateGrooveSaveBtn();
+       if(currentMode==='tx')saveToStorage();}
+      updateBtnI();
+      updateEncycloSelect(pat.encyclo_ref||pat.id);
+      setLayerDirty(li,false);
+      refreshLayerClass();
+      patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
+      buildStepsDOM(li,false);
+      setTimeout(()=>checkWrap(li),0);
+    };
     patPresetBtn.addEventListener('click',()=>{
       openPresetModal({
         type:'pattern',currentId:state[li].patternId,label:'Pattern',accent:'#6B5FA5',bg:'#efecf8',
-        onSelect:(patId)=>{
-          const pat=getPattern(patId);if(!pat)return;
-          state[li].pattern=pat.sequence.split('');
-          state[li].patternId=pat.id;
-          state[li].stepPos=0;state[li].wrapped=false;
-          {const groove=getGroove(currentGrooveId);
-           if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
-           grooveDirty=true;updateGrooveSaveBtn();
-           if(currentMode==='tx')saveToStorage();}
-          updateBtnI();
-          updateEncycloSelect(pat.encyclo_ref||pat.id);
-          setLayerDirty(li,false);
-          refreshLayerClass();
-          // Mettre à jour le label du bouton preset
-          patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
-          buildStepsDOM(li,false);
-          setTimeout(()=>checkWrap(li),0);
-        }
+        onSelect:_patOnSelect
       });
     });
+    attachSwipe(patPresetBtn,
+      ()=>(packCours.patterns||[]).filter(p=>!p.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
+      ()=>state[li].patternId, _patOnSelect
+    );
     row1.appendChild(patPresetBtn);
 
     // 💾 sauvegarde du pattern → popover
@@ -4172,6 +4187,24 @@ function _navigateMetroPreset(dir){
   const next=(cur<0?0:(cur+dir+sorted.length)%sorted.length);
   changeSig(sorted[next].id);
 }
+// Helper générique swipe gauche/droite sur un bouton preset
+function attachSwipe(el, getList, getCurrentId, onSelect){
+  let _tx=null;
+  el.addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;},{passive:true});
+  el.addEventListener('touchend',e=>{
+    if(_tx===null)return;
+    const dx=e.changedTouches[0].clientX-_tx;
+    _tx=null;
+    if(Math.abs(dx)<30)return;
+    e.preventDefault();
+    const dir=dx>0?-1:1;
+    const list=getList();
+    if(!list.length)return;
+    const cur=list.findIndex(x=>x.id===getCurrentId());
+    const next=(cur<0?0:(cur+dir+list.length)%list.length);
+    onSelect(list[next].id,list[next]);
+  });
+}
 
 // Vérifie si une entrée encyclo a du contenu réel (chapo ou au moins un bullet)
 function hasEncycloContent(ref){
@@ -4286,13 +4319,18 @@ function buildSoundRow(key,label,cls,ss){
   soundPresetBtn.className='pm-preset-btn';
   const curSoundDef=SOUND_DEFS[ss.soundId];
   soundPresetBtn.textContent=curSoundDef?curSoundDef.label:'—';
+  const _soundOnSelect=(id)=>{ss.soundId=id;const def=SOUND_DEFS[id];soundPresetBtn.textContent=def?def.label:'—';};
   soundPresetBtn.addEventListener('click',e=>{
     e.stopPropagation();
     openPresetModal({
       type:'sound', currentId:ss.soundId, label:'Son', accent:'#4a7fa5', bg:'#eef4f8',
-      onSelect:(id)=>{ss.soundId=id;const def=SOUND_DEFS[id];soundPresetBtn.textContent=def?def.label:'—';}
+      onSelect:_soundOnSelect
     });
   });
+  attachSwipe(soundPresetBtn,
+    ()=>Object.keys(SOUND_DEFS).map(k=>({id:k})),
+    ()=>ss.soundId, _soundOnSelect
+  );
 
   const arrow=document.createElement('button');arrow.className='btn-sec-ico';
   arrow.style.cssText='font-size:9px;opacity:.55;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc)';
