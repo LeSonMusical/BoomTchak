@@ -162,6 +162,8 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .mpv-battue-block{display:flex;align-items:center;gap:3px;flex-shrink:0}
 /* ── Ligne slider ── */
 .mpv-slider-row{display:flex;align-items:center;gap:4px;padding:.1rem 0 .2rem}
+/* Nom latin du tempo : accent couleur + gras */
+#metro-tempo-name{color:#6B5FA5;font-weight:700;font-size:12px;letter-spacing:.02em}
 
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
@@ -315,7 +317,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;min-width:28px;padding:3px 7px;font-size:14px;line-height:1;opacity:.7}
 #btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
 #btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
-#btn-tempo{color:#bbb;border-color:#ddd;background:#f5f5f5;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.7}
+#btn-tempo{color:#ccc;border-color:#e8e8e8;background:#fafafa;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.45}
 #btn-tempo .metro-icon{font-size:14px;line-height:1}
 #btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
 #btn-tempo.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
@@ -813,7 +815,7 @@ body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color
 body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
-body.dark-mode #btn-tempo{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
+body.dark-mode #btn-tempo{color:#444;border-color:#333;background:#1a1a18;opacity:.4}
 body.dark-mode #btn-tempo.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode #btn-tempo.active{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
@@ -908,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.4</span>
+      <span class="app-version">v3.8.5</span>
     </div>
   </div>
   <div class="top-bar-center">
