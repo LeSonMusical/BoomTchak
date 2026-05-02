@@ -336,6 +336,13 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
+.enc-toolbar{display:flex;gap:3px;margin-bottom:4px;opacity:.7}
+.enc-toolbar:focus-within,.enc-toolbar:hover{opacity:1}
+.enc-tb-btn{font-size:10px;padding:1px 6px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
+.enc-tb-btn:hover{background:#f5f3f0;border-color:#999}
+.enc-link{color:var(--ca,#4a3d8a);text-decoration:underline dotted;cursor:pointer}
+.enc-add-bullet{font-size:10px;margin-top:6px;padding:2px 8px;border:1px dashed #c0bdb7;border-radius:4px;background:none;color:#888;cursor:pointer;display:block}
+.enc-add-bullet:hover{border-color:#888;color:#444}
 .encyclo-vide{font-size:11px;color:#aaa;font-style:italic}
 
 /* ─── BOTTOM BAR ─── */
@@ -910,7 +917,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.12</span>
+      <span class="app-version">v3.8.13</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1170,33 +1177,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
 </div>
 
-<!-- Panel ≡ bibliothèque encyclopédie -->
-<div class="lib-overlay hidden" id="lib-overlay-encyclo"></div>
-<div class="lib-panel hidden" id="lib-panel-encyclo">
-  <div class="lib-panel-head">
-    <div class="lib-h1">
-      <div class="lib-head-label"><span class="lib-head-secname">Encyclopédie</span></div>
-      <button class="lib-panel-close" id="lib-panel-encyclo-close">✕</button>
-    </div>
-    <div class="lib-h2">
-      <select class="lib-fam-filter-sel" id="lib-fam-filter-encyclo">
-        <option value="all">Toutes les familles</option>
-      </select>
-      <select class="lib-fam-filter-sel" id="lib-cat-filter-encyclo">
-        <option value="all">Toutes catégories</option>
-        <option value="appli">Appli</option>
-        <option value="concepts">Concepts</option>
-        <option value="groove">Grooves</option>
-        <option value="pattern">Patterns</option>
-      </select>
-    </div>
-  </div>
-  <div class="lib-list" id="lib-list-encyclo"></div>
-  <div class="lib-batch-bar">
-    <button class="lib-content-toggle" id="lib-encyclo-content-filter" data-state="all">Tous</button>
-    <button class="lib-batch-del" id="lib-batch-del-encyclo" disabled>🗑 Vider</button>
-  </div>
-</div>
 
 <!-- Save sheet (💾 pattern) -->
 <div class="save-sheet hidden" id="save-sheet">
@@ -2534,6 +2514,8 @@ function openPresetModal(cfg){
   let manageMode=false, reorderMode=false, paletteTarget=null;
   let _reorderDragSrcId=null, _famDragSrcId=null;
   let searchQuery='';
+  // Filtre famille secondaire pour l'encyclopédie (groove/pattern)
+  let encFamFilter='all';
 
   // Corps 2 colonnes : familles à gauche (fixe), items à droite (scroll)
   const body=document.createElement('div');body.className='pm-body';
@@ -2572,6 +2554,20 @@ function openPresetModal(cfg){
     modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
     hdr.insertBefore(modeGroup,hclose);
   }
+  // Encyclopédie : bouton recherche seul (pas de gérer/réordonner)
+  if(cfg.type==='encyclo'){
+    const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
+    searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
+    const modeSearch=document.createElement('button');modeSearch.className='pm-mode-btn';modeSearch.title='Rechercher';modeSearch.textContent='🔍';
+    modeSearch.addEventListener('click',()=>{
+      const open=searchInp.classList.toggle('pm-search-open');
+      modeSearch.classList.toggle('active',open);
+      if(open)searchInp.focus();else{searchInp.value='';searchQuery='';buildItems();}
+    });
+    const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
+    modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    hdr.insertBefore(modeGroup,hclose);
+  }
 
   function getFams(){
     if(cfg.type==='groove'){
@@ -2592,10 +2588,31 @@ function openPresetModal(cfg){
       return getMetroFamilles().filter(f=>used.has(f.id));
     }
     if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
+    if(cfg.type==='encyclo') return ENCYCLO_CATS.map(c=>({id:c.id,nom:c.label}));
     return packCours.bandFamilles||[];
   }
 
   function getFilteredItems(){
+    if(cfg.type==='encyclo'){
+      const cat=famFilter;
+      const showMisc=cat==='all'||cat==='appli'||cat==='concepts';
+      const showG=cat==='all'||cat==='groove';
+      const showP=cat==='all'||cat==='pattern';
+      let items=[];
+      if(showMisc)
+        ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
+          .forEach(m=>items.push({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
+      if(showG)
+        packCours.grooves
+          .filter(g=>encFamFilter==='all'||(g.familles||[]).includes(encFamFilter))
+          .forEach(g=>items.push({id:g.id,nom:g.nom,typeBadge:'G',hasC:hasEncycloContent(g.id)}));
+      if(showP)
+        packCours.patterns
+          .filter(p=>encFamFilter==='all'||(p.familles||[]).includes(encFamFilter))
+          .forEach(p=>{const key=p.encyclo_ref||p.id;items.push({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
+      if(searchQuery){const q=searchQuery.toLowerCase();items=items.filter(i=>i.nom.toLowerCase().includes(q));}
+      return items;
+    }
     let result;
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
@@ -2826,6 +2843,21 @@ function openPresetModal(cfg){
         b.addEventListener('click',()=>_setFam(f.id));
         famCol.appendChild(b);
       });
+      // Encyclopédie : filtre famille secondaire (grooves/patterns)
+      if(cfg.type==='encyclo'&&(famFilter==='all'||famFilter==='groove'||famFilter==='pattern')){
+        const sep=document.createElement('div');sep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:6px 0 2px';
+        famCol.appendChild(sep);
+        const famSel=document.createElement('select');
+        famSel.style.cssText='font-size:9px;width:100%;padding:2px 4px;border-radius:4px;border:1px solid #ccc;background:#fff;margin-top:2px';
+        famSel.innerHTML='<option value="all">— Toutes familles —</option>';
+        (packCours.familles||[]).forEach(f=>{
+          const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;
+          if(encFamFilter===f.id)o.selected=true;
+          famSel.appendChild(o);
+        });
+        famSel.addEventListener('change',()=>{encFamFilter=famSel.value;buildItems();});
+        famCol.appendChild(famSel);
+      }
     }
   }
 
@@ -2979,6 +3011,24 @@ function openPresetModal(cfg){
 
   function buildItems(){
     itemsWrap.innerHTML='';
+    // Encyclopédie : navigation par catégorie
+    if(cfg.type==='encyclo'){
+      const items=getFilteredItems();
+      if(!items.length){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucune entrée';itemsWrap.appendChild(e);return;}
+      const bdgStyle={G:'background:#faf3e0;color:#8B6914',P:'background:#f0f5ff;color:#2d5f80',M:'background:#f5f4f0;color:#666'};
+      items.forEach(item=>{
+        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left';
+        const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
+        const nameEl=document.createElement('span');nameEl.style.cssText='flex:1;opacity:'+(item.hasC?'1':'.45');nameEl.textContent=item.nom;
+        const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
+        row.appendChild(badge);row.appendChild(nameEl);row.appendChild(dot);
+        row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+        itemsWrap.appendChild(row);
+      });
+      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      return;
+    }
     // Types non-gérables : logique inchangée
     if(cfg.type==='sound'){
       const soundItems=Object.entries(SOUND_DEFS)
@@ -4265,18 +4315,8 @@ function rebuildAllFamFilters(){
     });
     if([...grvFil.options].some(o=>o.value===prev)) grvFil.value=prev;
   }
-  // Panel ≡ encyclopédie — familles avec ≥1 pattern ou groove (entrées encyclo indexées par item)
-  const encFil = document.getElementById('lib-fam-filter-encyclo');
-  if(encFil){
-    const prev = encFil.value;
-    encFil.innerHTML = '<option value="all">Toutes les familles</option>';
-    const _pp=document.createElement('option');_pp.value='__teacher__';_pp.textContent='— Enseignant —';_pp.style.cssText='background:#ddfff4;color:#0F6E56;font-weight:600';encFil.appendChild(_pp);
-    packCours.familles.filter(f => famsWithEnc.has(f.id)).forEach(f=>{
-      const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;encFil.appendChild(o);
-    });
-    if([...encFil.options].some(o=>o.value===prev)) encFil.value=prev;
-  }
 }
+
 
 // ── Panneau sons ──────────────────────────────────────────────────────────
 function buildSoundPanel(){
@@ -4474,7 +4514,10 @@ function buildEncycloSection(){
     else showToast('Encyclopédie sauvegardée localement — soumettez via ···', 'info');
   });
   bar.appendChild(saveBtnEnc);
-  if(currentMode==='tx'||packCours.encyclopedie?.some(e=>e.source==='teacher')) bar.appendChild(mkBtnMenu(()=>openLibPanelEncyclo()));
+  bar.appendChild(mkBtnMenu(()=>openPresetModal({
+    type:'encyclo',currentId:currentEncycloId,label:'Encyclopédie',accent:'#4a6d40',bg:'#f0f5ee',
+    onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);buildEncycloSection();}
+  })));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -4516,6 +4559,23 @@ function showEncycloEntry(key){
   renderEncyclo(key);
 }
 
+function parseMarkdown(text){
+  if(!text)return '';
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/_(.*?)_/g,'<em>$1</em>')
+    .replace(/\[([^\]]*)\]\(([^)]*)\)/g,'<a class="enc-link" data-key="$2" href="#">$1</a>');
+}
+
+function wrapMdSelection(el,marker){
+  el.focus();
+  const sel=window.getSelection();
+  if(!sel.rangeCount)return;
+  const selected=sel.toString();
+  document.execCommand('insertText',false,marker+(selected||'texte')+marker);
+}
+
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
@@ -4537,29 +4597,64 @@ function renderEncyclo(key){
   const isTX = isPreview ? false : currentMode==='tx'; // aperçu = lecture seule
   const ensureEnc=()=>{if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));};
 
-  const chapo=document.createElement('p');chapo.className='encyclo-chapo';chapo.textContent=entry.chapo;
+  const _attachLinks=(el)=>{
+    el.querySelectorAll('.enc-link').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();const k=a.dataset.key;
+      if(k){showEncycloEntry(k);if(!encycloOuvert)toggleEncyclo(true);}
+    }));
+  };
+
+  // Toolbar markdown (TX uniquement)
+  if(isTX){
+    const toolbar=document.createElement('div');toolbar.className='enc-toolbar';
+    const mkTb=(lbl,title,action)=>{const b=document.createElement('button');b.className='enc-tb-btn';b.textContent=lbl;b.title=title;b.addEventListener('mousedown',e=>{e.preventDefault();action();});toolbar.appendChild(b);};
+    mkTb('G','Gras (Ctrl+B)',()=>wrapMdSelection(document.activeElement,'**'));
+    mkTb('I','Italique (Ctrl+I)',()=>wrapMdSelection(document.activeElement,'_'));
+    body.appendChild(toolbar);
+  }
+
+  const chapo=document.createElement('p');chapo.className='encyclo-chapo';
   if(isTX){
     chapo.contentEditable='true';
+    chapo.textContent=entry.chapo;
     chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;});
     chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
+  } else {
+    chapo.innerHTML=parseMarkdown(entry.chapo);
+    _attachLinks(chapo);
   }
   body.appendChild(chapo);
 
   const ul=document.createElement('ul');ul.className='encyclo-bullets';
   entry.bullets.forEach(([bk,bv],i)=>{
     const li=document.createElement('li');
-    const k=document.createElement('span');k.className='encyclo-bkey';k.textContent=bk;
-    const v=document.createElement('span');v.className='encyclo-bval';v.textContent=bv;
+    const k=document.createElement('span');k.className='encyclo-bkey';
+    const v=document.createElement('span');v.className='encyclo-bval';
     if(isTX){
-      k.contentEditable='true';
+      k.contentEditable='true';k.textContent=bk;
       k.addEventListener('focus',()=>{k.dataset.orig=k.textContent;});
       k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;if(k.textContent!==k.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
-      v.contentEditable='true';
+      v.contentEditable='true';v.textContent=bv;
       v.addEventListener('focus',()=>{v.dataset.orig=v.textContent;});
       v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;if(v.textContent!==v.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
+    } else {
+      k.textContent=bk;
+      v.innerHTML=parseMarkdown(bv);
+      _attachLinks(v);
     }
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
+  // Bouton + Ajouter bullet (TX uniquement)
+  if(isTX){
+    const addBullet=document.createElement('button');addBullet.className='enc-add-bullet';addBullet.textContent='＋ Ajouter une note';
+    addBullet.addEventListener('click',()=>{
+      ensureEnc();
+      if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
+      packCours.encyclo[key].bullets.push(['Titre','']);
+      encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+    });
+    ul.appendChild(addBullet);
+  }
   body.appendChild(ul);
 }
 
@@ -7557,151 +7652,6 @@ async function libDeleteGroove(grooveId){
 
 
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MODULE LIB — Encyclopédie (panel ≡)
-// ═══════════════════════════════════════════════════════════════════════════
-
-function openLibPanelEncyclo(){
-  rebuildAllFamFilters();
-  const tog=document.getElementById('lib-encyclo-content-filter');
-  if(tog){tog.dataset.state='all';tog.textContent='Tous';}
-  const delBtn=document.getElementById('lib-batch-del-encyclo');
-  if(delBtn) delBtn.disabled=true;
-  buildLibListEncyclo();
-  const overlay=document.getElementById('lib-overlay-encyclo');
-  const panel=document.getElementById('lib-panel-encyclo');
-  if(overlay) overlay.classList.remove('hidden');
-  if(panel)   panel.classList.remove('hidden');
-}
-
-function closeLibPanelEncyclo(){
-  document.getElementById('lib-overlay-encyclo').classList.add('hidden');
-  document.getElementById('lib-panel-encyclo').classList.add('hidden');
-}
-
-function buildLibListEncyclo(){
-  const list=document.getElementById('lib-list-encyclo'); list.innerHTML='';
-
-  const famVal=(document.getElementById('lib-fam-filter-encyclo')?.value)||'all';
-  const catVal=(document.getElementById('lib-cat-filter-encyclo')?.value)||'all';
-  const contentState=document.getElementById('lib-encyclo-content-filter')?.dataset.state||'all';
-
-  function passContent(hasC){
-    if(contentState==='filled') return hasC;
-    if(contentState==='empty')  return !hasC;
-    return true;
-  }
-  function passFam(familles){
-    return famVal==='all'||(familles||[]).includes(famVal);
-  }
-
-  const showMisc = catVal==='all'||catVal==='appli'||catVal==='concepts';
-  const showG    = catVal==='all'||catVal==='groove';
-  const showP    = catVal==='all'||catVal==='pattern';
-
-  if(showMisc){
-    ENCYCLO_MISC.filter(m=>catVal==='all'||m.category===catVal).forEach(m=>{
-      const hasC=hasEncycloContent(m.id);
-      if(!passContent(hasC)) return;
-      list.appendChild(buildEncycloLibItem(m.id, m.nom, 'M', hasC));
-    });
-  }
-  if(showG){
-    packCours.grooves.forEach(g=>{
-      if(!passFam(g.familles)) return;
-      const hasC=hasEncycloContent(g.id);
-      if(!passContent(hasC)) return;
-      list.appendChild(buildEncycloLibItem(g.id, g.nom, 'G', hasC));
-    });
-  }
-  if(showP){
-    packCours.patterns.forEach(p=>{
-      if(!passFam(p.familles)) return;
-      const key=p.encyclo_ref||p.id;
-      const hasC=hasEncycloContent(key);
-      if(!passContent(hasC)) return;
-      list.appendChild(buildEncycloLibItem(key, p.nom, 'P', hasC));
-    });
-  }
-  updateEncycloBatchBar();
-}
-
-function buildEncycloLibItem(key, nom, typeBadge, hasContent){
-  const item=document.createElement('div'); item.className='lib-item';
-  item.dataset.encycloKey=key;
-
-  const cb=document.createElement('input'); cb.type='checkbox'; cb.className='lib-item-check';
-  cb.addEventListener('change', updateEncycloBatchBar);
-  item.appendChild(cb);
-
-  const badge=document.createElement('span'); badge.className='lib-source-badge';
-  const badgeStyles={G:'background:#faf3e0;color:#8B6914',P:'background:#f0f5ff;color:#2d5f80',M:'background:#f5f4f0;color:#666'};
-  badge.textContent=typeBadge; badge.style.cssText=badgeStyles[typeBadge]||badgeStyles.M;
-  item.appendChild(badge);
-
-  const nameEl=document.createElement('span'); nameEl.className='lib-item-name';
-  nameEl.textContent=nom; nameEl.style.opacity=hasContent?'1':'.4';
-  nameEl.title=hasContent?'Cliquer pour voir':'Entrée vide';
-  nameEl.addEventListener('click',()=>{
-    closeLibPanelEncyclo();
-    showEncycloEntry(key);
-    if(!encycloOuvert)toggleEncyclo(true);
-  });
-  item.appendChild(nameEl);
-
-  const statusEl=document.createElement('span'); statusEl.style.cssText='font-size:9px;color:'+(hasContent?'#1D9E75':'#ccc');
-  statusEl.textContent=hasContent?'● remplie':'○ vide';
-  item.appendChild(statusEl);
-  return item;
-}
-
-function updateEncycloBatchBar(){
-  const checks=[...document.querySelectorAll('#lib-list-encyclo .lib-item-check')];
-  const anyChecked=checks.some(c=>c.checked);
-  const delBtn=document.getElementById('lib-batch-del-encyclo');
-  if(delBtn) delBtn.disabled=!anyChecked;
-  const selAll=document.getElementById('lib-select-all-encyclo');
-  if(selAll){
-    selAll.indeterminate=anyChecked&&!checks.every(c=>c.checked);
-    selAll.checked=checks.length>0&&checks.every(c=>c.checked);
-  }
-}
-
-function attachEncycloLibEvents(){
-  const el=id=>document.getElementById(id);
-  el('lib-overlay-encyclo')?.addEventListener('click',closeLibPanelEncyclo);
-  el('lib-panel-encyclo-close')?.addEventListener('click',closeLibPanelEncyclo);
-  el('lib-fam-filter-encyclo')?.addEventListener('change',buildLibListEncyclo);
-  el('lib-cat-filter-encyclo')?.addEventListener('change',buildLibListEncyclo);
-
-  el('lib-encyclo-content-filter')?.addEventListener('click',e=>{
-    const states=['all','filled','empty'];
-    const labels=['Tous','Remplis','Vides'];
-    const cur=states.indexOf(e.currentTarget.dataset.state);
-    const next=(cur+1)%states.length;
-    e.currentTarget.dataset.state=states[next];
-    e.currentTarget.textContent=labels[next];
-    buildLibListEncyclo();
-  });
-
-  el('lib-select-all-encyclo')?.addEventListener('change',e=>{
-    document.querySelectorAll('#lib-list-encyclo .lib-item-check').forEach(c=>{c.checked=e.target.checked;});
-    updateEncycloBatchBar();
-  });
-
-  // Supprimer la sélection (vider le contenu)
-  el('lib-batch-del-encyclo')?.addEventListener('click',()=>{
-    const toEmpty=[...document.querySelectorAll('#lib-list-encyclo .lib-item-check:checked')]
-      .map(c=>c.closest('.lib-item').dataset.encycloKey);
-    if(!toEmpty.length)return;
-    if(!confirm('Vider '+toEmpty.length+' entrée'+(toEmpty.length>1?'s':'')+' ?'))return;
-    toEmpty.forEach(key=>{ packCours.encyclo[key]={chapo:'',bullets:[]}; });
-    saveToStorage();
-    buildLibListEncyclo();
-    buildEncycloSection();
-    if(toEmpty.includes(currentEncycloId))renderEncyclo(currentEncycloId);
-  });
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT — Bootstrap au chargement
@@ -8662,8 +8612,6 @@ function attachEvents(){
     dialogCallback=null;
   });
 
-  // ── Panel ≡ encyclopédie ──
-  attachEncycloLibEvents();
   // ── Panel ≡ bibliothèque bands ──
   initLibPanelBands();
 
