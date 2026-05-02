@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.7</span>
+      <span class="app-version">v3.8.8</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -7812,6 +7812,8 @@ function loadFromStorage(){
     const sp=localStorage.getItem('btk_prefs');
     if(sp)prefs=Object.assign(prefs,JSON.parse(sp));
   }catch(e){}
+  // Normaliser metroPresets dès le démarrage (familles_ids depuis .famille)
+  rebuildMetroPresets();
 }
 
 // ── MIDI Export ──────────────────────────────────────────────────────────────
