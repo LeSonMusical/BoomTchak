@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.12** (session 2026-05-02)
+**v3.8.13** (session 2026-05-02)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.13 | Encyclopédie unifiée sous `openPresetModal` : colonne catégories, filtre famille secondaire, recherche, markdown display, toolbar G/I/•+ TX |
 | v3.8.12 | `changeSig` silencieux : mise à jour `groove.signature` sans dirty/publish ; `symFromFelBeatSteps(4)` = `♩♩` |
 | v3.8.11 | Refacto timing : `posToSPM`/`spmToPos` utilisent `felBeatSteps` ; `buildSigFromControls` cosmétique pur |
 | v3.8.10 | Fix mode BPM constant (oldSig.felBeatSteps) ; affichage SPM `♪/min` dans volet |
@@ -156,20 +157,19 @@ stepSec = (60 / spm) × (stepsPerBeat / subdivision)
 
 ## Tâches prioritaires (prochaine session)
 
-### Chantier principal : openPresetModal pour Band/Son et Encyclopédie
-Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonner/palette) aux volets band/son et encyclopédie.
+### Chantier en cours : openPresetModal pour Band/Son
+Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonner/palette) au volet band/son.
 
-**À clarifier avec Lamberio en début de session :**
-- Band : les sons (`SOUND_DEFS`) sont prédéfinis (JS hardcoded), pas en DB — le CRUD est-il limité à la gestion des familles + renommage/réordonner uniquement ?
-- Encyclopédie : pas de "familles" au sens groove/pattern. La "petite différence" à valider.
+**Encyclopédie ✅ terminé (v3.8.13)** — modal unifié avec colonne catégories, filtre famille secondaire, search, markdown.
 
 **Volet Band/Son** (`#lib-panel-bands`) :
-- `openPresetModal({type:'band'})` existe pour la sélection
-- Manquent les modes gérer/réordonner intégrés au modal
+- `openPresetModal({type:'band'})` existe pour la sélection — manquent les modes ✎ gérer et ☰ réordonner
+- Sons (`SOUND_DEFS`) hardcodés en JS → pas de rename/delete, modal son reste sélection pure
+- Intégrer rename/delete bands + gestion familles dans le modal (remplacer `lib-panel-bands`)
 
-**Volet Encyclopédie** (`#lib-panel-encyclo`) :
-- Structure différente : contenu textuel (chapo + bullets) par item
-- La colonne gauche (catégories ?) à définir
+**Clarifié avec Lamberio :**
+- Sons hardcodés = hors scope (modal son = sélection uniquement, pas de gérer/réordonner)
+- Encyclopédie : colonne gauche = catégories, filtre famille secondaire conservé, TX peut éditer, markdown léger
 
 ### Autres chantiers en attente
 1. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
