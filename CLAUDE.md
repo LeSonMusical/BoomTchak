@@ -66,22 +66,20 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.5.3** (session 2026-05-01)
+**v3.7.0** (session 2026-05-02)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.7.0 | Familles métronome dynamiques : table `metro_familles` en DB, colonnes `familles_ids`+`ordre` sur `metro_presets` ; modal sig étendu avec modes gérer/réordonner/tag complets comme groove/pattern |
+| v3.6.5 | Correctifs drag-reorder : splice index, famille sélectionnée mémorisée, propagation groove→pattern, dark mode drag-over, sentinel end-zone |
+| v3.6.3 | Colonnes `ordre` sur patterns/grooves/familles ; fetch trié ; sbPushSchoolOrder/FamOrder avec return=representation |
 | v3.5.3 | Son volet : preset+volume toujours visibles (2 rangées header) ; Encyclopédie : champ `category` sur ENCYCLO_MISC + filtre catégorie (Appli/Concepts/Grooves/Patterns) |
-| v3.5.2 | Preset modal étendu : sons (type:'sound'), signature (type:'sig', compact 45vh) ; lib-panel height fixe ; en-tête lib-panel 2 rangées (titre+✕ / filtre+search) |
-| v3.5.1 | Modal preset : hauteur fixe 72vh, layout 2 colonnes stable, boutons layer neutres |
-| v3.5.0 | Remplacement 2 selects (famille+preset) par 1 bouton → bottom-sheet modal `openPresetModal` |
-| v3.4.80 | Correctif critique : modal MIDI déplacé avant `<script>` |
 
 ## Tâches prioritaires (prochaine session)
-1. **Mode "gérer" dans openPresetModal** — voir spec complète ci-dessous
+1. **Migration DB v3.7.0** — Exécuter dans Supabase SQL Editor (voir ci-dessous)
 2. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
 3. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
-4. **Migration DB familles** — `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;`
 
 ## Spec : Mode "gérer" dans openPresetModal (prochaine session)
 

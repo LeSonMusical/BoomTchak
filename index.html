@@ -880,7 +880,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.5</span>
+      <span class="app-version">v3.7.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1578,6 +1578,7 @@ const PTK_DEFAULT = {
      ]},
   ],
   metroPresets: [],
+  metroFamilles: [],
 };
 
 // Marquer les éléments du dictionnaire comme source 'school'
@@ -1869,15 +1870,21 @@ const METRO_PRESETS_DEFAULT = [
 let metroPresets = METRO_PRESETS_DEFAULT.slice();
 
 function rebuildMetroPresets() {
-  const normalize = p => ({
-    ...p,
-    stepsPerBeat: p.stepsPerBeat || p.subdivision,
-    beatSteps:    p.beatSteps    || p.subdivision,
-    beatSym:      p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
-    famille:      p.famille      || familleFromUnit(p.beatUnit || 4, p.subdivision || 2),
-    metroPattern: Array.isArray(p.metroPattern) ? p.metroPattern
-                  : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
-  });
+  const normalize = p => {
+    const famIds = p.familles_ids?.length ? p.familles_ids
+                 : p.famille ? [p.famille] : [];
+    const fam = p.famille || famIds[0] || familleFromUnit(p.beatUnit || 4, p.subdivision || 2);
+    return {
+      ...p,
+      stepsPerBeat:  p.stepsPerBeat || p.subdivision,
+      beatSteps:     p.beatSteps    || p.subdivision,
+      beatSym:       p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
+      famille:       fam,
+      familles_ids:  famIds,
+      metroPattern:  Array.isArray(p.metroPattern) ? p.metroPattern
+                     : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
+    };
+  };
   // Presets DB (source: 'base'|'school') — ne pas inclure les drafts teacher dans la liste principale
   const dbPresets = (packCours.metroPresets || [])
     .filter(p => p.source !== 'teacher')
@@ -2506,6 +2513,10 @@ function openPresetModal(cfg){
       const cur=arr?.find(x=>x.id===cfg.currentId);
       if(cur?.familles?.length)return cur.familles[0];
     }
+    if(cfg.currentId&&cfg.type==='sig'){
+      const cur=metroPresets.find(p=>p.id===cfg.currentId);
+      if(cur?.familles_ids?.length)return cur.familles_ids[0];
+    }
     return'all';
   })();
   // États modes gérer/réordonner (groove et pattern uniquement)
@@ -2520,8 +2531,8 @@ function openPresetModal(cfg){
   body.appendChild(famCol);body.appendChild(itemsWrap);
   sheet.appendChild(body);
 
-  // Boutons mode gérer/réordonner dans le header (groove et pattern uniquement)
-  if(cfg.type==='groove'||cfg.type==='pattern'){
+  // Boutons mode gérer/réordonner dans le header (groove, pattern et sig)
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
     const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='⠿';
     modeManage.addEventListener('click',()=>{
@@ -2563,8 +2574,12 @@ function openPresetModal(cfg){
       const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
       return packCours.familles.filter(f=>used.has(f.id));
     }
+    if(cfg.type==='sig'){
+      if(manageMode||reorderMode||paletteTarget) return getMetroFamilles();
+      const used=new Set(metroPresets.flatMap(p=>p.familles_ids||[]));
+      return getMetroFamilles().filter(f=>used.has(f.id));
+    }
     if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
-    if(cfg.type==='sig') return SIG_FAMILLES.map(f=>({id:f.id,nom:f.label}));
     return packCours.bandFamilles||[];
   }
 
@@ -2576,11 +2591,13 @@ function openPresetModal(cfg){
       const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
       result=[...filtered,...pending];
+    } else if(cfg.type==='sig'){
+      result=famFilter&&famFilter!=='all'?metroPresets.filter(p=>(p.familles_ids||[]).includes(famFilter)):metroPresets;
     } else {
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       result=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
     }
-    if(searchQuery){const q=searchQuery.toLowerCase();result=result.filter(i=>i.nom.toLowerCase().includes(q));}
+    if(searchQuery){const q=searchQuery.toLowerCase();result=result.filter(i=>(i.nom||i.label||i.id).toLowerCase().includes(q));}
     return result;
   }
 
@@ -2589,6 +2606,16 @@ function openPresetModal(cfg){
 
   function pmNewFamille(){
     const nom=prompt('Nom de la nouvelle famille :');if(!nom?.trim())return;
+    if(cfg.type==='sig'){
+      const fam={id:'mfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.metroFamilles||[]).length};
+      if(!packCours.metroFamilles)packCours.metroFamilles=[];
+      packCours.metroFamilles.push(fam);
+      // Pousser en DB (MX)
+      if(authProfile?.role==='mx'){
+        sbFetch('/rest/v1/metro_familles',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:fam.id,nom:fam.nom,scope:'school',ordre:fam.ordre,owner_id:authProfile.id})}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
     packCours.familles.push(fam);
     saveToStorage();rebuildAllFamFilters();buildPublishSection();
@@ -2596,18 +2623,38 @@ function openPresetModal(cfg){
   }
 
   function pmDeleteFam(fam){
+    if(cfg.type==='sig'){
+      const count=metroPresets.filter(p=>(p.familles_ids||[]).includes(fam.id)).length;
+      if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' preset(s))':''}?`))return;
+      packCours.metroFamilles=(packCours.metroFamilles||[]).filter(f=>f.id!==fam.id);
+      // Retirer le tag de tous les presets
+      metroPresets.forEach(p=>{if(p.familles_ids)p.familles_ids=p.familles_ids.filter(id=>id!==fam.id);});
+      (packCours.metroPresets||[]).forEach(p=>{if(p.familles_ids)p.familles_ids=p.familles_ids.filter(id=>id!==fam.id);});
+      if(authProfile?.role==='mx'){
+        sbFetch(`/rest/v1/metro_familles?id=eq.${fam.id}`,{method:'DELETE'}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     const count=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length
               +packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
     libDeleteFamille(fam.id,count);
   }
 
   function pmDropFam(srcId,tgtId){
+    if(cfg.type==='sig'){
+      const fams=packCours.metroFamilles||[];
+      const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
+      const[moved]=fams.splice(si,1);
+      if(tgtId==='__end__'){fams.push(moved);}
+      else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(si<ti?ti-1:ti,0,moved);}
+      saveToStorage();sbPushSchoolMetroFamOrder();buildFamCol();return;
+    }
     const fams=packCours.familles;
     const si=fams.findIndex(f=>f.id===srcId);
     if(si<0)return;
     const[moved]=fams.splice(si,1);
     if(tgtId==='__end__'){fams.push(moved);}
-    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
+    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(si<ti?ti-1:ti,0,moved);}
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
@@ -2618,6 +2665,31 @@ function openPresetModal(cfg){
     _pmFamFilter[cfg.type]=id;
     if(cfg.type==='groove')_pmFamFilter['pattern']=id;
     buildFamCol();buildItems();
+  }
+
+  function _pmStartRenameMetroFam(nameEl,fam){
+    nameEl.contentEditable='true';nameEl.focus();
+    const range=document.createRange();range.selectNodeContents(nameEl);
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+    nameEl.dataset.orig=nameEl.textContent;
+    const commit=()=>{
+      nameEl.contentEditable='false';
+      const newNom=nameEl.textContent.trim();
+      if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
+      if(newNom===nameEl.dataset.orig)return;
+      fam.nom=newNom;
+      const cp=(packCours.metroFamilles||[]).find(f=>f.id===fam.id);
+      if(cp)cp.nom=newNom;
+      if(authProfile?.role==='mx'){
+        sbFetch(`/rest/v1/metro_familles?id=eq.${fam.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({nom:newNom})}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();
+    };
+    nameEl.addEventListener('blur',commit,{once:true});
+    nameEl.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
+      if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
+    });
   }
 
   function buildFamCol(){
@@ -2663,7 +2735,8 @@ function openPresetModal(cfg){
     mkFilterBtn('all','Tout');
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
-    if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern')){
+
+    if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig')){
       const isMx=authProfile?.role==='mx';
       // Bloquer le scroll du container en mode réordonner (sinon le touch scroll prend la main)
       famCol.style.touchAction=reorderMode?'none':'';
@@ -2682,7 +2755,11 @@ function openPresetModal(cfg){
         // Rename / delete : mode gérer seulement
         if(manageMode){
           const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
-          renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
+          if(cfg.type==='sig'){
+            renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameMetroFam(nameEl,f);});
+          } else {
+            renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
+          }
           const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
           delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
           row.appendChild(renBtn);row.appendChild(delBtn);
@@ -2740,8 +2817,10 @@ function openPresetModal(cfg){
   // Construit les chips de tags dans la div container (mode gérer)
   function pmBuildTags(container,item){
     container.innerHTML='';
-    (item.familles||[]).forEach(fid=>{
-      const fam=getFamille(fid);if(!fam)return;
+    const isSig=cfg.type==='sig';
+    const tagIds=isSig?(item.familles_ids||[]):(item.familles||[]);
+    tagIds.forEach(fid=>{
+      const fam=isSig?getMetroFamille(fid):getFamille(fid);if(!fam)return;
       const chip=document.createElement('span');chip.className='pm-tag-chip';chip.textContent=fam.nom;
       const x=document.createElement('button');x.className='pm-tag-x';x.textContent='×';
       x.addEventListener('click',e=>{e.stopPropagation();pmRemoveTag(item,fid);});
@@ -2753,6 +2832,18 @@ function openPresetModal(cfg){
   }
 
   function pmAddTag(item,famId){
+    if(cfg.type==='sig'){
+      if((item.familles_ids||[]).includes(famId))return;
+      if(!item.familles_ids)item.familles_ids=[];item.familles_ids.push(famId);
+      item.famille=item.familles_ids[0]||item.famille;
+      // Sync dans packCours.metroPresets aussi
+      const cp=(packCours.metroPresets||[]).find(p=>p.id===item.id);
+      if(cp){if(!cp.familles_ids)cp.familles_ids=[];cp.familles_ids.push(famId);}
+      if(authProfile?.role==='mx'){
+        sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({familles_ids:item.familles_ids})}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     if((item.familles||[]).includes(famId))return;
     if(item.source==='school'&&authProfile?.role!=='mx'){
       const fork=txForkItem(cfg.type,item);
@@ -2769,6 +2860,16 @@ function openPresetModal(cfg){
   }
 
   function pmRemoveTag(item,famId){
+    if(cfg.type==='sig'){
+      item.familles_ids=(item.familles_ids||[]).filter(id=>id!==famId);
+      item.famille=item.familles_ids[0]||familleFromUnit(item.beatUnit||4,item.subdivision||2);
+      const cp=(packCours.metroPresets||[]).find(p=>p.id===item.id);
+      if(cp){cp.familles_ids=(cp.familles_ids||[]).filter(id=>id!==famId);}
+      if(authProfile?.role==='mx'){
+        sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({familles_ids:item.familles_ids})}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     if(item.source==='school'&&authProfile?.role!=='mx'){
       const fork=txForkItem(cfg.type,item);
       fork.familles=(fork.familles||[]).filter(id=>id!==famId);
@@ -2794,6 +2895,15 @@ function openPresetModal(cfg){
       const newNom=nameEl.textContent.trim();
       if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
       if(newNom===nameEl.dataset.orig)return;
+      if(cfg.type==='sig'){
+        item.label=newNom;
+        const cp=(packCours.metroPresets||[]).find(p=>p.id===item.id);
+        if(cp)cp.label=newNom;
+        if(authProfile?.role==='mx'){
+          sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({label:newNom})}).catch(()=>{});
+        }
+        saveToStorage();buildSigSelector();buildItems();return;
+      }
       if(item.source==='school'&&authProfile?.role!=='mx'){
         const fork=txForkItem(cfg.type,item);fork.nom=newNom;
         if(cfg.type==='groove'&&currentGrooveId===item.id)currentGrooveId=fork.id;
@@ -2815,6 +2925,7 @@ function openPresetModal(cfg){
 
   function pmCreateNew(){
     if(cfg.type==='groove'){_closeOverlay();openGrooveSavePop(null);return;}
+    if(cfg.type==='sig'){_closeOverlay();openMetroPresetSavePop();return;}
     // Pattern : crée un pattern vide teacher et l'affiche en rename
     const newPat={id:'user_pat_'+Date.now(),nom:'Nouveau pattern',sequence:'0000',pas:4,familles:[],source:'teacher',localChangeType:'create'};
     packCours.patterns.push(newPat);
@@ -2829,6 +2940,18 @@ function openPresetModal(cfg){
   }
 
   function pmDrop(srcId,tgtId){
+    if(cfg.type==='sig'){
+      // Réordonner les metro presets (dans packCours.metroPresets et metroPresets runtime)
+      const dropIn=(arr)=>{
+        const si=arr.findIndex(x=>x.id===srcId);if(si<0)return;
+        const[m]=arr.splice(si,1);
+        if(tgtId==='__end__'){arr.push(m);}
+        else{const ti=arr.findIndex(x=>x.id===tgtId);if(ti<0){arr.splice(si,0,m);return;}arr.splice(si<ti?ti-1:ti,0,m);}
+      };
+      dropIn(metroPresets);
+      if(packCours.metroPresets)dropIn(packCours.metroPresets);
+      saveToStorage();sbPushSchoolMetroOrder();buildItems();return;
+    }
     if(tgtId==='__end__'){
       const arr=cfg.type==='groove'?packCours.grooves:packCours.patterns;
       const si=arr.findIndex(x=>x.id===srcId);
@@ -2855,15 +2978,8 @@ function openPresetModal(cfg){
       return;
     }
     if(cfg.type==='sig'){
-      const sigs=metroPresets.filter(p=>famFilter==='all'||p.famille===famFilter);
-      sigs.forEach(p=>{
-        const row=document.createElement('button');row.className='pm-item'+(p.id===cfg.currentId?' pm-cur':'');
-        row.textContent=p.label||p.id;row.addEventListener('click',()=>{cfg.onSelect(p.id);_closeOverlay();});
-        itemsWrap.appendChild(row);
-      });
-      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
-      return;
-    }
+      // Sig uses getFilteredItems() like groove/pattern — falls through to groove/pattern block below
+    } else
     if(cfg.type==='band'){
       const items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
       if(!items.length){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';itemsWrap.appendChild(e);return;}
@@ -2885,7 +3001,7 @@ function openPresetModal(cfg){
       itemsWrap.style.touchAction='none';itemsWrap.style.overflowY='auto';
       items.forEach(item=>{
         const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');div.style.touchAction='none';
-        const name=document.createElement('span');name.style.flex='1';name.textContent=item.nom.replace(/^● modifié /,'');
+        const name=document.createElement('span');name.style.flex='1';name.textContent=cfg.type==='sig'?(item.label||item.id):(item.nom||'').replace(/^● modifié /,'');
         const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='⠿';
         div.appendChild(name);div.appendChild(handle);
         // Drag HTML5
@@ -2924,14 +3040,19 @@ function openPresetModal(cfg){
     }
 
     items.forEach(item=>{
+      const displayNom=cfg.type==='sig'?(item.label||item.id):(item.nom||'').replace(/^● modifié /,'');
       if(manageMode){
         // Mode gérer : 2 lignes (nom+🗑 / chips tags)
         const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
         const row1=document.createElement('div');row1.className='pm-item-name-row';
-        const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=item.nom.replace(/^● modifié /,'');
+        const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=displayNom;
         nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
         const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';
-        delBtn.addEventListener('click',e=>{e.stopPropagation();if(cfg.type==='groove')libDeleteGroove(item.id);else libDeletePattern(item.id);});
+        delBtn.addEventListener('click',e=>{e.stopPropagation();
+          if(cfg.type==='sig')_deleteMetroPreset(item);
+          else if(cfg.type==='groove')libDeleteGroove(item.id);
+          else libDeletePattern(item.id);
+        });
         row1.appendChild(nameEl);row1.appendChild(delBtn);div.appendChild(row1);
         const tagsDiv=document.createElement('div');tagsDiv.className='pm-item-tags';
         pmBuildTags(tagsDiv,item);div.appendChild(tagsDiv);
@@ -2940,7 +3061,8 @@ function openPresetModal(cfg){
         // Mode normal : sélection
         const row=document.createElement('button');
         row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
+        if(cfg.type==='sig'){row.textContent=displayNom;}
+        else{row.textContent=displayNom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');}
         row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
         itemsWrap.appendChild(row);
       }
@@ -2949,7 +3071,7 @@ function openPresetModal(cfg){
     if(manageMode){
       // Bouton + Nouveau en bas
       const newBtn=document.createElement('button');newBtn.className='pm-item pm-item-new';
-      newBtn.textContent='＋ Nouveau '+(cfg.type==='groove'?'groove':'pattern');
+      newBtn.textContent='＋ Nouveau '+(cfg.type==='groove'?'groove':cfg.type==='sig'?'preset':'pattern');
       newBtn.addEventListener('click',pmCreateNew);
       itemsWrap.appendChild(newBtn);
     } else {
@@ -2957,8 +3079,8 @@ function openPresetModal(cfg){
     }
   }
 
-  // Enregistrer le callback de rafraîchissement (groove/pattern uniquement)
-  if(cfg.type==='groove'||cfg.type==='pattern'){
+  // Enregistrer le callback de rafraîchissement (groove/pattern/sig)
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'){
     _pmRefresh=()=>{buildFamCol();buildItems();};
   }
 
@@ -4017,6 +4139,8 @@ function buildPatternSelect(sel, filtreId){
 // ── Helpers familles ──────────────────────────────────────────────────────
 function getFamille(id){ return packCours.familles.find(f=>f.id===id); }
 function getFamillesPattern(pat){ return (pat.familles||[]).map(getFamille).filter(Boolean); }
+function getMetroFamilles(){ return packCours.metroFamilles?.length ? packCours.metroFamilles : SIG_FAMILLES.map(f=>({id:f.id,nom:f.label,source:'school'})); }
+function getMetroFamille(id){ return getMetroFamilles().find(f=>f.id===id); }
 
 // Vérifie si une entrée encyclo a du contenu réel (chapo ou au moins un bullet)
 function hasEncycloContent(ref){
@@ -4483,6 +4607,13 @@ function updateBeatDisplay(){
   if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
 }
 
+function openMetroPresetSavePop(){
+  // Ouvre le panel de gestion des presets métronome pour en créer un nouveau
+  const overlay=document.getElementById('lib-overlay-metro');
+  const panel=document.getElementById('lib-panel-metro');
+  if(overlay&&panel){buildMetroMgrModal();overlay.classList.remove('hidden');panel.classList.remove('hidden');}
+}
+
 function _mgrSelectPreset(id){
   currentSig=getSigFallback(id)||currentSig;
   metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
@@ -4611,7 +4742,7 @@ function buildMetroMgrModal(){
       const si=arr.findIndex(x=>x.id===srcId),di=arr.findIndex(x=>x.id===p.id);
       if(si<0||di<0)return;
       const[moved]=arr.splice(si,1);arr.splice(di,0,moved);
-      saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
+      saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();_pmRefresh?.();
     });
     main.appendChild(row1);item.appendChild(main);list.appendChild(item);
   });
@@ -5059,18 +5190,26 @@ async function sbSyncSchoolPool() {
   if (!authSession) return;
   updateSyncStatus('Synchronisation…');
   try {
-    const [patterns, grooves, familles, encyclo, metroPres] = await Promise.all([
+    const [patterns, grooves, familles, encyclo, metroPres, metroFams] = await Promise.all([
       sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
-      sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]),
+      sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/metro_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
     ]);
-    sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres });
+    sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams });
     // MX : seeder les presets de base si la DB n'en contient encore aucun
     if (authProfile?.role === 'mx' && Array.isArray(metroPres) && !metroPres.some(p => p.source === 'base')) {
       await _seedBaseMetroPresets();
-      const seeded = await sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*').catch(()=>[]);
+      const [seeded, seededFams] = await Promise.all([
+        sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+        sbFetch('/rest/v1/metro_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      ]);
+      // Mettre à jour uniquement les données metro (sans toucher aux patterns/grooves/familles déjà mergés)
+      if (Array.isArray(seededFams) && seededFams.length) {
+        packCours.metroFamilles = seededFams.map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' }));
+      }
       await _syncMetroPresetsOnly(seeded);
     }
     // Vérifier les refus TX (fire-and-forget, non bloquant)
@@ -5098,7 +5237,7 @@ async function sbSyncSchoolPool() {
   }
 }
 
-function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: mpRows }) {
+function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: mpRows, metroFamilles: mfRows }) {
   const isMX = authProfile?.role === 'mx';
   // Isolation localStorage partagé MX/TX :
   // MX ne crée jamais d'items source='teacher' — purger les forks TX pour voir l'état école validé
@@ -5158,6 +5297,11 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
     packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
   });
+  // Merge des familles de métronome
+  if (Array.isArray(mfRows) && mfRows.length > 0) {
+    if (!packCours.metroFamilles) packCours.metroFamilles = [];
+    packCours.metroFamilles = mfRows.map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' }));
+  }
   // Merge des presets métronome école
   if (Array.isArray(mpRows)) {
     if (!packCours.metroPresets) packCours.metroPresets = [];
@@ -5166,6 +5310,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
         id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
         beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
         metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+        familles_ids: row.familles_ids || [],
+        ordre: row.ordre ?? 0,
         source: row.source || 'school', approved: true, ownerId: row.owner_id,
       };
       const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
@@ -5285,6 +5431,38 @@ async function sbPushSchoolFamOrder() {
   } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé : ' + e.message, 'warn'); }
 }
 
+async function sbPushSchoolMetroFamOrder() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const fams = (packCours.metroFamilles || []).filter(f => f.source === 'school');
+  if (!fams.length) return;
+  try {
+    const results = await Promise.all(fams.map((f, idx) =>
+      sbFetch(`/rest/v1/metro_familles?id=eq.${f.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+    const missed = results.filter(r => !r || !r.length).length;
+    if (missed) showToast(`⚠ ${missed} famille(s) métro non mises à jour`, 'warn');
+  } catch(e) { console.error('Ordre familles métro non persisté :', e); showToast('⚠ Ordre familles métro non sauvegardé : ' + e.message, 'warn'); }
+}
+
+async function sbPushSchoolMetroOrder() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const items = (packCours.metroPresets || []).filter(p => p.source !== 'teacher');
+  if (!items.length) return;
+  try {
+    await Promise.all(items.map((item, idx) =>
+      sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+  } catch(e) { console.error('Ordre presets métro non persisté :', e); showToast('⚠ Ordre presets métro non sauvegardé', 'warn'); }
+}
+
 // ── Approbations MX ──────────────────────────────────────────────────────────
 let _pendingItems = { patterns: [], grooves: [], encyclos: [], metroPresets: [] };
 
@@ -5388,14 +5566,25 @@ async function sbCancelSubmission(type, id) {
 async function _seedBaseMetroPresets() {
   if (!authSession || authProfile?.role !== 'mx') return;
   try {
+    // Seeder les familles de métronome en premier
+    await sbFetch('/rest/v1/metro_familles', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(SIG_FAMILLES.map((f, i) => ({
+        id: f.id, nom: f.label, scope: 'school', ordre: i, owner_id: authProfile.id,
+      }))),
+    });
+    // Seeder les presets de base avec familles_ids et ordre
     await sbFetch('/rest/v1/metro_presets', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(METRO_PRESETS_DEFAULT.map(p => ({
+      body: JSON.stringify(METRO_PRESETS_DEFAULT.map((p, i) => ({
         id: p.id, label: p.label,
         beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
         subdivision: p.subdivision, step_unit: p.stepUnit || 8,
         metro_pattern: p.metroPattern,
+        familles_ids: [p.famille],
+        ordre: i,
         scope: 'school', approved: true, source: 'base', owner_id: authProfile.id,
       }))),
     });
@@ -5410,6 +5599,8 @@ async function _syncMetroPresetsOnly(rows) {
       id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
       beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
       metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+      familles_ids: row.familles_ids || [],
+      ordre: row.ordre ?? 0,
       source: row.source || 'school', approved: true, ownerId: row.owner_id,
     };
     const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
@@ -5435,7 +5626,7 @@ function _deleteMetroPreset(p) {
     const live = packCours.grooves.find(x => x.id === g.id);
     if (live) delete live.signature;
   });
-  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); buildMetroMgrModal();
+  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); buildMetroMgrModal(); _pmRefresh?.();
 }
 
 async function sbSaveMetroPreset(presetId) {
@@ -5454,6 +5645,7 @@ async function sbSaveMetroPreset(presetId) {
         beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
         subdivision: p.subdivision, step_unit: p.stepUnit || 8,
         metro_pattern: p.metroPattern,
+        familles_ids: p.familles_ids || (p.famille ? [p.famille] : []),
         scope: isMX ? 'school' : 'teacher',
         source: preservedSource,
         approved: isMX,
@@ -5467,7 +5659,7 @@ async function sbSaveMetroPreset(presetId) {
     else { updated.localStatus = 'submitted'; }
     if (idx >= 0) packCours.metroPresets[idx] = updated;
     else packCours.metroPresets.push(updated);
-    saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection();
+    saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); _pmRefresh?.();
     return true;
   } catch(e) { console.error('sbSaveMetroPreset échoué :', e); return false; }
 }

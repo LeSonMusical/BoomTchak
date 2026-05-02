@@ -299,5 +299,35 @@ alter table public.grooves   add column if not exists ordre int default 0;
 alter table public.familles  add column if not exists ordre int default 0;
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.7.0 — Familles dynamiques pour presets métronome
+-- À exécuter dans Supabase SQL Editor (une seule fois)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Table des familles de métronome
+create table if not exists public.metro_familles (
+  id          text primary key,
+  nom         text not null,
+  scope       text not null default 'school' check (scope in ('school','teacher')),
+  owner_id    uuid references auth.users(id) on delete set null,
+  created_at  timestamptz default now(),
+  ordre       int default 0
+);
+alter table public.metro_familles enable row level security;
+
+create policy "Lecture metro_familles" on public.metro_familles for select
+  using (scope='school' or owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Insert metro_familles" on public.metro_familles for insert
+  with check (auth.uid() is not null);
+create policy "Update metro_familles" on public.metro_familles for update
+  using (owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Delete metro_familles" on public.metro_familles for delete
+  using (owner_id=auth.uid() or public.current_role_name()='mx');
+
+-- Colonnes familles_ids et ordre sur metro_presets
+alter table public.metro_presets
+  add column if not exists familles_ids text[] default '{}',
+  add column if not exists ordre        int    default 0;
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════
