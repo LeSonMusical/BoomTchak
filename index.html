@@ -114,7 +114,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
 .metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
-.mpv-sig-label{font-size:11px;font-weight:700;color:#6B5FA5;white-space:nowrap;flex-shrink:0;min-width:28px;text-align:center;background:transparent;border:1px solid #b0a8d8;border-radius:5px;padding:2px 4px;line-height:1.4}
+.mpv-sig-label{font-size:10px;font-weight:600;color:#9991c4;white-space:nowrap;flex-shrink:0;min-width:24px;text-align:center;background:transparent;line-height:1.4;opacity:.7}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;justify-content:center;flex:1;min-width:0}
 .mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none;cursor:pointer}
 .mpv-step:active{opacity:.7}
@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.8</span>
+      <span class="app-version">v3.8.9</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1082,7 +1082,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <div class="mpv-modal-title">Sauvegarder le preset métronome</div>
       <input type="text" class="mpv-modal-input" id="modal-metro-name" placeholder="ex: Rachenitsa 7/8">
       <div class="mpv-modal-btns">
-        <button class="mpv-modal-ok" id="modal-metro-confirm">Sauvegarder</button>
+        <button class="mpv-modal-ok" id="modal-metro-overwrite" style="display:none">✓ Écraser</button>
+        <button class="mpv-modal-ok" id="modal-metro-confirm">Sauvegarder nouveau</button>
         <button class="mpv-modal-discard" id="modal-metro-discard">Réinitialiser</button>
         <button class="mpv-modal-cancel" id="modal-metro-cancel">Annuler</button>
       </div>
@@ -1907,10 +1908,8 @@ function rebuildMetroPresets() {
       felBeatSteps:  p.felBeatSteps || sPerBeat,
     };
   };
-  // Presets DB (source: 'base'|'school') — ne pas inclure les drafts teacher dans la liste principale
-  const dbPresets = (packCours.metroPresets || [])
-    .filter(p => p.source !== 'teacher')
-    .map(normalize);
+  // Presets DB (tous : base, school, teacher) — teacher apparaît en bas dans le modal
+  const dbPresets = (packCours.metroPresets || []).map(normalize);
   const dbIds = new Set(dbPresets.map(p => p.id));
   // Fallback JS pour les presets de base pas encore seeded en DB
   const fallback = METRO_PRESETS_DEFAULT.filter(p => !dbIds.has(p.id))
@@ -1943,7 +1942,7 @@ function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
   metroStepPos = 0; metroBeatPos = 0;
-  metroPatternDirty = false; _editingMetroPresetId = null;
+  setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
     const currentSPM = posToSPM(parseInt(slider.value));
@@ -1998,7 +1997,7 @@ function previewMetroPreset(id) {
   _suppressGrooveDirty = true;
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
-  metroPatternDirty = false; _editingMetroPresetId = null;
+  setMetroDirty(false); _editingMetroPresetId = null;
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
   const ni = document.getElementById('tap-n-input'); if (ni) ni.value = _tapN;
@@ -2078,7 +2077,7 @@ function buildSigFromControls() {
   buildSigSelector();
 }
 
-let metroPatternDirty = false;
+let metroDirty = false;
 let _lastMetroVizStep = -1;
 let _editingMetroPresetId = null; // id du preset en cours d'édition (MX seulement)
 
@@ -2105,19 +2104,11 @@ function highlightMetroStep() {
   });
 }
 
-function updateMetroSaveBtn() {
-  const btn = document.getElementById('btn-metro-save');
-  if (!btn) return;
-  if (metroPatternDirty) {
-    btn.textContent = '!';
-    btn.classList.add('dirty');
-    btn.title = 'Pattern modifié — sauvegarder ou réinitialiser';
-  } else {
-    btn.textContent = '💾';
-    btn.classList.remove('dirty');
-    btn.title = 'Sauvegarder comme preset';
-  }
+function setMetroDirty(isDirty) {
+  metroDirty = isDirty;
+  setDirtyUI('sig-sel-btn', 'btn-metro-save', isDirty);
 }
+function updateMetroSaveBtn() { setDirtyUI('sig-sel-btn', 'btn-metro-save', metroDirty); }
 
 // ^ accent fort, > temps, « subdiv, gris silence
 function renderMetroPatternViz() {
@@ -2616,7 +2607,10 @@ function openPresetModal(cfg){
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
       result=[...filtered,...pending];
     } else if(cfg.type==='sig'){
-      result=famFilter&&famFilter!=='all'?metroPresets.filter(p=>(p.familles_ids||[]).includes(famFilter)):metroPresets;
+      const base=metroPresets.filter(p=>p.source!=='teacher');
+      const teacher=metroPresets.filter(p=>p.source==='teacher');
+      const filtered=famFilter&&famFilter!=='all'?base.filter(p=>(p.familles_ids||[]).includes(famFilter)):base;
+      result=[...filtered,...teacher.filter(p=>!filtered.some(i=>i.id===p.id))];
     } else {
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       result=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
@@ -8126,13 +8120,29 @@ function attachEvents(){
   // ── Sélecteur battue (select) ──
   document.getElementById('battue-sel').addEventListener('change',function(){
     const next=parseInt(this.value);
+    // Garder le BPM ressenti constant : recalculer SPM
+    const curFeltBpm=parseInt(document.getElementById('beat-val-input').value)||100;
     currentSig.felBeatSteps=next;
     if(!packCours.metroPresets) packCours.metroPresets=[];
     let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
     if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
     if(pci>=0) packCours.metroPresets[pci].felBeatSteps=next;
+    const newSpm=curFeltBpm*next;
+    const newPos=spmToPos(newSpm);
+    const sl=document.getElementById('bpm');
+    if(playing&&ac){
+      const now=ac.currentTime;
+      if(metroNextBeatTime>now){
+        const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
+        const nSpm=posToSPM(newPos)*globalSpeedMult;
+        if(oldSpm>0&&nSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);
+      }
+    }
+    _lastBpmPos=newPos;
+    sl.value=newPos;
     saveToStorage();
-    updateBeatDisplay();
+    setMetroDirty(true);
+    updateBeatDisplay();updateSpmDisplay();
   });
   // ── Saisie manuelle BPM ressenti (beat-val-input) ──
   document.getElementById('beat-val-input').addEventListener('change',function(){
@@ -8211,7 +8221,7 @@ function attachEvents(){
     const CYCLE = ['A', 'P', 'p', '.'];
     const cur = currentSig.metroPattern[idx] || '.';
     currentSig.metroPattern[idx] = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
-    metroPatternDirty = true;
+    setMetroDirty(true);
     renderMetroPatternViz();
   });
   // ── L2 : Sauver preset → modal ──
@@ -8219,29 +8229,35 @@ function attachEvents(){
     if (!authProfile) { showToast('Connexion requise pour créer des presets', 'warn'); return; }
     const s = currentSig;
     const isMX = authProfile?.role === 'mx';
-    const isExisting = isMX && _editingMetroPresetId && metroPresets.find(p => p.id === _editingMetroPresetId);
-    // Si MX édite un preset existant → pré-remplir avec le nom actuel; sinon formule auto
-    document.getElementById('modal-metro-name').value =
-      isExisting ? (s?.label || s?.id || '') : (s ? `${s.beatsPerMeasure}/${s.beatUnit} ×${s.subdivision}` : '');
-    const confirmBtn = document.getElementById('modal-metro-confirm');
-    if (confirmBtn) confirmBtn.textContent = isExisting ? 'Mettre à jour' : 'Sauvegarder';
+    // Écraser disponible si preset existant et modifiable
+    const isOverwritable = s?.id && s.id !== '_custom'
+      && (isMX || s.source === 'teacher')
+      && metroPresets.find(p => p.id === s.id);
+    const overwriteBtn = document.getElementById('modal-metro-overwrite');
+    if (overwriteBtn) {
+      overwriteBtn.style.display = isOverwritable ? '' : 'none';
+      if (isOverwritable) overwriteBtn.textContent = `✓ Écraser «${s.label || s.id}»`;
+    }
+    // Nom par défaut = label courant
+    document.getElementById('modal-metro-name').value = s?.label || s?.id || '';
     document.getElementById('modal-metro-save').style.display = 'flex';
     setTimeout(() => document.getElementById('modal-metro-name').focus(), 50);
   });
   document.getElementById('modal-metro-cancel').addEventListener('click', () => {
     _editingMetroPresetId = null;
-    document.getElementById('modal-metro-confirm').textContent = 'Sauvegarder';
     document.getElementById('modal-metro-save').style.display = 'none';
   });
   document.getElementById('modal-metro-discard').addEventListener('click', () => {
     const orig = metroPresets.find(p => p.id === currentSig?.id);
     if (orig?.metroPattern) {
       currentSig.metroPattern = [...orig.metroPattern];
+      if (orig.felBeatSteps) currentSig.felBeatSteps = orig.felBeatSteps;
     } else if (currentSig) {
       currentSig.metroPattern = generateMetroPattern(currentSig.beatsPerMeasure, currentSig.subdivision);
     }
-    metroPatternDirty = false;
+    setMetroDirty(false);
     document.getElementById('modal-metro-save').style.display = 'none';
+    updateBeatDisplay();
     renderMetroPatternViz();
   });
   document.getElementById('modal-metro-save').addEventListener('click', e => {
@@ -8249,41 +8265,13 @@ function attachEvents(){
       document.getElementById('modal-metro-save').style.display = 'none';
   });
   document.getElementById('modal-metro-confirm').addEventListener('click', async () => {
-    const pat = currentSig?.metroPattern || [];
+    const s = currentSig;
+    const pat = s?.metroPattern || [];
     if (!pat.length) { showToast('Pattern vide', 'warn'); return; }
-    const beats = currentSig?.beatsPerMeasure || 4;
-    const unit  = currentSig?.beatUnit || 4;
-    const sub   = currentSig?.subdivision || 2;
-    const label = document.getElementById('modal-metro-name').value.trim()
-                  || `${beats}/${unit} ×${sub}`;
-    const isMX = authProfile?.role === 'mx';
-    // MX édite un preset existant → mise à jour en place
-    if (isMX && _editingMetroPresetId) {
-      const existingId = _editingMetroPresetId;
-      if (!packCours.metroPresets) packCours.metroPresets = [];
-      let pci = packCours.metroPresets.findIndex(x => x.id === existingId);
-      if (pci < 0) {
-        const mp = metroPresets.find(x => x.id === existingId);
-        if (mp) { packCours.metroPresets.push({...mp}); pci = packCours.metroPresets.length - 1; }
-      }
-      if (pci >= 0) {
-        packCours.metroPresets[pci].label = label;
-        packCours.metroPresets[pci].metroPattern = [...pat];
-      }
-      metroPatternDirty = false;
-      _editingMetroPresetId = null;
-      document.getElementById('modal-metro-save').style.display = 'none';
-      saveToStorage(); rebuildMetroPresets();
-      currentSig = getSigFallback(existingId);
-      buildSigSelector();
-      renderMetroPatternViz();
-      const btn = document.getElementById('modal-metro-confirm');
-      if (btn) btn.textContent = 'Sauvegarder';
-      const ok = await sbSaveMetroPreset(existingId);
-      showToast(ok ? `Preset "${label}" mis à jour` : 'Erreur lors de la mise à jour', ok ? 'info' : 'error');
-      buildPublishSection();
-      return;
-    }
+    const beats = s?.beatsPerMeasure || 4;
+    const unit  = s?.beatUnit || 4;
+    const sub   = s?.subdivision || 2;
+    const label = document.getElementById('modal-metro-name').value.trim() || s?.label || s?.id || `${beats}/${unit}`;
     // Nouveau preset (TX ou MX)
     const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
     const preset = {
@@ -8292,23 +8280,48 @@ function attachEvents(){
       stepsPerBeat: sub, beatSteps: sub,
       beatSym: beatSymFromUnit(unit, sub),
       famille: familleFromUnit(unit, sub),
-      metroPattern: pat,
+      familles_ids: s?.familles_ids || (s?.famille ? [s.famille] : []),
+      felBeatSteps: s?.felBeatSteps || sub,
+      metroPattern: [...pat],
       source: 'teacher', localStatus: 'draft',
     };
     if (!packCours.metroPresets) packCours.metroPresets = [];
     packCours.metroPresets.push(preset);
     saveToStorage();
     rebuildMetroPresets();
-    buildSigSelector();
     currentSig = metroPresets.find(p => p.id === id) || currentSig;
     buildSigSelector();
-    metroPatternDirty = false;
+    setMetroDirty(false);
     _editingMetroPresetId = null;
     document.getElementById('modal-metro-save').style.display = 'none';
-    const btn = document.getElementById('modal-metro-confirm');
-    if (btn) btn.textContent = 'Sauvegarder';
     buildPublishSection();
-    showToast(`Preset "${label}" créé`, 'info');
+    showToast(`Preset «${label}» créé`, 'info');
+  });
+  document.getElementById('modal-metro-overwrite').addEventListener('click', async () => {
+    const s = currentSig;
+    if (!s?.id || s.id === '_custom') return;
+    const label = document.getElementById('modal-metro-name').value.trim() || s.label || s.id;
+    const pat = s.metroPattern || [];
+    if (!packCours.metroPresets) packCours.metroPresets = [];
+    let pci = packCours.metroPresets.findIndex(x => x.id === s.id);
+    if (pci < 0) {
+      const mp = metroPresets.find(x => x.id === s.id);
+      if (mp) { packCours.metroPresets.push({...mp}); pci = packCours.metroPresets.length - 1; }
+    }
+    if (pci >= 0) {
+      packCours.metroPresets[pci].label = label;
+      packCours.metroPresets[pci].metroPattern = [...pat];
+      if (s.felBeatSteps) packCours.metroPresets[pci].felBeatSteps = s.felBeatSteps;
+    }
+    setMetroDirty(false);
+    _editingMetroPresetId = null;
+    document.getElementById('modal-metro-save').style.display = 'none';
+    saveToStorage(); rebuildMetroPresets();
+    currentSig = getSigFallback(s.id);
+    buildSigSelector(); renderMetroPatternViz();
+    const ok = await sbSaveMetroPreset(s.id);
+    showToast(ok ? `Preset «${label}» mis à jour` : 'Erreur lors de la mise à jour', ok ? 'info' : 'error');
+    buildPublishSection();
   });
 
   // ── Tap Tempo ──
