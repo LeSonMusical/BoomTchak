@@ -64,7 +64,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .sig-sel{display:none}
 .sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;min-width:28px;text-align:center;white-space:nowrap;}
 .sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
-.beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
+.beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
+.beat-display:hover{background:rgba(107,95,165,.12)}
 .spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
 .temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
@@ -126,6 +127,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* ── Vol + Tempo (ligne 1 metro) ── */
 .mpv-vol-tempo-row{gap:8px!important;align-items:stretch!important}
 .mpv-ctrl-block{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.mpv-vol-block{flex:1!important}
+.mpv-tempo-block{flex:2!important}
 .mpv-ctrl-inner{display:flex;align-items:center;gap:4px;min-width:0;width:100%}
 .mpv-ctrl-lbl{font-size:9px;color:#888;text-align:center;line-height:1;padding-bottom:1px}
 /* ── Boutons +/- tempo ── */
@@ -133,13 +136,6 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-tempo-adj:hover{background:rgba(107,95,165,.22)}
 .mpv-tempo-input{font-size:12px;width:52px;border:1.5px solid #6B5FA5;border-radius:5px;padding:2px 4px;text-align:center;outline:none}
 
-/* ── Bouton ≡ gestion presets ── */
-.btn-metro-mgr{font-size:14px;padding:0 5px;height:22px;border:none;background:transparent;color:#6B5FA5;cursor:pointer;flex-shrink:0;line-height:1;font-weight:700}
-.btn-metro-mgr:hover{color:#4a3d8a}
-/* ── Panel gestion presets métronome ── */
-#lib-panel-metro .lib-panel-head,
-#lib-panel-metro .lib-batch-bar{background:rgba(107,95,165,.09)}
-#lib-panel-metro .lib-head-secname{color:#4a3d8a}
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
 .mpv-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
@@ -731,6 +727,7 @@ body.dark-mode .temps-bar{background:#1e1c2a;border-bottom-color:#2a2448}
 body.dark-mode .temps-bar .section-bar-lbl{color:#a89fd0}
 body.dark-mode .sig-sel-btn{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .beat-display{color:#a89fd0}
+body.dark-mode .beat-display:hover{background:rgba(168,159,208,.15)}
 body.dark-mode .spm-display{color:#555}
 body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#3a3448}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#8878c8;border-color:#1e1c2a}
@@ -880,7 +877,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.7.0</span>
+      <span class="app-version">v3.8.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -948,24 +945,24 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="section-bar temps-bar" id="section-temps">
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
-    <button class="btn-metro-mgr" id="btn-metro-presets-mgr" title="Gérer les presets métronome">≡</button>
-    <span class="beat-display" id="beat-display">♩= 100</span>
+    <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+    <button class="beat-display" id="beat-display" title="Tap : changer la valeur de la battue">♩= 100</button>
     <span class="spm-display" id="spm-display" title="Steps Par Minute (vitesse de la croche)">♪200</span>
     <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1">
     <button class="btn-metro-volet" id="btn-metro-volet">tempo ▶</button>
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <!-- Vol + Tempo -->
+    <!-- Ligne 1 : Vol (1/3) + Tempo (2/3) -->
     <div class="metro-panel mpv-vol-tempo-row">
-      <div class="mpv-ctrl-block">
+      <div class="mpv-ctrl-block mpv-vol-block">
         <span class="mpv-ctrl-lbl" id="metro-vol-val">80%</span>
         <div class="mpv-ctrl-inner">
           <span class="metro-row-lbl">vol</span>
           <input type="range" id="metro-vol" min="0" max="100" value="80" style="flex:1;accent-color:#6B5FA5">
         </div>
       </div>
-      <div class="mpv-ctrl-block">
+      <div class="mpv-ctrl-block mpv-tempo-block">
         <div class="mpv-ctrl-lbl" style="display:flex;gap:5px;justify-content:center;align-items:center">
           <span id="metro-tempo-name">—</span>
           <span>·</span>
@@ -978,7 +975,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
     </div>
-    <!-- Tap tempo + toggle def -->
+    <!-- Ligne 2 : Tap tempo + ouverture metrics -->
     <div class="tap-tempo-row">
       <div class="tap-left">
         <span class="tap-n-lbl">n =</span>
@@ -990,13 +987,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <button class="btn-metro-volet" id="btn-metro-sig-volet">metrics ▶</button>
       </div>
     </div>
-    <!-- Pattern viz (toujours visible quand le volet tempo est ouvert) -->
-    <div class="metro-pat-row">
-      <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
-      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-      <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    </div>
-    <!-- Sous-volet : L1 grille seulement -->
+    <!-- Sous-volet metrics (avant la viz) -->
     <div id="metro-sig-content" style="display:none">
       <div class="metro-sig-grid">
         <div class="metro-sig-col">
@@ -1036,6 +1027,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
     </div>
+    <!-- Pattern viz (après metrics) -->
+    <div class="metro-pat-row">
+      <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
+      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
+    </div>
   </div><!-- /metro-bloc -->
   </div>
   </div><!-- /temps-wrap -->
@@ -1048,21 +1044,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
-  <!-- Panel gestion presets métronome -->
-  <div class="lib-overlay hidden" id="lib-overlay-metro"></div>
-  <div class="lib-panel hidden" id="lib-panel-metro">
-    <div class="lib-panel-head">
-      <div class="lib-h1">
-        <div class="lib-head-label">Gérer les <span class="lib-head-secname">Presets métronome</span></div>
-        <button class="lib-panel-close" id="btn-metro-mgr-close">✕</button>
-      </div>
-    </div>
-    <div class="lib-list" id="metro-mgr-list"></div>
-    <div class="lib-batch-bar">
-      <label class="lib-batch-lbl"><input type="checkbox" id="lib-select-all-metro"> Tout sélectionner</label>
-      <button class="lib-batch-del" id="lib-batch-del-metro" disabled>🗑 Supprimer</button>
-    </div>
-  </div>
   <!-- Modal : sauvegarde preset métronome -->
   <div class="mpv-modal-overlay" id="modal-metro-save" style="display:none">
     <div class="mpv-modal-box">
@@ -1850,39 +1831,48 @@ const SIG_FAMILLES=[
 ];
 
 const METRO_PRESETS_DEFAULT = [
-  {id:'2/4',  label:'2/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'3/4',  label:'3/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2},
-  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3},
-  {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1},
-  {id:'2/2',  label:'2/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
-  {id:'3/2',  label:'3/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
-  {id:'4/2',  label:'4/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4},
+  {id:'2/4',  label:'2/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
+  {id:'3/4',  label:'3/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
+  {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
+  {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
+  {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
+  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
+  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
+  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
+  {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
+  {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
+  {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
+  {id:'2/2',  label:'2/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
+  {id:'3/2',  label:'3/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
+  {id:'4/2',  label:'4/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
 ].map(p => ({...p, metroPattern: generateMetroPattern(p.beatsPerMeasure, p.subdivision)}));
 
 // Runtime : presets par défaut + presets personnalisés (DB/local, via packCours.metroPresets)
 let metroPresets = METRO_PRESETS_DEFAULT.slice();
+
+// Symbole de note pour un felBeatSteps donné (nb de croches = 1 battue)
+function symFromFelBeatSteps(n){
+  return {1:'♪', 2:'♩', 3:'♩.', 4:'𝅗𝅥', 6:'𝅗𝅥.'}[n] || '♩';
+}
+// Options de battue valides pour un preset (toujours 1,2,3,4 croches)
+function felBeatOptions(){ return [1,2,3,4]; }
 
 function rebuildMetroPresets() {
   const normalize = p => {
     const famIds = p.familles_ids?.length ? p.familles_ids
                  : p.famille ? [p.famille] : [];
     const fam = p.famille || famIds[0] || familleFromUnit(p.beatUnit || 4, p.subdivision || 2);
+    const sPerBeat = p.stepsPerBeat || p.subdivision;
     return {
       ...p,
-      stepsPerBeat:  p.stepsPerBeat || p.subdivision,
+      stepsPerBeat:  sPerBeat,
       beatSteps:     p.beatSteps    || p.subdivision,
       beatSym:       p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
       famille:       fam,
       familles_ids:  famIds,
       metroPattern:  Array.isArray(p.metroPattern) ? p.metroPattern
                      : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
+      felBeatSteps:  p.felBeatSteps || sPerBeat,
     };
   };
   // Presets DB (source: 'base'|'school') — ne pas inclure les drafts teacher dans la liste principale
@@ -1925,8 +1915,12 @@ function changeSig(id) {
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
     const currentSPM = posToSPM(parseInt(slider.value));
-    const oldBPM = currentSPM / oldSig.stepsPerBeat;
-    slider.value = spmToPos(Math.round(oldBPM * currentSig.stepsPerBeat));
+    const oldFel = oldSig.felBeatSteps || oldSig.stepsPerBeat;
+    const newFel = currentSig.felBeatSteps || currentSig.stepsPerBeat;
+    const oldBPM = currentSPM / oldFel;
+    const newPos = spmToPos(Math.round(oldBPM * newFel));
+    slider.value = newPos;
+    _lastBpmPos = newPos;
   }
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
@@ -2121,6 +2115,7 @@ let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true,
 // metro.muted=false → Métro ON  : les clics sont audibles
 let metroBeatPos=0, metroStepPos=0, metroNextBeatTime=0, metroStartTime=0;
 let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
+let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBeatTime)
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
@@ -2142,10 +2137,6 @@ function getBeatSec(li){
   return(60/spm)/mult*ternFactor;
 }
 
-// ⚠ BUG CONNU — SYNCHRO TEMPO : quand le slider BPM change en cours de lecture,
-// metroNextBeatTime n'est pas recalculé → décalage du métronome jusqu'au prochain beat.
-// À corriger : recalculer metroNextBeatTime depuis getAC().currentTime + beatSec restant
-// proportionnel à la position dans le beat courant. Priorité haute (v2.7.x).
 function scheduler(){
   if(!playing)return;
   const now=getAC().currentTime;
@@ -2925,7 +2916,7 @@ function openPresetModal(cfg){
 
   function pmCreateNew(){
     if(cfg.type==='groove'){_closeOverlay();openGrooveSavePop(null);return;}
-    if(cfg.type==='sig'){_closeOverlay();openMetroPresetSavePop();return;}
+    if(cfg.type==='sig'){_closeOverlay();document.getElementById('btn-metro-save').click();return;}
     // Pattern : crée un pattern vide teacher et l'affiche en rename
     const newPat={id:'user_pat_'+Date.now(),nom:'Nouveau pattern',sequence:'0000',pas:4,familles:[],source:'teacher',localChangeType:'create'};
     packCours.patterns.push(newPat);
@@ -4590,8 +4581,10 @@ function getTempoName(bpm){
 function updateBeatDisplay(){
   const pos=parseInt(document.getElementById('bpm').value);
   const spm=posToSPM(pos)*globalSpeedMult;
-  const bpm=Math.round(spm/currentSig.stepsPerBeat);
-  const txt=currentSig.beatSym+'= '+bpm;
+  const felBeat=currentSig.felBeatSteps||currentSig.stepsPerBeat;
+  const bpm=Math.round(spm/felBeat);
+  const sym=symFromFelBeatSteps(felBeat);
+  const txt=sym+'= '+bpm;
   const el=document.getElementById('beat-display');
   if(el) el.textContent=txt;
   const bpmSpan=document.querySelector('#btn-tempo .metro-bpm');
@@ -4605,147 +4598,6 @@ function updateBeatDisplay(){
   if(nameEl) nameEl.textContent=getTempoName(bpm);
   const bpmValEl=document.getElementById('metro-bpm-val');
   if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
-}
-
-function openMetroPresetSavePop(){
-  // Ouvre le panel de gestion des presets métronome pour en créer un nouveau
-  const overlay=document.getElementById('lib-overlay-metro');
-  const panel=document.getElementById('lib-panel-metro');
-  if(overlay&&panel){buildMetroMgrModal();overlay.classList.remove('hidden');panel.classList.remove('hidden');}
-}
-
-function _mgrSelectPreset(id){
-  currentSig=getSigFallback(id)||currentSig;
-  metroStepPos=0;metroBeatPos=0;metroPatternDirty=false;
-  _editingMetroPresetId=authProfile?.role==='mx'?id:null;
-  buildSigSelector();
-  syncMetroControls();renderMetroPatternViz();buildMetroMgrModal();
-}
-function libStartRenamePreset(nameEl,id){
-  nameEl.contentEditable='true';nameEl.focus();
-  const r=document.createRange();r.selectNodeContents(nameEl);
-  const s=window.getSelection();s.removeAllRanges();s.addRange(r);
-  function finish(){
-    nameEl.contentEditable='false';
-    const n=nameEl.textContent.trim();if(!n)return;
-    // Cherche dans packCours ou crée l'entrée depuis metroPresets (base non encore seeded)
-    if(!packCours.metroPresets)packCours.metroPresets=[];
-    let p=packCours.metroPresets.find(x=>x.id===id);
-    if(!p){
-      const mp=metroPresets.find(x=>x.id===id);if(!mp)return;
-      p={...mp};packCours.metroPresets.push(p);
-    }
-    p.label=n;nameEl.textContent=n;
-    saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();
-    if(authProfile?.role==='mx') sbSaveMetroPreset(id).catch(()=>{});
-  }
-  nameEl.addEventListener('blur',finish,{once:true});
-  nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur();}if(e.key==='Escape')nameEl.blur();},{once:true});
-}
-function _updateMetroBatchBar(){
-  const checks=[...document.querySelectorAll('#metro-mgr-list .lib-item-check:not(:disabled)')];
-  const checked=checks.filter(c=>c.checked);
-  const btn=document.getElementById('lib-batch-del-metro');
-  if(btn) btn.disabled=checked.length===0;
-  const selAll=document.getElementById('lib-select-all-metro');
-  if(selAll) selAll.checked=checks.length>0&&checked.length===checks.length;
-}
-function buildMetroMgrModal(){
-  const list=document.getElementById('metro-mgr-list');
-  if(!list)return;
-  list.innerHTML='';
-  document.getElementById('lib-select-all-metro').checked=false;
-  document.getElementById('lib-batch-del-metro').disabled=true;
-  const isMX=authProfile?.role==='mx';
-  let _mgrDragId=null;
-  metroPresets.forEach(p=>{
-    const isBase=p.source==='base';
-    const isSchool=p.source==='school';
-    const isTeacher=p.source==='teacher';
-    const isOwnDraft=isTeacher&&(p.localStatus==='draft'||p.ownerId===authProfile?.id);
-    const isCurrent=p.id===currentSig?.id;
-    // Permissions par rôle
-    const canRename=isMX||isOwnDraft;
-    const canDelete=isMX||isOwnDraft;
-    const canDrag=isMX; // MX peut réordonner tous les presets (base inclus)
-
-    const item=document.createElement('div');
-    item.className='lib-item'+(isCurrent?' mpv-mgr-active':'');
-    item.dataset.pid=p.id;
-    // Checkbox
-    const chk=document.createElement('input');chk.type='checkbox';chk.className='lib-item-check';
-    chk.disabled=!canDelete;
-    chk.addEventListener('change',_updateMetroBatchBar);
-    item.appendChild(chk);
-    // Drag handle
-    const handle=document.createElement('span');
-    handle.className='lib-drag-handle';handle.textContent='⠿';handle.title='Glisser';
-    handle.style.visibility=canDrag?'visible':'hidden';
-    item.appendChild(handle);
-    if(canDrag) item.setAttribute('draggable','true');
-    // Colonne principale
-    const main=document.createElement('div');main.className='lib-item-main';
-    const row1=document.createElement('div');row1.className='lib-item-row1';
-    const nameEl=document.createElement('span');nameEl.className='lib-item-name';
-    nameEl.textContent=p.label||p.id;
-    nameEl.addEventListener('click',()=>_mgrSelectPreset(p.id));
-    row1.appendChild(nameEl);
-    // Badge source
-    const badge=document.createElement('span');
-    badge.style.cssText='font-size:9px;padding:1px 4px;border-radius:3px;flex-shrink:0;margin-left:2px';
-    if(isBase){badge.textContent='base';badge.style.background='rgba(107,95,165,.18)';badge.style.color='#4a3d8a';}
-    else if(isTeacher){badge.textContent='perso';badge.style.background='rgba(29,158,117,.15)';badge.style.color='#0F6E56';}
-    else{badge.textContent='école';badge.style.background='rgba(107,95,165,.08)';badge.style.color='#6B5FA5';}
-    row1.appendChild(badge);
-    // Bouton renommer
-    if(canRename){
-      const renBtn=document.createElement('button');renBtn.className='lib-item-rename';
-      renBtn.textContent='✎';renBtn.title='Renommer';
-      renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenamePreset(nameEl,p.id);});
-      row1.appendChild(renBtn);
-    }
-    // Bouton supprimer
-    if(canDelete){
-      const delBtn=document.createElement('button');delBtn.className='lib-item-del';
-      delBtn.textContent='🗑';delBtn.title='Supprimer';
-      delBtn.addEventListener('click',()=>_deleteMetroPreset(p));
-      row1.appendChild(delBtn);
-    }
-    // Drag events (MX school uniquement)
-    if(canDrag){
-      item.addEventListener('dragstart',e=>{
-        _mgrDragId=p.id;e.dataTransfer.setData('text',p.id);e.dataTransfer.effectAllowed='move';
-        setTimeout(()=>item.classList.add('lib-item-dragging'),0);
-      });
-      item.addEventListener('dragend',()=>{
-        item.classList.remove('lib-item-dragging');
-        list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      });
-    }
-    item.addEventListener('dragover',e=>{
-      if(!_mgrDragId||!canDrag)return;
-      e.preventDefault();e.dataTransfer.dropEffect='move';
-      list.querySelectorAll('.lib-item-drag-over').forEach(el=>el.classList.remove('lib-item-drag-over'));
-      if(p.id!==_mgrDragId) item.classList.add('lib-item-drag-over');
-    });
-    item.addEventListener('drop',e=>{
-      e.preventDefault();item.classList.remove('lib-item-drag-over');
-      const srcId=e.dataTransfer.getData('text')||_mgrDragId;if(!srcId||srcId===p.id)return;
-      if(!packCours.metroPresets) packCours.metroPresets=[];
-      // S'assurer que les deux items sont dans packCours (sinon les ajouter depuis metroPresets)
-      [srcId,p.id].forEach(id=>{
-        if(!packCours.metroPresets.find(x=>x.id===id)){
-          const mp=metroPresets.find(x=>x.id===id);if(mp)packCours.metroPresets.push({...mp});
-        }
-      });
-      const arr=packCours.metroPresets;
-      const si=arr.findIndex(x=>x.id===srcId),di=arr.findIndex(x=>x.id===p.id);
-      if(si<0||di<0)return;
-      const[moved]=arr.splice(si,1);arr.splice(di,0,moved);
-      saveToStorage();rebuildMetroPresets();buildSigSelector();buildMetroMgrModal();_pmRefresh?.();
-    });
-    main.appendChild(row1);item.appendChild(main);list.appendChild(item);
-  });
 }
 function setMetroGlobal(on){
   metro.muted=!on;
@@ -5601,13 +5453,14 @@ async function _syncMetroPresetsOnly(rows) {
       metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
       familles_ids: row.familles_ids || [],
       ordre: row.ordre ?? 0,
+      felBeatSteps: row.fel_beat_steps ?? undefined,
       source: row.source || 'school', approved: true, ownerId: row.owner_id,
     };
     const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
     if (idx >= 0) packCours.metroPresets[idx] = preset;
     else packCours.metroPresets.push(preset);
   });
-  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildMetroMgrModal();
+  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); _pmRefresh?.();
 }
 
 function _deleteMetroPreset(p) {
@@ -5626,7 +5479,7 @@ function _deleteMetroPreset(p) {
     const live = packCours.grooves.find(x => x.id === g.id);
     if (live) delete live.signature;
   });
-  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); buildMetroMgrModal(); _pmRefresh?.();
+  saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); _pmRefresh?.();
 }
 
 async function sbSaveMetroPreset(presetId) {
@@ -8150,6 +8003,16 @@ function attachEvents(){
   });
   // ── Slider tempo miroir (metro-bpm ↔ bpm) ──
   document.getElementById('metro-bpm').addEventListener('input',function(){
+    // Rescale métro comme pour le slider principal
+    if(playing && ac){
+      const now=ac.currentTime;
+      if(metroNextBeatTime>now){
+        const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
+        const newSpm=posToSPM(parseInt(this.value))*globalSpeedMult;
+        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
+      }
+    }
+    _lastBpmPos=parseInt(this.value);
     document.getElementById('bpm').value=this.value;
     updateBeatDisplay();
     updateSpmDisplay();
@@ -8159,7 +8022,17 @@ function attachEvents(){
     const sl=document.getElementById('bpm');
     const curBPM=Math.round(posToBPM(parseInt(sl.value)));
     const newBPM=Math.max(_BPM_MIN,Math.min(_BPM_MAX,curBPM+delta));
-    sl.value=bpmToPos(newBPM);
+    const newPos=bpmToPos(newBPM);
+    if(playing && ac){
+      const now=ac.currentTime;
+      if(metroNextBeatTime>now){
+        const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
+        const newSpm=posToSPM(newPos)*globalSpeedMult;
+        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
+      }
+    }
+    _lastBpmPos=newPos;
+    sl.value=newPos;
     document.getElementById('metro-bpm').value=sl.value;
     updateBeatDisplay();updateSpmDisplay();
   }
@@ -8189,35 +8062,19 @@ function attachEvents(){
     inp.addEventListener('blur',_commit,{once:true});
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur();}if(e.key==='Escape'){inp.replaceWith(valEl);}});
   });
-  // ── Menu ≡ gestion presets ──
-  function _openMetroMgr(){buildMetroMgrModal();document.getElementById('lib-overlay-metro').classList.remove('hidden');document.getElementById('lib-panel-metro').classList.remove('hidden');}
-  function _closeMetroMgr(){document.getElementById('lib-overlay-metro').classList.add('hidden');document.getElementById('lib-panel-metro').classList.add('hidden');}
-  document.getElementById('btn-metro-presets-mgr').addEventListener('click',_openMetroMgr);
-  document.getElementById('btn-metro-mgr-close').addEventListener('click',_closeMetroMgr);
-  document.getElementById('lib-overlay-metro').addEventListener('click',_closeMetroMgr);
-  document.getElementById('lib-select-all-metro').addEventListener('change',e=>{
-    document.querySelectorAll('#metro-mgr-list .lib-item-check:not(:disabled)').forEach(c=>{c.checked=e.target.checked;});
-    _updateMetroBatchBar();
-  });
-  document.getElementById('lib-batch-del-metro').addEventListener('click',()=>{
-    const toDelete=[...document.querySelectorAll('#metro-mgr-list .lib-item-check:checked')].map(c=>c.closest('.lib-item').dataset.pid);
-    if(!toDelete.length)return;
-    const presets=toDelete.map(id=>metroPresets.find(p=>p.id===id)).filter(Boolean);
-    const allUsed=presets.flatMap(p=>(packCours.grooves||[]).filter(g=>g.signature===p.id));
-    let msg=`Supprimer ${toDelete.length} preset(s) ?`;
-    if(allUsed.length>0){
-      const names=[...new Set(allUsed.map(g=>g.nom))].slice(0,5).join(', ')+(allUsed.length>5?'…':'');
-      msg=`Ces presets sont utilisés par ${allUsed.length} groove(s) : ${names}.\nLes grooves concernés passeront en signature automatique (4/4).\nSupprimer quand même ?`;
-    }
-    if(!confirm(msg))return;
-    presets.forEach(p=>{
-      const inDB=!!(packCours.metroPresets||[]).find(x=>x.id===p.id);
-      if(inDB) sbDeleteMetroPreset(p.id).catch(()=>{});
-      packCours.metroPresets=(packCours.metroPresets||[]).filter(x=>x.id!==p.id);
-      if(currentSig?.id===p.id) currentSig=getSigFallback(null);
-      (packCours.grooves||[]).forEach(g=>{if(g.signature===p.id)delete g.signature;});
-    });
-    saveToStorage();rebuildMetroPresets();buildSigSelector();buildPublishSection();buildMetroMgrModal();
+  // ── Sélecteur battue (beat-display) ──
+  document.getElementById('beat-display').addEventListener('click',()=>{
+    const opts=felBeatOptions();
+    const cur=currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
+    const idx=opts.indexOf(cur);
+    const next=opts[(idx+1)%opts.length];
+    currentSig.felBeatSteps=next;
+    if(!packCours.metroPresets) packCours.metroPresets=[];
+    let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
+    if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
+    if(pci>=0) packCours.metroPresets[pci].felBeatSteps=next;
+    saveToStorage();
+    updateBeatDisplay();
   });
   // ── Signature ──
   document.getElementById('sig-sel-btn').addEventListener('click',()=>{
@@ -8558,6 +8415,16 @@ function attachEvents(){
   updateSmenuTheme();
 
   document.getElementById('bpm').addEventListener('input',function(){
+    // Rescale metroNextBeatTime pour éviter le décalage métro au changement de tempo
+    if(playing && ac){
+      const now=ac.currentTime;
+      if(metroNextBeatTime>now){
+        const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
+        const newSpm=posToSPM(parseInt(this.value))*globalSpeedMult;
+        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
+      }
+    }
+    _lastBpmPos=parseInt(this.value);
     updateBeatDisplay();
     saveGroove(); // persiste localement sans marquer le groove dirty
   });
