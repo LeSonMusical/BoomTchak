@@ -450,6 +450,11 @@ body.dark-mode .pm-mode-btn.active{background:var(--pm-ac);color:#fff;border-col
 body.dark-mode .pm-tag-chip{background:#2a2a28;}
 body.dark-mode .pm-item-name:focus{background:#2a2a28;}
 body.dark-mode .pm-item.pm-reorder{border-color:#2a2a28;}
+body.dark-mode .pm-reorder.pm-drag-over{background:rgba(160,140,220,.22);border-top-color:var(--pm-ac);}
+body.dark-mode .pm-fam-manage-row.pm-fam-drag-over{background:rgba(160,140,220,.22);border-top-color:var(--pm-ac);}
+.pm-end-zone,.pm-fam-end-zone{min-height:32px;border:none!important;background:none!important;pointer-events:auto;}
+.pm-end-zone.pm-drag-over,.pm-fam-end-zone.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a)!important;background:rgba(74,61,138,.07)!important;}
+body.dark-mode .pm-end-zone.pm-drag-over,body.dark-mode .pm-fam-end-zone.pm-fam-drag-over{background:rgba(160,140,220,.22)!important;}
 /* Dark mode */
 .pm-sheet.pm-reorder-on .pm-header{background:var(--pm-ac,#4a3d8a);color:#fff;border-bottom-color:transparent;}
 .pm-sheet.pm-reorder-on .pm-close{color:rgba(255,255,255,.8);}
@@ -875,7 +880,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.6.4</span>
+      <span class="app-version">v3.6.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2279,6 +2284,7 @@ function togglePlay(){
 
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
 let _pmRefresh = null; // callback pour rafraîchir le modal preset ouvert
+let _pmFamFilter = {}; // mémorisation filtre famille par type (groove, pattern…)
 let currentGrooveId = null;
 let currentMode = new URLSearchParams(location.search).get('mode')==='sx'?'sx':'tx';
 let dirtyLayers = [false, false, false];
@@ -2467,7 +2473,12 @@ function openPresetModal(cfg){
 
   const overlay=document.createElement('div');
   overlay.id='pm-overlay';
-  const _closeOverlay=()=>{_pmRefresh=null;overlay.remove();};
+  const _closeOverlay=()=>{
+    // Mémoriser le filtre actif pour réouverture
+    _pmFamFilter[cfg.type]=famFilter;
+    if(cfg.type==='groove')_pmFamFilter['pattern']=famFilter;
+    _pmRefresh=null;overlay.remove();
+  };
   overlay.addEventListener('click',e=>{if(e.target===overlay)_closeOverlay();});
 
   const sheet=document.createElement('div');
@@ -2486,7 +2497,17 @@ function openPresetModal(cfg){
   hdr.appendChild(htitle);hdr.appendChild(hclose);
   sheet.appendChild(hdr);
 
-  let famFilter='all';
+  // famFilter : 1) filtre mémorisé pour ce type, 2) sinon famille du preset courant, 3) 'all'
+  let famFilter=(()=>{
+    const saved=_pmFamFilter[cfg.type];
+    if(saved)return saved;
+    if(cfg.currentId&&(cfg.type==='groove'||cfg.type==='pattern')){
+      const arr=cfg.type==='groove'?packCours.grooves:packCours.patterns;
+      const cur=arr?.find(x=>x.id===cfg.currentId);
+      if(cur?.familles?.length)return cur.familles[0];
+    }
+    return'all';
+  })();
   // États modes gérer/réordonner (groove et pattern uniquement)
   let manageMode=false, reorderMode=false, paletteTarget=null;
   let _reorderDragSrcId=null, _famDragSrcId=null;
@@ -2582,12 +2603,21 @@ function openPresetModal(cfg){
 
   function pmDropFam(srcId,tgtId){
     const fams=packCours.familles;
-    const si=fams.findIndex(f=>f.id===srcId);const ti=fams.findIndex(f=>f.id===tgtId);
-    if(si<0||ti<0)return;
-    const [moved]=fams.splice(si,1);fams.splice(si<ti?ti-1:ti,0,moved);
+    const si=fams.findIndex(f=>f.id===srcId);
+    if(si<0)return;
+    const[moved]=fams.splice(si,1);
+    if(tgtId==='__end__'){fams.push(moved);}
+    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
+  }
+
+  function _setFam(id){
+    famFilter=id;
+    _pmFamFilter[cfg.type]=id;
+    if(cfg.type==='groove')_pmFamFilter['pattern']=id;
+    buildFamCol();buildItems();
   }
 
   function buildFamCol(){
@@ -2627,7 +2657,7 @@ function openPresetModal(cfg){
     const mkFilterBtn=(id,lbl)=>{
       const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
       b.textContent=lbl;
-      b.addEventListener('click',()=>{famFilter=id;buildFamCol();buildItems();});
+      b.addEventListener('click',()=>_setFam(id));
       famCol.appendChild(b);
     };
     mkFilterBtn('all','Tout');
@@ -2647,7 +2677,7 @@ function openPresetModal(cfg){
           row.appendChild(drag);
         }
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
-        nameEl.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
+        nameEl.addEventListener('click',()=>_setFam(f.id));
         row.appendChild(nameEl);
         // Rename / delete : mode gérer seulement
         if(manageMode){
@@ -2682,6 +2712,13 @@ function openPresetModal(cfg){
         }
         famCol.appendChild(row);
       });
+      // Zone de dépôt en fin de liste familles (mode réordonner)
+      if(reorderMode){
+        const famEndZ=document.createElement('div');famEndZ.className='pm-fam-manage-row pm-fam-end-zone';famEndZ.dataset.famId='__end__';
+        famEndZ.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));famEndZ.classList.add('pm-fam-drag-over');});
+        famEndZ.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId)pmDropFam(_famDragSrcId,'__end__');});
+        famCol.appendChild(famEndZ);
+      }
       // + Nouvelle famille (MX, mode gérer uniquement)
       if(isMx&&manageMode){
         const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
@@ -2694,7 +2731,7 @@ function openPresetModal(cfg){
       getFams().forEach(f=>{
         const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
         b.textContent=f.nom;
-        b.addEventListener('click',()=>{famFilter=f.id;buildFamCol();buildItems();});
+        b.addEventListener('click',()=>_setFam(f.id));
         famCol.appendChild(b);
       });
     }
@@ -2792,6 +2829,12 @@ function openPresetModal(cfg){
   }
 
   function pmDrop(srcId,tgtId){
+    if(tgtId==='__end__'){
+      const arr=cfg.type==='groove'?packCours.grooves:packCours.patterns;
+      const si=arr.findIndex(x=>x.id===srcId);
+      if(si>=0){const[m]=arr.splice(si,1);arr.push(m);saveToStorage();sbPushSchoolOrder(cfg.type==='groove'?'grooves':'patterns');buildItems();if(cfg.type==='groove')buildGrooveSection();else buildLayers();}
+      return;
+    }
     if(cfg.type==='groove')libDropGroove(srcId,tgtId);
     else libDropPattern(srcId,tgtId);
   }
@@ -2867,6 +2910,11 @@ function openPresetModal(cfg){
         },{passive:false});
         itemsWrap.appendChild(div);
       });
+      // Zone de dépôt en fin de liste
+      const endZ=document.createElement('div');endZ.className='pm-item pm-reorder pm-end-zone';endZ.dataset.id='__end__';
+      endZ.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));endZ.classList.add('pm-drag-over');});
+      endZ.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId)pmDrop(_reorderDragSrcId,'__end__');});
+      itemsWrap.appendChild(endZ);
       return;
     }
     itemsWrap.style.touchAction='';itemsWrap.style.overflowY='';
@@ -5225,14 +5273,16 @@ async function sbPushSchoolFamOrder() {
   const fams = packCours.familles.filter(f => f.source === 'school' && !f._deletePending);
   if (!fams.length) return;
   try {
-    await Promise.all(fams.map((f, idx) =>
+    const results = await Promise.all(fams.map((f, idx) =>
       sbFetch(`/rest/v1/familles?id=eq.${f.id}`, {
         method: 'PATCH',
-        headers: { 'Prefer': 'return=minimal' },
+        headers: { 'Prefer': 'return=representation' },
         body: JSON.stringify({ ordre: idx }),
       })
     ));
-  } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé — migration requise (ALTER TABLE familles ADD COLUMN ordre int)', 'warn'); }
+    const missed = results.filter(r => !r || !r.length).length;
+    if (missed) showToast(`⚠ ${missed} famille(s) non mises à jour — vérifier migration DB (colonne ordre)`, 'warn');
+  } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé : ' + e.message, 'warn'); }
 }
 
 // ── Approbations MX ──────────────────────────────────────────────────────────
