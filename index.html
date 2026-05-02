@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.10</span>
+      <span class="app-version">v3.8.11</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1948,8 +1948,8 @@ function changeSig(id) {
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
     const oldPos = parseInt(slider.value);
-    // Calculer l'ancien SPM avec stepsPerBeat de l'ANCIENNE signature (currentSig est déjà mis à jour)
-    const oldSPM = Math.max(1, Math.round(posToBPM(oldPos) * (oldSig.stepsPerBeat || 2)));
+    // Calculer l'ancien SPM avec felBeatSteps de l'ANCIENNE signature (currentSig est déjà mis à jour)
+    const oldSPM = Math.max(1, Math.round(posToBPM(oldPos) * (oldSig.felBeatSteps || oldSig.stepsPerBeat || 2)));
     const oldFel = oldSig.felBeatSteps || oldSig.stepsPerBeat;
     const newFel = currentSig.felBeatSteps || currentSig.stepsPerBeat;
     const oldBPM = oldSPM / oldFel;
@@ -2033,12 +2033,16 @@ function syncMetroControls(sig) {
 }
 
 // Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
+// Règle : les contrôles unité/nb-temps sont cosmétiques — ils changent le label et le métro.pattern
+// mais NE changent PAS stepsPerBeat/felBeatSteps ni le tempo de lecture des layers.
 function buildSigFromControls() {
   const beats = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
   const us = document.getElementById('mpv-unit-sel');
   const unit = us ? parseInt(us.value) : 4;
   const ss = document.getElementById('mpv-subdiv-sel');
   const sub = ss ? parseInt(ss.value) : 2;
+  // Hériter les paramètres de timing du sig courant (ne pas dériver de beatUnit)
+  const curFel = currentSig.felBeatSteps || currentSig.stepsPerBeat || 2;
   const match = metroPresets.find(p =>
     p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
   );
@@ -2047,36 +2051,26 @@ function buildSigFromControls() {
     const btn = document.getElementById('sig-sel-btn');
     if (btn) btn.textContent = match.label || match.id;
   } else {
-    // stepsPerBeat dérivé de l'unité de temps (pas de la subdivision)
-    // unit=4 noire→2, unit=6 pointée→3, unit=8 croche→1, unit=2 blanche→4
-    const spbMap={4:2,6:3,8:1,2:4};
-    const spb=spbMap[unit]||2;
+    // Sig custom : hérite stepsPerBeat/felBeatSteps → aucun effet sur le tempo de lecture
     currentSig = {
-      id: '_custom', label: `${beats}/${unit}×${sub}`,
+      ...currentSig,
+      id: '_custom', label: `${beats}/${unit}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: spb, beatSteps: spb,
-      beatSym: beatSymFromUnit(unit, sub),
+      stepsPerBeat: curFel, beatSteps: curFel, felBeatSteps: curFel,
+      beatSym: symFromFelBeatSteps(curFel),
       metroPattern: generateMetroPattern(beats, sub),
     };
+    const btn = document.getElementById('sig-sel-btn');
+    if (btn) btn.textContent = currentSig.label;
   }
   metroStepPos = 0; metroBeatPos = 0;
-  // Marquer le groove courant comme modifié si la signature change
-  if (!_suppressGrooveDirty) {
-    const groove = getGroove(currentGrooveId);
-    if (groove && currentSig.id !== (groove.signature || '4/4')) {
-      groove.signature = currentSig.id;
-      grooveDirty = true; updateGrooveSaveBtn();
-      markItemDirty(groove, 'signature');
-      buildPublishSection();
-    }
-  }
+  // NE PAS marquer le groove dirty (sig = cosmétique pour la lecture)
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
   const ni = document.getElementById('tap-n-input');
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
   if (tb) tb.textContent = 'Tap ' + _tapN;
-  LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
   renderMetroPatternViz();
   buildSigSelector();
 }
@@ -4629,10 +4623,12 @@ function bpmToPos(bpm){
   return Math.round(800+(b-180)/(_BPM_MAX-180)*200);
 }
 function posToSPM(pos){
-  return Math.max(1,Math.round(posToBPM(pos)*(currentSig?.stepsPerBeat||2)));
+  const fel=currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
+  return Math.max(1,Math.round(posToBPM(pos)*fel));
 }
 function spmToPos(spm){
-  return bpmToPos(Math.round((spm||40)/(currentSig?.stepsPerBeat||2)));
+  const fel=currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
+  return bpmToPos(Math.round((spm||40)/fel));
 }
 
 function updateSpmDisplay(){
