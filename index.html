@@ -155,8 +155,13 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 /* ── Volume dans section bar ── */
 .top-vol-block{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;min-width:52px;max-width:64px}
 .top-vol-lbl{font-size:8px;color:#888;white-space:nowrap;line-height:1;letter-spacing:.02em}
-/* ── Ligne adj (tempo name · BPM ± dans volet) ── */
-.mpv-adj-row{display:flex;align-items:center;gap:5px;padding:.15rem 0}
+/* ── Ligne 1 volet : info + battue ── */
+.mpv-tempo-top-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:.15rem 0 .05rem}
+.mpv-tempo-info{display:flex;align-items:center;gap:4px;font-size:10px;color:#555;flex-shrink:0}
+.mpv-tempo-sep{color:#bbb}
+.mpv-battue-block{display:flex;align-items:center;gap:3px;flex-shrink:0}
+/* ── Ligne slider ── */
+.mpv-slider-row{display:flex;align-items:center;gap:4px;padding:.1rem 0 .2rem}
 
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
@@ -903,7 +908,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.2</span>
+      <span class="app-version">v3.8.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -972,15 +977,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="mpv-save-btn" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
-      <option value="1">♪</option>
-      <option value="2" selected>♩</option>
-      <option value="3">♩.</option>
-      <option value="4">𝅗𝅥</option>
-    </select>
-    <span class="beat-eq">=</span>
-    <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
-    <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1">
     <div class="top-vol-block">
       <span class="top-vol-lbl">Vol <span id="metro-vol-val">80%</span></span>
       <input type="range" id="metro-vol" min="0" max="100" value="80">
@@ -989,12 +985,27 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <!-- Ligne 1 : Nom tempo · BPM +/- -->
-    <div class="mpv-adj-row">
-      <span id="metro-tempo-name">—</span>
-      <span>·</span>
-      <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+    <!-- Ligne 1 : Slider tempo + battue -->
+    <div class="mpv-tempo-top-row">
+      <div class="mpv-tempo-info">
+        <span id="metro-tempo-name">—</span>
+        <span class="mpv-tempo-sep">·</span>
+        <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+      </div>
+      <div class="mpv-battue-block">
+        <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
+          <option value="1">♪</option>
+          <option value="2" selected>♩</option>
+          <option value="3">♩.</option>
+          <option value="4">𝅗𝅥</option>
+        </select>
+        <span class="beat-eq">=</span>
+        <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
+      </div>
+    </div>
+    <div class="mpv-slider-row">
       <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
+      <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
       <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
     </div>
     <!-- Ligne 2 : Tap tempo -->
