@@ -1,7 +1,7 @@
 # BoomTchak — Instructions Claude Code
 
 ## Projet
-App web pédagogique rythme, single-file `index.html` (~8900 lignes), vanilla JS, Supabase.
+App web pédagogique rythme, single-file `index.html` (~9000 lignes), vanilla JS, Supabase.
 Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 
 ## Règles de collaboration
@@ -61,27 +61,98 @@ Merger vers : `main` après chaque session
 - Déploiement : GitHub Pages (fichier statique `index.html`)
 
 ## Fichiers de référence
-- `index.html` — application complète (~8900 lignes)
+- `index.html` — application complète (~9000 lignes)
 - `BoomTchak_Explain.md` — référence complète (pédagogie + UX + technique + roadmap)
 - `BoomTchak_v3_bible.md` — référence technique v3 (DB, RLS, workflows TX/MX)
 - `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.7.0)
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.8** (session 2026-05-02)
+**v3.8.12** (session 2026-05-02)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.12 | `changeSig` silencieux : mise à jour `groove.signature` sans dirty/publish ; `symFromFelBeatSteps(4)` = `♩♩` |
+| v3.8.11 | Refacto timing : `posToSPM`/`spmToPos` utilisent `felBeatSteps` ; `buildSigFromControls` cosmétique pur |
+| v3.8.10 | Fix mode BPM constant (oldSig.felBeatSteps) ; affichage SPM `♪/min` dans volet |
+| v3.8.9 | Fix 6 bugs gestion preset métro : dirty indicator, Écraser, battue sans recalcul tempo, sig discrète, nom par défaut |
 | v3.8.8 | Fix familles métro au démarrage sans connexion : `rebuildMetroPresets()` dans `loadFromStorage()` |
-| v3.8.7 | `attachSwipe()` générique sur tous les boutons preset (groove/pattern/band/son) ; vol section bar 1 ligne ; fix `getFams()` fallback famille |
-| v3.8.6 | Swipe sur `sig-sel-btn` : navigation preset suivant/précédent avec `_navigateMetroPreset()` |
-| v3.8.5 | Nom latin en couleur accent ; `#btn-tempo` muté `opacity:.45`, `active+muté` = dim lilas |
-| v3.8.4 | 💾 métro = `btn-sec-save` ; vol slider `flex:1` section bar ; nom tempo centré au-dessus slider |
-| v3.8.3 | Correction layout : slider `#bpm` + battue/BPM dans volet (pas section bar) |
-| v3.8.2 | Section bar : select battue (♪♩♩.𝅗𝅥) + input BPM ressenti ; vol déplacé section bar ; suppression slider miroir |
+| v3.8.7 | `attachSwipe()` générique sur tous les boutons preset ; vol section bar 1 ligne ; fix `getFams()` fallback |
+| v3.8.6 | Swipe sur `sig-sel-btn` : navigation preset suivant/précédent |
+| v3.8.5 | Nom latin en couleur accent ; `#btn-tempo` muté = dim lilas |
+| v3.8.4 | 💾 métro = `btn-sec-save` ; vol slider `flex:1` section bar |
+| v3.8.3 | Correction layout : slider `#bpm` + battue/BPM dans volet |
+| v3.8.2 | Section bar : select battue + input BPM ressenti ; vol déplacé section bar |
 | v3.8.1 | `felBeatSteps` + battue éditable ; rescale métronome au changement tempo |
 | v3.7.0 | Familles métronome dynamiques : `metro_familles` DB, `familles_ids`+`ordre` sur `metro_presets` |
+
+---
+
+## Architecture temporelle (référence v3.8.11+)
+
+### Principe fondamental
+**1 step = 1 croche** à vitesse normale de pattern (sans ×2, ÷2 ni T ternaire).
+Aucun changement de signature ne peut affecter la vitesse de lecture des layers.
+
+### Variables clés
+
+| Variable | Rôle |
+|----------|------|
+| `currentSig.felBeatSteps` | Nb de croches par battue ressentie (1=♪, 2=♩, 3=♩., 4=♩♩) |
+| `currentSig.stepsPerBeat` | Nb de croches par temps théorique (idem felBeatSteps pour les sigs custom) |
+| `currentSig.subdivision` | Nb de steps dans le métro.pattern par temps (≠ vitesse layers) |
+| `#bpm` slider (pos 0–1000) | Encode le **BPM ressenti** via `posToBPM(pos)` |
+
+### Fonctions de conversion
+
+```js
+posToSPM(pos)   = posToBPM(pos) × felBeatSteps   // croches/min
+spmToPos(spm)   = bpmToPos(spm / felBeatSteps)    // position slider
+getBeatSec(li)  = (60 / spm) / mult × ternFactor  // durée d'un step layer
+```
+
+`posToBPM(pos)` = BPM ressenti directement (le slider encode le BPM ressenti, pas le SPM brut).
+
+### Vitesse de lecture des layers
+```js
+getBeatSec(li) = (60 / posToSPM(pos)) / mult × ternFactor
+```
+- `mult` : ×2 si doubleOn, ÷2 si halfOn (modification par layer)
+- `ternFactor` : ×2/3 si ternOn (mode ternaire)
+- **Indépendant de la signature** — la signature est purement cosmétique pour les layers.
+
+### Vitesse de lecture du métronome
+```js
+stepSec = (60 / spm) × (stepsPerBeat / subdivision)
+```
+- `stepsPerBeat / subdivision` : ratio croches/step du métro.pattern
+- La **subdivision** affecte uniquement le métro.pattern (pas les layers)
+- Le **nb de temps** et l'**unité de temps** (beatUnit) sont cosmétiques (label seulement)
+
+### Rôle des contrôles métriques dans le volet
+
+| Contrôle | Effet sur lecture | Effet cosmétique |
+|----------|-------------------|------------------|
+| Battue `battue-sel` | ✅ Recalcule SPM (BPM ressenti constant) | ♪/♩/♩./♩♩ affiché |
+| Nb de temps `mpv-beats-val` | ❌ Aucun | Label fraction gauche |
+| Unité de temps `mpv-unit-sel` | ❌ Aucun | Label fraction droite |
+| Subdivision `mpv-subdiv-sel` | ✅ Métro.pattern uniquement | Séparateurs visuels |
+| BPM input `beat-val-input` | ✅ Recalcule SPM depuis BPM ressenti | `♩= N` affiché |
+| Slider `#bpm` | ✅ Ajuste SPM directement | Nom tempo latin |
+
+### Sig et groove
+- Changer de signature (`changeSig`) met à jour `groove.signature` **silencieusement** (pas de dirty, pas de publish).
+- Le groove n'est marqué dirty que sur une modification explicite de pattern ou de paramètre musical.
+- La section Soumettre/Publier pour les metro presets n'apparaît qu'après une **sauvegarde de preset** (bouton 💾).
+
+### Presets métronome (`metroPresets`)
+- Construits par `rebuildMetroPresets()` depuis `METRO_PRESETS_DEFAULT` + `packCours.metroPresets`
+- Tous les presets (base, school, teacher) sont inclus — les presets teacher apparaissent en bas de liste
+- `felBeatSteps` est stocké dans `packCours.metroPresets` (localStorage) mais pas en DB (pas de colonne)
+- Indicateur dirty : `setMetroDirty(true)` sur modification de pattern ou de battue
+
+---
 
 ## Tâches prioritaires (prochaine session)
 
@@ -89,28 +160,34 @@ Merger vers : `main` après chaque session
 Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonner/palette) aux volets band/son et encyclopédie.
 
 **À clarifier avec Lamberio en début de session :**
-- Quelle est la "petite différence" pour ces deux volets ?
-  - Band : les sons (`SOUND_DEFS`) sont prédéfinis (JS hardcoded), pas en DB — le CRUD est-il limité à la gestion des familles + renommage/réordonner uniquement ?
-  - Encyclopédie : pas de "familles" au sens groove/pattern. Les items encyclo sont indexés par ID de groove/pattern. La colonne gauche serait quoi (catégories ?) ?
+- Band : les sons (`SOUND_DEFS`) sont prédéfinis (JS hardcoded), pas en DB — le CRUD est-il limité à la gestion des familles + renommage/réordonner uniquement ?
+- Encyclopédie : pas de "familles" au sens groove/pattern. La "petite différence" à valider.
 
-**Volet Band/Son** (actuellement `#lib-panel-bands`) :
-- `openPresetModal({type:'band'})` existe déjà pour la sélection
+**Volet Band/Son** (`#lib-panel-bands`) :
+- `openPresetModal({type:'band'})` existe pour la sélection
 - Manquent les modes gérer/réordonner intégrés au modal
-- Sons individuels : `openPresetModal({type:'sound'})` pour la sélection, swipe déjà en place
 
-**Volet Encyclopédie** (actuellement `#lib-panel-encyclo`) :
+**Volet Encyclopédie** (`#lib-panel-encyclo`) :
 - Structure différente : contenu textuel (chapo + bullets) par item
-- Pas de familles taggables au sens strict
-- La "petite différence" à valider
+- La colonne gauche (catégories ?) à définir
 
 ### Autres chantiers en attente
 1. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
 2. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
 
+## Résolu (session 2026-05-02 — gestion preset métronome + timing)
+- ✅ **6 bugs preset métro** — dirty indicator, preset teacher visible immédiatement, bouton Écraser, battue sans recalcul tempo, sig discrète, nom par défaut = label courant
+- ✅ **Mode BPM constant** — fix `changeSig` utilise `oldSig.felBeatSteps` (stepsPerBeat était utilisé → bug sur aksak)
+- ✅ **Affichage SPM** — `♪/min` sur ligne 1 du volet, mis à jour par `updateBeatDisplay()`
+- ✅ **Refacto posToSPM** — utilise `felBeatSteps` au lieu de `stepsPerBeat` ; slider = BPM ressenti toujours
+- ✅ **buildSigFromControls cosmétique** — unité/nb-temps ne changent plus stepsPerBeat ni grooveDirty
+- ✅ **changeSig silencieux** — plus de dirty/publish sur changement de signature
+- ✅ **Icône ♩♩** pour felBeatSteps=4 (blanche → 2 noires)
+
 ## Résolu (session 2026-05-02 — amélioration section métronome)
 - ✅ **Suppression lib-panel-metro** — remplacé par modal sig
 - ✅ **Bug tempo en lecture** — rescale `metroNextBeatTime` proportionnel lors du changement slider
-- ✅ **felBeatSteps** — paramètre "battue" éditable par preset (♪♩♩.𝅗𝅥), persisté en DB
+- ✅ **felBeatSteps** — paramètre "battue" éditable par preset (♪♩♩.♩♩), persisté en DB
 - ✅ **Section bar métro** — select battue + input BPM + vol slider (monochrome, même hauteur)
 - ✅ **Volet métro** — slider #bpm avec −/+, nom latin centré, battue à droite
 - ✅ **Swipe universel** — `attachSwipe()` sur groove/pattern/band/son/sig
@@ -147,7 +224,7 @@ openPresetModal(cfg)
 
   Fonctions internes :
     getFams()           → familles filtrées selon type (fallback .famille si familles_ids absent)
-    getFilteredItems()  → items filtrés (famFilter + searchQuery)
+    getFilteredItems()  → items filtrés (famFilter + searchQuery) ; sig : teacher en bas
     pmNewFamille()      → crée famille
     pmDeleteFam(fam)    → supprime famille + détache les tags
     pmDropFam(src,tgt)  → réordonne familles + persist DB
