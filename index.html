@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.11</span>
+      <span class="app-version">v3.8.12</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1001,7 +1001,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <option value="1">♪</option>
           <option value="2" selected>♩</option>
           <option value="3">♩.</option>
-          <option value="4">𝅗𝅥</option>
+          <option value="4">♩♩</option>
         </select>
         <span class="beat-eq">=</span>
         <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
@@ -1887,7 +1887,7 @@ let metroPresets = METRO_PRESETS_DEFAULT.slice();
 
 // Symbole de note pour un felBeatSteps donné (nb de croches = 1 battue)
 function symFromFelBeatSteps(n){
-  return {1:'♪', 2:'♩', 3:'♩.', 4:'𝅗𝅥', 6:'𝅗𝅥.'}[n] || '♩';
+  return {1:'♪', 2:'♩', 3:'♩.', 4:'♩♩', 6:'♩♩♩'}[n] || '♩';
 }
 // Options de battue valides pour un preset (toujours 1,2,3,4 croches)
 function felBeatOptions(){ return [1,2,3,4]; }
@@ -1971,12 +1971,11 @@ function changeSig(id) {
   renderMetroPatternViz();
   buildSigSelector();
   if (!_suppressGrooveDirty) {
+    // Mise à jour silencieuse de la signature du groove (pas de dirty/publish — sig = cosmétique)
     const groove = getGroove(currentGrooveId);
     if (groove && id !== (groove.signature || '4/4')) {
       groove.signature = id;
-      grooveDirty = true; updateGrooveSaveBtn();
-      markItemDirty(groove, 'signature');
-      buildPublishSection();
+      saveToStorage();
     }
   }
 }
