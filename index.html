@@ -910,7 +910,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.9</span>
+      <span class="app-version">v3.8.10</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -993,6 +993,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <span id="metro-tempo-name">—</span>
         <span class="mpv-tempo-sep">·</span>
         <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+        <span class="mpv-tempo-sep">·</span>
+        <span id="metro-spm-val" title="Tempo en croches par minute (♪/min)" style="font-size:10px;color:#888;opacity:.8">200 ♪/min</span>
       </div>
       <div class="mpv-battue-block">
         <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
@@ -1945,10 +1947,12 @@ function changeSig(id) {
   setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
-    const currentSPM = posToSPM(parseInt(slider.value));
+    const oldPos = parseInt(slider.value);
+    // Calculer l'ancien SPM avec stepsPerBeat de l'ANCIENNE signature (currentSig est déjà mis à jour)
+    const oldSPM = Math.max(1, Math.round(posToBPM(oldPos) * (oldSig.stepsPerBeat || 2)));
     const oldFel = oldSig.felBeatSteps || oldSig.stepsPerBeat;
     const newFel = currentSig.felBeatSteps || currentSig.stepsPerBeat;
-    const oldBPM = currentSPM / oldFel;
+    const oldBPM = oldSPM / oldFel;
     const newPos = spmToPos(Math.round(oldBPM * newFel));
     slider.value = newPos;
     _lastBpmPos = newPos;
@@ -4669,6 +4673,9 @@ function updateBeatDisplay(){
   if(nameEl) nameEl.textContent=getTempoName(bpm);
   const bpmValEl=document.getElementById('metro-bpm-val');
   if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
+  // SPM (croches/min)
+  const spmValEl=document.getElementById('metro-spm-val');
+  if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
 }
 function setMetroGlobal(on){
   metro.muted=!on;
