@@ -487,9 +487,10 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-name-el:hover{color:var(--pm-ac,#4a3d8a);}
 .pm-fam-ren-btn,.pm-fam-del-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;padding:0 2px;flex-shrink:0;line-height:1;}
 .pm-fam-ren-btn:hover,.pm-fam-del-btn:hover{opacity:1;}
-.pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;}
-.pm-drag-handle{font-size:15px;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:1px;}
-.pm-sheet.pm-reorder-on .pm-drag-handle,.pm-sheet.pm-reorder-on .pm-fam-drag{color:var(--pm-ac,#4a3d8a);font-size:13px;}
+.pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;border-left:3px solid transparent;}
+.pm-drag-handle{font-size:12px;line-height:1;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:2px;}
+.pm-sheet.pm-reorder-on .pm-drag-handle,.pm-sheet.pm-reorder-on .pm-fam-drag{color:var(--pm-ac,#4a3d8a);}
+.pm-sheet.pm-reorder-on .pm-item.pm-reorder{border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging{opacity:.4;}
@@ -531,6 +532,7 @@ body.dark-mode .pm-fam-col{border-color:#333;}
 body.dark-mode .pm-fam-btn{color:#aaa;border-color:#2a2a28;}
 body.dark-mode .pm-fam-btn.active{background:#2a2a28;color:var(--pm-ac);}
 body.dark-mode .pm-item{color:#e0ddd8;border-color:#2a2a28;}
+body.dark-mode .pm-item.pm-cur{color:var(--pm-ac);}
 body.dark-mode .pm-item:hover{background:#2a2a28;}
 body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444;}
 
@@ -951,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.24</span>
+      <span class="app-version">v3.8.25</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -8483,6 +8485,7 @@ function attachEvents(){
     if (!s?.id || s.id === '_custom') return;
     const label = document.getElementById('modal-metro-name').value.trim() || s.label || s.id;
     const pat = s.metroPattern || [];
+    const isMX = authProfile?.role === 'mx';
     if (!packCours.metroPresets) packCours.metroPresets = [];
     let pci = packCours.metroPresets.findIndex(x => x.id === s.id);
     if (pci < 0) {
@@ -8493,6 +8496,11 @@ function attachEvents(){
       packCours.metroPresets[pci].label = label;
       packCours.metroPresets[pci].metroPattern = [...pat];
       if (s.felBeatSteps) packCours.metroPresets[pci].felBeatSteps = s.felBeatSteps;
+      if (!isMX) {
+        // TX : marque comme proposition (source teacher, draft) — pas de push DB direct
+        packCours.metroPresets[pci].source = 'teacher';
+        packCours.metroPresets[pci].localStatus = 'draft';
+      }
     }
     setMetroDirty(false);
     _editingMetroPresetId = null;
@@ -8500,8 +8508,12 @@ function attachEvents(){
     saveToStorage(); rebuildMetroPresets();
     currentSig = getSigFallback(s.id);
     buildSigSelector(); renderMetroPatternViz();
-    const ok = await sbSaveMetroPreset(s.id);
-    showToast(ok ? `Preset «${label}» mis à jour` : 'Erreur lors de la mise à jour', ok ? 'info' : 'error');
+    if (isMX) {
+      const ok = await sbSaveMetroPreset(s.id);
+      showToast(ok ? `Preset «${label}» mis à jour` : 'Erreur lors de la mise à jour', ok ? 'info' : 'error');
+    } else {
+      showToast(`Preset «${label}» en attente de validation`, 'info');
+    }
     buildPublishSection();
   });
 

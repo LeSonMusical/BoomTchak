@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.24** (session 2026-05-03)
+**v3.8.25** (session 2026-05-03)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.25 | Écraser preset métro TX → Propositions (pas push direct) ; drag handle hauteur fixe (font 12px) ; border gauche colorée en mode réordonner ; .pm-item.pm-cur couleur accent en dark mode |
 | v3.8.24 | Fix pas-num dans _patOnSelect ; changeSig/previewMetroPreset → grooveDirty ; sync groove au temps (pas mesure) |
 | v3.8.23 | Article "Temps musical" ; Encyclo neutre (vert = édition seul) ; sans bordures crayon/vue ; preset groove texte vif/bord discret ; fix cercle nb pas |
 | v3.8.22 | Toolbar encyclo → top:56px (sous top-bar, plus fiable mobile) ; dark mode CE vert ; cohérence volets ; btn-view cadre doré ; "Encyclo" vert |
