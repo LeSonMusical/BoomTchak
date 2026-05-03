@@ -38,7 +38,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
-.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:1px solid #c0bdb7;border-radius:5px;cursor:pointer;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:none;border-radius:5px;cursor:pointer;background:transparent;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
 .btn-view:hover{background:#e8e5e0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
@@ -192,7 +192,7 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{border:2px solid #C8961A;color:#8B6914}
+.groove-bar .btn-view{border:none;background:transparent;color:#C8961A;font-size:20px}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -205,11 +205,11 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .band-content.open{max-height:700px}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
-/* barre encyclo : verte */
-.encyclo-bar{background:#f5f4f0;border-left:3px solid #5a8a50;cursor:pointer}
-.encyclo-bar .section-bar-lbl{color:#3a5c32;font-weight:700}
-.btn-volet-encyclo{color:#a8c8a0 !important}
-.btn-volet-encyclo:hover,.btn-volet-encyclo.open{color:#4a6d40 !important}
+/* barre encyclo : neutre */
+.encyclo-bar{background:#f5f4f0;border-left:3px solid #9a9590;cursor:pointer}
+.encyclo-bar .section-bar-lbl{color:#666}
+.btn-volet-encyclo{color:#bbb !important}
+.btn-volet-encyclo:hover,.btn-volet-encyclo.open{color:#666 !important}
 .encyclo-content{overflow:hidden;transition:max-height .35s ease;max-height:0}
 .encyclo-content.open{max-height:3000px}
 
@@ -358,10 +358,10 @@ body.dark-mode #encyclo-body.enc-edit-active [contenteditable]:focus{background:
 .btn-enc-nav:hover:not(:disabled){background:#f0f0ee;border-color:#999}
 .btn-enc-nav:disabled{opacity:.3;cursor:default}
 body.dark-mode .btn-enc-nav{background:#2a2926;color:#aaa;border-color:#555}
-.btn-enc-edit{font-size:11px;padding:1px 6px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;line-height:1.5;font-family:inherit}
-.btn-enc-edit.active{background:#4a6d40;color:#fff;border-color:#4a6d40}
-body.dark-mode .btn-enc-edit{background:#2a2926;color:#c8c5c0;border-color:#555}
-body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff;border-color:#4a6d40}
+.btn-enc-edit{font-size:11px;padding:1px 6px;border:none;border-radius:3px;background:transparent;cursor:pointer;line-height:1.5;font-family:inherit;color:#888}
+.btn-enc-edit.active{background:#4a6d40;color:#fff}
+body.dark-mode .btn-enc-edit{color:#777}
+body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff}
 body.dark-mode #enc-floating-toolbar.visible{background:#2d4a28;border-bottom-color:#3a5c32}
 body.dark-mode #encyclo-body.enc-edit-active{background:rgba(74,109,64,.12)}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
@@ -756,8 +756,8 @@ body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-top:hover{background:#333330}
 body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#666}
-body.dark-mode .btn-view{background:#2a2a28;border-color:#444440;color:#aaa}
-body.dark-mode .btn-view:hover{background:#333330}
+body.dark-mode .btn-view{background:transparent;color:#aaa}
+body.dark-mode .btn-view:hover{background:rgba(255,255,255,.08)}
 body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
 body.dark-mode .t-spm-display{color:#666}
 body.dark-mode .t-spm-display:hover{color:#aaa}
@@ -860,15 +860,13 @@ body.dark-mode .btn-volet-groove{color:#7a6020 !important}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
 body.dark-mode .btn-volet-band{color:#444 !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
-body.dark-mode .btn-volet-encyclo{color:#3a5030 !important}
-body.dark-mode .btn-volet-encyclo:hover,body.dark-mode .btn-volet-encyclo.open{color:#6a9d60 !important}
+body.dark-mode .btn-volet-encyclo{color:#444 !important}
+body.dark-mode .btn-volet-encyclo:hover,body.dark-mode .btn-volet-encyclo.open{color:#aaa !important}
 body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{border-color:#C8961A;color:#c8961a}
-body.dark-mode .encyclo-bar{border-left-color:#4a6d40}
-body.dark-mode .encyclo-bar .section-bar-lbl{color:#6a9d60}
+body.dark-mode .groove-bar .btn-view{color:#C8961A}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -953,7 +951,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.22</span>
+      <span class="app-version">v3.8.23</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1444,6 +1442,17 @@ const ENCYCLO = {
       ["Chgt de métrique — BPM ou SPM constant","Réglage dans ⚙ Préférences. 'BPM constant (pulsation)' (défaut) : le BPM musical est préservé, les SPM sont recalculés — la pulsation ne change pas. 'SPM constant (croche)' : la croche garde sa vitesse, le BPM change. Exemple 4/4 → 7/8 à SPM constant : les croches gardent la même vitesse mais on en compte 7 par mesure au lieu de 8."]
     ]
   },
+  misc_temps_musical:{
+    chapo:"Le 'temps' en musique est une notion double : le temps écrit (signature de mesure) est une convention de notation — il organise les symboles sur la partition et n'existe que pour les yeux. Le temps ressenti (ou temps joué) est la pulsation que l'oreille et le corps perçoivent naturellement — là où on tape du pied. Ces deux notions coïncident souvent, mais pas toujours : c'est précisément dans cet écart que naissent les effets rythmiques les plus riches.",
+    bullets:[
+      ["Temps écrit — la signature","La signature 4/4 dit : '4 noires par mesure'. C'est une instruction de découpage pour le musicien lecteur. Elle définit la mesure (combien de temps) et l'unité de temps (quelle valeur de note). Mais elle ne dit rien sur la façon dont ces temps sont vécus dans le corps."],
+      ["Temps ressenti — la battue","La battue est le pouls naturel que musicien et auditeur sentent dans leur corps. En 4/4 pop, la battue = la noire (♩). En 6/8 vif, la battue = la noire pointée (♩. = 3 croches) — on sent 2 temps, pas 6. En aksak 7/8 très rapide, la battue peut être la mesure entière."],
+      ["Équivalences rythmiques","Le même groove peut s'écrire dans des signatures différentes sans changer le son. La clave son 3:2 = E(5,16) = 5 frappes sur 16 croches. On peut l'écrire en 4/4 sur 2 mesures (16 croches) ou en 16/16 sur 1 mesure. Notation différente, rythme identique."],
+      ["Hémiole (3 contre 2)","L'hémiole superpose 2 groupes de 3 et 3 groupes de 2. En 6/8 (2 temps de 3 croches), jouer 3 notes sur 2 temps crée une sensation en 3/4. C'est la tension fondamentale de nombreuses musiques latinos, africaines et ibériques — la clave cubaine en est l'exemple le plus connu."],
+      ["Syncope","Accent placé sur un temps normalement faible, ou prolongation d'un temps faible vers un temps fort. La syncope déplace la pulsation ressentie. Le reggae est fondamentalement syncopé : l'accent lourd est sur le 3e temps, pas le 1er — l'inverse de la pop occidentale."],
+      ["Dans BoomTchak — battue ♪/♩/♩.","Le réglage 'Battue' (♪ croche, ♩ noire, ♩. noire pointée, ♩♩ blanche) définit le temps ressenti. Le slider BPM encode ce BPM ressenti. Changer la battue ne change pas la vitesse de lecture des couches — seulement l'unité de compte. Exemple : 120 BPM ♩ en 4/4 = même groove qu'en 7/8 aksak à 240 BPM ♪ (même vitesse de croche, comptage différent)."]
+    ]
+  },
   misc_mesure:{
     chapo:"Une mesure (ou bar) est un groupe de temps délimité par deux barres de mesure. Le premier temps — le '1' — porte le poids rythmique le plus fort et déclenche l'accent du métronome. La notion de mesure est universelle en musique : c'est l'unité de répétition qui structure la durée.",
     bullets:[
@@ -1493,6 +1502,7 @@ const ENCYCLO_MISC=[
   {id:'misc_step',           nom:'Step / Pas',          category:'concepts'},
   {id:'misc_mesure',         nom:'Mesure',              category:'concepts'},
   {id:'misc_signature',      nom:'Signature',           category:'concepts'},
+  {id:'misc_temps_musical',  nom:'Temps musical',       category:'concepts'},
   {id:'misc_metro',          nom:'Métronome',           category:'appli'},
   {id:'misc_sons',           nom:'Sons & instruments',  category:'appli'},
   {id:'misc_notations',      nom:'Notations',           category:'concepts'},
@@ -2489,6 +2499,7 @@ function applyGroove(grooveId){
 
   // Reconstruire le DOM des couches et sons
   buildLayers();
+  if(circleView) drawCircles(); // forcer maj cercle après changement de pattern
   buildBandSection();
   updateGrooveSelect();
   updateEncycloPresetBtn(grooveId);
@@ -3362,7 +3373,7 @@ function buildGrooveSection(){
   const curGroove=getGroove(currentGrooveId);
   const groovePresetBtn=document.createElement('button');
   groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
-  groovePresetBtn.style.cssText='border-color:#d4b86a;color:#8B6914';
+  groovePresetBtn.style.cssText='color:#C8961A;font-weight:600;border-color:#ddd';
   groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
   const _grooveOnSelect=(id)=>{
     applyGroove(id);refreshGrooveClass();
@@ -3510,6 +3521,7 @@ function buildLayers(){
       refreshLayerClass();
       patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
       buildStepsDOM(li,false);
+      if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
     };
     patPresetBtn.addEventListener('click',()=>{
