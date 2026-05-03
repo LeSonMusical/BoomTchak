@@ -951,7 +951,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.23</span>
+      <span class="app-version">v3.8.24</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1999,10 +1999,10 @@ function changeSig(id) {
   renderMetroPatternViz();
   buildSigSelector();
   if (!_suppressGrooveDirty) {
-    // Mise à jour silencieuse de la signature du groove (pas de dirty/publish — sig = cosmétique)
     const groove = getGroove(currentGrooveId);
     if (groove && id !== (groove.signature || '4/4')) {
       groove.signature = id;
+      grooveDirty = true; updateGrooveSaveBtn();
       saveToStorage();
     }
   }
@@ -2025,7 +2025,6 @@ function previewMetroPreset(id) {
                   ? raw.metroPattern
                   : generateMetroPattern(raw.beatsPerMeasure, sub),
   };
-  _suppressGrooveDirty = true;
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
   setMetroDirty(false); _editingMetroPresetId = null;
@@ -2037,7 +2036,13 @@ function previewMetroPreset(id) {
   const tc = document.getElementById('tap-count'); if (tc) tc.textContent = '';
   LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
   syncMetroControls(); renderMetroPatternViz(); buildSigSelector();
-  _suppressGrooveDirty = false;
+  // Marquer le groove comme modifié (la signature a changé)
+  const _groove = getGroove(currentGrooveId);
+  if (_groove && !_suppressGrooveDirty) {
+    _groove.signature = preset.id;
+    grooveDirty = true; updateGrooveSaveBtn();
+    saveToStorage();
+  }
   // Ouvrir le volet métro s'il est fermé
   const tempsContent = document.getElementById('temps-content');
   if (tempsContent && !tempsContent.classList.contains('open')) {
@@ -2485,9 +2490,9 @@ function applyGroove(grooveId){
     // Steps restants jusqu'au prochain temps 1 (début de mesure)
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
-    const totalSteps=currentSig.metroPattern.length;
-    const stepsLeft=(totalSteps-metroStepPos)%totalSteps;
-    // syncTime = début de la prochaine mesure selon la grille du métronome
+    // Sync au prochain temps (plus réactif qu'attendre la mesure entière)
+    const subdivision=currentSig.subdivision||2;
+    const stepsLeft=(subdivision-metroStepPos%subdivision)%subdivision;
     const syncTime=Math.max(now, metroNextBeatTime+stepsLeft*stepSec);
     LAYERS.forEach((_,li)=>{
       state[li].stepPos=0;
@@ -3520,6 +3525,8 @@ function buildLayers(){
       setLayerDirty(li,false);
       refreshLayerClass();
       patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
+      const pasNum=document.getElementById('pas-num-'+li);
+      if(pasNum)pasNum.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,false);
       if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
