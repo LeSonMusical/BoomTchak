@@ -336,13 +336,22 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
-.enc-toolbar{display:flex;gap:3px;margin-bottom:4px;opacity:.7}
-.enc-toolbar:focus-within,.enc-toolbar:hover{opacity:1}
+.enc-toolbar{position:relative;display:flex;gap:3px;margin-bottom:4px;flex-wrap:wrap}
+.enc-toolbar.enc-toolbar-hidden{display:none}
 .enc-tb-btn{font-size:10px;padding:1px 6px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
 .enc-tb-btn:hover{background:#f5f3f0;border-color:#999}
 .enc-link{color:var(--ca,#4a3d8a);text-decoration:underline dotted;cursor:pointer}
 .enc-add-bullet{font-size:10px;margin-top:6px;padding:2px 8px;border:1px dashed #c0bdb7;border-radius:4px;background:none;color:#888;cursor:pointer;display:block}
 .enc-add-bullet:hover{border-color:#888;color:#444}
+.enc-link-picker{position:absolute;top:calc(100% + 2px);left:0;z-index:200;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);width:220px;max-height:200px;display:flex;flex-direction:column;overflow:hidden}
+.enc-lp-search{font-size:10px;padding:4px 8px;border:none;border-bottom:1px solid #eee;outline:none;background:#f8f7f5}
+.enc-lp-list{overflow-y:auto;flex:1}
+.enc-lp-item{display:block;width:100%;text-align:left;padding:5px 10px;font-size:10px;border:none;border-bottom:1px solid #f0ede8;background:none;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.enc-lp-item:hover{background:#f0f5ee}
+body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
+body.dark-mode .enc-lp-search{background:#161e14;border-bottom-color:#333}
+body.dark-mode .enc-lp-item{border-bottom-color:#2a3028;color:#c0d4b8}
+body.dark-mode .enc-lp-item:hover{background:#2a3820}
 .encyclo-vide{font-size:11px;color:#aaa;font-style:italic}
 
 /* ─── BOTTOM BAR ─── */
@@ -917,7 +926,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.13</span>
+      <span class="app-version">v3.8.14</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2328,7 +2337,7 @@ function updateGrooveSaveBtn(){
 }
 
 function updateEncycloSaveBtn(){
-  setDirtyUI('encyclo-select', 'save-btn-encyclo', encycloDir);
+  setDirtyUI('encyclo-preset-btn', 'save-btn-encyclo', encycloDir);
   updateSettingsBadge();
 }
 function refreshMenuBtnStates(){
@@ -2450,7 +2459,7 @@ function applyGroove(grooveId){
   buildLayers();
   buildBandSection();
   updateGrooveSelect();
-  updateEncycloSelect(grooveId);
+  updateEncycloPresetBtn(grooveId);
   updateSpmDisplay();
 }
 
@@ -3422,7 +3431,7 @@ function buildLayers(){
        grooveDirty=true;updateGrooveSaveBtn();
        if(currentMode==='tx')saveToStorage();}
       updateBtnI();
-      updateEncycloSelect(pat.encyclo_ref||pat.id);
+      updateEncycloPresetBtn(pat.encyclo_ref||pat.id);
       setLayerDirty(li,false);
       refreshLayerClass();
       patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
@@ -4446,65 +4455,40 @@ function buildEncycloSection(){
   // Barre header (cliquable pour toggle)
   const bar=document.createElement('div');bar.className='section-bar encyclo-bar';
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='À propos de';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Encyclo';
   bar.appendChild(lbl);
 
-  // Select entrée
-  const sel=document.createElement('select');
-  sel.id='encyclo-select';
-  sel.style.cssText='font-size:10px;flex:1;min-width:0;max-width:180px;padding:1px 3px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;color:#1a1a18';
-  const optVide=document.createElement('option');optVide.value='';optVide.textContent='— Choisir —';sel.appendChild(optVide);
-  // Entrées misc (★ BoomTchak + articles généraux)
-  ENCYCLO_MISC.forEach(m=>{
-    const hasC=hasEncycloContent(m.id);
-    if(currentMode!=='tx'&&!hasC) return;
-    const o=document.createElement('option');o.value=m.id;o.textContent=m.nom;
-    if(!hasC)o.style.color='#aaa';
-    sel.appendChild(o);
+  // Bouton preset (comme groove/pattern/band)
+  const pb=document.createElement('button');
+  pb.id='encyclo-preset-btn';pb.className='pm-preset-btn';
+  pb.textContent=currentEncycloId?getEncycloDisplayName(currentEncycloId):'— Choisir —';
+  pb.addEventListener('click',e=>{
+    e.stopPropagation();
+    openPresetModal({type:'encyclo',currentId:currentEncycloId,label:'Encyclopédie',accent:'#4a6d40',bg:'#f0f5ee',
+      onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);buildEncycloSection();}});
   });
-  const sepMisc=document.createElement('option');sepMisc.disabled=true;sepMisc.textContent='─ ─ ─ ─ ─';sel.appendChild(sepMisc);
-  // Grooves d'abord (entrée propre, clé = groove.id)
-  packCours.grooves.forEach(g=>{
-    const hasC=hasEncycloContent(g.id);
-    if(currentMode!=='tx'&&!hasC) return; // SX : masquer les entrées vides
-    const o=document.createElement('option');o.value=g.id;o.textContent='[G] '+g.nom;
-    if(!hasC)o.style.color='#aaa';
-    sel.appendChild(o);
+  bar.appendChild(pb);
+
+  // Swipe gauche/droite pour naviguer entre les entrées
+  const _getEncList=()=>{
+    const list=[];
+    ENCYCLO_MISC.forEach(m=>{if(currentMode==='tx'||hasEncycloContent(m.id))list.push({id:m.id});});
+    packCours.grooves.forEach(g=>{if(currentMode==='tx'||hasEncycloContent(g.id))list.push({id:g.id});});
+    packCours.patterns.forEach(p=>{const k=p.encyclo_ref||p.id;if(currentMode==='tx'||hasEncycloContent(k))list.push({id:k});});
+    return list;
+  };
+  attachSwipe(pb,_getEncList,()=>currentEncycloId,(key)=>{
+    _encPreview=null;encycloDir=false;updateEncycloSaveBtn();
+    showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);
   });
-  // Patterns ensuite (clé = p.encyclo_ref si présent, sinon p.id)
-  packCours.patterns.forEach(p=>{
-    const key=p.encyclo_ref||p.id;
-    const hasC=hasEncycloContent(key);
-    if(currentMode!=='tx'&&!hasC) return; // SX : masquer les entrées vides
-    const o=document.createElement('option');o.value=key;o.textContent=p.nom;
-    if(!hasC)o.style.color='#aaa';
-    sel.appendChild(o);
-  });
-  if(currentEncycloId)sel.value=currentEncycloId;
-  sel.addEventListener('change',()=>{
-    // Quitter le mode aperçu TX si l'utilisateur navigue
-    if(_encPreview && sel.value !== _encPreview.canonicalKey){
-      _encPreview = null;
-      [...sel.options].filter(o=>o.dataset.previewOpt).forEach(o=>sel.removeChild(o));
-    }
-    encycloDir=false; updateEncycloSaveBtn(); // nouvelle entrée = état frais
-    if(sel.value){
-      showEncycloEntry(sel.value);
-      if(!encycloOuvert)toggleEncyclo(true);
-    }
-  });
-  sel.addEventListener('pointerdown',e=>e.stopPropagation());
-  bar.appendChild(sel);
 
   const saveBtnEnc=document.createElement('button');
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
   saveBtnEnc.addEventListener('click', () => {
-    // Sauvegarde locale uniquement — la publication DB passe par le panel ···
     if (currentEncycloId && packCours.encyclo?.[currentEncycloId]) {
       if (authProfile?.role === 'mx') {
         packCours.encyclo[currentEncycloId]._pendingDB = true;
       } else {
-        // TX : marquer pour affichage dans panel ··· (pas de push DB direct)
         packCours.encyclo[currentEncycloId]._pendingTX = true;
       }
     }
@@ -4514,10 +4498,6 @@ function buildEncycloSection(){
     else showToast('Encyclopédie sauvegardée localement — soumettez via ···', 'info');
   });
   bar.appendChild(saveBtnEnc);
-  bar.appendChild(mkBtnMenu(()=>openPresetModal({
-    type:'encyclo',currentId:currentEncycloId,label:'Encyclopédie',accent:'#4a6d40',bg:'#f0f5ee',
-    onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);buildEncycloSection();}
-  })));
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -4554,8 +4534,8 @@ function toggleEncyclo(open){
 
 function showEncycloEntry(key){
   currentEncycloId=key;
-  const sel=document.getElementById('encyclo-select');
-  if(sel&&[...sel.options].some(o=>o.value===key))sel.value=key;
+  const pb=document.getElementById('encyclo-preset-btn');
+  if(pb)pb.textContent=getEncycloDisplayName(key);
   renderEncyclo(key);
 }
 
@@ -4576,6 +4556,7 @@ function wrapMdSelection(el,marker){
   document.execCommand('insertText',false,marker+(selected||'texte')+marker);
 }
 
+let _savedRange=null; // sauvegarde de sélection pour le picker lien
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
@@ -4583,9 +4564,10 @@ function renderEncyclo(key){
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
   const entry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
-  if(!entry || (!isPreview && currentMode!=='tx' && !hasEncycloContent(key))){
+  const isEditable = !isPreview && (currentMode==='tx' || authProfile?.role==='mx');
+  if(!entry || (!isPreview && !isEditable && !hasEncycloContent(key))){
     const p=document.createElement('p');p.className='encyclo-vide';
-    p.textContent=currentMode==='tx'?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
+    p.textContent=isEditable?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
     body.appendChild(p);return;
   }
   if(isPreview){
@@ -4594,7 +4576,6 @@ function renderEncyclo(key){
     banner.textContent='👁 Aperçu — proposition en attente d\'approbation';
     body.appendChild(banner);
   }
-  const isTX = isPreview ? false : currentMode==='tx'; // aperçu = lecture seule
   const ensureEnc=()=>{if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));};
 
   const _attachLinks=(el)=>{
@@ -4604,21 +4585,76 @@ function renderEncyclo(key){
     }));
   };
 
-  // Toolbar markdown (TX uniquement)
-  if(isTX){
-    const toolbar=document.createElement('div');toolbar.className='enc-toolbar';
-    const mkTb=(lbl,title,action)=>{const b=document.createElement('button');b.className='enc-tb-btn';b.textContent=lbl;b.title=title;b.addEventListener('mousedown',e=>{e.preventDefault();action();});toolbar.appendChild(b);};
-    mkTb('G','Gras (Ctrl+B)',()=>wrapMdSelection(document.activeElement,'**'));
-    mkTb('I','Italique (Ctrl+I)',()=>wrapMdSelection(document.activeElement,'_'));
+  // Toolbar markdown (TX + MX) — cachée par défaut, visible au focus d'un champ éditable
+  let toolbar=null;
+  if(isEditable){
+    toolbar=document.createElement('div');toolbar.className='enc-toolbar enc-toolbar-hidden';
+    let _pickerEl=null;
+    const closePicker=()=>{if(_pickerEl){_pickerEl.remove();_pickerEl=null;}};
+
+    const mkTb=(lbl,title,action)=>{
+      const b=document.createElement('button');b.className='enc-tb-btn';b.textContent=lbl;b.title=title;
+      b.addEventListener('mousedown',e=>{e.preventDefault();action(b);});
+      toolbar.appendChild(b);return b;
+    };
+    mkTb('G','Gras',()=>wrapMdSelection(document.activeElement,'**'));
+    mkTb('I','Italique',()=>wrapMdSelection(document.activeElement,'_'));
+    mkTb('🔗','Lien interne',(btn)=>{
+      if(_pickerEl){closePicker();return;}
+      // Sauvegarder la sélection courante avant que le focus change
+      const sel=window.getSelection();
+      _savedRange=(sel&&sel.rangeCount)?sel.getRangeAt(0).cloneRange():null;
+      // Construire la liste des entrées
+      const allEntries=[];
+      ENCYCLO_MISC.forEach(m=>allEntries.push({id:m.id,nom:m.nom}));
+      packCours.grooves.forEach(g=>allEntries.push({id:g.id,nom:g.nom}));
+      packCours.patterns.forEach(p=>allEntries.push({id:p.encyclo_ref||p.id,nom:p.nom}));
+      // Créer le picker
+      _pickerEl=document.createElement('div');_pickerEl.className='enc-link-picker';
+      const search=document.createElement('input');search.className='enc-lp-search';search.placeholder='Rechercher…';search.type='text';
+      _pickerEl.appendChild(search);
+      const list=document.createElement('div');list.className='enc-lp-list';
+      _pickerEl.appendChild(list);
+      const renderList=(q)=>{
+        list.innerHTML='';
+        allEntries.filter(e=>!q||e.nom.toLowerCase().includes(q.toLowerCase())).forEach(e=>{
+          const it=document.createElement('button');it.className='enc-lp-item';it.textContent=e.nom;
+          it.addEventListener('mousedown',ev=>{
+            ev.preventDefault();
+            closePicker();
+            // Restaurer la sélection, insérer le lien markdown
+            const active=document.activeElement;
+            if(_savedRange){
+              const s=window.getSelection();s.removeAllRanges();s.addRange(_savedRange);
+            }
+            const selected=(window.getSelection()?.toString())||e.nom;
+            document.execCommand('insertText',false,'['+selected+']('+e.id+')');
+            _savedRange=null;
+          });
+          list.appendChild(it);
+        });
+      };
+      renderList('');
+      search.addEventListener('input',()=>renderList(search.value));
+      toolbar.appendChild(_pickerEl);
+      // Fermer picker si clic extérieur
+      setTimeout(()=>document.addEventListener('pointerdown',function h(e){if(!_pickerEl?.contains(e.target)){closePicker();document.removeEventListener('pointerdown',h);}},{once:false}),0);
+      search.focus();
+    });
+
+    const onFocus=()=>toolbar.classList.remove('enc-toolbar-hidden');
+    const onBlur=()=>setTimeout(()=>{if(!body.querySelector('[contenteditable]:focus'))toolbar.classList.add('enc-toolbar-hidden');},150);
+    body._encShowToolbar=onFocus;
+    body._encHideToolbar=onBlur;
     body.appendChild(toolbar);
   }
 
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';
-  if(isTX){
+  if(isEditable){
     chapo.contentEditable='true';
     chapo.textContent=entry.chapo;
-    chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;});
-    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
+    chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;body._encShowToolbar?.();});
+    chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
   } else {
     chapo.innerHTML=parseMarkdown(entry.chapo);
     _attachLinks(chapo);
@@ -4626,17 +4662,17 @@ function renderEncyclo(key){
   body.appendChild(chapo);
 
   const ul=document.createElement('ul');ul.className='encyclo-bullets';
-  entry.bullets.forEach(([bk,bv],i)=>{
+  (entry.bullets||[]).forEach(([bk,bv],i)=>{
     const li=document.createElement('li');
     const k=document.createElement('span');k.className='encyclo-bkey';
     const v=document.createElement('span');v.className='encyclo-bval';
-    if(isTX){
+    if(isEditable){
       k.contentEditable='true';k.textContent=bk;
-      k.addEventListener('focus',()=>{k.dataset.orig=k.textContent;});
-      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;if(k.textContent!==k.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
+      k.addEventListener('focus',()=>{k.dataset.orig=k.textContent;body._encShowToolbar?.();});
+      k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;if(k.textContent!==k.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
       v.contentEditable='true';v.textContent=bv;
-      v.addEventListener('focus',()=>{v.dataset.orig=v.textContent;});
-      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;if(v.textContent!==v.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}});
+      v.addEventListener('focus',()=>{v.dataset.orig=v.textContent;body._encShowToolbar?.();});
+      v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;if(v.textContent!==v.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
     } else {
       k.textContent=bk;
       v.innerHTML=parseMarkdown(bv);
@@ -4644,8 +4680,8 @@ function renderEncyclo(key){
     }
     li.appendChild(k);li.appendChild(v);ul.appendChild(li);
   });
-  // Bouton + Ajouter bullet (TX uniquement)
-  if(isTX){
+  // Bouton + Ajouter bullet (TX + MX uniquement)
+  if(isEditable){
     const addBullet=document.createElement('button');addBullet.className='enc-add-bullet';addBullet.textContent='＋ Ajouter une note';
     addBullet.addEventListener('click',()=>{
       ensureEnc();
@@ -4683,15 +4719,13 @@ function updateGrooveSelect(){
   if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));}
 }
 
-// Sélectionne automatiquement une entrée dans le menu Encyclopédie (sans ouvrir la section)
-function updateEncycloSelect(key){
+// Sélectionne automatiquement une entrée dans l'encyclopédie (sans ouvrir la section)
+function updateEncycloPresetBtn(key){
   if(!key) return;
   currentEncycloId=key;
-  const sel=document.getElementById('encyclo-select');
-  if(sel&&[...sel.options].some(o=>o.value===key)){
-    sel.value=key;
-    if(encycloOuvert) renderEncyclo(key);
-  }
+  const pb=document.getElementById('encyclo-preset-btn');
+  if(pb)pb.textContent=getEncycloDisplayName(key);
+  if(encycloOuvert) renderEncyclo(key);
 }
 
 function updateGlobalSpeedBtns(){
@@ -6092,14 +6126,6 @@ function buildApprobationsSection() {
       if (!enc) return;
       // Aperçu TX sans modifier packCours.encyclo (évite publication accidentelle)
       _encPreview = { canonicalKey, chapo: enc.chapo || '', bullets: enc.bullets || [] };
-      // Ajouter l'option au select si absente (articles sans contenu école filtrés en mode MX)
-      const encSel = document.getElementById('encyclo-select');
-      if (encSel && ![...encSel.options].some(o => o.value === canonicalKey)) {
-        const o = document.createElement('option');
-        o.value = canonicalKey; o.textContent = '👁 ' + getEncycloDisplayName(canonicalKey);
-        o.dataset.previewOpt = '1';
-        encSel.appendChild(o);
-      }
       showEncycloEntry(canonicalKey);
       if (!encycloOuvert) toggleEncyclo(true);
       document.getElementById('panel-settings')?.classList.remove('open');
@@ -8661,7 +8687,7 @@ function start(){
   render();
 
   // Sélectionner le groove courant dans l'encyclopédie
-  updateEncycloSelect(currentGrooveId);
+  updateEncycloPresetBtn(currentGrooveId);
 
   // Mettre à jour l'affichage tempo
   updateBeatDisplay();

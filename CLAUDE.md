@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.13** (session 2026-05-02)
+**v3.8.14** (session 2026-05-03)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.14 | Encyclo : label "Encyclo", bouton `pm-preset-btn` + swipe, toolbar G/I/🔗 focus-driven (TX+MX), link picker interne |
 | v3.8.13 | Encyclopédie unifiée sous `openPresetModal` : colonne catégories, filtre famille secondaire, recherche, markdown display, toolbar G/I/•+ TX |
 | v3.8.12 | `changeSig` silencieux : mise à jour `groove.signature` sans dirty/publish ; `symFromFelBeatSteps(4)` = `♩♩` |
 | v3.8.11 | Refacto timing : `posToSPM`/`spmToPos` utilisent `felBeatSteps` ; `buildSigFromControls` cosmétique pur |
