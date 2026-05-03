@@ -359,6 +359,7 @@ body.dark-mode .btn-enc-nav{background:#2a2926;color:#aaa;border-color:#555}
 body.dark-mode .btn-enc-edit{background:#2a2926;color:#c8c5c0;border-color:#555}
 body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff;border-color:#4a6d40}
 body.dark-mode #enc-floating-toolbar.visible{background:#2d4a28;border-top-color:#3a5c32}
+body.dark-mode #encyclo-body.enc-edit-active{background:rgba(74,109,64,.12)}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
 body.dark-mode .enc-lp-search{background:#161e14;border-bottom-color:#333}
 body.dark-mode .enc-lp-item{border-bottom-color:#2a3028;color:#c0d4b8}
@@ -942,7 +943,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.19</span>
+      <span class="app-version">v3.8.20</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4701,6 +4702,7 @@ let _savedRange=null; // sauvegarde de sélection pour le picker lien
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
+  let _focusedBulletIdx=null; // section focalisée : null=chapo, ≥0=index bullet
   // Aperçu TX : afficher le contenu de la proposition sans modifier packCours
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
@@ -4757,16 +4759,14 @@ function renderEncyclo(key){
       });
     });
 
-    // Index de la section focalisée (null=chapo, ≥0=bullet)
-    let _focusedBulletIdx=null;
-
     // Boutons ＋ note et − supprimer dans la toolbar
     const sepTb=document.createElement('span');sepTb.style.cssText='flex:1';tb.appendChild(sepTb);
     const addTb=document.createElement('button');addTb.className='enc-tb-btn';addTb.textContent='＋ Note';addTb.title='Ajouter une note';
     addTb.addEventListener('mousedown',e=>{
       e.preventDefault();
       ensureEnc();if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
-      packCours.encyclo[key].bullets.push(['Titre','']);
+      const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:packCours.encyclo[key].bullets.length;
+      packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
       encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
     });
     tb.appendChild(addTb);
