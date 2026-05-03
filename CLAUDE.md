@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.21** (session 2026-05-03)
+**v3.8.22** (session 2026-05-03)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.22 | Toolbar encyclo → top:56px (sous top-bar, plus fiable mobile) ; dark mode CE vert ; cohérence volets ; btn-view cadre doré ; "Encyclo" vert |
 | v3.8.21 | btn-view ⊞/◎ déplacé dans groove-bar (avant Patterns ▶) ; SX par défaut, TX requiert auth Google |
 | v3.8.20 | Encyclo : fix scoping `_focusedBulletIdx` (− Suppr. + ＋ position curseur), tint vert dark mode |
 | v3.8.19 | Encyclo : toolbar verte, ◀▶ historique, ＋/− dans toolbar, tint vert corps édition |
