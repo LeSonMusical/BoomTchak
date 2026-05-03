@@ -348,6 +348,10 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .enc-lp-list{overflow-y:auto;flex:1}
 .enc-lp-item{display:block;width:100%;text-align:left;padding:5px 10px;font-size:10px;border:none;border-bottom:1px solid #f0ede8;background:none;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .enc-lp-item:hover{background:#f0f5ee}
+.btn-enc-edit{font-size:11px;padding:1px 6px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;line-height:1.5;font-family:inherit}
+.btn-enc-edit.active{background:#4a6d40;color:#fff;border-color:#4a6d40}
+body.dark-mode .btn-enc-edit{background:#2a2926;color:#c8c5c0;border-color:#555}
+body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff;border-color:#4a6d40}
 body.dark-mode #enc-floating-toolbar{background:#2a2926;border-top-color:#3a3835}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
 body.dark-mode .enc-lp-search{background:#161e14;border-bottom-color:#333}
@@ -927,7 +931,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.16</span>
+      <span class="app-version">v3.8.17</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2302,6 +2306,7 @@ let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let _suppressGrooveDirty = false;
 let encycloDir = false;
+let encEditMode = false; // true = mode édition (TX/MX uniquement)
 let _encPreview = null; // { canonicalKey, chapo, bullets } — aperçu TX sans modifier packCours
 
 // ── Gestion unifiée des états "modifié" ──────────────────────────────────
@@ -4498,10 +4503,31 @@ function buildEncycloSection(){
     }
     saveToStorage(); encycloDir = false; updateEncycloSaveBtn(); flashSave(saveBtnEnc);
     buildPublishSection();
+    // Repasser en lecture après sauvegarde
+    encEditMode = false;
+    if(editBtn) editBtn.classList.remove('active');
+    if(currentEncycloId) renderEncyclo(currentEncycloId);
     if (authProfile?.role === 'mx') showToast('Modifications locales enregistrées — publiez via ···', 'info');
     else showToast('Encyclopédie sauvegardée localement — soumettez via ···', 'info');
   });
   bar.appendChild(saveBtnEnc);
+
+  // Bouton toggle édition (TX + MX uniquement)
+  let editBtn = null;
+  if (currentMode === 'tx' || authProfile?.role === 'mx') {
+    editBtn = document.createElement('button');
+    editBtn.className = 'btn-enc-edit' + (encEditMode ? ' active' : '');
+    editBtn.textContent = '✏️';
+    editBtn.title = encEditMode ? 'Quitter l\'édition' : 'Éditer';
+    editBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      encEditMode = !encEditMode;
+      editBtn.classList.toggle('active', encEditMode);
+      editBtn.title = encEditMode ? 'Quitter l\'édition' : 'Éditer';
+      if (currentEncycloId) renderEncyclo(currentEncycloId);
+    });
+    bar.appendChild(editBtn);
+  }
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet'+(encycloOuvert?' open':'');
@@ -4550,9 +4576,13 @@ function _adjustEncToolbar(){
 if(window.visualViewport)window.visualViewport.addEventListener('resize',_adjustEncToolbar);
 
 function showEncycloEntry(key){
+  if(key !== currentEncycloId) encEditMode=false; // retour en lecture à la navigation
   currentEncycloId=key;
   const pb=document.getElementById('encyclo-preset-btn');
   if(pb)pb.textContent=getEncycloDisplayName(key);
+  // Mettre à jour l'état visuel du bouton ✏️ si présent
+  const eb=document.querySelector('.btn-enc-edit');
+  if(eb){eb.classList.toggle('active',encEditMode);eb.title=encEditMode?'Quitter l\'édition':'Éditer';}
   renderEncyclo(key);
 }
 
@@ -4581,7 +4611,7 @@ function renderEncyclo(key){
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
   const entry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
-  const isEditable = !isPreview && (currentMode==='tx' || authProfile?.role==='mx');
+  const isEditable = !isPreview && encEditMode && (currentMode==='tx' || authProfile?.role==='mx');
   if(!entry || (!isPreview && !isEditable && !hasEncycloContent(key))){
     const p=document.createElement('p');p.className='encyclo-vide';
     p.textContent=isEditable?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
