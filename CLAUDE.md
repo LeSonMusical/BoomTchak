@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.15** (session 2026-05-03)
+**v3.8.16** (session 2026-05-03)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.16 | Fix toolbar encyclo : div placé avant `<script>`, `bottom:60px` (au-dessus bottom-bar), z-index:95, Visual Viewport corrigé |
 | v3.8.15 | Toolbar encyclo fixe en bas (`#enc-floating-toolbar`, position:fixed, Visual Viewport API) ; fix bug 🔗 picker (ne ferme plus immédiatement) |
 | v3.8.14 | Encyclo : label "Encyclo", bouton `pm-preset-btn` + swipe, toolbar G/I/🔗 focus-driven (TX+MX), link picker interne |
 | v3.8.13 | Encyclopédie unifiée sous `openPresetModal` : colonne catégories, filtre famille secondaire, recherche, markdown display, toolbar G/I/•+ TX |

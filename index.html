@@ -336,7 +336,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
-#enc-floating-toolbar{position:fixed;bottom:0;left:0;right:0;z-index:500;display:none;align-items:center;gap:4px;padding:6px 10px;background:#f8f7f5;border-top:1px solid #d0ccc5;box-shadow:0 -2px 8px rgba(0,0,0,.12)}
+#enc-floating-toolbar{position:fixed;bottom:60px;left:0;right:0;z-index:95;display:none;align-items:center;gap:4px;padding:6px 10px;background:#f8f7f5;border-top:1px solid #d0ccc5;box-shadow:0 -2px 8px rgba(0,0,0,.12)}
 #enc-floating-toolbar.visible{display:flex}
 .enc-tb-btn{font-size:10px;padding:3px 10px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
 .enc-tb-btn:hover{background:#f5f3f0;border-color:#999}
@@ -927,7 +927,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.15</span>
+      <span class="app-version">v3.8.16</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1256,6 +1256,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="midi-export-btn" id="midi-export-confirm">⬇ Télécharger .mid</button>
   </div>
 </div>
+
+<!-- Toolbar d'édition encyclopédie — fixe, au-dessus de la bottom-bar -->
+<div id="enc-floating-toolbar"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4531,15 +4534,17 @@ function toggleEncyclo(open){
   encycloOuvert=open;
   const content=document.getElementById('encyclo-content');
   if(content)content.classList.toggle('open',open);
-  if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb){tb.classList.remove('visible');tb.style.bottom='0';}}
+  if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb){tb.classList.remove('visible');tb.style.bottom='';}}
 }
 
 function _adjustEncToolbar(){
   const tb=document.getElementById('enc-floating-toolbar');
   if(!tb||!tb.classList.contains('visible'))return;
   if(window.visualViewport){
-    const kb=window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop;
-    tb.style.bottom=Math.max(0,Math.round(kb))+'px';
+    // kb = hauteur du clavier virtuel (0 si clavier fermé)
+    const kb=Math.max(0,window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop);
+    // Au-dessus du clavier (ou de la bottom-bar si clavier fermé)
+    tb.style.bottom=(kb>0?kb:60)+'px';
   }
 }
 if(window.visualViewport)window.visualViewport.addEventListener('resize',_adjustEncToolbar);
@@ -4600,7 +4605,7 @@ function renderEncyclo(key){
   // Toolbar fixe en bas de l'écran (TX + MX) — au-dessus du clavier mobile
   const tb=document.getElementById('enc-floating-toolbar');
   if(!isEditable){
-    if(tb){tb.classList.remove('visible');tb.innerHTML='';tb.style.bottom='0';}
+    if(tb){tb.classList.remove('visible');tb.innerHTML='';tb.style.bottom='';}
   } else if(tb){
     tb.innerHTML='';
     let _pickerEl=null;
@@ -4653,7 +4658,7 @@ function renderEncyclo(key){
     const showTb=()=>{tb.classList.add('visible');_adjustEncToolbar();};
     const hideTb=()=>setTimeout(()=>{
       if(!body.querySelector('[contenteditable]:focus')&&!tb.contains(document.activeElement)){
-        tb.classList.remove('visible');tb.style.bottom='0';closePicker();
+        tb.classList.remove('visible');tb.style.bottom='';closePicker();
       }
     },200);
     body._encShowToolbar=showTb;
@@ -8729,6 +8734,5 @@ setMetroGlobal(!metro.muted);
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
-<div id="enc-floating-toolbar"></div>
 </body>
 </html>
