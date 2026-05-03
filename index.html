@@ -336,18 +336,19 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
-.enc-toolbar{position:relative;display:flex;gap:3px;margin-bottom:4px;flex-wrap:wrap}
-.enc-toolbar.enc-toolbar-hidden{display:none}
-.enc-tb-btn{font-size:10px;padding:1px 6px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
+#enc-floating-toolbar{position:fixed;bottom:0;left:0;right:0;z-index:500;display:none;align-items:center;gap:4px;padding:6px 10px;background:#f8f7f5;border-top:1px solid #d0ccc5;box-shadow:0 -2px 8px rgba(0,0,0,.12)}
+#enc-floating-toolbar.visible{display:flex}
+.enc-tb-btn{font-size:10px;padding:3px 10px;border:1px solid #c0bdb7;border-radius:3px;background:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
 .enc-tb-btn:hover{background:#f5f3f0;border-color:#999}
 .enc-link{color:var(--ca,#4a3d8a);text-decoration:underline dotted;cursor:pointer}
 .enc-add-bullet{font-size:10px;margin-top:6px;padding:2px 8px;border:1px dashed #c0bdb7;border-radius:4px;background:none;color:#888;cursor:pointer;display:block}
 .enc-add-bullet:hover{border-color:#888;color:#444}
-.enc-link-picker{position:absolute;top:calc(100% + 2px);left:0;z-index:200;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);width:220px;max-height:200px;display:flex;flex-direction:column;overflow:hidden}
+.enc-link-picker{position:absolute;bottom:calc(100% + 4px);top:auto;left:0;z-index:600;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 -4px 16px rgba(0,0,0,.15);width:220px;max-height:200px;display:flex;flex-direction:column;overflow:hidden}
 .enc-lp-search{font-size:10px;padding:4px 8px;border:none;border-bottom:1px solid #eee;outline:none;background:#f8f7f5}
 .enc-lp-list{overflow-y:auto;flex:1}
 .enc-lp-item{display:block;width:100%;text-align:left;padding:5px 10px;font-size:10px;border:none;border-bottom:1px solid #f0ede8;background:none;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .enc-lp-item:hover{background:#f0f5ee}
+body.dark-mode #enc-floating-toolbar{background:#2a2926;border-top-color:#3a3835}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
 body.dark-mode .enc-lp-search{background:#161e14;border-bottom-color:#333}
 body.dark-mode .enc-lp-item{border-bottom-color:#2a3028;color:#c0d4b8}
@@ -926,7 +927,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.14</span>
+      <span class="app-version">v3.8.15</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4530,7 +4531,18 @@ function toggleEncyclo(open){
   encycloOuvert=open;
   const content=document.getElementById('encyclo-content');
   if(content)content.classList.toggle('open',open);
+  if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb){tb.classList.remove('visible');tb.style.bottom='0';}}
 }
+
+function _adjustEncToolbar(){
+  const tb=document.getElementById('enc-floating-toolbar');
+  if(!tb||!tb.classList.contains('visible'))return;
+  if(window.visualViewport){
+    const kb=window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop;
+    tb.style.bottom=Math.max(0,Math.round(kb))+'px';
+  }
+}
+if(window.visualViewport)window.visualViewport.addEventListener('resize',_adjustEncToolbar);
 
 function showEncycloEntry(key){
   currentEncycloId=key;
@@ -4585,31 +4597,30 @@ function renderEncyclo(key){
     }));
   };
 
-  // Toolbar markdown (TX + MX) — cachée par défaut, visible au focus d'un champ éditable
-  let toolbar=null;
-  if(isEditable){
-    toolbar=document.createElement('div');toolbar.className='enc-toolbar enc-toolbar-hidden';
+  // Toolbar fixe en bas de l'écran (TX + MX) — au-dessus du clavier mobile
+  const tb=document.getElementById('enc-floating-toolbar');
+  if(!isEditable){
+    if(tb){tb.classList.remove('visible');tb.innerHTML='';tb.style.bottom='0';}
+  } else if(tb){
+    tb.innerHTML='';
     let _pickerEl=null;
     const closePicker=()=>{if(_pickerEl){_pickerEl.remove();_pickerEl=null;}};
 
     const mkTb=(lbl,title,action)=>{
       const b=document.createElement('button');b.className='enc-tb-btn';b.textContent=lbl;b.title=title;
       b.addEventListener('mousedown',e=>{e.preventDefault();action(b);});
-      toolbar.appendChild(b);return b;
+      tb.appendChild(b);return b;
     };
     mkTb('G','Gras',()=>wrapMdSelection(document.activeElement,'**'));
     mkTb('I','Italique',()=>wrapMdSelection(document.activeElement,'_'));
-    mkTb('🔗','Lien interne',(btn)=>{
+    mkTb('🔗','Lien interne',()=>{
       if(_pickerEl){closePicker();return;}
-      // Sauvegarder la sélection courante avant que le focus change
       const sel=window.getSelection();
       _savedRange=(sel&&sel.rangeCount)?sel.getRangeAt(0).cloneRange():null;
-      // Construire la liste des entrées
       const allEntries=[];
       ENCYCLO_MISC.forEach(m=>allEntries.push({id:m.id,nom:m.nom}));
       packCours.grooves.forEach(g=>allEntries.push({id:g.id,nom:g.nom}));
       packCours.patterns.forEach(p=>allEntries.push({id:p.encyclo_ref||p.id,nom:p.nom}));
-      // Créer le picker
       _pickerEl=document.createElement('div');_pickerEl.className='enc-link-picker';
       const search=document.createElement('input');search.className='enc-lp-search';search.placeholder='Rechercher…';search.type='text';
       _pickerEl.appendChild(search);
@@ -4622,11 +4633,7 @@ function renderEncyclo(key){
           it.addEventListener('mousedown',ev=>{
             ev.preventDefault();
             closePicker();
-            // Restaurer la sélection, insérer le lien markdown
-            const active=document.activeElement;
-            if(_savedRange){
-              const s=window.getSelection();s.removeAllRanges();s.addRange(_savedRange);
-            }
+            if(_savedRange){const s=window.getSelection();s.removeAllRanges();s.addRange(_savedRange);}
             const selected=(window.getSelection()?.toString())||e.nom;
             document.execCommand('insertText',false,'['+selected+']('+e.id+')');
             _savedRange=null;
@@ -4636,17 +4643,21 @@ function renderEncyclo(key){
       };
       renderList('');
       search.addEventListener('input',()=>renderList(search.value));
-      toolbar.appendChild(_pickerEl);
-      // Fermer picker si clic extérieur
-      setTimeout(()=>document.addEventListener('pointerdown',function h(e){if(!_pickerEl?.contains(e.target)){closePicker();document.removeEventListener('pointerdown',h);}},{once:false}),0);
-      search.focus();
+      tb.appendChild(_pickerEl);
+      // Fermer si clic hors de la toolbar (ne pas inclure search.focus() pour éviter le blur du CE)
+      setTimeout(()=>document.addEventListener('pointerdown',function h(ev){
+        if(!tb.contains(ev.target)){closePicker();document.removeEventListener('pointerdown',h);}
+      }),0);
     });
 
-    const onFocus=()=>toolbar.classList.remove('enc-toolbar-hidden');
-    const onBlur=()=>setTimeout(()=>{if(!body.querySelector('[contenteditable]:focus'))toolbar.classList.add('enc-toolbar-hidden');},150);
-    body._encShowToolbar=onFocus;
-    body._encHideToolbar=onBlur;
-    body.appendChild(toolbar);
+    const showTb=()=>{tb.classList.add('visible');_adjustEncToolbar();};
+    const hideTb=()=>setTimeout(()=>{
+      if(!body.querySelector('[contenteditable]:focus')&&!tb.contains(document.activeElement)){
+        tb.classList.remove('visible');tb.style.bottom='0';closePicker();
+      }
+    },200);
+    body._encShowToolbar=showTb;
+    body._encHideToolbar=hideTb;
   }
 
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';
@@ -8718,5 +8729,6 @@ setMetroGlobal(!metro.muted);
 showEncycloEntry('poumtchak');                                 // Encyclo → page BoomTchak
 setView(true);                                                 // Vue circulaire par défaut
 </script>
+<div id="enc-floating-toolbar"></div>
 </body>
 </html>
