@@ -943,11 +943,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.20</span>
+      <span class="app-version">v3.8.21</span>
     </div>
   </div>
   <div class="top-bar-center">
-    <button class="btn-view" id="btn-view" title="Vue">⊞</button>
     <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-icon">🔕</span><span class="metro-bpm"> ♩100</span></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
   </div>
@@ -2313,7 +2312,7 @@ function togglePlay(){
 let _pmRefresh = null; // callback pour rafraîchir le modal preset ouvert
 let _pmFamFilter = {}; // mémorisation filtre famille par type (groove, pattern…)
 let currentGrooveId = null;
-let currentMode = new URLSearchParams(location.search).get('mode')==='sx'?'sx':'tx';
+let currentMode = 'sx'; // SX par défaut ; passe en TX après connexion Google
 let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let _suppressGrooveDirty = false;
@@ -3392,6 +3391,13 @@ function buildGrooveSection(){
     if(!encycloOuvert)toggleEncyclo(true);
   });
   bar.appendChild(btnI);
+
+  const btnView=document.createElement('button');
+  btnView.id='btn-view';btnView.className='btn-view';
+  btnView.textContent=circleView?'⊞':'◎';
+  btnView.title=circleView?'Vue linéaire':'Vue circulaire';
+  btnView.addEventListener('click',()=>setView(!circleView));
+  bar.appendChild(btnView);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
@@ -5360,6 +5366,7 @@ async function sbLogout() {
   authProfile = null;
   localStorage.removeItem('sb_session');
   renderAuthUI();
+  setMode('sx'); // Déconnexion → retour en SX
   buildPublishSection();
   // Invalider le token côté serveur en arrière-plan (best-effort)
   if (tokenToInvalidate) {
@@ -7136,6 +7143,7 @@ async function initAuth() {
       return;
     }
     renderAuthUI();
+    setMode('tx'); // Connecté → mode TX automatique
     if (wasCallback || !packCours.patterns.some(p => p.source === 'school')) {
       await sbSyncSchoolPool();
     } else {
@@ -8693,7 +8701,7 @@ function attachEvents(){
 
 
   // ── Vue circulaire / linéaire ──
-  document.getElementById('btn-view').addEventListener('click',()=>setView(!circleView));
+  // btn-view créé et écouté dans buildGrooveSection()
   window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); });
 
   // btn-sons remplacé par btn-vol (géré dans le bloc Btn Vol ci-dessus)
@@ -8736,12 +8744,15 @@ function attachEvents(){
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
 
-  // ── Mode TX ──
+  // ── Mode TX (requiert connexion Google) ──
   document.getElementById('btn-sx-tx').addEventListener('click',()=>{
+    if(currentMode==='sx'&&!authProfile){showToast('Connexion Google requise pour le mode TX','info');return;}
     setMode(currentMode==='tx'?'sx':'tx');
   });
   document.addEventListener('keydown',e=>{
-    if(e.code==='Tab'){e.preventDefault();setMode(currentMode==='tx'?'sx':'tx');}
+    if(e.code==='Tab'){e.preventDefault();
+      if(currentMode==='sx'&&!authProfile){showToast('Connexion Google requise pour le mode TX','info');return;}
+      setMode(currentMode==='tx'?'sx':'tx');}
   });
 
   // ── Save sheet groove ──
