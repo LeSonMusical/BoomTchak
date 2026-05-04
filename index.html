@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.25</span>
+      <span class="app-version">v3.8.26</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2866,7 +2866,7 @@ function openPresetModal(cfg){
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
           row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
           // Touch drag
-          row.addEventListener('touchstart',e=>{_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:true});
+          row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
           row.addEventListener('touchmove',e=>{
             e.preventDefault();if(!_famDragSrcId)return;
             const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
@@ -3649,13 +3649,13 @@ function buildLayers(){
       state[li].pattern=rotate(state[li].pattern,1);
       state[li].shiftN=((state[li].shiftN||0)-1+state[li].pattern.length)%state[li].pattern.length;
       shNum.textContent=String(state[li].shiftN);
-      buildStepsDOM(li,state[li].wrapped); _shiftMark();
+      buildStepsDOM(li,state[li].wrapped); _shiftMark(); if(circleView)drawCircles();
     });
     bShR.addEventListener('click',()=>{
       state[li].pattern=rotate(state[li].pattern,state[li].pattern.length-1);
       state[li].shiftN=((state[li].shiftN||0)+1)%state[li].pattern.length;
       shNum.textContent=String(state[li].shiftN);
-      buildStepsDOM(li,state[li].wrapped); _shiftMark();
+      buildStepsDOM(li,state[li].wrapped); _shiftMark(); if(circleView)drawCircles();
     });
 
     // — Resize − N + —
@@ -3665,6 +3665,7 @@ function buildLayers(){
     const _reszMark=()=>{
       nPas.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,state[li].wrapped);
+      if(circleView)drawCircles();
       setLayerDirty(li,true);
       grooveDirty=true; updateGrooveSaveBtn();
       updateSwapBtn();
@@ -3692,17 +3693,17 @@ function buildLayers(){
     bSwap.addEventListener('click',()=>{
       const p=state[li].pattern,h=Math.floor(p.length/2);
       state[li].pattern=[...p.slice(h),...p.slice(0,h)];
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); if(circleView)drawCircles(); setLayerDirty(li,true);
     });
     const bInv=document.createElement('button');bInv.className='btn-mod btn-mod-sm';bInv.textContent='⇅';bInv.title='Inverser les accents (X↔x, silences inchangés)';
     bInv.addEventListener('click',()=>{
       state[li].pattern=state[li].pattern.map(p=>p==='X'?'x':p==='x'?'X':p);
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); if(circleView)drawCircles(); setLayerDirty(li,true);
     });
     const bRot=document.createElement('button');bRot.className='btn-mod btn-mod-sm';bRot.textContent='⊙';bRot.title='Rotation des accents (. → x → X → .)';
     bRot.addEventListener('click',()=>{
       state[li].pattern=state[li].pattern.map(p=>p==='.'?'x':p==='x'?'X':'.');
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); if(circleView)drawCircles(); setLayerDirty(li,true);
     });
     const bDice=document.createElement('button');bDice.className='btn-mod btn-mod-sm';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
     bDice.addEventListener('click',()=>{
@@ -3714,7 +3715,7 @@ function buildLayers(){
       }
       state[li].pattern=arr;
       shNum.textContent='0';
-      buildStepsDOM(li,state[li].wrapped); setLayerDirty(li,true);
+      buildStepsDOM(li,state[li].wrapped); if(circleView)drawCircles(); setLayerDirty(li,true);
     });
 
     // — Magie ✨ (Euclide + Markov, intensité aléatoire linéaire) —
@@ -3876,6 +3877,7 @@ function onStepClick(li,si,el){
   state[li].pattern[si]=newVal;
   el.className='step'+(newVal==='X'?' on':newVal==='x'?' soft':'');
   if(state[li].stepPos===si)el.classList.add('cur');
+  if(circleView)drawCircles();
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
@@ -5573,8 +5575,11 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
         source: row.source || 'school', approved: true, ownerId: row.owner_id,
       };
       const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
-      if (idx >= 0) packCours.metroPresets[idx] = preset;
-      else packCours.metroPresets.push(preset);
+      if (idx >= 0) {
+        const ex = packCours.metroPresets[idx];
+        if (ex.source === 'teacher' && ex.localStatus) return; // proposition TX en attente
+        packCours.metroPresets[idx] = { ...preset, felBeatSteps: preset.felBeatSteps ?? ex.felBeatSteps };
+      } else packCours.metroPresets.push(preset);
     });
     rebuildMetroPresets();
     buildSigSelector();
@@ -5863,8 +5868,12 @@ async function _syncMetroPresetsOnly(rows) {
       source: row.source || 'school', approved: true, ownerId: row.owner_id,
     };
     const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
-    if (idx >= 0) packCours.metroPresets[idx] = preset;
-    else packCours.metroPresets.push(preset);
+    if (idx >= 0) {
+      const ex = packCours.metroPresets[idx];
+      // Ne pas écraser une proposition TX en attente
+      if (ex.source === 'teacher' && ex.localStatus) return;
+      packCours.metroPresets[idx] = { ...preset, felBeatSteps: preset.felBeatSteps ?? ex.felBeatSteps };
+    } else packCours.metroPresets.push(preset);
   });
   saveToStorage(); rebuildMetroPresets(); buildSigSelector(); _pmRefresh?.();
 }

@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.25** (session 2026-05-03)
+**v3.8.26** (session 2026-05-04)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.26 | Fix 4 régressions : felBeatSteps préservé au sync DB ; preset TX non écrasé au sync ; drag famille touchstart passive:false ; drawCircles() sur tous les handlers de modif pattern (resize, shift, swap, invert, rotate, dice, step click) |
 | v3.8.25 | Écraser preset métro TX → Propositions (pas push direct) ; drag handle hauteur fixe (font 12px) ; border gauche colorée en mode réordonner ; .pm-item.pm-cur couleur accent en dark mode |
 | v3.8.24 | Fix pas-num dans _patOnSelect ; changeSig/previewMetroPreset → grooveDirty ; sync groove au temps (pas mesure) |
 | v3.8.23 | Article "Temps musical" ; Encyclo neutre (vert = édition seul) ; sans bordures crayon/vue ; preset groove texte vif/bord discret ; fix cercle nb pas |
