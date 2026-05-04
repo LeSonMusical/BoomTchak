@@ -339,7 +339,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
-#enc-floating-toolbar{position:fixed;top:56px;left:0;right:0;z-index:95;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+#enc-floating-toolbar{position:fixed;top:56px;left:0;right:0;z-index:95;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 2px 8px rgba(0,0,0,.12);will-change:transform}
 #enc-floating-toolbar.visible{display:flex;background:#4a6d40;border-bottom-color:#3a5c32}
 .enc-tb-btn{font-size:11px;padding:3px 11px;border:1px solid rgba(255,255,255,.35);border-radius:3px;background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
 .enc-tb-btn:hover{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.6)}
@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.30</span>
+      <span class="app-version">v3.8.31</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4813,10 +4813,30 @@ function renderEncyclo(key){
     });
     tb.appendChild(delTb);
 
-    const showTb=()=>{body.classList.add('enc-edit-active');tb.classList.add('visible');};
+    // Nettoyer les anciens listeners VV si renderEncyclo est rappelé en cours d'édition
+    if(tb._vvSync){
+      window.visualViewport?.removeEventListener('resize',tb._vvSync);
+      window.visualViewport?.removeEventListener('scroll',tb._vvSync);
+    }
+    // Ancrer la toolbar au viewport visuel : compense le scroll du layout viewport
+    // quand le clavier OS apparaît (translateY = vv.offsetTop)
+    const _vvSync=()=>{
+      const vv=window.visualViewport;
+      if(vv) tb.style.transform='translateY('+Math.round(vv.offsetTop)+'px)';
+    };
+    tb._vvSync=_vvSync;
+    const showTb=()=>{
+      body.classList.add('enc-edit-active');tb.classList.add('visible');
+      _vvSync();
+      window.visualViewport?.addEventListener('resize',_vvSync);
+      window.visualViewport?.addEventListener('scroll',_vvSync);
+    };
     const hideTb=()=>setTimeout(()=>{
       if(!body.querySelector('[contenteditable]:focus')&&!tb.contains(document.activeElement)){
         tb.classList.remove('visible');
+        window.visualViewport?.removeEventListener('resize',_vvSync);
+        window.visualViewport?.removeEventListener('scroll',_vvSync);
+        tb.style.transform='';
       }
     },200);
     body._encShowToolbar=showTb;
