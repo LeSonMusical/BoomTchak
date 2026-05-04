@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.27</span>
+      <span class="app-version">v3.8.28</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2444,6 +2444,10 @@ function applyGroove(grooveId){
   grooveDirty=false; updateGrooveSaveBtn();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
 
+  // Préserver le mute-all utilisateur (court-tap btn-vol) à travers le changement de groove
+  const _btnV=document.getElementById('btn-vol');
+  const _wasMutedAll=_btnV?.classList.contains('muted');
+
   LAYERS.forEach((layer,li)=>{
     const gl=groove.layers[li];if(!gl)return;
     const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
@@ -2452,7 +2456,7 @@ function applyGroove(grooveId){
     state[li].pattern=seq;
     state[li].patternId=gl.patternId;
     state[li].stepPos=0;
-    state[li].muted=gl.mute||false;
+    state[li].muted=_wasMutedAll||(gl.mute||false);
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
     state[li].ternOn=gl.ternOn||false;
@@ -2485,16 +2489,15 @@ function applyGroove(grooveId){
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
 
-  // Resync si en lecture — aligner sur le prochain début de mesure du métronome
+  // Resync si en lecture — aligner sur le prochain début de mesure (temps 1 du métronome)
   if(playing){
     clearTimeout(schedTimerID);
     const now=getAC().currentTime;
-    // Steps restants jusqu'au prochain temps 1 (début de mesure)
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
-    // Sync au prochain temps (plus réactif qu'attendre la mesure entière)
-    const subdivision=currentSig.subdivision||2;
-    const stepsLeft=(subdivision-metroStepPos%subdivision)%subdivision;
+    // Sync au prochain temps 1 (pos 0 du metroPattern) pour que le groove démarre sur le 1er temps
+    const mpLen=Math.max(1,(currentSig.metroPattern||[]).length);
+    const stepsLeft=(mpLen-metroStepPos%mpLen)%mpLen;
     const syncTime=Math.max(now, metroNextBeatTime+stepsLeft*stepSec);
     LAYERS.forEach((_,li)=>{
       state[li].stepPos=0;
@@ -3518,6 +3521,8 @@ function buildLayers(){
       state[li].pattern=pat.sequence.split('');
       state[li].patternId=pat.id;
       state[li].stepPos=0;state[li].wrapped=false;
+      // Sync visuel : step 0 s'affiche quand l'audio joue step 0 (nextStepTime)
+      if(playing) state[li].startTime=state[li].nextStepTime;
       {const groove=getGroove(currentGrooveId);
        if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
        grooveDirty=true;updateGrooveSaveBtn();
