@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.26</span>
+      <span class="app-version">v3.8.27</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3902,7 +3902,7 @@ function saveLayerPattern(li, btn){
 function openPatSavePop(li, btn, srcPat){
   _pspLi = li; _pspBtn = btn;
   const nom = srcPat ? srcPat.nom : 'Pattern';
-  const canOverwrite = currentMode==='tx' || (srcPat && srcPat.source==='teacher');
+  const canOverwrite = currentMode==='tx' || authProfile?.role==='mx' || (srcPat && srcPat.source==='teacher');
 
   const box = document.getElementById('psp-box');
   box.className = 'psp-box psp-pattern';
@@ -4060,7 +4060,7 @@ function openGrooveSavePop(btn){
   const groove = getGroove(currentGrooveId); if(!groove) return;
   _pspContext = 'groove'; _pspGrooveId = groove.id; _pspBtn = btn;
   const nom = groove.nom;
-  const canOverwrite = currentMode==='tx' || (groove.source && groove.source==='teacher');
+  const canOverwrite = currentMode==='tx' || authProfile?.role==='mx' || (groove.source && groove.source==='teacher');
 
   const box = document.getElementById('psp-box');
   box.className = 'psp-box psp-groove';
@@ -4201,7 +4201,7 @@ function saveGroovePattern(btn){
 
 function showGrooveSaveSheet(groove){
   const nom=groove.nom;
-  const canOverwrite=currentMode==='tx'||(groove.source&&groove.source==='teacher');
+  const canOverwrite=currentMode==='tx'||authProfile?.role==='mx'||(groove.source&&groove.source==='teacher');
 
   document.getElementById('ss-title').textContent='« '+nom+' » modifié';
   document.getElementById('ss-overwrite-name').textContent=nom;
@@ -5213,6 +5213,19 @@ function drawCircles(){
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
     }
+    // Labels nb de pas par layer (coin supérieur gauche)
+    const isDark2 = document.body.classList.contains('dark-mode');
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    [0,1,2].forEach(li=>{
+      const n = state[li].pattern.length;
+      const col = CIRCLE_COLORS[li];
+      const y = 10 + li * 14;
+      ctx.beginPath(); ctx.arc(8, y, 4, 0, 2*Math.PI);
+      ctx.fillStyle = col.fill; ctx.fill();
+      ctx.fillStyle = isDark2 ? col.fill : col.stroke;
+      ctx.fillText(String(n), 16, y);
+    });
   }
 
   // Aiguilles — dégradé transparent au centre, opaque à leur cercle
