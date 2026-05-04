@@ -5068,7 +5068,7 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
-const CIRC_LABEL_W = 90; // strip gauche pour labels nb de pas + unité + durée (px, espace naturel du canvas)
+const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
 
 const CIRCLE_COLORS = [
   {fill:'#378ADD', stroke:'#185FA5', track:'rgba(55,138,221,0.25)'},   // grave — cercle intérieur
@@ -5088,7 +5088,7 @@ function resizeCanvas(){
   const r0 = 16*dotR/Math.PI;    // rayon cercle intérieur (~50.9px)
   const r2 = r0 + dotR*4;        // rayon cercle extérieur
   const szNatural = Math.round(2*(r2+dotR+6));   // diamètre naturel du cercle
-  const szW = szNatural + CIRC_LABEL_W;           // largeur canvas = cercle + strip labels
+  const szW = szNatural + 2 * CIRC_LABEL_W;       // canvas symétrique : cercle centré (cx = szW/2)
 
   // Sur desktop (≥600px) : le canvas partage la ligne avec les controls
   const frameW = frame ? frame.clientWidth : window.innerWidth;
@@ -5263,10 +5263,10 @@ function drawCircles(){
       ctx.fillStyle = col.fill; ctx.fill();
       ctx.font = 'bold 9px sans-serif';
       ctx.fillStyle = isDark2 ? col.fill : col.stroke;
-      ctx.fillText(n + 'p de ' + unit, 12, y1);
+      ctx.fillText(n + 'p ' + unit, 11, y1);
       ctx.font = '9px sans-serif';
       ctx.fillStyle = isDark2 ? '#aaa' : '#666';
-      ctx.fillText(durStr + ' temps', 12, y2);
+      ctx.fillText(durStr + ' tps', 11, y2);
     });
   }
 
