@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.29</span>
+      <span class="app-version">v3.8.30</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2000,6 +2000,7 @@ function changeSig(id) {
   syncMetroControls();
   renderMetroPatternViz();
   buildSigSelector();
+  if(circleView) drawCircles(); // maj cercle mesure sans play (signature affecte positions dots)
   if (!_suppressGrooveDirty) {
     const groove = getGroove(currentGrooveId);
     if (groove && id !== (groove.signature || '4/4')) {
@@ -5047,6 +5048,7 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
+const CIRC_LABEL_W = 36; // strip gauche pour labels nb de pas (px, espace naturel du canvas)
 
 const CIRCLE_COLORS = [
   {fill:'#378ADD', stroke:'#185FA5', track:'rgba(55,138,221,0.25)'},   // grave — cercle intérieur
@@ -5065,35 +5067,38 @@ function resizeCanvas(){
   const dotR = 10;
   const r0 = 16*dotR/Math.PI;    // rayon cercle intérieur (~50.9px)
   const r2 = r0 + dotR*4;        // rayon cercle extérieur
-  const szNatural = Math.round(2*(r2+dotR+6));   // taille naturelle du canvas
+  const szNatural = Math.round(2*(r2+dotR+6));   // diamètre naturel du cercle
+  const szW = szNatural + CIRC_LABEL_W;           // largeur canvas = cercle + strip labels
 
   // Sur desktop (≥600px) : le canvas partage la ligne avec les controls
-  // → on lui alloue ~45% de la largeur du frame (max szNatural)
   const frameW = frame ? frame.clientWidth : window.innerWidth;
   const isDesktop = window.innerWidth >= 600;
-  const maxW = isDesktop ? Math.min(szNatural, Math.floor(frameW*0.46)) : frameW - 16;
-  const scale = Math.min(1, maxW / szNatural);
+  const maxW = isDesktop ? Math.min(szW, Math.floor(frameW*0.46)) : frameW - 16;
+  const scale = Math.min(1, maxW / szW);
 
-  cv.width = szNatural; cv.height = szNatural;
+  cv.width = szW; cv.height = szNatural;
   cv.style.transform = scale < 1 ? 'scale('+scale+')' : '';
-  const physSz = Math.round(szNatural * scale);
+  const physW = Math.round(szW * scale);
+  const physH = Math.round(szNatural * scale);
   if(isDesktop){
     cv.style.transformOrigin = 'top left';
-    wrap.style.width  = physSz + 'px';
+    wrap.style.width  = physW + 'px';
   } else {
     cv.style.transformOrigin = 'top center';
     wrap.style.width  = '100%';
   }
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
-  wrap.style.height = (physSz + toggleH) + 'px';
+  wrap.style.height = (physH + toggleH) + 'px';
   drawCircles();
 }
 
 function drawCircles(){
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   const ctx = cv.getContext('2d');
-  const W = cv.width, H = cv.height, cx = W/2, cy = H/2;
+  const W = cv.width, H = cv.height;
+  const cx = CIRC_LABEL_W + H/2; // décalé à droite du strip labels (H = hauteur = diamètre)
+  const cy = H/2;
   const dotR = 10;
   const r0 = 16*dotR/Math.PI;
   const radii = [r0, r0+dotR*2, r0+dotR*4];
@@ -5218,7 +5223,7 @@ function drawCircles(){
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
     }
-    // Labels nb de pas par layer (coin supérieur gauche)
+    // Labels nb de pas par layer dans le strip gauche (éloigné du cercle)
     const isDark2 = document.body.classList.contains('dark-mode');
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
@@ -5226,10 +5231,10 @@ function drawCircles(){
       const n = state[li].pattern.length;
       const col = CIRCLE_COLORS[li];
       const y = 10 + li * 14;
-      ctx.beginPath(); ctx.arc(8, y, 4, 0, 2*Math.PI);
+      ctx.beginPath(); ctx.arc(5, y, 4, 0, 2*Math.PI);
       ctx.fillStyle = col.fill; ctx.fill();
       ctx.fillStyle = isDark2 ? col.fill : col.stroke;
-      ctx.fillText(String(n), 16, y);
+      ctx.fillText(n + 'p', 13, y);
     });
   }
 
@@ -5261,7 +5266,7 @@ function circleHitTest(x, y){
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   const dotR = 10, r0 = 16*dotR/Math.PI;
   const radii = [r0, r0+dotR*2, r0+dotR*4];
-  const cx = cv.width/2, cy = cv.height/2;
+  const cx = CIRC_LABEL_W + cv.height/2, cy = cv.height/2;
   for(let li=0; li<LAYERS.length; li++){
     const n = state[li].pattern.length, r = radii[li];
     const pts = [];
@@ -8751,6 +8756,7 @@ function attachEvents(){
     }
     _lastBpmPos=parseInt(this.value);
     updateBeatDisplay();
+    if(circleView && !playing) drawCircles(); // maj cercle mesure sans play
     saveGroove(); // persiste localement sans marquer le groove dirty
   });
   updateBeatDisplay();
