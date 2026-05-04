@@ -192,7 +192,7 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{border-color:#d4b86a;background:transparent;color:#C8961A;font-size:20px}
+.groove-bar .btn-view{background:transparent;color:#C8961A;font-size:20px}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -714,7 +714,7 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 .btn-mod-circle{display:none!important}                   /* bouton mod dans row1 : caché en vue linéaire */
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
-#rhythm-canvas{display:block;touch-action:none;cursor:default;max-width:100%;max-height:100%}
+#rhythm-canvas{display:block;touch-action:none;cursor:default}
 body.mode-tx #rhythm-canvas{cursor:pointer}
 #circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
@@ -868,7 +868,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{color:#C8961A;border-color:#6a5018}
+body.dark-mode .groove-bar .btn-view{color:#C8961A}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.31</span>
+      <span class="app-version">v3.8.32</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5068,7 +5068,7 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
-const CIRC_LABEL_W = 36; // strip gauche pour labels nb de pas (px, espace naturel du canvas)
+const CIRC_LABEL_W = 90; // strip gauche pour labels nb de pas + unité + durée (px, espace naturel du canvas)
 
 const CIRCLE_COLORS = [
   {fill:'#378ADD', stroke:'#185FA5', track:'rgba(55,138,221,0.25)'},   // grave — cercle intérieur
@@ -5097,14 +5097,15 @@ function resizeCanvas(){
   const scale = Math.min(1, maxW / szW);
 
   cv.width = szW; cv.height = szNatural;
-  cv.style.transform = scale < 1 ? 'scale('+scale+')' : '';
   const physW = Math.round(szW * scale);
   const physH = Math.round(szNatural * scale);
+  cv.style.width = physW + 'px';
+  cv.style.height = physH + 'px';
+  cv.style.transform = '';
+  cv.style.transformOrigin = '';
   if(isDesktop){
-    cv.style.transformOrigin = 'top left';
     wrap.style.width  = physW + 'px';
   } else {
-    cv.style.transformOrigin = 'top center';
     wrap.style.width  = '100%';
   }
   const toggleEl = document.getElementById('circle-mode-toggle');
@@ -5243,18 +5244,29 @@ function drawCircles(){
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
     }
-    // Labels nb de pas par layer dans le strip gauche (éloigné du cercle)
+    // Labels nb de pas + unité + durée par layer dans le strip gauche
     const isDark2 = document.body.classList.contains('dark-mode');
-    ctx.font = 'bold 10px sans-serif';
+    const fbs = currentSig.felBeatSteps || 2;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     [0,1,2].forEach(li=>{
       const n = state[li].pattern.length;
       const col = CIRCLE_COLORS[li];
-      const y = 10 + li * 14;
-      ctx.beginPath(); ctx.arc(5, y, 4, 0, 2*Math.PI);
+      const dbl = state[li].doubleOn, hlf = state[li].halfOn, trn = state[li].ternOn;
+      const unit = dbl&&trn?'1/16T':hlf&&trn?'1/4T':dbl?'1/16':hlf?'1/4':trn?'1/8T':'1/8';
+      const mult = dbl ? 2 : hlf ? 0.5 : 1;
+      const tf = trn ? 2/3 : 1;
+      const dur = Math.round(n * tf / (fbs * mult) * 100) / 100;
+      const durStr = dur.toString().replace('.', ',');
+      const y1 = 12 + li * 22;
+      const y2 = y1 + 11;
+      ctx.beginPath(); ctx.arc(5, y1, 3.5, 0, 2*Math.PI);
       ctx.fillStyle = col.fill; ctx.fill();
+      ctx.font = 'bold 9px sans-serif';
       ctx.fillStyle = isDark2 ? col.fill : col.stroke;
-      ctx.fillText(n + 'p', 13, y);
+      ctx.fillText(n + 'p de ' + unit, 12, y1);
+      ctx.font = '9px sans-serif';
+      ctx.fillStyle = isDark2 ? '#aaa' : '#666';
+      ctx.fillText(durStr + ' temps', 12, y2);
     });
   }
 

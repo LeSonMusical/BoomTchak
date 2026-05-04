@@ -68,11 +68,14 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.29** (session 2026-05-04)
+**v3.8.32** (session 2026-05-04)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.32 | Vue circulaire : suppression artefact bord canvas (CSS width/height au lieu de transform:scale) ; btn-view cadre gris uniforme (suppression override doré groove-bar) ; labels vue circulaire mesure étendus (unité step + durée en temps) ; CIRC_LABEL_W→90 |
+| v3.8.31 | Toolbar encyclopédie : Visual Viewport API (`transform:translateY(vv.offsetTop)`) pour rester visible quand le clavier OS apparaît sur mobile |
+| v3.8.30 | Labels vue circulaire mesure : déplacés à gauche (CIRC_LABEL_W=36, cx=CIRC_LABEL_W+H/2) ; unité "p" ; actualisation sans play (BPM slider + changeSig → drawCircles) |
 | v3.8.29 | btn-view ⊞/◎ : cadre visible (border:1px solid) en mode clair (gris) et sombre (doré discret), aligné visuellement sur pm-preset-btn |
 | v3.8.28 | Fix 3 bugs sync audio : désync pattern (startTime=nextStepTime) ; 1er temps métro décalé (sync au début de mesure via mpLen au lieu de subdivision) ; mute band ignoré au changement de groove (preserve _wasMutedAll) |
 | v3.8.27 | Labels nb de pas par layer en vue circulaire mesure (coin sup. gauche canvas) ; canOverwrite pattern/groove étendu à MX (authProfile?.role==='mx') → section Publier correcte |
@@ -194,12 +197,16 @@ Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonne
 2. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
 
 ## Résolu (session 2026-05-04)
+- ✅ **Artefact bord canvas vue circulaire** — `resizeCanvas` utilise `cv.style.width/height` au lieu de `transform:scale` ; `max-width/height` supprimés du CSS
+- ✅ **Cadre btn-view gris uniforme** — suppression `border-color:#d4b86a` dans `.groove-bar .btn-view` ; cadre gris `#ccc` partout
+- ✅ **Labels vue circulaire étendus** — 2 lignes par layer : "Np de UNIT" + "D temps" ; `CIRC_LABEL_W=90` ; unité = 1/8, 1/16, 1/4, 1/8T, 1/16T, 1/4T selon doubleOn/halfOn/ternOn ; durée = n×tf/(fbs×mult)
+- ✅ **Toolbar encyclo sur mobile (clavier OS)** — Visual Viewport API `transform:translateY(vv.offsetTop)` maintient la toolbar dans la zone visible
 - ✅ **Labels nb de pas vue circulaire mesure** — 3 pastilles colorées en coin sup. gauche du canvas, mises à jour en temps réel au resize
 - ✅ **canOverwrite MX pattern/groove** — MX peut écraser un item école quel que soit le mode courant → modifications tracées dans section Publier
 - ✅ **Désync audio/visuel au changement de pattern** — `_patOnSelect` fixe `startTime = nextStepTime` pour aligner step 0 visuel et audio
 - ✅ **1er temps métro décalé au changement de groove** — `applyGroove` synce sur `mpLen` (début de mesure = pos 0 du metroPattern) au lieu de `subdivision` (temps quelconque)
 - ✅ **Mute band ignoré au changement de groove** — `applyGroove` préserve `_wasMutedAll` (classe 'muted' du btn-vol) avant d'appliquer les états du nouveau groove
-- ✅ **Cadre btn-view ⊞/◎** — `border:1px solid` aligné sur pm-preset-btn : gris (#ccc) en mode clair, doré discret en groove-bar, gris (#555) en dark mode
+- ✅ **Cadre btn-view ⊞/◎** — `border:1px solid` aligné sur pm-preset-btn (v3.8.29)
 
 ## Résolu (session 2026-05-02 — gestion preset métronome + timing)
 - ✅ **6 bugs preset métro** — dirty indicator, preset teacher visible immédiatement, bouton Écraser, battue sans recalcul tempo, sig discrète, nom par défaut = label courant
