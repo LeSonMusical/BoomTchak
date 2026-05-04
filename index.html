@@ -38,7 +38,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
-.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:none;border-radius:5px;cursor:pointer;background:transparent;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:1px solid #ccc;border-radius:5px;cursor:pointer;background:transparent;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
 .btn-view:hover{background:#e8e5e0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
@@ -192,7 +192,7 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{border:none;background:transparent;color:#C8961A;font-size:20px}
+.groove-bar .btn-view{border-color:#d4b86a;background:transparent;color:#C8961A;font-size:20px}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -758,7 +758,7 @@ body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-top:hover{background:#333330}
 body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#666}
-body.dark-mode .btn-view{background:transparent;color:#aaa}
+body.dark-mode .btn-view{background:transparent;color:#aaa;border-color:#555}
 body.dark-mode .btn-view:hover{background:rgba(255,255,255,.08)}
 body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
 body.dark-mode .t-spm-display{color:#666}
@@ -868,7 +868,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{color:#C8961A}
+body.dark-mode .groove-bar .btn-view{color:#C8961A;border-color:#6a5018}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -953,7 +953,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.28</span>
+      <span class="app-version">v3.8.29</span>
     </div>
   </div>
   <div class="top-bar-center">

@@ -68,11 +68,14 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.26** (session 2026-05-04)
+**v3.8.29** (session 2026-05-04)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.29 | btn-view ⊞/◎ : cadre visible (border:1px solid) en mode clair (gris) et sombre (doré discret), aligné visuellement sur pm-preset-btn |
+| v3.8.28 | Fix 3 bugs sync audio : désync pattern (startTime=nextStepTime) ; 1er temps métro décalé (sync au début de mesure via mpLen au lieu de subdivision) ; mute band ignoré au changement de groove (preserve _wasMutedAll) |
+| v3.8.27 | Labels nb de pas par layer en vue circulaire mesure (coin sup. gauche canvas) ; canOverwrite pattern/groove étendu à MX (authProfile?.role==='mx') → section Publier correcte |
 | v3.8.26 | Fix 4 régressions : felBeatSteps préservé au sync DB ; preset TX non écrasé au sync ; drag famille touchstart passive:false ; drawCircles() sur tous les handlers de modif pattern (resize, shift, swap, invert, rotate, dice, step click) |
 | v3.8.25 | Écraser preset métro TX → Propositions (pas push direct) ; drag handle hauteur fixe (font 12px) ; border gauche colorée en mode réordonner ; .pm-item.pm-cur couleur accent en dark mode |
 | v3.8.24 | Fix pas-num dans _patOnSelect ; changeSig/previewMetroPreset → grooveDirty ; sync groove au temps (pas mesure) |
@@ -175,6 +178,8 @@ Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonne
 
 **Encyclopédie ✅ terminé (v3.8.13)** — modal unifié avec colonne catégories, filtre famille secondaire, search, markdown.
 
+**Vue circulaire/mesure** — revoir l'affichage (mentionné par Lamberio, à préciser en début de session).
+
 **Volet Band/Son** (`#lib-panel-bands`) :
 - `openPresetModal({type:'band'})` existe pour la sélection — manquent les modes ✎ gérer et ☰ réordonner
 - Sons (`SOUND_DEFS`) hardcodés en JS → pas de rename/delete, modal son reste sélection pure
@@ -187,6 +192,14 @@ Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonne
 ### Autres chantiers en attente
 1. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
 2. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
+
+## Résolu (session 2026-05-04)
+- ✅ **Labels nb de pas vue circulaire mesure** — 3 pastilles colorées en coin sup. gauche du canvas, mises à jour en temps réel au resize
+- ✅ **canOverwrite MX pattern/groove** — MX peut écraser un item école quel que soit le mode courant → modifications tracées dans section Publier
+- ✅ **Désync audio/visuel au changement de pattern** — `_patOnSelect` fixe `startTime = nextStepTime` pour aligner step 0 visuel et audio
+- ✅ **1er temps métro décalé au changement de groove** — `applyGroove` synce sur `mpLen` (début de mesure = pos 0 du metroPattern) au lieu de `subdivision` (temps quelconque)
+- ✅ **Mute band ignoré au changement de groove** — `applyGroove` préserve `_wasMutedAll` (classe 'muted' du btn-vol) avant d'appliquer les états du nouveau groove
+- ✅ **Cadre btn-view ⊞/◎** — `border:1px solid` aligné sur pm-preset-btn : gris (#ccc) en mode clair, doré discret en groove-bar, gris (#555) en dark mode
 
 ## Résolu (session 2026-05-02 — gestion preset métronome + timing)
 - ✅ **6 bugs preset métro** — dirty indicator, preset teacher visible immédiatement, bouton Écraser, battue sans recalcul tempo, sig discrète, nom par défaut = label courant
