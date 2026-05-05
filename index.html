@@ -954,7 +954,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.33</span>
+      <span class="app-version">v3.8.34</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4805,6 +4805,9 @@ function renderEncyclo(key){
       const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:0;
       packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
       encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+      // Auto-focus la nouvelle note : le focus handler de la nouvelle closure fixe _focusedBulletIdx
+      const newLi=body.querySelectorAll('.encyclo-bullets li')[insertIdx];
+      if(newLi){const kEl=newLi.querySelector('.encyclo-bkey');if(kEl&&kEl.isContentEditable){kEl.focus();const r=document.createRange();r.selectNodeContents(kEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}}
     });
     tb.appendChild(addTb);
     const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Suppr.';delTb.title='Supprimer cette note';
@@ -5609,9 +5612,9 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   });
   (familles || []).forEach(f => {
     if (localDirtyFIds.has(f.id)) return; // modif MX en attente — garder version locale
-    if (!packCours.familles.find(x => x.id === f.id)) {
-      packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school' });
-    }
+    // Remplace le défaut PTK s'il existe avec le même id (les défauts n'ont pas source:'school') pour que sbPushSchoolFamOrder puisse les patcher
+    packCours.familles = packCours.familles.filter(x => x.id !== f.id);
+    packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school', ordre: f.ordre ?? 0 });
   });
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
