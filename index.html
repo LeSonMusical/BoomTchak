@@ -319,8 +319,12 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;min-width:28px;padding:3px 7px;font-size:14px;line-height:1;opacity:.7}
 #btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
 #btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
-#btn-tempo{color:#ccc;border-color:#e8e8e8;background:#fafafa;opacity:.45;padding:3px 7px}
-#btn-tempo .metro-icon{font-size:14px;line-height:1}
+#btn-tempo{color:#aaa;border-color:#e0e0e0;background:#f8f8f8;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;opacity:.45;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
+#btn-tempo .metro-row{display:flex;align-items:center;gap:3px;line-height:1}
+#btn-tempo .metro-icon{font-size:14px}
+#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
+#btn-tempo .metro-track{width:44px;height:2px;background:rgba(0,0,0,.12);border-radius:1px;overflow:hidden}
+#btn-tempo .metro-track-fill{height:100%;width:50%;background:currentColor;border-radius:1px;transition:width .08s linear}
 #btn-tempo.active{background:#f5f2fb;color:#998fc8;border-color:#c8c0e0;opacity:.65}
 #btn-tempo.metro-on,#btn-tempo.active.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
@@ -855,6 +859,7 @@ body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
 body.dark-mode #btn-tempo{color:#555;border-color:#333;background:#1a1a18;opacity:.4}
+body.dark-mode #btn-tempo .metro-track{background:rgba(255,255,255,.08)}
 body.dark-mode #btn-tempo.active{background:#1e1c22;color:#6858a8;border-color:#3a3448;opacity:.6}
 body.dark-mode #btn-tempo.metro-on,body.dark-mode #btn-tempo.active.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
@@ -953,11 +958,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.39</span>
+      <span class="app-version">v3.8.41</span>
     </div>
   </div>
   <div class="top-bar-center">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-icon">🔕</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
   </div>
   <div class="top-bar-right">
@@ -5041,9 +5046,11 @@ function updateBeatDisplay(){
   if(batSel) batSel.value=felBeat;
   const beatInp=document.getElementById('beat-val-input');
   if(beatInp&&document.activeElement!==beatInp) beatInp.value=bpm;
-  // Bouton tempo top-bar
+  // Bouton tempo top-bar : texte + mini-track
   const bpmSpan=document.querySelector('#btn-tempo .metro-bpm');
-  if(bpmSpan) bpmSpan.textContent=sym+'= '+bpm;
+  if(bpmSpan) bpmSpan.textContent=sym+'='+bpm;
+  const fillEl=document.querySelector('#btn-tempo .metro-track-fill');
+  if(fillEl) fillEl.style.width=Math.round(pos/10)+'%';
   // Nom et valeur BPM dans le volet
   const nameEl=document.getElementById('metro-tempo-name');
   if(nameEl) nameEl.textContent=getTempoName(bpm);
@@ -5105,6 +5112,20 @@ function resizeCanvas(){
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   const wrap = document.getElementById('circle-view');
   const frame = wrap.closest('.frame');
+  const frameW2 = frame ? frame.clientWidth : window.innerWidth;
+  const isDesktop2 = window.innerWidth >= 600;
+  if(circleModeView==='linear'){
+    const canvW=Math.max(160, Math.min(isDesktop2?480:frameW2-16, frameW2-8));
+    const canvH=96;
+    cv.width=canvW; cv.height=canvH;
+    cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
+    cv.style.transform=''; cv.style.transformOrigin='';
+    wrap.style.width=(isDesktop2?canvW+'px':'100%');
+    const toggleEl2=document.getElementById('circle-mode-toggle');
+    const toggleH2=toggleEl2?(toggleEl2.offsetHeight+4):0;
+    wrap.style.height=(canvH+toggleH2)+'px';
+    drawCircles(); return;
+  }
   const dotR = 10;
   const r0 = 16*dotR/Math.PI;    // rayon cercle intérieur (~50.9px)
   const r2 = r0 + dotR*4;        // rayon cercle extérieur
@@ -5136,6 +5157,7 @@ function resizeCanvas(){
 }
 
 function drawCircles(){
+  if(circleModeView==='linear'){ drawLinear(); return; }
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
@@ -5313,9 +5335,125 @@ function drawCircles(){
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
   ctx.fillStyle='#1a1a18'; ctx.fill();
+
+  // Badge polymétrie (mode mesure uniquement)
+  if(circleModeView==='measure'){
+    const pi=getPolymetricInfo();
+    if(pi.isPolymetric){
+      const isDarkB=document.body.classList.contains('dark-mode');
+      const bdText='⊡ '+pi.ratio;
+      ctx.font='bold 9px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
+      const tw=ctx.measureText(bdText).width;
+      const bx=W-2,by=2,bw=tw+8,bh=13;
+      ctx.fillStyle=isDarkB?'rgba(200,140,30,.22)':'rgba(180,120,0,.1)';
+      ctx.fillRect(bx-bw,by,bw,bh);
+      ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
+      ctx.fillText(bdText,bx-4,by+2);
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';resizeCanvas();}};
+    } else { _circleBadge=null; }
+  } else { _circleBadge=null; }
+}
+
+// ── Polymétrie ───────────────────────────────────────────────────────────────
+function gcd(a,b){return b===0?a:gcd(b,a%b);}
+function lcm(a,b){return Math.round(a*b/gcd(a,b));}
+function getPolymetricInfo(){
+  const mSteps=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+  const lens=LAYERS.map((_,li)=>state[li].pattern.length).filter(n=>n>0);
+  if(!lens.length) return{mSteps,lcmSteps:mSteps,isPolymetric:false,ratio:''};
+  let totalLcm=mSteps; const polyLens=[];
+  for(const n of lens){ if(n%mSteps!==0){totalLcm=lcm(totalLcm,n);polyLens.push(n);} }
+  return{mSteps,lcmSteps:Math.min(totalLcm,128),isPolymetric:totalLcm>mSteps,ratio:polyLens.length?polyLens[0]+':'+mSteps:''};
+}
+let _circleBadge=null; // {x,y,w,h,action} en coordonnées canvas
+
+function drawLinear(){
+  const cv=document.getElementById('rhythm-canvas'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const isDark=document.body.classList.contains('dark-mode');
+  ctx.clearRect(0,0,W,H);
+  const {mSteps,lcmSteps}=getPolymetricInfo();
+  const CAP=64, numSteps=Math.min(lcmSteps,CAP), isCapped=lcmSteps>CAP;
+  const marginX=8, marginY=16;
+  const rowH=Math.floor((H-2*marginY)/3);
+  const stepW=(W-2*marginX)/numSteps;
+  const dotR=Math.min(7,Math.max(2,Math.floor(stepW/2)-1));
+  // Séparateurs de mesures
+  const numMeasures=Math.ceil(numSteps/mSteps);
+  for(let m=0;m<=numMeasures;m++){
+    const x=marginX+stepW*m*mSteps; if(x>W-marginX+2) break;
+    ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
+    ctx.strokeStyle=m===0?(isDark?'#9080C0':'#7060B0'):(isDark?'#484440':'#d5d0c8');
+    ctx.lineWidth=m===0?1.5:0.75; ctx.stroke();
+    if(m>0){
+      ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillStyle=isDark?'#555':'#bbb';
+      ctx.fillText('M'+m, x, marginY-1);
+    }
+  }
+  [0,1,2].forEach(li=>{
+    const pat=state[li].pattern, n=pat.length, col=CIRCLE_COLORS[li], isMuted=state[li].muted;
+    const y=marginY+rowH*li+rowH/2;
+    ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y);
+    ctx.strokeStyle=col.track; ctx.lineWidth=1; ctx.stroke();
+    // Séparateurs de répétitions du pattern (pointillés couleur layer)
+    for(let rep=1;rep*n<numSteps;rep++){
+      const x=marginX+stepW*rep*n;
+      ctx.save(); ctx.beginPath(); ctx.moveTo(x,y-dotR-2); ctx.lineTo(x,y+dotR+2);
+      ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
+      ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
+    }
+    for(let si=0;si<numSteps;si++){
+      const patSi=si%n, x=marginX+stepW*si+stepW/2;
+      const isOn=pat[patSi]==='X', isSoft=pat[patSi]==='x';
+      if(isOn){
+        ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
+        ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
+        ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
+      } else if(isSoft){
+        ctx.beginPath(); ctx.arc(x,y,dotR*0.75,0,2*Math.PI);
+        ctx.fillStyle=isMuted?col.fill+'30':col.fill+'99'; ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(x,y,dotR*0.45,0,2*Math.PI);
+        ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
+        ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
+      }
+    }
+  });
+  if(isCapped){
+    ctx.font='8px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillStyle=isDark?'#666':'#aaa';
+    ctx.fillText('(PPCM='+lcmSteps+' → tronqué à '+CAP+')',marginX,2);
+  }
+  // Aiguille de lecture
+  if(playing){
+    const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+    const now=getAC().currentTime;
+    const measureSec=(60/spm)*currentSig.stepsPerBeat*currentSig.beatsPerMeasure;
+    const lcmMeasures=Math.ceil(lcmSteps/mSteps);
+    const fullCycleSec=measureSec*lcmMeasures;
+    const el=now-state[0].startTime;
+    const pos=((el%fullCycleSec)+fullCycleSec)%fullCycleSec/fullCycleSec;
+    const nx=marginX+pos*(W-2*marginX);
+    ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
+    ctx.strokeStyle='rgba(200,160,40,0.75)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+  }
+  // Badge "← Mesure" (coin haut droit)
+  const bdText='← Mesure';
+  ctx.font='bold 9px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
+  const tw=ctx.measureText(bdText).width;
+  const bx=W-2,by=2,bw=tw+8,bh=13;
+  ctx.fillStyle=isDark?'rgba(144,128,192,.2)':'rgba(112,96,176,.1)';
+  ctx.fillRect(bx-bw,by,bw,bh);
+  ctx.fillStyle=isDark?'#9080C0':'#7060B0';
+  ctx.fillText(bdText,bx-4,by+2);
+  _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='measure';resizeCanvas();}};
 }
 
 function circleHitTest(x, y){
+  if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
+  if(circleModeView==='linear') return null;
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   const dotR = 10, r0 = 16*dotR/Math.PI;
   const radii = [r0, r0+dotR*2, r0+dotR*4];
@@ -5350,6 +5488,7 @@ function setupCanvasInteraction(){
     const scaleX = cv.width/rect.width, scaleY = cv.height/rect.height;
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
+    if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
     const {li, si} = hit;
     const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
     const STEP_CYCLE={'.':'X','X':'x','x':'.'};
@@ -5409,8 +5548,8 @@ function setupCircleModeToggle(){
   freshM.classList.toggle('active', circleModeView==='measure');
   fresh.classList.toggle('active', circleModeView==='cycle');
   btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
-  fresh.addEventListener('click', ()=>{ circleModeView='cycle'; fresh.classList.add('active'); freshM.classList.remove('active'); drawCircles(); });
-  freshM.addEventListener('click', ()=>{ circleModeView='measure'; freshM.classList.add('active'); fresh.classList.remove('active'); drawCircles(); });
+  fresh.addEventListener('click', ()=>{ circleModeView='cycle'; _circleBadge=null; fresh.classList.add('active'); freshM.classList.remove('active'); resizeCanvas(); });
+  freshM.addEventListener('click', ()=>{ circleModeView='measure'; _circleBadge=null; freshM.classList.add('active'); fresh.classList.remove('active'); resizeCanvas(); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
