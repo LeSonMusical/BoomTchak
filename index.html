@@ -365,6 +365,7 @@ body.dark-mode .btn-enc-edit{color:#777}
 body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff}
 body.dark-mode #enc-floating-toolbar.visible{background:#2d4a28;border-bottom-color:#3a5c32}
 body.dark-mode #encyclo-body.enc-edit-active{background:rgba(74,109,64,.12)}
+body.dark-mode .enc-link{color:#7ab87a}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
 body.dark-mode .enc-lp-search{background:#161e14;border-bottom-color:#333}
 body.dark-mode .enc-lp-item{border-bottom-color:#2a3028;color:#c0d4b8}
@@ -708,7 +709,7 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0;flex-shrink:0}
+#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
@@ -954,7 +955,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.35</span>
+      <span class="app-version">v3.8.36</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2688,6 +2689,7 @@ function openPresetModal(cfg){
     let result;
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
+      if(searchQuery){const q=searchQuery.toLowerCase();return allG.filter(i=>i.nom.toLowerCase().includes(q));}
       const base=allG.filter(g=>g.source!=='pending');
       const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
@@ -2695,13 +2697,14 @@ function openPresetModal(cfg){
     } else if(cfg.type==='sig'){
       const base=metroPresets.filter(p=>p.source!=='teacher');
       const teacher=metroPresets.filter(p=>p.source==='teacher');
+      if(searchQuery){const q=searchQuery.toLowerCase();return [...base,...teacher].filter(i=>i.nom.toLowerCase().includes(q));}
       const filtered=famFilter&&famFilter!=='all'?base.filter(p=>(p.familles_ids||[]).includes(famFilter)):base;
       result=[...filtered,...teacher.filter(p=>!filtered.some(i=>i.id===p.id))];
     } else {
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
+      if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(i=>i.nom.toLowerCase().includes(q));}
       result=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
     }
-    if(searchQuery){const q=searchQuery.toLowerCase();result=result.filter(i=>(i.nom||i.label||i.id).toLowerCase().includes(q));}
     return result;
   }
 
@@ -2829,6 +2832,15 @@ function openPresetModal(cfg){
     // Nettoyer listener palette si présent
     if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}
 
+    // Famille virtuelle "Résultats" quand recherche active — remplace tout le filtre famille
+    if(searchQuery&&cfg.type!=='encyclo'){
+      const count=getFilteredItems().length;
+      const br=document.createElement('button');br.className='pm-fam-btn active';
+      br.textContent='🔍 Résultats ('+count+')';
+      br.style.cssText='font-size:10px;color:var(--pm-ac);font-weight:700';
+      famCol.appendChild(br);
+      return;
+    }
     // Filtres fixes (Tout / Perso) — toujours visibles
     const mkFilterBtn=(id,lbl)=>{
       const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===id?' active':'');
@@ -4382,10 +4394,11 @@ function getEncycloDisplayName(key) {
   if (misc) return misc.nom;
   const custom = (packCours.encycloIndex||[]).find(e => e.id === resolvedKey);
   if (custom) return custom.nom;
-  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === resolvedKey)
+  // Chercher par key original d'abord (grooves/patterns avec IDs longs type tx_mod_...) puis resolvedKey
+  const pat = packCours.patterns.find(p => (p.encyclo_ref || p.id) === key || (p.encyclo_ref || p.id) === resolvedKey)
            || PTK_DEFAULT.patterns?.find(p => (p.encyclo_ref || p.id) === resolvedKey);
   if (pat) return pat.nom;
-  const grv = packCours.grooves.find(g => g.id === resolvedKey)
+  const grv = packCours.grooves.find(g => g.id === key || g.id === resolvedKey)
            || PTK_DEFAULT.grooves?.find(g => g.id === resolvedKey);
   if (grv) return grv.nom;
   return resolvedKey;

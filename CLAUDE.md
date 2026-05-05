@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.35** (session 2026-05-05)
+**v3.8.36** (session 2026-05-05)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.36 | Fix nom article encyclo (getEncycloDisplayName cherche par key original avant resolvedKey) ; liens encyclo bleu-vert dark mode ; recherche modale globale (ignore famille, famille virtuelle Résultats) ; vue circulaire padding-bottom 1.25rem |
 | v3.8.35 | Fix applyGroove : ajout updateBeatDisplay() après chargement signature → battue-sel, beat-val-input, ♩=N top-bar mis à jour au changement de groove |
 | v3.8.34 | Fix ordre familles MX (vrai bug : familles PTK_DEFAULT bloquaient import DB → sbPushSchoolFamOrder patchait rien) ; encyclo ＋Note auto-focus + sélection "Titre" (insertion à la bonne position maintenue entre rendus) |
 | v3.8.33 | Fix ordre familles MX (bug splice si<ti→ti ; same fix pmDrop sig) ; MIDI modal 4 colonnes (lettre+numéro note éditables, champ nom fichier) ; encyclo ＋Note à la position 0 si chapo, Enter=\\n (pre-wrap), onSelect ne s'ouvre que si contenu |
