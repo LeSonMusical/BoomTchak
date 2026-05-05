@@ -319,11 +319,13 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;min-width:28px;padding:3px 7px;font-size:14px;line-height:1;opacity:.7}
 #btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
 #btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
-#btn-tempo{color:#ccc;border-color:#e8e8e8;background:#fafafa;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.45}
-#btn-tempo .metro-icon{font-size:14px;line-height:1}
-#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
+#btn-tempo{color:#bbb;border-color:#e0e0e0;background:#f8f8f8;display:flex;align-items:center;gap:3px;padding:3px 7px;opacity:.45}
+#btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit;min-width:52px;text-align:center}
+#btn-tempo .metro-arrow{font-size:9px;opacity:.45;line-height:1;color:inherit}
 #btn-tempo.active{background:#f5f2fb;color:#998fc8;border-color:#c8c0e0;opacity:.65}
+#btn-tempo.active .metro-arrow{opacity:.6}
 #btn-tempo.metro-on,#btn-tempo.active.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
+#btn-tempo.metro-on .metro-arrow,#btn-tempo.active.metro-on .metro-arrow{opacity:.75}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:none;border-color:var(--cs);color:var(--cb)}
@@ -855,7 +857,7 @@ body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color
 body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
-body.dark-mode #btn-tempo{color:#444;border-color:#333;background:#1a1a18;opacity:.4}
+body.dark-mode #btn-tempo{color:#555;border-color:#333;background:#1a1a18;opacity:.4}
 body.dark-mode #btn-tempo.active{background:#1e1c22;color:#6858a8;border-color:#3a3448;opacity:.6}
 body.dark-mode #btn-tempo.metro-on,body.dark-mode #btn-tempo.active.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
@@ -954,11 +956,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.37</span>
+      <span class="app-version">v3.8.38</span>
     </div>
   </div>
   <div class="top-bar-center">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-icon">🔕</span><span class="metro-bpm"> ♩100</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><span class="metro-arrow">◁</span><span class="metro-bpm">♩=100</span><span class="metro-arrow">▷</span></button>
     <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
   </div>
   <div class="top-bar-right">
@@ -5059,11 +5061,7 @@ function setMetroGlobal(on){
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
   const btnTop=document.getElementById('btn-tempo');
-  if(btnTop){
-    btnTop.classList.toggle('metro-on',on);
-    const icon=btnTop.querySelector('.metro-icon');
-    if(icon) icon.textContent=on?'🔔':'🔕';
-  }
+  if(btnTop) btnTop.classList.toggle('metro-on',on);
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
 function getMetroBeatSec(){
