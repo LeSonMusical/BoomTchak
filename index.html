@@ -337,6 +337,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-chapo{font-size:12px;line-height:1.65;color:#2a2a28;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e8e6e2}
 .encyclo-bullets{list-style:none;display:flex;flex-direction:column;gap:8px}
 .encyclo-bullets li{display:flex;flex-direction:column;gap:2px;font-size:11px;line-height:1.6}
+.encyclo-bval[contenteditable],.encyclo-chapo[contenteditable]{white-space:pre-wrap}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
 #enc-floating-toolbar{position:fixed;top:56px;left:0;right:0;z-index:95;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 2px 8px rgba(0,0,0,.12);will-change:transform}
@@ -890,12 +891,12 @@ body.dark-mode .lib-search-input{background-color:#333;border-color:#555;color:#
 .midi-modal-close{background:none;border:none;cursor:pointer;font-size:14px;color:#888;line-height:1;padding:2px 6px;border-radius:50%}
 .midi-modal-close:hover{background:#f0ede8}
 .midi-modal-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
-.midi-layer-hdr{display:grid;grid-template-columns:58px 1fr 60px;gap:8px;font-size:9px;font-weight:600;color:#888;text-align:center;padding-bottom:4px;border-bottom:1px solid #f0ede8}
+.midi-layer-hdr{display:grid;grid-template-columns:58px 44px 38px 60px;gap:6px;font-size:9px;font-weight:600;color:#888;text-align:center;padding-bottom:4px;border-bottom:1px solid #f0ede8}
 .midi-layer-hdr span:first-child{text-align:left}
-.midi-layer-row{display:grid;grid-template-columns:58px 1fr 60px;align-items:center;gap:8px;font-size:11px}
+.midi-layer-row{display:grid;grid-template-columns:58px 44px 38px 60px;align-items:center;gap:6px;font-size:11px}
 .midi-layer-lbl{font-weight:600;color:#444}
-.midi-note-wrap{display:flex;flex-direction:column;align-items:center;gap:1px}
-.midi-note-name{font-size:9px;color:#888;letter-spacing:.03em}
+.midi-filename-row{display:flex;align-items:center;gap:8px;padding-top:6px;border-top:1px solid #f0ede8;font-size:11px}
+.midi-filename-row span{color:#444;font-weight:600;white-space:nowrap}
 .midi-cfg-input{width:100%;font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:4px;text-align:center;box-sizing:border-box}
 .midi-opts{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #f0ede8;font-size:11px}
 .midi-opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
@@ -953,7 +954,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.32</span>
+      <span class="app-version">v3.8.33</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1269,9 +1270,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="midi-modal-body">
     <div class="midi-layer-hdr">
-      <span>Couche</span><span>Note MIDI</span><span>Canal</span>
+      <span>Couche</span><span>Lettre</span><span>N°</span><span>Canal</span>
     </div>
     <div id="midi-layer-grid"></div>
+    <div class="midi-filename-row">
+      <span>Fichier</span><input type="text" id="midi-filename" class="midi-cfg-input" style="flex:1;text-align:left">
+    </div>
     <div class="midi-opts">
       <label><input type="checkbox" id="midi-opt-tempo" checked> Inclure le tempo</label>
       <label><input type="checkbox" id="midi-opt-sig" checked> Inclure la signature</label>
@@ -2745,7 +2749,7 @@ function openPresetModal(cfg){
       const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
       const[moved]=fams.splice(si,1);
       if(tgtId==='__end__'){fams.push(moved);}
-      else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(si<ti?ti-1:ti,0,moved);}
+      else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolMetroFamOrder();buildFamCol();return;
     }
     const fams=packCours.familles;
@@ -2753,7 +2757,7 @@ function openPresetModal(cfg){
     if(si<0)return;
     const[moved]=fams.splice(si,1);
     if(tgtId==='__end__'){fams.push(moved);}
-    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(si<ti?ti-1:ti,0,moved);}
+    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
@@ -3060,7 +3064,7 @@ function openPresetModal(cfg){
         const si=arr.findIndex(x=>x.id===srcId);if(si<0)return;
         const[m]=arr.splice(si,1);
         if(tgtId==='__end__'){arr.push(m);}
-        else{const ti=arr.findIndex(x=>x.id===tgtId);if(ti<0){arr.splice(si,0,m);return;}arr.splice(si<ti?ti-1:ti,0,m);}
+        else{const ti=arr.findIndex(x=>x.id===tgtId);if(ti<0){arr.splice(si,0,m);return;}arr.splice(ti,0,m);}
       };
       dropIn(metroPresets);
       if(packCours.metroPresets)dropIn(packCours.metroPresets);
@@ -4570,7 +4574,7 @@ function buildEncycloSection(){
   pb.addEventListener('click',e=>{
     e.stopPropagation();
     openPresetModal({type:'encyclo',currentId:currentEncycloId,label:'Encyclopédie',accent:'#4a6d40',bg:'#f0f5ee',
-      onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);buildEncycloSection();}});
+      onSelect:(key)=>{if(hasEncycloContent(key)){showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);}buildEncycloSection();}});
   });
 
   // Liste de navigation (swipe + boutons ◀ ▶)
@@ -4798,7 +4802,7 @@ function renderEncyclo(key){
     addTb.addEventListener('mousedown',e=>{
       e.preventDefault();
       ensureEnc();if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
-      const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:packCours.encyclo[key].bullets.length;
+      const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:0;
       packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
       encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
     });
@@ -4849,6 +4853,7 @@ function renderEncyclo(key){
   if(isEditable){
     chapo.contentEditable='true';
     chapo.textContent=entry.chapo;
+    chapo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
     chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;_focusedBulletIdx=null;body._encShowToolbar?.();});
     chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
   } else {
@@ -4867,6 +4872,7 @@ function renderEncyclo(key){
       k.addEventListener('focus',()=>{k.dataset.orig=k.textContent;_focusedBulletIdx=i;body._encShowToolbar?.();});
       k.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][0]=k.textContent;if(k.textContent!==k.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
       v.contentEditable='true';v.textContent=bv;
+      v.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
       v.addEventListener('focus',()=>{v.dataset.orig=v.textContent;_focusedBulletIdx=i;body._encShowToolbar?.();});
       v.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].bullets[i][1]=v.textContent;if(v.textContent!==v.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
     } else {
@@ -8068,6 +8074,14 @@ function midiNoteName(n){
   const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   return names[n%12]+(Math.floor(n/12)-2);
 }
+function midiNameToNote(s){
+  const NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const m=s.trim().match(/^([A-Ga-g]#?)(-?\d+)$/);
+  if(!m)return null;
+  const idx=NAMES.indexOf(m[1].toUpperCase());
+  if(idx<0)return null;
+  return(parseInt(m[2])+2)*12+idx;
+}
 
 function vlqEncode(n){
   if(n===0)return[0];
@@ -8084,17 +8098,21 @@ function openMidiExportModal(){
     const cfg=_midiLayerCfg[li];
     const row=document.createElement('div');row.className='midi-layer-row';
     const lbl=document.createElement('span');lbl.className='midi-layer-lbl';lbl.textContent=layer.label;
-    const noteWrap=document.createElement('div');noteWrap.className='midi-note-wrap';
-    const noteInp=document.createElement('input');
-    noteInp.type='number';noteInp.min=0;noteInp.max=127;
-    noteInp.className='midi-cfg-input';noteInp.id='midi-note-'+li;noteInp.value=cfg.note;
-    const noteName=document.createElement('span');noteName.className='midi-note-name';
-    noteName.id='midi-note-name-'+li;noteName.textContent=midiNoteName(cfg.note);
-    noteInp.addEventListener('input',()=>{
-      const v=parseInt(noteInp.value);
-      if(!isNaN(v)&&v>=0&&v<=127){noteName.textContent=midiNoteName(v);_midiLayerCfg[li].note=v;}
+    const noteLetInp=document.createElement('input');
+    noteLetInp.type='text';noteLetInp.className='midi-cfg-input';noteLetInp.id='midi-note-let-'+li;
+    noteLetInp.value=midiNoteName(cfg.note);noteLetInp.style.textAlign='center';
+    const noteNumInp=document.createElement('input');
+    noteNumInp.type='number';noteNumInp.min=0;noteNumInp.max=127;
+    noteNumInp.className='midi-cfg-input';noteNumInp.id='midi-note-'+li;noteNumInp.value=cfg.note;
+    noteLetInp.addEventListener('blur',()=>{
+      const v=midiNameToNote(noteLetInp.value);
+      if(v!==null&&v>=0&&v<=127){noteNumInp.value=v;_midiLayerCfg[li].note=v;}
+      else noteLetInp.value=midiNoteName(_midiLayerCfg[li].note);
     });
-    noteWrap.appendChild(noteInp);noteWrap.appendChild(noteName);
+    noteNumInp.addEventListener('input',()=>{
+      const v=parseInt(noteNumInp.value);
+      if(!isNaN(v)&&v>=0&&v<=127){noteLetInp.value=midiNoteName(v);_midiLayerCfg[li].note=v;}
+    });
     const chInp=document.createElement('input');
     chInp.type='number';chInp.min=1;chInp.max=16;
     chInp.className='midi-cfg-input';chInp.id='midi-ch-'+li;chInp.value=cfg.channel;
@@ -8102,9 +8120,12 @@ function openMidiExportModal(){
       const v=parseInt(chInp.value);
       if(!isNaN(v)&&v>=1&&v<=16)_midiLayerCfg[li].channel=v;
     });
-    row.appendChild(lbl);row.appendChild(noteWrap);row.appendChild(chInp);
+    row.appendChild(lbl);row.appendChild(noteLetInp);row.appendChild(noteNumInp);row.appendChild(chInp);
     grid.appendChild(row);
   });
+  const grooveNom=(getGroove(currentGrooveId)?.nom||'groove').replace(/\s+/g,'-');
+  const fnEl=document.getElementById('midi-filename');
+  if(fnEl&&!fnEl._userEdited)fnEl.value=grooveNom+'-BoomTchak';
   document.getElementById('midi-overlay').classList.remove('hidden');
   document.getElementById('midi-modal').classList.remove('hidden');
 }
@@ -8180,7 +8201,8 @@ function exportMidi(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=(getGroove(currentGrooveId)?.nom||'groove').replace(/[^a-z0-9_\-]/gi,'_')+'.mid';
+  const _fnRaw=(document.getElementById('midi-filename')?.value||(getGroove(currentGrooveId)?.nom||'groove')+'-BoomTchak');
+  a.download=_fnRaw.replace(/[^a-z0-9_\-]/gi,'_')+'.mid';
   a.click();
   URL.revokeObjectURL(url);
   closeMidiExportModal();

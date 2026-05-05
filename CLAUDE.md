@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.32** (session 2026-05-04)
+**v3.8.33** (session 2026-05-05)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.33 | Fix ordre familles MX (bug splice si<ti→ti ; same fix pmDrop sig) ; MIDI modal 4 colonnes (lettre+numéro note éditables, champ nom fichier) ; encyclo ＋Note à la position 0 si chapo, Enter=\\n (pre-wrap), onSelect ne s'ouvre que si contenu |
 | v3.8.32 | Vue circulaire : suppression artefact bord canvas (CSS width/height au lieu de transform:scale) ; btn-view cadre gris uniforme (suppression override doré groove-bar) ; labels vue circulaire mesure étendus (unité step + durée en temps) ; CIRC_LABEL_W→90 |
 | v3.8.31 | Toolbar encyclopédie : Visual Viewport API (`transform:translateY(vv.offsetTop)`) pour rester visible quand le clavier OS apparaît sur mobile |
 | v3.8.30 | Labels vue circulaire mesure : déplacés à gauche (CIRC_LABEL_W=36, cx=CIRC_LABEL_W+H/2) ; unité "p" ; actualisation sans play (BPM slider + changeSig → drawCircles) |
