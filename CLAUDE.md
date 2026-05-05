@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.36** (session 2026-05-05)
+**v3.8.37** (session 2026-05-05)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.37 | SX par défaut : btn-layer-mod toujours visible ; canvas circulaire cliquable sans auth ; sbSyncPublicPool() au démarrage (anon key) + migration RLS v3.8.37 (schema.sql) |
 | v3.8.36 | Fix nom article encyclo (getEncycloDisplayName cherche par key original avant resolvedKey) ; liens encyclo bleu-vert dark mode ; recherche modale globale (ignore famille, famille virtuelle Résultats) ; vue circulaire padding-bottom 1.25rem |
 | v3.8.35 | Fix applyGroove : ajout updateBeatDisplay() après chargement signature → battue-sel, beat-val-input, ♩=N top-bar mis à jour au changement de groove |
 | v3.8.34 | Fix ordre familles MX (vrai bug : familles PTK_DEFAULT bloquaient import DB → sbPushSchoolFamOrder patchait rien) ; encyclo ＋Note auto-focus + sélection "Titre" (insertion à la bonne position maintenue entre rendus) |

@@ -329,5 +329,28 @@ alter table public.metro_presets
   add column if not exists ordre        int    default 0;
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.8.37 — Lecture publique (anon) pour contenus école approuvés
+-- Permet aux utilisateurs non connectés de charger la base dès le démarrage.
+-- À exécuter dans Supabase SQL Editor (une seule fois, par le MX).
+-- ═══════════════════════════════════════════════════════════════════════════
+create policy if not exists "Lecture publique school patterns" on public.patterns for select
+  using (scope = 'school' and approved = true);
+
+create policy if not exists "Lecture publique school grooves" on public.grooves for select
+  using (scope = 'school' and approved = true);
+
+create policy if not exists "Lecture publique school familles" on public.familles for select
+  using (scope = 'school');
+
+create policy if not exists "Lecture publique school encyclo" on public.encyclo for select
+  using (scope = 'school');
+
+create policy if not exists "Lecture publique school metro_presets" on public.metro_presets for select
+  using (scope = 'school' and approved = true);
+
+create policy if not exists "Lecture publique school metro_familles" on public.metro_familles for select
+  using (scope = 'school');
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════

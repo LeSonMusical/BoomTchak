@@ -231,9 +231,8 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .layer-row2{display:flex;align-items:flex-start;gap:4px;padding:5px 6px 5px;min-width:0;overflow:hidden}
 .layer-row2.collapsed{display:none}
 .layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0;position:relative}
-.btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:none;align-self:flex-start}
-body.mode-tx .btn-layer-mod{display:inline-block}
-body.mode-tx .btn-layer-mod:hover{opacity:1}
+.btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:inline-block;align-self:flex-start}
+.btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
 .step.soft{background:var(--cm);border-color:var(--cs)}
 .step.on{background:var(--cc);border-color:var(--cb)}
@@ -717,7 +716,7 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:none;cursor:default}
-body.mode-tx #rhythm-canvas{cursor:pointer}
+#rhythm-canvas{cursor:pointer}
 #circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
@@ -955,7 +954,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.36</span>
+      <span class="app-version">v3.8.37</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5348,7 +5347,6 @@ function circleHitTest(x, y){
 function setupCanvasInteraction(){
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   function onPt(ex, ey){
-    if(currentMode!=='tx') return;
     const rect = cv.getBoundingClientRect();
     const scaleX = cv.width/rect.width, scaleY = cv.height/rect.height;
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
@@ -5524,6 +5522,30 @@ async function sbFetchProfile() {
 }
 
 // ── Synchronisation pool école ────────────────────────────────────────────────
+// Sync publique (sans auth) — nécessite que les RLS DB autorisent la lecture anonyme pour scope='school'
+// Migration requise dans Supabase (voir schema.sql) : politique "Lecture publique school"
+async function sbSyncPublicPool() {
+  try {
+    const [patterns, grooves, familles, encyclo, metroPres, metroFams] = await Promise.all([
+      sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
+      sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
+      sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
+      sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
+      sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/metro_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+    ]);
+    if (Array.isArray(patterns) && patterns.length) {
+      sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams });
+      updateSyncStatus('Base école chargée');
+      rebuildMetroPresets(); rebuildAllFamFilters();
+      buildGrooveSection(); buildLayers();
+    }
+  } catch(e) {
+    // Silencieux si RLS bloque la lecture anonyme (non migré)
+    console.info('BoomTchak: sync public skipped (RLS)', e?.message);
+  }
+}
+
 async function sbSyncSchoolPool() {
   if (!authSession) return;
   updateSyncStatus('Synchronisation…');
@@ -9020,6 +9042,8 @@ function start(){
 
   // Auth Supabase (async, n'attend pas la fin pour ne pas bloquer l'UI)
   initAuth().catch(e => console.warn('BoomTchak: initAuth échouée', e));
+  // Sync publique au démarrage pour utilisateurs non connectés (école school+approved, lecture anonyme)
+  if (!authSession) sbSyncPublicPool();
 }
 
 // Overlay glisser (tempo / volume)
