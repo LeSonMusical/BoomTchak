@@ -958,7 +958,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.41</span>
+      <span class="app-version">v3.8.42</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2183,7 +2183,7 @@ let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBea
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm'};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
@@ -2385,6 +2385,22 @@ function setDirtyUI(elemId, btnId, isDirty){
   }
 }
 
+function miniConfirm(msg, prefKey, onYes){
+  if(prefs[prefKey]){onYes();return;}
+  const isDark=document.body.classList.contains('dark-mode');
+  let ov=document.getElementById('_mini_confirm_ov');
+  if(!ov){ov=document.createElement('div');ov.id='_mini_confirm_ov';document.body.appendChild(ov);}
+  const bg=isDark?'#252320':'#fff', tc=isDark?'#d8d4cc':'#222', bc=isDark?'#444':'#ccc';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:${bg};border-radius:10px;padding:16px 18px;max-width:280px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.3);color:${tc}"><p style="margin:0 0 12px;font-size:13px;line-height:1.45">${msg}</p><label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#999;margin-bottom:14px;cursor:pointer"><input type="checkbox" id="_mc_neverchk" style="margin:0;cursor:pointer"> Ne plus avertir</label><div style="display:flex;gap:8px;justify-content:flex-end"><button id="_mc_no" style="padding:6px 14px;border-radius:6px;border:1px solid ${bc};background:transparent;color:${tc};cursor:pointer;font-size:12px">Annuler</button><button id="_mc_yes" style="padding:6px 14px;border-radius:6px;border:none;background:#c84040;color:#fff;cursor:pointer;font-size:12px;font-weight:700">Enlever</button></div></div>`;
+  const close=()=>ov.style.display='none';
+  ov.querySelector('#_mc_yes').onclick=()=>{
+    if(ov.querySelector('#_mc_neverchk')?.checked){prefs[prefKey]=true;localStorage.setItem('btk_prefs',JSON.stringify(prefs));}
+    close();onYes();
+  };
+  ov.querySelector('#_mc_no').onclick=close;
+  ov.onclick=e=>{if(e.target===ov)close();};
+}
 function setLayerDirty(li, isDirty){
   dirtyLayers[li]=isDirty;
   setDirtyUI('preset-btn-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
@@ -2459,17 +2475,24 @@ function applyGroove(grooveId){
 
   LAYERS.forEach((layer,li)=>{
     const gl=groove.layers[li];if(!gl)return;
-    const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
-    let seq=pat.sequence.split('');
-    if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
-    state[li].pattern=seq;
-    state[li].patternId=gl.patternId;
+    if(gl.sequence){
+      // Séquence embarquée dans le groove (layer était dirty à la sauvegarde)
+      state[li].pattern=gl.sequence.split('');
+      state[li].patternId=gl.patternId||null;
+      state[li].shiftN=0; // shift déjà intégré dans la séquence embarquée
+    } else {
+      const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
+      let seq=pat.sequence.split('');
+      if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
+      state[li].pattern=seq;
+      state[li].patternId=gl.patternId;
+      state[li].shiftN=gl.shift||0;
+    }
     state[li].stepPos=0;
     state[li].muted=_wasMutedAll||(gl.mute||false);
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
     state[li].ternOn=gl.ternOn||false;
-    state[li].shiftN=gl.shift||0;
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
@@ -3703,10 +3726,13 @@ function buildLayers(){
     bMinus.addEventListener('click',()=>{
       if(state[li].pattern.length<=1) return;
       const last=state[li].pattern[state[li].pattern.length-1];
-      if(last!=='.' && !confirm('Le dernier pas est actif. Enlever quand même ?')) return;
-      state[li].pattern=state[li].pattern.slice(0,-1);
-      if((state[li].shiftN||0)>=state[li].pattern.length){state[li].shiftN=0;shNum.textContent='0';}
-      _reszMark();
+      const doRemove=()=>{
+        state[li].pattern=state[li].pattern.slice(0,-1);
+        if((state[li].shiftN||0)>=state[li].pattern.length){state[li].shiftN=0;shNum.textContent='0';}
+        _reszMark();
+      };
+      if(last!=='.'){miniConfirm('Le dernier pas est actif. Enlever quand même ?','noWarnLastStep',doRemove);return;}
+      doRemove();
     });
 
     // — Inverser ⇄ (swap moitiés) + Inversion accents ⇅ + Rotation accents ⊙ —
@@ -4125,6 +4151,8 @@ function pspDoOverwriteGroove(){
     LAYERS.forEach((_,li)=>{
       if(!fork.layers[li])return;
       if(state[li].patternId)fork.layers[li].patternId=state[li].patternId;
+      if(dirtyLayers[li]) fork.layers[li].sequence=state[li].pattern.join('');
+      else delete fork.layers[li].sequence;
       fork.layers[li].mute=state[li].muted;
       fork.layers[li].halfOn=state[li].halfOn;
       fork.layers[li].doubleOn=state[li].doubleOn;
@@ -4195,6 +4223,9 @@ function saveGroove(){
   LAYERS.forEach((_,li)=>{
     if(!groove.layers[li])return;
     if(state[li].patternId)groove.layers[li].patternId=state[li].patternId;
+    // Séquence embarquée si le layer était dirty (préserve sans polluer la DB de patterns)
+    if(dirtyLayers[li]) groove.layers[li].sequence=state[li].pattern.join('');
+    else delete groove.layers[li].sequence;
     groove.layers[li].mute=state[li].muted;
     let _sh=state[li].halfOn,_sd=state[li].doubleOn;
     if(state[li].pendingClear){_sh=false;_sd=false;}
@@ -4261,6 +4292,8 @@ function doOverwriteGroove(){
     LAYERS.forEach((_,li)=>{
       if(!fork.layers[li])return;
       if(state[li].patternId)fork.layers[li].patternId=state[li].patternId;
+      if(dirtyLayers[li]) fork.layers[li].sequence=state[li].pattern.join('');
+      else delete fork.layers[li].sequence;
       fork.layers[li].mute=state[li].muted;
       fork.layers[li].halfOn=state[li].halfOn;
       fork.layers[li].doubleOn=state[li].doubleOn;
@@ -4298,7 +4331,10 @@ function doSaveNewGroove(){
   newGroove.source='teacher';
   if(bandSel)newGroove.band_defaut=bandSel.value;
   LAYERS.forEach((_,li)=>{
-    if(newGroove.layers[li]&&state[li].patternId)newGroove.layers[li].patternId=state[li].patternId;
+    if(!newGroove.layers[li])return;
+    if(state[li].patternId)newGroove.layers[li].patternId=state[li].patternId;
+    if(dirtyLayers[li]) newGroove.layers[li].sequence=state[li].pattern.join('');
+    else delete newGroove.layers[li].sequence;
   });
 
   packCours.grooves.push(newGroove);
