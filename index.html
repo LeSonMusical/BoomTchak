@@ -156,14 +156,17 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 .top-vol-block{display:flex;flex-direction:row;align-items:center;gap:3px;flex:1;min-width:40px}
 .top-vol-lbl{font-size:8px;color:#888;white-space:nowrap;line-height:1;letter-spacing:.02em}
 /* ── Ligne 1 volet : info + battue ── */
-.mpv-tempo-top-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:.15rem 0 .05rem}
-.mpv-tempo-info{display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;color:#555;flex:1}
-.mpv-tempo-sep{color:#bbb}
-.mpv-battue-block{display:flex;align-items:center;gap:3px;flex-shrink:0}
-/* ── Ligne slider ── */
-.mpv-slider-row{display:flex;align-items:center;gap:4px;padding:.1rem 0 .2rem}
-/* Nom latin du tempo : accent couleur + gras */
-#metro-tempo-name{color:#6B5FA5;font-weight:700;font-size:12px;letter-spacing:.02em}
+/* ── Metro 3 colonnes ── */
+.metro-3col{display:flex;align-items:flex-start;gap:5px;padding:.15rem 0 .05rem}
+.metro-3col-bpm{flex:2;min-width:0;display:flex;flex-direction:column;gap:2px}
+.metro-3col-top{display:flex;align-items:baseline;gap:4px;font-size:10px;color:#555;flex-wrap:wrap}
+.metro-3col-slider{display:flex;align-items:center;gap:3px}
+.metro-3col-eq{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:1px}
+.metro-3col-sw{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding-top:1px}
+.metro-3col-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.metro-3col-eq-row{display:flex;align-items:center;gap:2px}
+/* Nom latin du tempo */
+#metro-tempo-name{color:#6B5FA5;font-weight:700;font-size:11px;letter-spacing:.02em}
 
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#4a3d8a!important}
 /* ── Modal save preset ── */
@@ -863,6 +866,8 @@ body.dark-mode #btn-tempo .metro-track{background:rgba(255,255,255,.08)}
 body.dark-mode #btn-tempo.active{background:#1e1c22;color:#6858a8;border-color:#3a3448}
 body.dark-mode #btn-tempo.metro-on,body.dark-mode #btn-tempo.active.metro-on{background:#1e1c2a;color:#a89fd0;border-color:#6B5FA5;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#3a3448}
+body.dark-mode .metro-3col-lbl{color:#555}
+body.dark-mode .metro-3col-top{color:#777}
 body.dark-mode .btn-volet-groove{color:#7a6020 !important}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
 body.dark-mode .btn-volet-band{color:#444 !important}
@@ -958,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.45</span>
+      <span class="app-version">v3.8.46</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1034,30 +1039,37 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <div class="metro-bloc">
-    <!-- Ligne 1 : Slider tempo + battue -->
-    <div class="mpv-tempo-top-row">
-      <div class="mpv-tempo-info">
-        <span id="metro-tempo-name">—</span>
-        <span class="mpv-tempo-sep">·</span>
-        <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
-        <span class="mpv-tempo-sep">·</span>
-        <span id="metro-spm-val" title="Tempo en croches par minute (♪/min)" style="font-size:10px;color:#888;opacity:.8">200 ♪/min</span>
+    <!-- 3 colonnes : BPM | Battue | Swing -->
+    <div class="metro-3col">
+      <div class="metro-3col-bpm">
+        <div class="metro-3col-top">
+          <span id="metro-tempo-name">—</span>
+          <span style="color:#ccc;font-size:9px">·</span>
+          <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+        </div>
+        <div class="metro-3col-slider">
+          <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
+          <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
+          <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
+        </div>
       </div>
-      <div class="mpv-battue-block">
-        <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
-          <option value="1">♪</option>
-          <option value="2" selected>♩</option>
-          <option value="3">♩.</option>
-          <option value="4">♩♩</option>
-        </select>
-        <span class="beat-eq">=</span>
-        <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
+      <div class="metro-3col-eq">
+        <span class="metro-3col-lbl">Battue</span>
+        <div class="metro-3col-eq-row">
+          <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
+            <option value="1">♪</option>
+            <option value="2" selected>♩</option>
+            <option value="3">♩.</option>
+            <option value="4">♩♩</option>
+          </select>
+          <span class="beat-eq">=</span>
+          <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
+        </div>
       </div>
-    </div>
-    <div class="mpv-slider-row">
-      <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
-      <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
-      <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
+      <div class="metro-3col-sw">
+        <span class="metro-3col-lbl">Swing <span id="swing-display">0%</span></span>
+        <input type="range" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%;accent-color:#6B5FA5">
+      </div>
     </div>
     <!-- Ligne 2 : Tap tempo -->
     <div class="tap-tempo-row">
@@ -2184,6 +2196,7 @@ let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBea
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
+let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
@@ -2224,7 +2237,10 @@ function scheduler(){
       }
       // X (fort) joue plein volume, x (faible) joue à 40%
       const stepVal=state[li].pattern[si];
-      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime,stepVal==='x'?0.33:1.0);
+      // Swing : décale les steps impairs (si%2===1) vers l'arrière
+      // swingVal=1.0 → décalage = 1/3 du step = shuffle ternaire parfait
+      const swOff=(swingVal>0&&si%2===1)?swingVal*getBeatSec(li)/3:0;
+      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?0.33:1.0);
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
@@ -5442,16 +5458,34 @@ function drawLinear(){
   const W=cv.width, H=cv.height;
   const isDark=document.body.classList.contains('dark-mode');
   ctx.clearRect(0,0,W,H);
-  const {mSteps,lcmSteps}=getPolymetricInfo();
-  const CAP=64, numSteps=Math.min(lcmSteps,CAP), isCapped=lcmSteps>CAP;
+  const mSteps=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+  // Unités de temps : multiples de 6 (PPCM de 1,2,3 → gère ×2 /2 T)
+  // 1 croche normale = 6 unités
+  // doubleOn → step = 3 u ; halfOn → step = 12 u ; ternOn → step = 4 u
+  // doubleOn+ternOn → 2 u ; halfOn+ternOn → 8 u
+  const DENOM=6;
+  function stepU(li){
+    const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
+    const tf=state[li].ternOn?2/3:1;
+    return Math.round(DENOM*tf/mult);
+  }
+  const su=LAYERS.map((_,li)=>stepU(li));
+  const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
+  const measU=mSteps*DENOM;
+  let totalU=measU;
+  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=lcm(totalU,cycU[li]);});
+  const CAP_U=64*DENOM, isCapped=totalU>CAP_U;
+  const dispU=Math.min(totalU,CAP_U);
+  const numMeasures=Math.ceil(dispU/measU);
   const marginX=8, marginY=16;
   const rowH=Math.floor((H-2*marginY)/3);
-  const stepW=(W-2*marginX)/numSteps;
-  const dotR=Math.min(7,Math.max(2,Math.floor(stepW/2)-1));
+  const uW=(W-2*marginX)/dispU; // pixels par unité
+  // dotR basé sur l'unité la plus petite
+  const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
+  const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
   // Séparateurs de mesures
-  const numMeasures=Math.ceil(numSteps/mSteps);
   for(let m=0;m<=numMeasures;m++){
-    const x=marginX+stepW*m*mSteps; if(x>W-marginX+2) break;
+    const x=marginX+uW*m*measU; if(x>W-marginX+2) break;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=m===0?(isDark?'#9080C0':'#7060B0'):(isDark?'#484440':'#d5d0c8');
     ctx.lineWidth=m===0?1.5:0.75; ctx.stroke();
@@ -5464,53 +5498,57 @@ function drawLinear(){
   [0,1,2].forEach(li=>{
     const pat=state[li].pattern, n=pat.length, col=CIRCLE_COLORS[li], isMuted=state[li].muted;
     const y=marginY+rowH*li+rowH/2;
+    const cu=cycU[li], s=su[li];
     ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y);
     ctx.strokeStyle=col.track; ctx.lineWidth=1; ctx.stroke();
-    // Séparateurs de répétitions du pattern (pointillés couleur layer)
-    for(let rep=1;rep*n<numSteps;rep++){
-      const x=marginX+stepW*rep*n;
+    // Séparateurs de répétitions (pointillés couleur layer)
+    for(let rep=1;rep*cu<=dispU;rep++){
+      const x=marginX+uW*rep*cu;
       ctx.save(); ctx.beginPath(); ctx.moveTo(x,y-dotR-2); ctx.lineTo(x,y+dotR+2);
       ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
       ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
     }
-    for(let si=0;si<numSteps;si++){
-      const patSi=si%n, x=marginX+stepW*si+stepW/2;
-      const isOn=pat[patSi]==='X', isSoft=pat[patSi]==='x';
-      if(isOn){
-        ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
-        ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
-        ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
-      } else if(isSoft){
-        ctx.beginPath(); ctx.arc(x,y,dotR*0.82,0,2*Math.PI);
-        ctx.fillStyle=isMuted?col.fill+'33':col.fill+'aa'; ctx.fill();
-        ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
-        ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
-      } else {
-        ctx.beginPath(); ctx.arc(x,y,dotR*0.45,0,2*Math.PI);
-        ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
-        ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
+    const numReps=Math.ceil(dispU/cu);
+    for(let rep=0;rep<numReps;rep++){
+      for(let si=0;si<n;si++){
+        const uPos=(si+rep*n)*s; if(uPos>=dispU) break;
+        const x=marginX+uW*(uPos+s/2);
+        const isOn=pat[si]==='X', isSoft=pat[si]==='x';
+        if(isOn){
+          ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
+          ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
+        } else if(isSoft){
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.82,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'33':col.fill+'aa'; ctx.fill();
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.45,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
+          ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
+        }
       }
     }
   });
   if(isCapped){
     ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillStyle=isDark?'#C89040':'#8B6000';
-    ctx.fillText('Cycle complet: '+lcmSteps+' pas — affiché: '+CAP, W/2, 2);
+    ctx.fillText('Cycle complet: '+Math.round(totalU/DENOM)+' pas — affiché: '+Math.round(dispU/DENOM), W/2, 2);
   }
-  // Aiguille de lecture
+  // Aiguille de lecture (basée sur le layer 0, temps réel)
   if(playing){
     const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+    const baseStepSec=60/spm; // durée d'1 croche normale
+    const totalCycleSec=totalU/DENOM*baseStepSec;
     const now=getAC().currentTime;
-    const measureSec=(60/spm)*currentSig.stepsPerBeat*currentSig.beatsPerMeasure;
-    const lcmMeasures=Math.ceil(lcmSteps/mSteps);
-    const fullCycleSec=measureSec*lcmMeasures;
     const el=now-state[0].startTime;
-    const pos=((el%fullCycleSec)+fullCycleSec)%fullCycleSec/fullCycleSec;
+    const pos=((el%totalCycleSec)+totalCycleSec)%totalCycleSec/totalCycleSec;
     const nx=marginX+pos*(W-2*marginX);
     ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
     ctx.strokeStyle='rgba(200,160,40,0.75)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
   }
-  _circleBadge=null; // navigation via les boutons ↺ Pattern / Mesure / Cycle
+  _circleBadge=null;
 }
 
 function circleHitTest(x, y){
@@ -8614,6 +8652,12 @@ function attachEvents(){
     let _rpt=null;
     btn.addEventListener('pointerdown',()=>{_adjustTempoBPM(delta);_rpt=setTimeout(()=>{_rpt=setInterval(()=>_adjustTempoBPM(delta),60);},400);});
     ['pointerup','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{clearTimeout(_rpt);clearInterval(_rpt);}));
+  });
+  // ── Swing slider ──
+  document.getElementById('swing-slider')?.addEventListener('input',e=>{
+    swingVal=parseInt(e.target.value)/100;
+    const d=document.getElementById('swing-display');
+    if(d) d.textContent=e.target.value+'%';
   });
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
