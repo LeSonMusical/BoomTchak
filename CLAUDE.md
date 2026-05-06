@@ -68,12 +68,13 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.49** (session 2026-05-06)
+**v3.8.50** (session 2026-05-06)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
-| v3.8.49 | Donut universel : 'X' (son fort) passe en pièce trouée (outer dotR, trou dotR×0.30) dans drawCircles et drawLinear ; isPlaying redessine le trou après l'anneau |
+| v3.8.50 | Revert donut universel : 'X' reste disque plein, seul 'x' (ghost) est pièce trouée ; isPlaying redessine le trou uniquement pour isSoft |
+| v3.8.49 | (annulé — donut universel incorrect) |
 | v3.8.48 | Vue Cycle : linearCycleStartTime fixe l'aiguille sans recalibration ; anneau step courant par layer (rAF) ; édition circleHitTest linéaire ; metro subdivisions swingées (A+P non touchés) |
 | v3.8.47 | swing-slider : classe temps-slider (violette, fine) ; metro-3col-bpm flex:1 → 3 colonnes égales |
 | v3.8.46 | drawLinear WYSIWYE : positions X proportionnelles au temps réel (DENOM=6 units) ; Shuffle slider 0–100% dans volet metro ; 3 colonnes metro (BPM \| Battue \| Swing) ; SPM supprimé du volet |
