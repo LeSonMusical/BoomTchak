@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.54** (session 2026-05-06)
+**v3.8.55** (session 2026-05-06)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.55 | sig-sel-btn affiche '—' si metroPattern embarqué (_embedded flag) ; donut repeated = même rayon ext. que disque plein (dotR pour isOn, dotR×0.72 pour isSoft) |
 | v3.8.54 | Metro dirty complet : setMetroDirty sur swing, BPM ±, beat-val-input, beats/unité/subdiv (buildSigFromControls) + clic step mpv ; groove.metro embarque metroPattern si metroDirty ; applyGroove restaure metroPattern + setMetroDirty si embarqué |
 | v3.8.53 | G7 raison de refus : MX saisit un motif (prompt) → PATCH reject_reason → TX voit toast individuels par item ; Swing persistance : groove.metro embarque swing+felBeatSteps+sig au save, applyGroove les restaure ; migration DB v3.8.53 (schema.sql) |
 | v3.8.52 | donut = isRepeat uniquement ; isSoft = disque plein petit |

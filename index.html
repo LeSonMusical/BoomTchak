@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.54</span>
+      <span class="app-version">v3.8.55</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1986,7 +1986,7 @@ function getSigFallback(presetId) {
 
 function buildSigSelector() {
   const btn = document.getElementById('sig-sel-btn');
-  if (btn) btn.textContent = currentSig?.label || currentSig?.id || '4/4';
+  if (btn) btn.textContent = currentSig?._embedded ? '—' : (currentSig?.label || currentSig?.id || '4/4');
   syncMetroControls();
   renderMetroPatternViz();
 }
@@ -2560,6 +2560,7 @@ function applyGroove(grooveId){
         beatUnit: m.beatUnit || currentSig.beatUnit,
         subdivision: m.subdivision || currentSig.subdivision,
         metroPattern: [...m.metroPattern],
+        _embedded: true,
       };
       syncMetroControls();
       renderMetroPatternViz();
@@ -5352,17 +5353,17 @@ function drawCircles(){
       const isRepeat = rep > 0;
       const isPlaying = playing && si===flashStep[li] && rep===currentRepM;
 
-      // Répétition son fort (ghost) : pièce trouée — plus opaque que le ghost soft
+      // Répétition son fort : pièce trouée — même rayon ext. que le disque plein isOn
       if(isRepeat && isOn){
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.85, 0, 2*Math.PI);
+        ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill+'cc'; ctx.fill();
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.28, 0, 2*Math.PI);
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.30, 0, 2*Math.PI);
         ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
       } else if(isRepeat && isSoft){
-        // Ghost en répétition : donut plus petit et transparent
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.75, 0, 2*Math.PI);
+        // Répétition ghost : pièce trouée — même rayon ext. que le disque plein isSoft
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.72, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'33' : col.fill+'77'; ctx.fill();
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.25, 0, 2*Math.PI);
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.27, 0, 2*Math.PI);
         ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
       } else if(isOn){
         // Son fort : disque plein
