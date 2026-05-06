@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.51</span>
+      <span class="app-version">v3.8.52</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5330,11 +5330,10 @@ function drawCircles(){
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
       } else if(isSoft){
-        // Ghost note : pièce trouée
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
+        // Son faible : disque plein plus petit et transparent (pas de trou)
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.72, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'33' : col.fill+'aa'; ctx.fill();
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.27, 0, 2*Math.PI);
-        ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        ctx.strokeStyle = isMuted ? col.stroke+'33' : col.stroke+'66'; ctx.lineWidth=0.8; ctx.stroke();
       } else {
         // Silence : petit cercle
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
@@ -5342,15 +5341,11 @@ function drawCircles(){
         ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0'; ctx.lineWidth=isDark?1:0.75; ctx.stroke();
       }
 
-      // Anneau "grossi" sur le step en cours de lecture — redessine le trou pour isSoft
+      // Anneau "grossi" sur le step en cours de lecture
       if(isPlaying && (isOn || isSoft) && !isMuted){
-        const dotSz = isOn ? dotR : dotR*0.82;
+        const dotSz = isOn ? dotR : dotR*0.72;
         ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
-        if(isSoft){
-          ctx.beginPath(); ctx.arc(dx, dy, dotR*0.27, 0, 2*Math.PI);
-          ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
-        }
       }
     }
   });
@@ -5530,10 +5525,10 @@ function drawLinear(){
           ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
           ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
         } else if(isSoft){
-          ctx.beginPath(); ctx.arc(x,y,dotR*0.82,0,2*Math.PI);
+          // Son faible : disque plein plus petit et transparent
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.72,0,2*Math.PI);
           ctx.fillStyle=isMuted?col.fill+'33':col.fill+'aa'; ctx.fill();
-          ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
-          ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
+          ctx.strokeStyle=isMuted?col.stroke+'33':col.stroke+'66'; ctx.lineWidth=0.8; ctx.stroke();
         } else {
           ctx.beginPath(); ctx.arc(x,y,dotR*0.45,0,2*Math.PI);
           ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
