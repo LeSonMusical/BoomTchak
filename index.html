@@ -958,7 +958,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.42</span>
+      <span class="app-version">v3.8.43</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1143,6 +1143,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div id="circle-mode-toggle">
       <button id="btn-circle-cycle" class="circle-mode-btn" title="1 tour = 1 cycle du pattern">↺ Pattern</button>
       <button id="btn-circle-measure" class="circle-mode-btn active" title="1 tour = 1 mesure">↺ Mesure</button>
+      <button id="btn-circle-linear" class="circle-mode-btn" title="Vue linéaire — 1 cycle complet (PPCM de tous les patterns)">↺ Cycle</button>
     </div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
@@ -3556,7 +3557,9 @@ function buildLayers(){
     updateBtnI();
 
     // Bouton preset pattern (remplace filtre famille + select)
-    const curPat0=state[li].patternId?getPattern(state[li].patternId):findPatternBySeq(state[li].pattern);
+    const _groove0=getGroove(currentGrooveId);
+    const _hasEmbed0=!!(_groove0?.layers?.[li]?.sequence);
+    const curPat0=_hasEmbed0?null:(state[li].patternId?getPattern(state[li].patternId):findPatternBySeq(state[li].pattern));
     const patPresetBtn=document.createElement('button');
     patPresetBtn.id='preset-btn-'+layer.id;patPresetBtn.className='pm-preset-btn';
     patPresetBtn.textContent=curPat0?curPat0.nom+(curPat0.source==='teacher'?' ✎':''):'—';
@@ -3565,10 +3568,9 @@ function buildLayers(){
       state[li].pattern=pat.sequence.split('');
       state[li].patternId=pat.id;
       state[li].stepPos=0;state[li].wrapped=false;
-      // Sync visuel : step 0 s'affiche quand l'audio joue step 0 (nextStepTime)
       if(playing) state[li].startTime=state[li].nextStepTime;
       {const groove=getGroove(currentGrooveId);
-       if(groove&&groove.layers[li])groove.layers[li].patternId=pat.id;
+       if(groove&&groove.layers[li]){groove.layers[li].patternId=pat.id;delete groove.layers[li].sequence;}
        grooveDirty=true;updateGrooveSaveBtn();
        if(currentMode==='tx')saveToStorage();}
       updateBtnI();
@@ -5385,7 +5387,7 @@ function drawCircles(){
       ctx.fillRect(bx-bw,by,bw,bh);
       ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
       ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';resizeCanvas();}};
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';resizeCanvas();setupCircleModeToggle();}};
     } else { _circleBadge=null; }
   } else { _circleBadge=null; }
 }
@@ -5398,8 +5400,14 @@ function getPolymetricInfo(){
   const lens=LAYERS.map((_,li)=>state[li].pattern.length).filter(n=>n>0);
   if(!lens.length) return{mSteps,lcmSteps:mSteps,isPolymetric:false,ratio:''};
   let totalLcm=mSteps; const polyLens=[];
-  for(const n of lens){ if(n%mSteps!==0){totalLcm=lcm(totalLcm,n);polyLens.push(n);} }
-  return{mSteps,lcmSteps:Math.min(totalLcm,128),isPolymetric:totalLcm>mSteps,ratio:polyLens.length?polyLens[0]+':'+mSteps:''};
+  for(const n of lens){
+    const l=lcm(n,mSteps);
+    if(l>mSteps){totalLcm=lcm(totalLcm,n);polyLens.push(n);}
+  }
+  const isPoly=totalLcm>mSteps;
+  // Ratio : tous les patterns vraiment polymétriques vs la mesure (ex: "3,5:8")
+  const ratio=polyLens.length?[...new Set(polyLens)].join(',')+':'+mSteps:'';
+  return{mSteps,lcmSteps:Math.min(totalLcm,128),isPolymetric:isPoly,ratio};
 }
 let _circleBadge=null; // {x,y,w,h,action} en coordonnées canvas
 
@@ -5475,16 +5483,7 @@ function drawLinear(){
     ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
     ctx.strokeStyle='rgba(200,160,40,0.75)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
   }
-  // Badge "← Mesure" (coin haut droit)
-  const bdText='← Mesure';
-  ctx.font='bold 9px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
-  const tw=ctx.measureText(bdText).width;
-  const bx=W-2,by=2,bw=tw+8,bh=13;
-  ctx.fillStyle=isDark?'rgba(144,128,192,.2)':'rgba(112,96,176,.1)';
-  ctx.fillRect(bx-bw,by,bw,bh);
-  ctx.fillStyle=isDark?'#9080C0':'#7060B0';
-  ctx.fillText(bdText,bx-4,by+2);
-  _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='measure';resizeCanvas();}};
+  _circleBadge=null; // navigation via les boutons ↺ Pattern / Mesure / Cycle
 }
 
 function circleHitTest(x, y){
@@ -5576,16 +5575,22 @@ function visualLoopCircle(){
 function setupCircleModeToggle(){
   const btnCycle   = document.getElementById('btn-circle-cycle');
   const btnMeasure = document.getElementById('btn-circle-measure');
+  const btnLinear  = document.getElementById('btn-circle-linear');
   if(!btnCycle || !btnMeasure) return;
   // Évite les doublons d'écouteurs si appelé plusieurs fois
-  const fresh = btnCycle.cloneNode(true);
+  const fresh  = btnCycle.cloneNode(true);
   const freshM = btnMeasure.cloneNode(true);
+  const freshL = btnLinear ? btnLinear.cloneNode(true) : null;
   btnCycle.parentNode.replaceChild(fresh, btnCycle);
-  freshM.classList.toggle('active', circleModeView==='measure');
-  fresh.classList.toggle('active', circleModeView==='cycle');
   btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
-  fresh.addEventListener('click', ()=>{ circleModeView='cycle'; _circleBadge=null; fresh.classList.add('active'); freshM.classList.remove('active'); resizeCanvas(); });
-  freshM.addEventListener('click', ()=>{ circleModeView='measure'; _circleBadge=null; freshM.classList.add('active'); fresh.classList.remove('active'); resizeCanvas(); });
+  if(freshL && btnLinear) btnLinear.parentNode.replaceChild(freshL, btnLinear);
+  fresh.classList.toggle('active',  circleModeView==='cycle');
+  freshM.classList.toggle('active', circleModeView==='measure');
+  if(freshL) freshL.classList.toggle('active', circleModeView==='linear');
+  const allBtns=[fresh,freshM,freshL].filter(Boolean);
+  fresh.addEventListener('click', ()=>{ circleModeView='cycle';    _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
+  freshM.addEventListener('click',()=>{ circleModeView='measure';  _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
+  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
