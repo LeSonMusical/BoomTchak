@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.53</span>
+      <span class="app-version">v3.8.54</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2120,7 +2120,7 @@ function buildSigFromControls() {
     if (btn) btn.textContent = currentSig.label;
   }
   metroStepPos = 0; metroBeatPos = 0;
-  // NE PAS marquer le groove dirty (sig = cosmétique pour la lecture)
+  setMetroDirty(true); updateMetroSaveBtn();
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
   const ni = document.getElementById('tap-n-input');
@@ -2541,7 +2541,7 @@ function applyGroove(grooveId){
     }
   }
 
-  // Appliquer les paramètres metro embarqués (swing, battue — indépendants du preset sig)
+  // Appliquer les paramètres metro embarqués (swing, battue, pattern dirty)
   if (groove.metro) {
     const m = groove.metro;
     if (m.swing !== undefined) {
@@ -2551,7 +2551,21 @@ function applyGroove(grooveId){
       const swDisp = document.getElementById('swing-display');
       if (swDisp) swDisp.textContent = Math.round(m.swing * 100) + '%';
     }
-    if (m.felBeatSteps !== undefined && currentSig) {
+    if (m.metroPattern && m.metroPattern.length > 0 && currentSig) {
+      // Metro était dirty au save — restaurer le pattern embarqué + tous les params sig
+      currentSig = {
+        ...currentSig,
+        felBeatSteps: m.felBeatSteps || currentSig.felBeatSteps,
+        beatsPerMeasure: m.beatsPerMeasure || currentSig.beatsPerMeasure,
+        beatUnit: m.beatUnit || currentSig.beatUnit,
+        subdivision: m.subdivision || currentSig.subdivision,
+        metroPattern: [...m.metroPattern],
+      };
+      syncMetroControls();
+      renderMetroPatternViz();
+      updateBeatDisplay();
+      setMetroDirty(true); updateMetroSaveBtn(); // preset non sauvegardé
+    } else if (m.felBeatSteps !== undefined && currentSig) {
       currentSig = { ...currentSig, felBeatSteps: m.felBeatSteps };
       updateBeatDisplay();
     }
@@ -4278,13 +4292,15 @@ function saveGroove(){
   });
   const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
   if(bpmVal>0){ if(!groove.tempo)groove.tempo={}; groove.tempo.defaut=bpmVal; }
-  // Embarquer les paramètres metro courants (swing, battue, signature)
+  // Embarquer les paramètres metro courants (swing, battue, signature, pattern dirty)
   groove.metro = {
     swing: swingVal,
     felBeatSteps: currentSig.felBeatSteps || currentSig.stepsPerBeat || 2,
     beatsPerMeasure: currentSig.beatsPerMeasure,
     beatUnit: currentSig.beatUnit || 4,
     subdivision: currentSig.subdivision || 2,
+    // Pattern embarqué ssi metro dirty — comme séquence embarquée pour les layers
+    metroPattern: metroDirty ? [...(currentSig.metroPattern||[])] : null,
   };
   saveToStorage();
 }
@@ -8765,6 +8781,7 @@ function attachEvents(){
     }
     _lastBpmPos=newPos;
     sl.value=newPos;
+    setMetroDirty(true); updateMetroSaveBtn();
     updateBeatDisplay();updateSpmDisplay();
   }
   ['metro-bpm-minus','metro-bpm-plus'].forEach(id=>{
@@ -8779,6 +8796,7 @@ function attachEvents(){
     swingVal=parseInt(e.target.value)/100;
     const d=document.getElementById('swing-display');
     if(d) d.textContent=e.target.value+'%';
+    setMetroDirty(true); updateMetroSaveBtn();
   });
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
@@ -8822,7 +8840,7 @@ function attachEvents(){
     _lastBpmPos=newPos;
     sl.value=newPos;
     saveToStorage();
-    setMetroDirty(true);
+    setMetroDirty(true); updateMetroSaveBtn();
     updateBeatDisplay();updateSpmDisplay();
   });
   // ── Saisie manuelle BPM ressenti (beat-val-input) ──
@@ -8843,6 +8861,7 @@ function attachEvents(){
     }
     _lastBpmPos=newPos;
     sl.value=newPos;
+    setMetroDirty(true); updateMetroSaveBtn();
     updateBeatDisplay();updateSpmDisplay();
   });
   // ── Signature ──
@@ -8902,7 +8921,7 @@ function attachEvents(){
     const CYCLE = ['A', 'P', 'p', '.'];
     const cur = currentSig.metroPattern[idx] || '.';
     currentSig.metroPattern[idx] = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
-    setMetroDirty(true);
+    setMetroDirty(true); updateMetroSaveBtn();
     renderMetroPatternViz();
   });
   // ── L2 : Sauver preset → modal ──
