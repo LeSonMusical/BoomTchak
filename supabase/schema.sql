@@ -352,5 +352,27 @@ create policy if not exists "Lecture publique school metro_familles" on public.m
   using (scope = 'school');
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.8.53 — Paramètres metro embarqués dans grooves + raison de refus
+-- À exécuter dans Supabase SQL Editor (une seule fois, par le MX).
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Colonne metro (jsonb) : paramètres métronome embarqués dans le groove
+-- { swing, felBeatSteps, beatsPerMeasure, beatUnit, subdivision }
+alter table public.grooves
+  add column if not exists metro jsonb default null;
+
+-- Colonne reject_reason : raison de refus MX — lue par TX puis supprimée
+alter table public.patterns
+  add column if not exists reject_reason text default null;
+alter table public.grooves
+  add column if not exists reject_reason text default null;
+
+-- Politique UPDATE pour MX sur les items teacher (pour pouvoir écrire reject_reason)
+create policy if not exists "MX peut patcher patterns teacher" on public.patterns for update
+  using (public.current_role_name() = 'mx');
+create policy if not exists "MX peut patcher grooves teacher" on public.grooves for update
+  using (public.current_role_name() = 'mx');
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════

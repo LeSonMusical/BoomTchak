@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.52</span>
+      <span class="app-version">v3.8.53</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2538,6 +2538,22 @@ function applyGroove(grooveId){
       renderMetroPatternViz();
       updateBeatDisplay(); // met à jour battue-sel, beat-val-input, ♩=N top-bar
       _suppressGrooveDirty=false;
+    }
+  }
+
+  // Appliquer les paramètres metro embarqués (swing, battue — indépendants du preset sig)
+  if (groove.metro) {
+    const m = groove.metro;
+    if (m.swing !== undefined) {
+      swingVal = m.swing;
+      const swSlider = document.getElementById('swing-slider');
+      if (swSlider) swSlider.value = Math.round(m.swing * 100);
+      const swDisp = document.getElementById('swing-display');
+      if (swDisp) swDisp.textContent = Math.round(m.swing * 100) + '%';
+    }
+    if (m.felBeatSteps !== undefined && currentSig) {
+      currentSig = { ...currentSig, felBeatSteps: m.felBeatSteps };
+      updateBeatDisplay();
     }
   }
 
@@ -4262,6 +4278,14 @@ function saveGroove(){
   });
   const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
   if(bpmVal>0){ if(!groove.tempo)groove.tempo={}; groove.tempo.defaut=bpmVal; }
+  // Embarquer les paramètres metro courants (swing, battue, signature)
+  groove.metro = {
+    swing: swingVal,
+    felBeatSteps: currentSig.felBeatSteps || currentSig.stepsPerBeat || 2,
+    beatsPerMeasure: currentSig.beatsPerMeasure,
+    beatUnit: currentSig.beatUnit || 4,
+    subdivision: currentSig.subdivision || 2,
+  };
   saveToStorage();
 }
 
@@ -5866,11 +5890,17 @@ async function sbSyncSchoolPool() {
     }
     // Vérifier les refus TX (fire-and-forget, non bloquant)
     if (authProfile?.role !== 'mx') {
-      sbCheckRejections().then(n => {
-        if (n > 0) {
+      sbCheckRejections().then(({ generic, withReason }) => {
+        const total = generic + withReason.length;
+        if (total > 0) {
           saveToStorage();
           buildPublishSection();
-          showToast(n === 1 ? '1 soumission refusée' : n + ' soumissions refusées', 'warn');
+          withReason.forEach(r => {
+            const label = r.type === 'pattern' ? 'Pattern' : 'Groove';
+            const msg = r.reason ? `${label} « ${r.nom} » refusé — ${r.reason}` : `${label} « ${r.nom} » refusé`;
+            showToast(msg, 'warn');
+          });
+          if (generic > 0) showToast(generic === 1 ? '1 soumission refusée' : generic + ' soumissions refusées', 'warn');
         }
       });
     }
@@ -5935,6 +5965,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
       band_defaut: g.band_defaut, signature: g.signature || '4/4',
       tempo: { min: g.tempo_min, max: g.tempo_max, defaut: g.tempo_defaut },
       layers: g.layers || [],
+      metro: g.metro || null,
       source: 'school'
     });
   });
@@ -6031,6 +6062,7 @@ async function sbPublishGroove(grooveId) {
         band_defaut: g.band_defaut, signature: g.signature || '4/4',
         tempo_min: g.tempo?.min, tempo_max: g.tempo?.max, tempo_defaut: g.tempo?.defaut,
         layers: g.layers,
+        metro: g.metro || null,
         scope: isMX ? 'school' : 'teacher',
         approved: isMX,
         owner_id: authProfile?.id,
@@ -6202,9 +6234,18 @@ async function sbApproveFamillesOfItem(familleIds) {
   } catch(e) { console.error('Cascade familles échouée :', e); }
 }
 
-async function sbRejectItem(type, id) {
+async function sbRejectItem(type, id, reason) {
   try {
-    await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
+    if (reason !== null && reason !== undefined) {
+      // Stocker la raison sur l'item — TX lira + supprimera au prochain sync
+      await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ reject_reason: reason }),
+      });
+    } else {
+      await sbFetch(`/rest/v1/${type}s?id=eq.${id}`, { method: 'DELETE' });
+    }
     return true;
   } catch(e) { console.error('Rejet échoué :', e); return false; }
 }
@@ -6516,29 +6557,59 @@ async function sbSaveEncycloEntry(key) {
 
 // ── Détection refus TX ────────────────────────────────────────────────────────
 async function sbCheckRejections() {
-  if (!authSession || authProfile?.role === 'mx') return 0;
+  if (!authSession || authProfile?.role === 'mx') return { generic: 0, withReason: [] };
   const uid = authProfile?.id;
-  if (!uid) return 0;
+  if (!uid) return { generic: 0, withReason: [] };
   try {
     const [pats, grvs, encs] = await Promise.all([
-      sbFetch(`/rest/v1/patterns?owner_id=eq.${uid}&approved=eq.false&select=id`),
-      sbFetch(`/rest/v1/grooves?owner_id=eq.${uid}&approved=eq.false&select=id`),
+      sbFetch(`/rest/v1/patterns?owner_id=eq.${uid}&approved=eq.false&select=id,nom,reject_reason`),
+      sbFetch(`/rest/v1/grooves?owner_id=eq.${uid}&approved=eq.false&select=id,nom,reject_reason`),
       sbFetch(`/rest/v1/encyclo?owner_id=eq.${uid}&approved=eq.false&scope=eq.teacher&select=key`),
     ]);
-    const dbPatIds = new Set((Array.isArray(pats) ? pats : []).map(p => p.id));
-    const dbGrvIds = new Set((Array.isArray(grvs) ? grvs : []).map(g => g.id));
+    const dbPats = Array.isArray(pats) ? pats : [];
+    const dbGrvs = Array.isArray(grvs) ? grvs : [];
     const dbEncKeys = new Set((Array.isArray(encs) ? encs : []).map(e => e.key));
-    let rejected = 0;
+
+    const withReason = [];
+    let generic = 0;
+
+    // Patterns : items avec reject_reason → refus avec message → PATCH puis suppression côté TX
+    const rejPatsWithReason = dbPats.filter(p => p.reject_reason !== null && p.reject_reason !== undefined);
+    const dbPatIdsPending = new Set(dbPats.filter(p => !p.reject_reason).map(p => p.id));
+    const dbPatIdsAll = new Set(dbPats.map(p => p.id));
+
+    for (const p of rejPatsWithReason) {
+      const local = packCours.patterns.find(x => x.id === p.id);
+      if (local && local.localStatus === 'submitted') {
+        withReason.push({ type: 'pattern', nom: p.nom || local.nom, reason: p.reject_reason });
+        packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
+        // TX supprime l'item de DB après lecture de la raison
+        sbFetch(`/rest/v1/patterns?id=eq.${p.id}`, { method: 'DELETE' }).catch(() => {});
+      }
+    }
+    // Patterns supprimés sans raison (ancien flux)
     const rejPatIds = packCours.patterns
-      .filter(p => p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIds.has(p.id))
+      .filter(p => p.source === 'teacher' && p.localStatus === 'submitted' && !dbPatIdsAll.has(p.id))
       .map(p => p.id);
-    rejected += rejPatIds.length;
+    generic += rejPatIds.length;
     packCours.patterns = packCours.patterns.filter(p => !rejPatIds.includes(p.id));
 
+    // Grooves : même logique
+    const rejGrvsWithReason = dbGrvs.filter(g => g.reject_reason !== null && g.reject_reason !== undefined);
+    const dbGrvIdsAll = new Set(dbGrvs.map(g => g.id));
+
+    for (const g of rejGrvsWithReason) {
+      const local = packCours.grooves.find(x => x.id === g.id);
+      if (local && local.localStatus === 'submitted') {
+        withReason.push({ type: 'groove', nom: g.nom || local.nom, reason: g.reject_reason });
+        packCours.grooves = packCours.grooves.filter(x => x.id !== g.id);
+        sbFetch(`/rest/v1/grooves?id=eq.${g.id}`, { method: 'DELETE' }).catch(() => {});
+      }
+    }
     const rejGrvIds = packCours.grooves
-      .filter(g => g.source === 'teacher' && g.localStatus === 'submitted' && !dbGrvIds.has(g.id))
+      .filter(g => g.source === 'teacher' && g.localStatus === 'submitted' && !dbGrvIdsAll.has(g.id))
       .map(g => g.id);
-    rejected += rejGrvIds.length;
+    generic += rejGrvIds.length;
     packCours.grooves = packCours.grooves.filter(g => !rejGrvIds.includes(g.id));
 
     // Détection refus articles encyclopédie TX
@@ -6547,12 +6618,12 @@ async function sbCheckRejections() {
         const txKey = 'tx_' + uid + '_' + canonKey;
         if (!dbEncKeys.has(txKey)) {
           delete entry._localStatusEncyclo;
-          rejected++;
+          generic++;
         }
       }
     });
-    return rejected;
-  } catch(e) { return 0; }
+    return { generic, withReason };
+  } catch(e) { return { generic: 0, withReason: [] }; }
 }
 
 function loadPendingPattern(p) {
@@ -6583,6 +6654,7 @@ function loadPendingGroove(g) {
       band_defaut: g.band_defaut, signature: g.signature || '4/4',
       tempo: { min: g.tempo_min, max: g.tempo_max, defaut: g.tempo_defaut },
       layers: typeof g.layers === 'string' ? JSON.parse(g.layers) : (g.layers || []),
+      metro: g.metro || null,
       source: 'pending',
     });
   }
@@ -6782,9 +6854,10 @@ function buildApprobationsSection() {
 
   container.querySelectorAll('.btn-appro-reject').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Refuser cette proposition et annuler la demande ?')) return;
+      const reason = prompt('Raison du refus (optionnelle — visible par l\'enseignant) :', '');
+      if (reason === null) return; // annulé
       btn.disabled = true; btn.textContent = '…';
-      const ok = await sbRejectItem(btn.dataset.type, btn.dataset.id);
+      const ok = await sbRejectItem(btn.dataset.type, btn.dataset.id, reason);
       if (ok) {
         if (btn.dataset.type === 'pattern')
           _pendingItems.patterns = _pendingItems.patterns.filter(x => x.id !== btn.dataset.id);

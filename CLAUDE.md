@@ -68,11 +68,14 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.50** (session 2026-05-06)
+**v3.8.53** (session 2026-05-06)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.53 | G7 raison de refus : MX saisit un motif (prompt) → PATCH reject_reason → TX voit toast individuels par item ; Swing persistance : groove.metro embarque swing+felBeatSteps+sig au save, applyGroove les restaure ; migration DB v3.8.53 (schema.sql) |
+| v3.8.52 | donut = isRepeat uniquement ; isSoft = disque plein petit |
+| v3.8.51 | ghost = répétitions de mesure ; silence sans anneau en vue Cycle |
 | v3.8.50 | Revert donut universel : 'X' reste disque plein, seul 'x' (ghost) est pièce trouée ; isPlaying redessine le trou uniquement pour isSoft |
 | v3.8.49 | (annulé — donut universel incorrect) |
 | v3.8.48 | Vue Cycle : linearCycleStartTime fixe l'aiguille sans recalibration ; anneau step courant par layer (rAF) ; édition circleHitTest linéaire ; metro subdivisions swingées (A+P non touchés) |
@@ -197,12 +200,13 @@ Refonte de la gestion bands/sons — `openPresetModal({type:'band'})` existe pou
 
 **Objectifs session sons :**
 - Rename/delete bands + gestion familles dans le modal (remplacer `lib-panel-bands`)
-- Éventuellement : créer / uploader de nouveaux sons (à cadrer avec Lamberio)
+- Samples audio : ajouter champ `sampleUrl` optionnel dans `SOUND_DEFS` ; si présent → playback via `AudioBuffer`, sinon fallback synthèse. Sources à cadrer (bibliothèque libre, upload MX via Supabase Storage).
 
 ### Autres chantiers en attente
-1. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
-2. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
-3. **Swing persistance DB** — champ `swing float` dans la table `grooves` (actuellement non sauvegardé)
+1. **G1 Fork item école** — ✅ Déjà implémenté (`txForkItem` appelé automatiquement dans `pspDoOverwritePattern/Groove`)
+2. **G7 Raison de refus** — ✅ Implémenté v3.8.53
+3. **Swing persistance DB** — ✅ Implémenté v3.8.53 via `groove.metro` jsonb
+4. **Samples audio** — Court terme : `sampleUrl` optionnel dans SOUND_DEFS, fallback synthèse
 
 ## Résolu (session 2026-05-06)
 - ✅ **Donut universel** — 'X' (son fort) passe en pièce trouée comme 'x' ghost ; trou dotR×0.30 pour fort, dotR×0.27 pour ghost ; isPlaying redessine le trou après l'anneau ; même fix dans drawLinear
