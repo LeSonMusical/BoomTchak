@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.47</span>
+      <span class="app-version">v3.8.48</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2197,6 +2197,7 @@ let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBea
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
+let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
 let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
@@ -2259,7 +2260,11 @@ function scheduler(){
         const level=mp[metroStepPos];
         if(level==='A'&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
         else if(level==='P'&&metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
-        else if(level==='p'&&metro.subdivOn) playMetroClick(metroNextBeatTime,'subdiv');
+        else if(level==='p'&&metro.subdivOn){
+          // Swing des subdivisions : aligne avec le décalage des steps impairs des layers
+          const swOffM=(swingVal>0&&metroStepPos%2===1)?swingVal*(60/spmNow)/3:0;
+          playMetroClick(metroNextBeatTime+swOffM,'subdiv');
+        }
       }
       metroNextBeatTime+=stepSec;
       metroStepPos=(metroStepPos+1)%mp.length;
@@ -2324,6 +2329,7 @@ function startPlay(){
   });
   metroBeatPos=0; metroStepPos=0; metroNextBeatTime=now; metroStartTime=now;
   _lastMetroVizStep=-1;
+  linearCycleStartTime=now;
   scheduler();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -5536,24 +5542,65 @@ function drawLinear(){
     ctx.fillStyle=isDark?'#C89040':'#8B6000';
     ctx.fillText('Cycle complet: '+Math.round(totalU/DENOM)+' pas — affiché: '+Math.round(dispU/DENOM), W/2, 2);
   }
-  // Aiguille de lecture (basée sur le layer 0, temps réel)
+  // Aiguille + highlight step courant
   if(playing){
     const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const baseStepSec=60/spm; // durée d'1 croche normale
-    const totalCycleSec=totalU/DENOM*baseStepSec;
+    const baseStepSec=60/spm;
     const now=getAC().currentTime;
-    const el=now-state[0].startTime;
-    const pos=((el%totalCycleSec)+totalCycleSec)%totalCycleSec/totalCycleSec;
-    const nx=marginX+pos*(W-2*marginX);
+    // linearCycleStartTime : référence fixe au play, jamais recalibrée → position PPCM correcte
+    const elU=((now-linearCycleStartTime)/baseStepSec*DENOM);
+    const cycElU=((elU%totalU)+totalU)%totalU; // unités dans le cycle PPCM
+    // Highlight step courant par layer (anneau couleur)
+    [0,1,2].forEach(li=>{
+      const n=state[li].pattern.length; if(!n) return;
+      const y=marginY+rowH*li+rowH/2;
+      const col=CIRCLE_COLORS[li], isMuted=state[li].muted;
+      const curRep=Math.floor(cycElU/cycU[li]);
+      const curSi=Math.floor((cycElU%cycU[li])/su[li])%n;
+      const uPos=(curRep*n+curSi)*su[li];
+      if(uPos>=dispU) return;
+      const x=marginX+uW*(uPos+su[li]/2);
+      ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
+      ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
+    });
+    // Aiguille dorée
+    const nx=marginX+cycElU/totalU*(W-2*marginX);
     ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
-    ctx.strokeStyle='rgba(200,160,40,0.75)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+    ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
   }
   _circleBadge=null;
 }
 
 function circleHitTest(x, y){
   if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
-  if(circleModeView==='linear') return null;
+  if(circleModeView==='linear'){
+    // Recalcul des positions identiques à drawLinear()
+    const mStepsL=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+    const DENOM=6;
+    const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
+    const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
+    let totU=mStepsL*DENOM;
+    LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=lcm(totU,cycUL[li]);});
+    const dispU=Math.min(totU,64*DENOM);
+    const marginX=8,marginY=16;
+    const rowH=Math.floor((cv.height-2*marginY)/3);
+    const uW=(cv.width-2*marginX)/dispU;
+    const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?suL[li]:999));
+    const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
+    for(let li=0;li<3;li++){
+      const n=state[li].pattern.length; if(!n) continue;
+      const layY=marginY+rowH*li+rowH/2;
+      const numReps=Math.ceil(dispU/cycUL[li]);
+      for(let rep=0;rep<numReps;rep++){
+        for(let si=0;si<n;si++){
+          const uPos=(si+rep*n)*suL[li]; if(uPos>=dispU) break;
+          const sx=marginX+uW*(uPos+suL[li]/2);
+          if(Math.hypot(x-sx,y-layY)<=dotR+5) return{li,si};
+        }
+      }
+    }
+    return null;
+  }
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   const dotR = 10, r0 = 16*dotR/Math.PI;
   const radii = [r0, r0+dotR*2, r0+dotR*4];
