@@ -68,65 +68,28 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.56** (session 2026-05-06)
+**v3.8.59** (session 2026-05-06)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
-| v3.8.56 | Volet métro réorganisé en 3 sous-volets indépendants : Temps (BPM+sig), Tap, Métro (pattern viz) ; sig-sel-btn règle "dernier qui a parlé" |
+| v3.8.59 | Slider vol → sous-volet Vol (classe temps-slider) ; ordre boutons : Temps\|Sign\|Tap\|Vol\|Métro ; Temps ouvert par défaut |
+| v3.8.58 | Fix sous-volets metro : Sign = sig-grid (Mesure/temps/subdiv) ; Temps = 3col seul ; boutons toggle avec état visuel open (fond violet + bordure + gras) |
+| v3.8.57 | 4 sous-volets metro indépendants (Temps, Tap, Sign, Métro) ; Sign = ◀[label]▶ navigation preset (remplacé en v3.8.58) |
+| v3.8.56 | Volet métro réorganisé en 3 sous-volets indépendants : Temps (BPM+sig), Tap, Métro (pattern viz) |
 | v3.8.55 | sig-sel-btn affiche '—' si metroPattern embarqué (_embedded flag) ; donut repeated = même rayon ext. que disque plein (dotR pour isOn, dotR×0.72 pour isSoft) |
 | v3.8.54 | Metro dirty complet : setMetroDirty sur swing, BPM ±, beat-val-input, beats/unité/subdiv (buildSigFromControls) + clic step mpv ; groove.metro embarque metroPattern si metroDirty ; applyGroove restaure metroPattern + setMetroDirty si embarqué |
 | v3.8.53 | G7 raison de refus : MX saisit un motif (prompt) → PATCH reject_reason → TX voit toast individuels par item ; Swing persistance : groove.metro embarque swing+felBeatSteps+sig au save, applyGroove les restaure ; migration DB v3.8.53 (schema.sql) |
 | v3.8.52 | donut = isRepeat uniquement ; isSoft = disque plein petit |
 | v3.8.51 | ghost = répétitions de mesure ; silence sans anneau en vue Cycle |
 | v3.8.50 | Revert donut universel : 'X' reste disque plein, seul 'x' (ghost) est pièce trouée ; isPlaying redessine le trou uniquement pour isSoft |
-| v3.8.49 | (annulé — donut universel incorrect) |
 | v3.8.48 | Vue Cycle : linearCycleStartTime fixe l'aiguille sans recalibration ; anneau step courant par layer (rAF) ; édition circleHitTest linéaire ; metro subdivisions swingées (A+P non touchés) |
 | v3.8.47 | swing-slider : classe temps-slider (violette, fine) ; metro-3col-bpm flex:1 → 3 colonnes égales |
 | v3.8.46 | drawLinear WYSIWYE : positions X proportionnelles au temps réel (DENOM=6 units) ; Shuffle slider 0–100% dans volet metro ; 3 colonnes metro (BPM \| Battue \| Swing) ; SPM supprimé du volet |
-| v3.8.45 | #btn-tempo sans opacité (neutre off, violet on) ; fix polymétrie getPolymetricInfo (n%mSteps!==0 && mSteps%n!==0) |
-| v3.8.44 | Ghost step donut (pièce trouée) dans drawCircles ; labels durée en fractions irréductibles ; recalibrateStartTimes() à chaque updateBeatDisplay |
 | v3.8.43 | Séquences embarquées dans groove (gl.sequence) : pattern dirty → embed au save, pas de pollution DB ; nom pattern '—' si embedded ; _patOnSelect efface l'embed |
 | v3.8.42 | Vue linéaire Cycle (↺ Cycle) : timeline PPCM horizontale, 3 rows layers, aiguille dorée |
-| v3.8.41 | Badge polymétrie ⊡ N:M dans vue circulaire/mesure ; détection corrigée lcm(n,mSteps)>mSteps |
 | v3.8.40 | Metro topbar Option C final : icon + ♩=N permanent + mini-track 2px ; pointermove passive:false |
 | v3.8.37 | SX par défaut : btn-layer-mod toujours visible ; canvas circulaire cliquable sans auth ; sbSyncPublicPool() au démarrage (anon key) + migration RLS v3.8.37 (schema.sql) |
-| v3.8.36 | Fix nom article encyclo (getEncycloDisplayName cherche par key original avant resolvedKey) ; liens encyclo bleu-vert dark mode ; recherche modale globale (ignore famille, famille virtuelle Résultats) ; vue circulaire padding-bottom 1.25rem |
-| v3.8.35 | Fix applyGroove : ajout updateBeatDisplay() après chargement signature → battue-sel, beat-val-input, ♩=N top-bar mis à jour au changement de groove |
-| v3.8.34 | Fix ordre familles MX (vrai bug : familles PTK_DEFAULT bloquaient import DB → sbPushSchoolFamOrder patchait rien) ; encyclo ＋Note auto-focus + sélection "Titre" (insertion à la bonne position maintenue entre rendus) |
-| v3.8.33 | Fix ordre familles MX (bug splice si<ti→ti ; same fix pmDrop sig) ; MIDI modal 4 colonnes (lettre+numéro note éditables, champ nom fichier) ; encyclo ＋Note à la position 0 si chapo, Enter=\\n (pre-wrap), onSelect ne s'ouvre que si contenu |
-| v3.8.32 | Vue circulaire : suppression artefact bord canvas (CSS width/height au lieu de transform:scale) ; btn-view cadre gris uniforme (suppression override doré groove-bar) ; labels vue circulaire mesure étendus (unité step + durée en temps) ; CIRC_LABEL_W→90 |
-| v3.8.31 | Toolbar encyclopédie : Visual Viewport API (`transform:translateY(vv.offsetTop)`) pour rester visible quand le clavier OS apparaît sur mobile |
-| v3.8.30 | Labels vue circulaire mesure : déplacés à gauche (CIRC_LABEL_W=36, cx=CIRC_LABEL_W+H/2) ; unité "p" ; actualisation sans play (BPM slider + changeSig → drawCircles) |
-| v3.8.29 | btn-view ⊞/◎ : cadre visible (border:1px solid) en mode clair (gris) et sombre (doré discret), aligné visuellement sur pm-preset-btn |
-| v3.8.28 | Fix 3 bugs sync audio : désync pattern (startTime=nextStepTime) ; 1er temps métro décalé (sync au début de mesure via mpLen au lieu de subdivision) ; mute band ignoré au changement de groove (preserve _wasMutedAll) |
-| v3.8.27 | Labels nb de pas par layer en vue circulaire mesure (coin sup. gauche canvas) ; canOverwrite pattern/groove étendu à MX (authProfile?.role==='mx') → section Publier correcte |
-| v3.8.26 | Fix 4 régressions : felBeatSteps préservé au sync DB ; preset TX non écrasé au sync ; drag famille touchstart passive:false ; drawCircles() sur tous les handlers de modif pattern (resize, shift, swap, invert, rotate, dice, step click) |
-| v3.8.25 | Écraser preset métro TX → Propositions (pas push direct) ; drag handle hauteur fixe (font 12px) ; border gauche colorée en mode réordonner ; .pm-item.pm-cur couleur accent en dark mode |
-| v3.8.24 | Fix pas-num dans _patOnSelect ; changeSig/previewMetroPreset → grooveDirty ; sync groove au temps (pas mesure) |
-| v3.8.23 | Article "Temps musical" ; Encyclo neutre (vert = édition seul) ; sans bordures crayon/vue ; preset groove texte vif/bord discret ; fix cercle nb pas |
-| v3.8.22 | Toolbar encyclo → top:56px (sous top-bar, plus fiable mobile) ; dark mode CE vert ; cohérence volets ; btn-view cadre doré ; "Encyclo" vert |
-| v3.8.21 | btn-view ⊞/◎ déplacé dans groove-bar (avant Patterns ▶) ; SX par défaut, TX requiert auth Google |
-| v3.8.20 | Encyclo : fix scoping `_focusedBulletIdx` (− Suppr. + ＋ position curseur), tint vert dark mode |
-| v3.8.19 | Encyclo : toolbar verte, ◀▶ historique, ＋/− dans toolbar, tint vert corps édition |
-| v3.8.18 | Encyclo : fix parseMarkdown (placeholders), nav ◀▶, 🔗→modal preset, related:[] Voir aussi, création article ex nihilo (encycloIndex) |
-| v3.8.17 | Encyclo : mode lecture/édition séparés (`encEditMode`, bouton ✏️ toggle dans barre, 💾 repasse en lecture, reset à la navigation) |
-| v3.8.16 | Fix toolbar encyclo : div placé avant `<script>`, `bottom:60px` (au-dessus bottom-bar), z-index:95, Visual Viewport corrigé |
-| v3.8.15 | Toolbar encyclo fixe en bas (`#enc-floating-toolbar`, position:fixed, Visual Viewport API) ; fix bug 🔗 picker (ne ferme plus immédiatement) |
-| v3.8.14 | Encyclo : label "Encyclo", bouton `pm-preset-btn` + swipe, toolbar G/I/🔗 focus-driven (TX+MX), link picker interne |
-| v3.8.13 | Encyclopédie unifiée sous `openPresetModal` : colonne catégories, filtre famille secondaire, recherche, markdown display, toolbar G/I/•+ TX |
-| v3.8.12 | `changeSig` silencieux : mise à jour `groove.signature` sans dirty/publish ; `symFromFelBeatSteps(4)` = `♩♩` |
-| v3.8.11 | Refacto timing : `posToSPM`/`spmToPos` utilisent `felBeatSteps` ; `buildSigFromControls` cosmétique pur |
-| v3.8.10 | Fix mode BPM constant (oldSig.felBeatSteps) ; affichage SPM `♪/min` dans volet |
-| v3.8.9 | Fix 6 bugs gestion preset métro : dirty indicator, Écraser, battue sans recalcul tempo, sig discrète, nom par défaut |
-| v3.8.8 | Fix familles métro au démarrage sans connexion : `rebuildMetroPresets()` dans `loadFromStorage()` |
-| v3.8.7 | `attachSwipe()` générique sur tous les boutons preset ; vol section bar 1 ligne ; fix `getFams()` fallback |
-| v3.8.6 | Swipe sur `sig-sel-btn` : navigation preset suivant/précédent |
-| v3.8.5 | Nom latin en couleur accent ; `#btn-tempo` muté = dim lilas |
-| v3.8.4 | 💾 métro = `btn-sec-save` ; vol slider `flex:1` section bar |
-| v3.8.3 | Correction layout : slider `#bpm` + battue/BPM dans volet |
-| v3.8.2 | Section bar : select battue + input BPM ressenti ; vol déplacé section bar |
-| v3.8.1 | `felBeatSteps` + battue éditable ; rescale métronome au changement tempo |
 | v3.7.0 | Familles métronome dynamiques : `metro_familles` DB, `familles_ids`+`ordre` sur `metro_presets` |
 
 ---
@@ -196,30 +159,44 @@ stepSec = (60 / spm) × (stepsPerBeat / subdivision)
 
 ---
 
-## Tâches prioritaires (prochaine session)
+## Tâches prioritaires — Session v3.9 : Volet Band
 
-### Chantier principal : Sons/Instruments (Band)
-Refonte de la gestion bands/sons — `openPresetModal({type:'band'})` existe pour la sélection ; ajouter les modes ✎ gérer et ☰ réordonner. Sons (`SOUND_DEFS`) hardcodés = hors scope (modal son = sélection uniquement).
+### Chantier principal : Gestion bands et sons (v3.9)
+Le volet Band est le dernier grand chantier de gestion de presets à refactoriser selon le même modèle que Patterns/Grooves/Métro.
 
-**Objectifs session sons :**
-- Rename/delete bands + gestion familles dans le modal (remplacer `lib-panel-bands`)
-- Samples audio : ajouter champ `sampleUrl` optionnel dans `SOUND_DEFS` ; si présent → playback via `AudioBuffer`, sinon fallback synthèse. Sources à cadrer (bibliothèque libre, upload MX via Supabase Storage).
+**État actuel :**
+- `openPresetModal({type:'band'})` existe pour la **sélection** d'un band
+- `openPresetModal({type:'sound'})` existe pour la **sélection** d'un son par layer
+- `lib-panel-bands` est l'ancien panneau de gestion (à remplacer ou supprimer)
+- Les sons (`SOUND_DEFS`) sont **hardcodés** en JS — hors scope (pas de CRUD son)
+- Les bands sont stockés dans `packCours.bands` (localStorage + DB `grooves` via `band_defaut`)
+
+**Objectifs v3.9 :**
+1. **Modal Band — mode ✎ Gérer** : rename band, delete band, gestion familles (tags), même UX que patterns/grooves
+2. **Modal Band — mode ☰ Réordonner** : drag-drop bands et familles, persistance DB (`sbPushSchoolBandOrder`)
+3. **Symétrie TX/MX** : TX crée/modifie un band → section Soumettre ; MX approuve → section Publier
+4. **Samples audio** : champ `sampleUrl` optionnel dans `SOUND_DEFS` ; si présent → playback `AudioBuffer` (fetch + decodeAudioData), sinon fallback synthèse oscillateur existant
+
+**Questions à trancher avec Lamberio avant de coder :**
+- Quelle est la source des samples ? (bibliothèque libre incluse dans le repo ? URL externe ? Upload MX via Supabase Storage ?)
+- Le CRUD band TX/MX doit-il passer par la même table DB que les grooves, ou une table dédiée `bands` ?
+- Un band = liste ordonnée de sons par layer ; la structure actuelle est-elle suffisante pour v3.9 ?
 
 ### Autres chantiers en attente
-1. **G1 Fork item école** — ✅ Déjà implémenté (`txForkItem` appelé automatiquement dans `pspDoOverwritePattern/Groove`)
-2. **G7 Raison de refus** — ✅ Implémenté v3.8.53
-3. **Swing persistance DB** — ✅ Implémenté v3.8.53 via `groove.metro` jsonb
-4. **Samples audio** — Court terme : `sampleUrl` optionnel dans SOUND_DEFS, fallback synthèse
+- **Samples audio** — Cadrer la source avec Lamberio, puis implémenter `sampleUrl` dans SOUND_DEFS
 
-## Résolu (session 2026-05-06)
-- ✅ **Donut universel** — 'X' (son fort) passe en pièce trouée comme 'x' ghost ; trou dotR×0.30 pour fort, dotR×0.27 pour ghost ; isPlaying redessine le trou après l'anneau ; même fix dans drawLinear
-- ✅ **Vue Cycle aiguille** — `linearCycleStartTime` fixe (jamais recalibré) → aiguille correcte sur tout le PPCM même après changement tempo
-- ✅ **Steps animés vue Cycle** — anneau coloré autour du step courant par layer (rAF), basé sur cycElU
-- ✅ **Édition vue Cycle** — `circleHitTest` gère `circleModeView='linear'` → clic toggle .→X→x→.
-- ✅ **Metro swing subdivisions** — level='p' reçoit `swingVal×(60/spm)/3` sur metroStepPos impairs ; A et P non touchés
-- ✅ **Shuffle UI** — slider 0–100% (classe temps-slider, violet fin) ; 3 colonnes égales volet metro (BPM \| Battue \| Swing)
-- ✅ **drawLinear WYSIWYE** — X proportionnel au temps réel (DENOM=6 units, LCM temps-réel) ; ×2/÷2/T correctement représentés
-- ✅ **Polymétrie fix** — condition `n%mSteps!==0 && mSteps%n!==0` ; 16 steps dans mesure 8 non flaggé
+## Résolu (session 2026-05-06 — suite)
+- ✅ **5 sous-volets metro** — Temps (3col BPM+Battue+Swing) | Sign (sig-grid Mesure/temps/subdiv) | Tap | Vol (slider) | Métro (pattern viz) ; Temps ouvert par défaut
+- ✅ **Boutons toggle visuels** — état open = fond violet léger + bordure + gras (`.btn-metro-volet.open`)
+- ✅ **Volume → sous-volet Vol** — slider violet pleine largeur, retiré de la section bar (problème affichage petit écran)
+
+## Résolu (session 2026-05-06 — v3.8.53–56)
+- ✅ **Donut universel** — 'X' (son fort) passe en pièce trouée comme 'x' ghost ; trou dotR×0.30 pour fort, dotR×0.27 pour ghost
+- ✅ **Vue Cycle aiguille + steps animés** — `linearCycleStartTime` fixe ; anneau coloré autour du step courant par layer (rAF)
+- ✅ **Metro swing subdivisions** — level='p' reçoit `swingVal×(60/spm)/3` sur steps impairs ; A et P non touchés
+- ✅ **drawLinear WYSIWYE** — X proportionnel au temps réel (DENOM=6 units, LCM temps-réel)
+- ✅ **G7 raison de refus** — MX saisit motif → PATCH reject_reason → TX voit toast individuels
+- ✅ **Swing + metro persistance groove** — `groove.metro` jsonb embarque swing, felBeatSteps, sig, metroPattern (si dirty)
 
 ## Résolu (session 2026-05-04)
 - ✅ **Artefact bord canvas vue circulaire** — `resizeCanvas` utilise `cv.style.width/height` au lieu de `transform:scale` ; `max-width/height` supprimés du CSS
