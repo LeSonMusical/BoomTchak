@@ -958,7 +958,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.43</span>
+      <span class="app-version">v3.8.44</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5073,6 +5073,18 @@ function getTempoName(bpm){
   if(bpm<268) return'Presto';
   return'Prestissimo';
 }
+function recalibrateStartTimes(){
+  if(!playing) return;
+  const now=getAC().currentTime;
+  LAYERS.forEach((_,li)=>{
+    if(state[li].nextStepTime<now-0.5) return; // scheduleur pas encore actif
+    const bs=getBeatSec(li), n=state[li].pattern.length, cyc=bs*n;
+    const playingStep=(state[li].stepPos-1+n)%n;
+    const stepStartT=state[li].nextStepTime-bs;
+    const withinStep=Math.max(0,Math.min(1,(now-stepStartT)/bs));
+    state[li].startTime=now-(playingStep+withinStep)/n*cyc;
+  });
+}
 function updateBeatDisplay(){
   const pos=parseInt(document.getElementById('bpm').value);
   const spm=posToSPM(pos)*globalSpeedMult;
@@ -5097,6 +5109,8 @@ function updateBeatDisplay(){
   // SPM (croches/min)
   const spmValEl=document.getElementById('metro-spm-val');
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
+  // Recalibrer startTime → synchro visuelle après changement de tempo
+  recalibrateStartTimes();
 }
 function setMetroGlobal(on){
   metro.muted=!on;
@@ -5283,18 +5297,21 @@ function drawCircles(){
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.62, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
       } else if(isRepeat && isSoft){
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
-        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'99'; ctx.lineWidth=0.75; ctx.stroke();
-        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.5, 0, 2*Math.PI);
-        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'99'; ctx.fill();
+        // Pièce trouée (donut) — plus petite en répétition
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.75, 0, 2*Math.PI);
+        ctx.fillStyle = isMuted ? col.fill+'33' : col.fill+'77'; ctx.fill();
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.25, 0, 2*Math.PI);
+        ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
       } else if(isOn){
         ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, 2*Math.PI);
         ctx.fillStyle = isMuted ? col.fill+'55' : col.fill; ctx.fill();
         ctx.strokeStyle = isMuted ? col.stroke+'55' : col.stroke; ctx.lineWidth=1; ctx.stroke();
       } else if(isSoft){
+        // Pièce trouée (donut) — plein sur 2/3, trou au centre sur 1/3
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.82, 0, 2*Math.PI);
-        ctx.fillStyle = isMuted ? col.fill+'22' : col.fill+'99'; ctx.fill();
-        ctx.strokeStyle = isMuted ? col.stroke+'22' : col.stroke+'99'; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.fillStyle = isMuted ? col.fill+'33' : col.fill+'aa'; ctx.fill();
+        ctx.beginPath(); ctx.arc(dx, dy, dotR*0.27, 0, 2*Math.PI);
+        ctx.fillStyle = isDark?'#2c2a28':'#f0ede8'; ctx.fill();
       } else {
         // Silence : petit cercle — en sombre, bord de couleur layer pour le rendre lisible
         ctx.beginPath(); ctx.arc(dx, dy, dotR*0.6, 0, 2*Math.PI);
@@ -5311,7 +5328,7 @@ function drawCircles(){
     }
   });
 
-  // Marqueurs de beats en mode mesure
+  // Marqueurs de beats (mode mesure uniquement)
   if(circleModeView === 'measure'){
     const rInner = radii[0] - dotR - 3;
     const rOuter = radii[2] + dotR + 5;
@@ -5325,7 +5342,9 @@ function drawCircles(){
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
     }
-    // Labels nb de pas + unité + durée par layer dans le strip gauche
+  }
+  // Labels nb de pas + durée (en fraction) dans le strip gauche — modes Pattern ET Mesure
+  {
     const isDark2 = document.body.classList.contains('dark-mode');
     const fbs = currentSig.felBeatSteps || 2;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
@@ -5334,10 +5353,16 @@ function drawCircles(){
       const col = CIRCLE_COLORS[li];
       const dbl = state[li].doubleOn, hlf = state[li].halfOn, trn = state[li].ternOn;
       const unit = dbl&&trn?'1/16T':hlf&&trn?'1/4T':dbl?'1/16':hlf?'1/4':trn?'1/8T':'1/8';
-      const mult = dbl ? 2 : hlf ? 0.5 : 1;
-      const tf = trn ? 2/3 : 1;
-      const dur = Math.round(n * tf / (fbs * mult) * 100) / 100;
-      const durStr = dur.toString().replace('.', ',');
+      // Durée en fraction irréductible (ex: "2+1/3 tps" au lieu de "2,33 tps")
+      let numD = trn ? 2*n : n;
+      let denD = trn ? (hlf?6:dbl?12:6) : (hlf?1:dbl?2:1);
+      denD *= fbs; if(hlf&&!trn) numD*=2;
+      // Simplification : recalcul propre
+      if(!trn){ numD=n; denD=fbs*(dbl?2:hlf?1:1); if(hlf)numD=2*n; }
+      else { numD=2*n; denD=3*fbs*(dbl?2:hlf?1:1); if(hlf)numD=4*n; }
+      const g2=gcd(numD,denD); numD/=g2; denD/=g2;
+      const whole=Math.floor(numD/denD), rem=numD%denD;
+      const durStr = rem===0 ? whole+' tps' : whole===0 ? rem+'/'+denD+' tps' : whole+'+'+rem+'/'+denD+' tps';
       const y1 = 12 + li * 22;
       const y2 = y1 + 11;
       ctx.beginPath(); ctx.arc(5, y1, 3.5, 0, 2*Math.PI);
@@ -5347,7 +5372,7 @@ function drawCircles(){
       ctx.fillText(n + 'p ' + unit, 11, y1);
       ctx.font = '9px sans-serif';
       ctx.fillStyle = isDark2 ? '#aaa' : '#666';
-      ctx.fillText(durStr + ' tps', 11, y2);
+      ctx.fillText(durStr, 11, y2);
     });
   }
 
@@ -5379,7 +5404,7 @@ function drawCircles(){
     const pi=getPolymetricInfo();
     if(pi.isPolymetric){
       const isDarkB=document.body.classList.contains('dark-mode');
-      const bdText='⊡ '+pi.ratio;
+      const bdText='⊡ poly '+pi.ratio;
       ctx.font='bold 9px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
       const tw=ctx.measureText(bdText).width;
       const bx=W-2,by=2,bw=tw+8,bh=13;
@@ -5456,8 +5481,10 @@ function drawLinear(){
         ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
         ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
       } else if(isSoft){
-        ctx.beginPath(); ctx.arc(x,y,dotR*0.75,0,2*Math.PI);
-        ctx.fillStyle=isMuted?col.fill+'30':col.fill+'99'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,dotR*0.82,0,2*Math.PI);
+        ctx.fillStyle=isMuted?col.fill+'33':col.fill+'aa'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
+        ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
       } else {
         ctx.beginPath(); ctx.arc(x,y,dotR*0.45,0,2*Math.PI);
         ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
@@ -5466,9 +5493,9 @@ function drawLinear(){
     }
   });
   if(isCapped){
-    ctx.font='8px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
-    ctx.fillStyle=isDark?'#666':'#aaa';
-    ctx.fillText('(PPCM='+lcmSteps+' → tronqué à '+CAP+')',marginX,2);
+    ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle=isDark?'#C89040':'#8B6000';
+    ctx.fillText('Cycle complet: '+lcmSteps+' pas — affiché: '+CAP, W/2, 2);
   }
   // Aiguille de lecture
   if(playing){
