@@ -68,11 +68,21 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.37** (session 2026-05-05)
+**v3.8.49** (session 2026-05-06)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.8.49 | Donut universel : 'X' (son fort) passe en pièce trouée (outer dotR, trou dotR×0.30) dans drawCircles et drawLinear ; isPlaying redessine le trou après l'anneau |
+| v3.8.48 | Vue Cycle : linearCycleStartTime fixe l'aiguille sans recalibration ; anneau step courant par layer (rAF) ; édition circleHitTest linéaire ; metro subdivisions swingées (A+P non touchés) |
+| v3.8.47 | swing-slider : classe temps-slider (violette, fine) ; metro-3col-bpm flex:1 → 3 colonnes égales |
+| v3.8.46 | drawLinear WYSIWYE : positions X proportionnelles au temps réel (DENOM=6 units) ; Shuffle slider 0–100% dans volet metro ; 3 colonnes metro (BPM \| Battue \| Swing) ; SPM supprimé du volet |
+| v3.8.45 | #btn-tempo sans opacité (neutre off, violet on) ; fix polymétrie getPolymetricInfo (n%mSteps!==0 && mSteps%n!==0) |
+| v3.8.44 | Ghost step donut (pièce trouée) dans drawCircles ; labels durée en fractions irréductibles ; recalibrateStartTimes() à chaque updateBeatDisplay |
+| v3.8.43 | Séquences embarquées dans groove (gl.sequence) : pattern dirty → embed au save, pas de pollution DB ; nom pattern '—' si embedded ; _patOnSelect efface l'embed |
+| v3.8.42 | Vue linéaire Cycle (↺ Cycle) : timeline PPCM horizontale, 3 rows layers, aiguille dorée |
+| v3.8.41 | Badge polymétrie ⊡ N:M dans vue circulaire/mesure ; détection corrigée lcm(n,mSteps)>mSteps |
+| v3.8.40 | Metro topbar Option C final : icon + ♩=N permanent + mini-track 2px ; pointermove passive:false |
 | v3.8.37 | SX par défaut : btn-layer-mod toujours visible ; canvas circulaire cliquable sans auth ; sbSyncPublicPool() au démarrage (anon key) + migration RLS v3.8.37 (schema.sql) |
 | v3.8.36 | Fix nom article encyclo (getEncycloDisplayName cherche par key original avant resolvedKey) ; liens encyclo bleu-vert dark mode ; recherche modale globale (ignore famille, famille virtuelle Résultats) ; vue circulaire padding-bottom 1.25rem |
 | v3.8.35 | Fix applyGroove : ajout updateBeatDisplay() après chargement signature → battue-sel, beat-val-input, ♩=N top-bar mis à jour au changement de groove |
@@ -181,25 +191,27 @@ stepSec = (60 / spm) × (stepsPerBeat / subdivision)
 
 ## Tâches prioritaires (prochaine session)
 
-### Chantier en cours : openPresetModal pour Band/Son
-Appliquer le même design que `openPresetModal` (modal unifié gérer/réordonner/palette) au volet band/son.
+### Chantier principal : Sons/Instruments (Band)
+Refonte de la gestion bands/sons — `openPresetModal({type:'band'})` existe pour la sélection ; ajouter les modes ✎ gérer et ☰ réordonner. Sons (`SOUND_DEFS`) hardcodés = hors scope (modal son = sélection uniquement).
 
-**Encyclopédie ✅ terminé (v3.8.13)** — modal unifié avec colonne catégories, filtre famille secondaire, search, markdown.
-
-**Vue circulaire/mesure** — revoir l'affichage (mentionné par Lamberio, à préciser en début de session).
-
-**Volet Band/Son** (`#lib-panel-bands`) :
-- `openPresetModal({type:'band'})` existe pour la sélection — manquent les modes ✎ gérer et ☰ réordonner
-- Sons (`SOUND_DEFS`) hardcodés en JS → pas de rename/delete, modal son reste sélection pure
-- Intégrer rename/delete bands + gestion familles dans le modal (remplacer `lib-panel-bands`)
-
-**Clarifié avec Lamberio :**
-- Sons hardcodés = hors scope (modal son = sélection uniquement, pas de gérer/réordonner)
-- Encyclopédie : colonne gauche = catégories, filtre famille secondaire conservé, TX peut éditer, markdown léger
+**Objectifs session sons :**
+- Rename/delete bands + gestion familles dans le modal (remplacer `lib-panel-bands`)
+- Éventuellement : créer / uploader de nouveaux sons (à cadrer avec Lamberio)
 
 ### Autres chantiers en attente
 1. **G1 Fork item école** — TX modifie un item école → copie automatique en source:'teacher'
 2. **G7 Raison de refus** — MX saisit un message lors du rejet, TX le voit dans le toast
+3. **Swing persistance DB** — champ `swing float` dans la table `grooves` (actuellement non sauvegardé)
+
+## Résolu (session 2026-05-06)
+- ✅ **Donut universel** — 'X' (son fort) passe en pièce trouée comme 'x' ghost ; trou dotR×0.30 pour fort, dotR×0.27 pour ghost ; isPlaying redessine le trou après l'anneau ; même fix dans drawLinear
+- ✅ **Vue Cycle aiguille** — `linearCycleStartTime` fixe (jamais recalibré) → aiguille correcte sur tout le PPCM même après changement tempo
+- ✅ **Steps animés vue Cycle** — anneau coloré autour du step courant par layer (rAF), basé sur cycElU
+- ✅ **Édition vue Cycle** — `circleHitTest` gère `circleModeView='linear'` → clic toggle .→X→x→.
+- ✅ **Metro swing subdivisions** — level='p' reçoit `swingVal×(60/spm)/3` sur metroStepPos impairs ; A et P non touchés
+- ✅ **Shuffle UI** — slider 0–100% (classe temps-slider, violet fin) ; 3 colonnes égales volet metro (BPM \| Battue \| Swing)
+- ✅ **drawLinear WYSIWYE** — X proportionnel au temps réel (DENOM=6 units, LCM temps-réel) ; ×2/÷2/T correctement représentés
+- ✅ **Polymétrie fix** — condition `n%mSteps!==0 && mSteps%n!==0` ; 16 steps dans mesure 8 non flaggé
 
 ## Résolu (session 2026-05-04)
 - ✅ **Artefact bord canvas vue circulaire** — `resizeCanvas` utilise `cv.style.width/height` au lieu de `transform:scale` ; `max-width/height` supprimés du CSS
