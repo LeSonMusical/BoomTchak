@@ -78,8 +78,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:auto;transition:color .12s}
 .btn-metro-volet:hover,.btn-metro-volet.open{color:#4a3d8a}
-.temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
-.temps-content.open{max-height:600px}
+.temps-content{display:block}
+.metro-sub{border-top:1px solid rgba(176,168,216,.25)}
 .metro-bloc{border-left:2px solid #b0a8d8;margin-left:4px;padding:.2rem 0 .35rem .5rem;display:flex;flex-direction:column;gap:0}
 .metro-panel{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:.1rem 0}
 .metro-row-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.55</span>
+      <span class="app-version">v3.8.56</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1035,11 +1035,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <span class="top-vol-lbl">Vol <span id="metro-vol-val">80%</span></span>
       <input type="range" id="metro-vol" min="0" max="100" value="80">
     </div>
-    <button class="btn-metro-volet" id="btn-metro-volet">tempo ▶</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-temps">Temps</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-pat">Métro</button>
   </div>
   <div class="temps-content metro-off" id="temps-content">
+  <!-- ── Sous-volet 1 : Temps ─────────────────────────────────────────── -->
+  <div class="metro-sub" id="metro-sub-temps" style="display:none">
   <div class="metro-bloc">
-    <!-- 3 colonnes : BPM | Battue | Swing -->
+    <!-- Ligne 1 : BPM | Battue | Swing -->
     <div class="metro-3col">
       <div class="metro-3col-bpm">
         <div class="metro-3col-top">
@@ -1071,61 +1075,67 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
       </div>
     </div>
-    <!-- Ligne 2 : Tap tempo -->
+    <!-- Ligne 2 : Signature (mesure | unité de temps | subdivision) -->
+    <div class="metro-sig-grid">
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
+        <div class="mpv-sig-unit-row">
+          <div class="mpv-beats-ctrl">
+            <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+            <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+          </div>
+          <span class="mpv-label">temps :</span>
+        </div>
+      </div>
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
+        <div class="mpv-sig-unit-row">
+          <span class="mpv-label">unité</span>
+          <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
+            <option value="4">♩ noire</option>
+            <option value="8">♪ croche</option>
+            <option value="6">♩. pointée</option>
+            <option value="2">𝅗𝅥 blanche</option>
+          </select>
+        </div>
+      </div>
+      <div class="metro-sig-col">
+        <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
+        <div class="mpv-sig-unit-row">
+          <span class="mpv-label">divisé en</span>
+          <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div><!-- /metro-bloc temps -->
+  </div><!-- /metro-sub-temps -->
+  <!-- ── Sous-volet 2 : Tap ──────────────────────────────────────────── -->
+  <div class="metro-sub" id="metro-sub-tap" style="display:none">
+  <div class="metro-bloc">
     <div class="tap-tempo-row">
       <span class="tap-lbl">Tap tempo</span>
       <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
       <span class="tap-fois-lbl">fois</span>
       <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
       <span class="tap-count" id="tap-count"></span>
-      <button class="btn-metro-volet" id="btn-metro-sig-volet" style="margin-left:auto">metrics ▶</button>
     </div>
-    <!-- Sous-volet metrics + viz (s'ouvrent ensemble) -->
-    <div id="metro-sig-content" style="display:none">
-      <div class="metro-sig-grid">
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
-          <div class="mpv-sig-unit-row">
-            <div class="mpv-beats-ctrl">
-              <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-              <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-              <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
-            </div>
-            <span class="mpv-label">temps :</span>
-          </div>
-        </div>
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
-          <div class="mpv-sig-unit-row">
-            <span class="mpv-label">unité</span>
-            <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
-              <option value="4">♩ noire</option>
-              <option value="8">♪ croche</option>
-              <option value="6">♩. pointée</option>
-              <option value="2">𝅗𝅥 blanche</option>
-            </select>
-          </div>
-        </div>
-        <div class="metro-sig-col">
-          <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
-          <div class="mpv-sig-unit-row">
-            <span class="mpv-label">divisé en</span>
-            <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <!-- Pattern viz incluse dans le volet metrics -->
-      <div class="metro-pat-row">
-        <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
-        <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-      </div>
+  </div><!-- /metro-bloc tap -->
+  </div><!-- /metro-sub-tap -->
+  <!-- ── Sous-volet 3 : Métro ────────────────────────────────────────── -->
+  <div class="metro-sub" id="metro-sub-pat" style="display:none">
+  <div class="metro-bloc">
+    <div class="metro-pat-row">
+      <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
+      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
     </div>
-  </div><!-- /metro-bloc -->
+  </div><!-- /metro-bloc pat -->
+  </div><!-- /metro-sub-pat -->
   </div>
   </div><!-- /temps-wrap -->
   <!-- Section Band (Sons) -->
@@ -2067,12 +2077,11 @@ function previewMetroPreset(id) {
     grooveDirty = true; updateGrooveSaveBtn();
     saveToStorage();
   }
-  // Ouvrir le volet métro s'il est fermé
-  const tempsContent = document.getElementById('temps-content');
-  if (tempsContent && !tempsContent.classList.contains('open')) {
-    tempsContent.classList.add('open');
-    const voletBtn = document.getElementById('btn-metro-volet');
-    if (voletBtn) { voletBtn.textContent = 'tempo ▼'; voletBtn.classList.add('open'); }
+  // Ouvrir le sous-volet Temps s'il est fermé
+  const subTemps = document.getElementById('metro-sub-temps');
+  if (subTemps && subTemps.style.display === 'none') {
+    subTemps.style.display = 'block';
+    document.getElementById('btn-metro-volet-temps')?.classList.add('open');
   }
 }
 
@@ -8744,27 +8753,26 @@ function attachEvents(){
     btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    const content=document.getElementById('temps-content');
-    const btn=document.getElementById('btn-metro-volet');
-    const open=content.classList.toggle('open');
-    if(btn){ btn.textContent=open?'tempo ▼':'tempo ▶'; btn.classList.toggle('open',open); }
+    _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
   });
-  // ── Bouton Pulse (panel seul, indépendant du on/off) ──
-  document.getElementById('btn-metro-volet').addEventListener('click',()=>{
-    const content=document.getElementById('temps-content');
-    const btn=document.getElementById('btn-metro-volet');
-    const open=content.classList.toggle('open');
-    btn.textContent=open?'tempo ▼':'tempo ▶';
-    btn.classList.toggle('open',open);
+  // ── 3 boutons sous-volets metro ──
+  function _toggleMetroSub(subId, btnId) {
+    const sub = document.getElementById(subId);
+    const btn = document.getElementById(btnId);
+    if (!sub || !btn) return;
+    const open = sub.style.display === 'none';
+    sub.style.display = open ? 'block' : 'none';
+    btn.classList.toggle('open', open);
+  }
+  document.getElementById('btn-metro-volet-temps').addEventListener('click', () => {
+    _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
   });
-  document.getElementById('btn-metro-sig-volet').addEventListener('click',()=>{
-    const c=document.getElementById('metro-sig-content');
-    const btn=document.getElementById('btn-metro-sig-volet');
-    const open=c.style.display==='none';
-    c.style.display=open?'block':'none';
-    btn.textContent=open?'metrics ▼':'metrics ▶';
-    btn.classList.toggle('open',open);
-    if(open) renderMetroPatternViz();
+  document.getElementById('btn-metro-volet-tap').addEventListener('click', () => {
+    _toggleMetroSub('metro-sub-tap', 'btn-metro-volet-tap');
+  });
+  document.getElementById('btn-metro-volet-pat').addEventListener('click', () => {
+    _toggleMetroSub('metro-sub-pat', 'btn-metro-volet-pat');
+    if (document.getElementById('metro-sub-pat').style.display !== 'none') renderMetroPatternViz();
   });
   // ── Boutons +/- tempo (1 BPM par clic, répétition sur appui long) ──
   function _adjustTempoBPM(delta){
