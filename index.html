@@ -158,7 +158,7 @@ body.dark-mode #metro-vol::-moz-range-thumb{background:#777}
 /* ── Ligne 1 volet : info + battue ── */
 /* ── Metro 3 colonnes ── */
 .metro-3col{display:flex;align-items:flex-start;gap:5px;padding:.15rem 0 .05rem}
-.metro-3col-bpm{flex:2;min-width:0;display:flex;flex-direction:column;gap:2px}
+.metro-3col-bpm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .metro-3col-top{display:flex;align-items:baseline;gap:4px;font-size:10px;color:#555;flex-wrap:wrap}
 .metro-3col-slider{display:flex;align-items:center;gap:3px}
 .metro-3col-eq{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:1px}
@@ -963,7 +963,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.46</span>
+      <span class="app-version">v3.8.47</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1068,7 +1068,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       </div>
       <div class="metro-3col-sw">
         <span class="metro-3col-lbl">Swing <span id="swing-display">0%</span></span>
-        <input type="range" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%;accent-color:#6B5FA5">
+        <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
       </div>
     </div>
     <!-- Ligne 2 : Tap tempo -->
