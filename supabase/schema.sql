@@ -390,13 +390,18 @@ create table if not exists public.band_familles (
 
 alter table public.band_familles enable row level security;
 
-create policy if not exists "Lecture band_familles school" on public.band_familles for select
+drop policy if exists "Lecture band_familles school"            on public.band_familles;
+drop policy if exists "Insert band_familles"                    on public.band_familles;
+drop policy if exists "Update/delete band_familles owner ou MX" on public.band_familles;
+drop policy if exists "Delete band_familles owner ou MX"        on public.band_familles;
+
+create policy "Lecture band_familles school" on public.band_familles for select
   using (scope = 'school');
-create policy if not exists "Insert band_familles" on public.band_familles for insert
+create policy "Insert band_familles" on public.band_familles for insert
   with check (auth.uid() is not null);
-create policy if not exists "Update/delete band_familles owner ou MX" on public.band_familles for update
+create policy "Update/delete band_familles owner ou MX" on public.band_familles for update
   using (owner_id = auth.uid() or public.current_role_name() = 'mx');
-create policy if not exists "Delete band_familles owner ou MX" on public.band_familles for delete
+create policy "Delete band_familles owner ou MX" on public.band_familles for delete
   using (owner_id = auth.uid() or public.current_role_name() = 'mx');
 
 -- Presets de bands
@@ -423,16 +428,21 @@ create table if not exists public.bands (
 
 alter table public.bands enable row level security;
 
-create policy if not exists "Lecture bands school approuvés" on public.bands for select
-  using ((scope = 'school' and approved = true) or owner_id = auth.uid() or public.current_role_name() = 'mx');
-create policy if not exists "Insert bands owner" on public.bands for insert
-  with check (owner_id = auth.uid());
-create policy if not exists "Update bands owner ou MX" on public.bands for update
-  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
-create policy if not exists "Delete bands owner ou MX" on public.bands for delete
-  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+drop policy if exists "Lecture bands school approuvés" on public.bands;
+drop policy if exists "Insert bands owner"             on public.bands;
+drop policy if exists "Update bands owner ou MX"       on public.bands;
+drop policy if exists "Delete bands owner ou MX"       on public.bands;
+drop policy if exists "Lecture publique school bands"  on public.bands;
 
-create policy if not exists "Lecture publique school bands" on public.bands for select
+create policy "Lecture bands school approuvés" on public.bands for select
+  using ((scope = 'school' and approved = true) or owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy "Insert bands owner" on public.bands for insert
+  with check (owner_id = auth.uid());
+create policy "Update bands owner ou MX" on public.bands for update
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy "Delete bands owner ou MX" on public.bands for delete
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy "Lecture publique school bands" on public.bands for select
   using (scope = 'school' and approved = true);
 
 -- ═══════════════════════════════════════════════════════════════════════════
