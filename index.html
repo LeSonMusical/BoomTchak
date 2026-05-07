@@ -957,7 +957,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.2</span>
+      <span class="app-version">v3.10.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1665,25 +1665,25 @@ const PTK_DEFAULT = {
     {id:'sf_touch',  nom:'Touch',  ordre:3, source:'school'},
   ],
   soundPresets: [
-    {id:'sp_kick',          nom:'Kick',          soundId:'kick',          pitch:80,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:0},
-    {id:'sp_gros_caisse',   nom:'Grosse caisse', soundId:'gros_caisse',   pitch:65,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:1},
-    {id:'sp_tambour',       nom:'Tambour',        soundId:'tambour',       pitch:82,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:2},
-    {id:'sp_tom_bas',       nom:'Tom grave',      soundId:'tom_bas',       pitch:110,  env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:3},
-    {id:'sp_snare',         nom:'Snare',          soundId:'snare',         pitch:300,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:4},
-    {id:'sp_clave',         nom:'Clave',          soundId:'clave',         pitch:1760, env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:5},
-    {id:'sp_caisse_claire', nom:'Caisse claire',  soundId:'caisse_claire', pitch:220,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:6},
-    {id:'sp_triangle_inst', nom:'Triangle',       soundId:'triangle_inst', pitch:4000, env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:7},
-    {id:'sp_bell',          nom:'Bell',           soundId:'bell',          pitch:698,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:8},
-    {id:'sp_triangle_p',    nom:'Triangle doux',  soundId:'triangle_p',    pitch:880,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:9},
-    {id:'sp_hihat_f',       nom:'Hi-hat fermé',   soundId:'hihat_f',       pitch:6000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:10},
-    {id:'sp_hihat_o',       nom:'Hi-hat ouvert',  soundId:'hihat_o',       pitch:6000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:11},
-    {id:'sp_shaker',        nom:'Shaker',         soundId:'shaker',        pitch:3000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:12},
-    {id:'sp_charleston',    nom:'Charleston',     soundId:'charleston',    pitch:5000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:13},
-    {id:'sp_conga_b',       nom:'Conga basse',    soundId:'conga_b',       pitch:150,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:14},
-    {id:'sp_bongo',         nom:'Bongo',          soundId:'bongo',         pitch:220,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:15},
-    {id:'sp_strum',         nom:'Strum',          soundId:'strum',         pitch:196,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:16},
-    {id:'sp_rimshot',       nom:'Rimshot',        soundId:'rimshot',       pitch:440,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:17},
-    {id:'sp_clap',          nom:'Clap',           soundId:'clap',          pitch:800,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:18},
+    {id:'sp_kick',          nom:'Kick',          soundId:'kick',          pitch:80,   env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_graves'], source:'school', ordre:0},
+    {id:'sp_gros_caisse',   nom:'Grosse caisse', soundId:'gros_caisse',   pitch:65,   env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_graves'], source:'school', ordre:1},
+    {id:'sp_tambour',       nom:'Tambour',        soundId:'tambour',       pitch:82,   env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_graves'], source:'school', ordre:2},
+    {id:'sp_tom_bas',       nom:'Tom grave',      soundId:'tom_bas',       pitch:110,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_graves'], source:'school', ordre:3},
+    {id:'sp_snare',         nom:'Snare',          soundId:'snare',         pitch:300,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:4},
+    {id:'sp_clave',         nom:'Clave',          soundId:'clave',         pitch:1760, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:5},
+    {id:'sp_caisse_claire', nom:'Caisse claire',  soundId:'caisse_claire', pitch:220,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:6},
+    {id:'sp_triangle_inst', nom:'Triangle',       soundId:'triangle_inst', pitch:4000, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:7},
+    {id:'sp_bell',          nom:'Bell',           soundId:'bell',          pitch:698,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:8},
+    {id:'sp_triangle_p',    nom:'Triangle doux',  soundId:'triangle_p',    pitch:880,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_aigus'],  source:'school', ordre:9},
+    {id:'sp_hihat_f',       nom:'Hi-hat fermé',   soundId:'hihat_f',       pitch:6000, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_noise'],  source:'school', ordre:10},
+    {id:'sp_hihat_o',       nom:'Hi-hat ouvert',  soundId:'hihat_o',       pitch:6000, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_noise'],  source:'school', ordre:11},
+    {id:'sp_shaker',        nom:'Shaker',         soundId:'shaker',        pitch:3000, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_noise'],  source:'school', ordre:12},
+    {id:'sp_charleston',    nom:'Charleston',     soundId:'charleston',    pitch:5000, env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_noise'],  source:'school', ordre:13},
+    {id:'sp_conga_b',       nom:'Conga basse',    soundId:'conga_b',       pitch:150,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_touch'],  source:'school', ordre:14},
+    {id:'sp_bongo',         nom:'Bongo',          soundId:'bongo',         pitch:220,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_touch'],  source:'school', ordre:15},
+    {id:'sp_strum',         nom:'Strum',          soundId:'strum',         pitch:196,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_touch'],  source:'school', ordre:16},
+    {id:'sp_rimshot',       nom:'Rimshot',        soundId:'rimshot',       pitch:440,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_touch'],  source:'school', ordre:17},
+    {id:'sp_clap',          nom:'Clap',           soundId:'clap',          pitch:800,  env:0.3, vol:0.5, atk:0.0, familles_ids:['sf_touch'],  source:'school', ordre:18},
   ],
 };
 
@@ -1707,15 +1707,16 @@ function getBandFam(id){return (packCours.bandFamilles||[]).find(f=>f.id===id);}
 // ── Primitives de synthèse ────────────────────────────────────────────────
 function lerp(a,b,t){return a+(b-a)*Math.max(0,Math.min(1,t));}
 
-function sineDrop(a,t,f0,f1,dur,vol,punch){
+function sineDrop(a,t,f0,f1,dur,vol,punch,atk=0){
   const o=a.createOscillator(),g=a.createGain();
   o.type='sine';
   o.frequency.setValueAtTime(f0,t);
   o.frequency.exponentialRampToValueAtTime(Math.max(f1,8),t+dur);
   const pk=punch?vol*1.4:vol;
-  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(pk,t+0.004);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02);
+  const at=lerp(0.004,0.08,Math.min(atk,1));
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(pk,t+at);
+  g.gain.exponentialRampToValueAtTime(0.001,t+Math.max(dur,at+0.01));
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+Math.max(dur,at+0.01)+.02);
 }
 
 function noiseClick(a,t,dur,vol){
@@ -1727,8 +1728,10 @@ function noiseClick(a,t,dur,vol){
   src.buffer=buf;g.gain.value=vol;src.connect(g);g.connect(a.destination);src.start(t);
 }
 
-function noiseFiltered(a,t,dur,freq,vol,filterType){
-  const len=Math.ceil(a.sampleRate*(dur+.01));
+function noiseFiltered(a,t,dur,freq,vol,filterType,atk=0){
+  const at=lerp(0.0001,0.08,Math.min(atk,1));
+  const totalDur=Math.max(dur,at+0.01);
+  const len=Math.ceil(a.sampleRate*(totalDur+.01));
   const buf=a.createBuffer(1,len,a.sampleRate);
   const d=buf.getChannelData(0);
   for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
@@ -1736,62 +1739,68 @@ function noiseFiltered(a,t,dur,freq,vol,filterType){
   const filt=a.createBiquadFilter();filt.type=filterType||'highpass';
   filt.frequency.value=freq;filt.Q.value=0.8;
   const g=a.createGain();
-  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol,t+at);
+  g.gain.exponentialRampToValueAtTime(0.001,t+totalDur);
   src.connect(filt);filt.connect(g);g.connect(a.destination);src.start(t);
 }
 
-function toneEnv(a,t,freq,dur,vol,type,atk){
+function toneEnv(a,t,freq,dur,vol,type,atk=0){
   const o=a.createOscillator(),g=a.createGain();
   o.type=type||'sine';o.frequency.value=freq;
-  const at=atk||0.003;
+  const at=lerp(0.003,0.08,Math.min(atk,1));
   g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol,t+at);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02);
+  g.gain.exponentialRampToValueAtTime(0.001,t+Math.max(dur,at+0.01));
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+Math.max(dur,at+0.01)+.02);
 }
 
-function snareSound(a,t,freq,dur,vol,noiseMix){
-  toneEnv(a,t,freq,dur*0.4,vol*(1-noiseMix),'triangle',0.002);
-  noiseFiltered(a,t,dur,freq*2,vol*noiseMix,'bandpass');
+function snareSound(a,t,freq,dur,vol,noiseMix,atk=0){
+  toneEnv(a,t,freq,dur*0.4,vol*(1-noiseMix),'triangle',lerp(0.002,0.08,Math.min(atk,1)));
+  noiseFiltered(a,t,dur,freq*2,vol*noiseMix,'bandpass',atk);
 }
 
-function claveSound(a,t,freq,dur,vol){
+function claveSound(a,t,freq,dur,vol,atk=0){
   const o=a.createOscillator(),g=a.createGain();
   o.type='square';o.frequency.value=freq;
   const filt=a.createBiquadFilter();filt.type='highpass';filt.frequency.value=freq*0.8;filt.Q.value=2;
-  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(filt);filt.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.01);
+  const at=lerp(0.001,0.05,Math.min(atk,1));
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol,t+at);
+  g.gain.exponentialRampToValueAtTime(0.001,t+Math.max(dur,at+0.01));
+  o.connect(filt);filt.connect(g);g.connect(a.destination);o.start(t);o.stop(t+Math.max(dur,at+0.01)+.01);
 }
 
-function rimshotSound(a,t,freq,vol){
-  noiseFiltered(a,t,0.04,freq*3,vol*0.7,'highpass');
+function rimshotSound(a,t,freq,vol,atk=0){
+  noiseFiltered(a,t,0.04,freq*3,vol*0.7,'highpass',atk);
   noiseClick(a,t,0.006,vol);
 }
 
-function bellSound(a,t,freq,dur,vol){
+function bellSound(a,t,freq,dur,vol,atk=0){
   const ratios=[1,2.756,5.404,8.933,13.35];
   const amps=[1,0.6,0.4,0.25,0.15];
+  const at=lerp(0.005,0.08,Math.min(atk,1));
   ratios.forEach((r,i)=>{
     const o=a.createOscillator(),g=a.createGain();
     o.type='sine';o.frequency.value=freq*r;
-    const v=vol*amps[i],d=dur*Math.pow(0.55,i);
-    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(v,t+0.005);
+    const v=vol*amps[i],d=Math.max(dur*Math.pow(0.55,i),at+0.01);
+    g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(v,t+at);
     g.gain.exponentialRampToValueAtTime(0.001,t+d);
     o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.02);
   });
 }
 
-function triangleSound(a,t,freq,dur,vol){
+function triangleSound(a,t,freq,dur,vol,atk=0){
   const o=a.createOscillator(),g=a.createGain();
   o.type='sine';o.frequency.value=freq;
   const o2=a.createOscillator(),g2=a.createGain();
   o2.type='sine';o2.frequency.value=freq*3.01;g2.gain.value=vol*0.015;
-  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol*0.7,t+0.012);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  const at=lerp(0.012,0.08,Math.min(atk,1));
+  g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol*0.7,t+at);
+  g.gain.exponentialRampToValueAtTime(0.001,t+Math.max(dur,at+0.01));
   o.connect(g);o2.connect(g2);g.connect(a.destination);g2.connect(a.destination);
   o.start(t);o2.start(t);o.stop(t+dur+.02);o2.stop(t+dur+.02);
 }
 
-function strumSound(a,t,freq,dur,vol){
+function strumSound(a,t,freq,dur,vol,atk=0){
+  const at=lerp(0.005,0.08,Math.min(atk,1));
   [0,0.025,0.05].forEach((delay,i)=>{
     const o=a.createOscillator(),g=a.createGain();
     o.type='sawtooth';o.frequency.value=freq*[1,1.003,0.998][i];
@@ -1799,16 +1808,16 @@ function strumSound(a,t,freq,dur,vol){
     filt.frequency.setValueAtTime(freq*6,t+delay);
     filt.frequency.exponentialRampToValueAtTime(freq*1.5,t+delay+dur);
     filt.Q.value=1.2;
-    g.gain.setValueAtTime(0.001,t+delay);g.gain.linearRampToValueAtTime(vol*0.5,t+delay+0.005);
-    g.gain.exponentialRampToValueAtTime(0.001,t+delay+dur);
+    g.gain.setValueAtTime(0.001,t+delay);g.gain.linearRampToValueAtTime(vol*0.5,t+delay+at);
+    g.gain.exponentialRampToValueAtTime(0.001,t+delay+Math.max(dur,at+0.01));
     o.connect(filt);filt.connect(g);g.connect(a.destination);
-    o.start(t+delay);o.stop(t+delay+dur+.02);
+    o.start(t+delay);o.stop(t+delay+Math.max(dur,at+0.01)+.02);
   });
 }
 
-function congaSound(a,t,f0,dur,vol,isBass){
+function congaSound(a,t,f0,dur,vol,isBass,atk=0){
   const f1=f0*(isBass?0.35:0.45);
-  sineDrop(a,t,f0,f1,dur,vol,false);
+  sineDrop(a,t,f0,f1,dur,vol,false,atk);
   if(isBass){
     const o=a.createOscillator(),g=a.createGain();
     o.type='sine';o.frequency.value=f0*0.5;
@@ -1818,8 +1827,8 @@ function congaSound(a,t,f0,dur,vol,isBass){
   noiseClick(a,t,0.008,vol*0.5);
 }
 
-function bongoSound(a,t,freq,dur,vol){
-  sineDrop(a,t,freq*1.4,freq*0.7,dur,vol*0.8,false);
+function bongoSound(a,t,freq,dur,vol,atk=0){
+  sineDrop(a,t,freq*1.4,freq*0.7,dur,vol*0.8,false,atk);
   const o=a.createOscillator(),g=a.createGain();
   o.type='sine';o.frequency.setValueAtTime(freq*2.8,t);
   o.frequency.exponentialRampToValueAtTime(freq*1.4,t+dur*0.5);
@@ -1843,45 +1852,45 @@ function normToPitch(n,id){const[lo,hi]=getPitchRange(id);return lo*Math.pow(hi/
 // ── Banque de sons ────────────────────────────────────────────────────────
 const SOUND_DEFS={
   kick:{label:'Kick',cat:'low',
-    play(a,t,p){sineDrop(a,t,p.pitch*2.2,p.pitch*0.15,lerp(.04,.30,p.env),p.vol,true);noiseClick(a,t,.006,p.vol*0.3);}},
+    play(a,t,p){sineDrop(a,t,p.pitch*2.2,p.pitch*0.15,lerp(.04,.30,p.env),p.vol,true,p.atk??0);noiseClick(a,t,.006,p.vol*0.3);}},
   gros_caisse:{label:'Grosse caisse',cat:'low',
-    play(a,t,p){sineDrop(a,t,p.pitch*2.8,p.pitch*0.12,lerp(.05,.35,p.env),p.vol,true);noiseClick(a,t,.01,p.vol*0.2);}},
+    play(a,t,p){sineDrop(a,t,p.pitch*2.8,p.pitch*0.12,lerp(.05,.35,p.env),p.vol,true,p.atk??0);noiseClick(a,t,.01,p.vol*0.2);}},
   tambour:{label:'Tambour grave',cat:'low',
-    play(a,t,p){sineDrop(a,t,p.pitch*1.5,p.pitch*0.5,lerp(.1,.5,p.env),p.vol*0.8,false);noiseFiltered(a,t,lerp(.06,.25,p.env),p.pitch*4,p.vol*0.4,'bandpass');}},
+    play(a,t,p){sineDrop(a,t,p.pitch*1.5,p.pitch*0.5,lerp(.1,.5,p.env),p.vol*0.8,false,p.atk??0);noiseFiltered(a,t,lerp(.06,.25,p.env),p.pitch*4,p.vol*0.4,'bandpass',p.atk??0);}},
   tom_bas:{label:'Tom grave',cat:'low',
-    play(a,t,p){sineDrop(a,t,p.pitch*1.8,p.pitch*0.6,lerp(.08,.4,p.env),p.vol,false);noiseClick(a,t,.008,p.vol*0.25);}},
+    play(a,t,p){sineDrop(a,t,p.pitch*1.8,p.pitch*0.6,lerp(.08,.4,p.env),p.vol,false,p.atk??0);noiseClick(a,t,.008,p.vol*0.25);}},
   snare:{label:'Snare',cat:'high',
-    play(a,t,p){snareSound(a,t,p.pitch,lerp(.05,.22,p.env),p.vol,0.65);}},
+    play(a,t,p){snareSound(a,t,p.pitch,lerp(.05,.22,p.env),p.vol,0.65,p.atk??0);}},
   clave:{label:'Clave',cat:'high',
-    play(a,t,p){claveSound(a,t,p.pitch,lerp(.012,.055,p.env),p.vol);}},
+    play(a,t,p){claveSound(a,t,p.pitch,lerp(.012,.055,p.env),p.vol,p.atk??0);}},
   caisse_claire:{label:'Caisse claire',cat:'high',
-    play(a,t,p){snareSound(a,t,p.pitch,lerp(.06,.25,p.env),p.vol,0.5);}},
+    play(a,t,p){snareSound(a,t,p.pitch,lerp(.06,.25,p.env),p.vol,0.5,p.atk??0);}},
   triangle_inst:{label:'Triangle',cat:'high',
-    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.3,1.8,p.env),p.vol);}},
+    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.3,1.8,p.env),p.vol,p.atk??0);}},
   hihat_f:{label:'Hi-hat fermé',cat:'noise',
-    play(a,t,p){noiseFiltered(a,t,lerp(.012,.07,p.env),p.pitch,p.vol,'highpass');}},
+    play(a,t,p){noiseFiltered(a,t,lerp(.012,.07,p.env),p.pitch,p.vol,'highpass',p.atk??0);}},
   hihat_o:{label:'Hi-hat ouvert',cat:'noise',
-    play(a,t,p){noiseFiltered(a,t,lerp(.1,.55,p.env),p.pitch,p.vol,'highpass');}},
+    play(a,t,p){noiseFiltered(a,t,lerp(.1,.55,p.env),p.pitch,p.vol,'highpass',p.atk??0);}},
   shaker:{label:'Shaker',cat:'noise',
-    play(a,t,p){noiseFiltered(a,t,lerp(.025,.1,p.env),p.pitch,p.vol*0.7,'bandpass');noiseFiltered(a,t,lerp(.015,.06,p.env),p.pitch*1.5,p.vol*0.4,'bandpass');}},
+    play(a,t,p){noiseFiltered(a,t,lerp(.025,.1,p.env),p.pitch,p.vol*0.7,'bandpass',p.atk??0);noiseFiltered(a,t,lerp(.015,.06,p.env),p.pitch*1.5,p.vol*0.4,'bandpass',p.atk??0);}},
   charleston:{label:'Charleston',cat:'noise',
-    play(a,t,p){noiseFiltered(a,t,lerp(.018,.09,p.env),p.pitch,p.vol,'highpass');}},
+    play(a,t,p){noiseFiltered(a,t,lerp(.018,.09,p.env),p.pitch,p.vol,'highpass',p.atk??0);}},
   conga_b:{label:'Conga basse',cat:'thumb',
-    play(a,t,p){congaSound(a,t,p.pitch,lerp(.08,.32,p.env),p.vol,true);}},
+    play(a,t,p){congaSound(a,t,p.pitch,lerp(.08,.32,p.env),p.vol,true,p.atk??0);}},
   bongo:{label:'Bongo',cat:'thumb',
-    play(a,t,p){bongoSound(a,t,p.pitch,lerp(.05,.2,p.env),p.vol);}},
+    play(a,t,p){bongoSound(a,t,p.pitch,lerp(.05,.2,p.env),p.vol,p.atk??0);}},
   bell:{label:'Bell',cat:'thumb',
-    play(a,t,p){bellSound(a,t,p.pitch,lerp(.4,2.5,p.env),p.vol);}},
+    play(a,t,p){bellSound(a,t,p.pitch,lerp(.4,2.5,p.env),p.vol,p.atk??0);}},
   triangle_p:{label:'Triangle',cat:'thumb',
-    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.5,3.0,p.env),p.vol);}},
+    play(a,t,p){triangleSound(a,t,p.pitch,lerp(.5,3.0,p.env),p.vol,p.atk??0);}},
   strum:{label:'Strum',cat:'thumb',
-    play(a,t,p){strumSound(a,t,p.pitch,lerp(.06,.35,p.env),p.vol);}},
+    play(a,t,p){strumSound(a,t,p.pitch,lerp(.06,.35,p.env),p.vol,p.atk??0);}},
   rimshot:{label:'Rimshot',cat:'thumb',
-    play(a,t,p){rimshotSound(a,t,p.pitch,p.vol);}},
+    play(a,t,p){rimshotSound(a,t,p.pitch,p.vol,p.atk??0);}},
   clap:{label:'Clap',cat:'thumb',
     play(a,t,p){
-      snareSound(a,t,p.pitch,lerp(.03,.14,p.env),p.vol,0.82);
-      const a2=getAC();if(a2)setTimeout(()=>snareSound(a2,a2.currentTime+0.012,p.pitch*1.05,lerp(.025,.1,p.env),p.vol*0.55,0.82),0);
+      snareSound(a,t,p.pitch,lerp(.03,.14,p.env),p.vol,0.82,p.atk??0);
+      const a2=getAC();if(a2)setTimeout(()=>snareSound(a2,a2.currentTime+0.012,p.pitch*1.05,lerp(.025,.1,p.env),p.vol*0.55,0.82,p.atk??0),0);
     }},
 };
 
@@ -1911,7 +1920,7 @@ let state=LAYERS.map(()=>({
   wrapped:false,
 }));
 
-function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5};}
+function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
 let soundState=[
   defaultSoundState('sp_kick','kick',80),
   defaultSoundState('sp_snare','snare',300),
@@ -2338,7 +2347,7 @@ function playSound(ss,atTime,velMult){
   const lat=latencyMs/1000;
   const t=Math.max(a.currentTime,atTime+lat);
   const def=SOUND_DEFS[ss.soundId];if(!def)return;
-  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol*(velMult??1)*(bandVolume/100)});
+  def.play(a,t,{pitch:ss.pitch,env:ss.env,vol:ss.vol*(velMult??1)*(bandVolume/100),atk:ss.atk??0});
 }
 function scheduleNote(li,atTime,velMult){playSound(soundState[li],atTime,velMult??1);}
 function playConga(isRight){
@@ -2347,7 +2356,7 @@ function playConga(isRight){
 }
 function _buildBandSlotEmbed(){
   const e={};
-  const _s=(k,ss)=>{if(soundDirty[k])e[k]={soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol};};
+  const _s=(k,ss)=>{if(soundDirty[k])e[k]={soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,atk:ss.atk??0};};
   _s('low',soundState[0]);_s('high',soundState[1]);_s('noise',soundState[2]);
   _s('thumbL',soundStateThumb[0]);_s('thumbR',soundStateThumb[1]);
   return Object.keys(e).length?e:null;
@@ -2360,8 +2369,8 @@ function applyBand(id){
   const _applySlot=(ss,spId,embed)=>{
     const sp=getSoundPreset(spId);if(!sp)return;
     ss.soundPresetId=sp.id;
-    if(embed){ss.soundId=embed.soundId||sp.soundId;ss.pitch=embed.pitch;ss.env=embed.env??0.3;ss.vol=embed.vol??0.5;}
-    else{ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;}
+    if(embed){ss.soundId=embed.soundId||sp.soundId;ss.pitch=embed.pitch;ss.env=embed.env??0.3;ss.vol=embed.vol??0.5;ss.atk=embed.atk??0;}
+    else{ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;ss.atk=sp.atk??0;}
   };
   _applySlot(soundState[0],b.low,se.low);
   _applySlot(soundState[1],b.high,se.high);
@@ -2597,7 +2606,7 @@ function applyGroove(grooveId){
   // Appliquer le band — band_embed si dirty à la sauvegarde, sinon preset par défaut
   if(groove.band_embed){
     const be=groove.band_embed;
-    const _restoreSlot=(ss,slot)=>{if(!slot)return;ss.soundPresetId=slot.soundPresetId;ss.soundId=slot.soundId;ss.pitch=slot.pitch;ss.env=slot.env??0.3;ss.vol=slot.vol??0.5;};
+    const _restoreSlot=(ss,slot)=>{if(!slot)return;ss.soundPresetId=slot.soundPresetId;ss.soundId=slot.soundId;ss.pitch=slot.pitch;ss.env=slot.env??0.3;ss.vol=slot.vol??0.5;ss.atk=slot.atk??0;};
     _restoreSlot(soundState[0],be.low);_restoreSlot(soundState[1],be.high);_restoreSlot(soundState[2],be.noise);
     _restoreSlot(soundStateThumb[0],be.thumbL);_restoreSlot(soundStateThumb[1],be.thumbR);
     if(groove.band_defaut)currentBandId=groove.band_defaut;
@@ -4682,7 +4691,7 @@ function pspDoOverwriteSoundPreset(){
 
   if(sp.source==='school'&&authProfile?.role!=='mx'){
     closePatSavePop();
-    const nsp={id:'sp_teacher_'+Date.now(),nom:sp.nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,
+    const nsp={id:'sp_teacher_'+Date.now(),nom:sp.nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,atk:ss.atk??0,
       familles_ids:[..._pspNewFamIds],source:'teacher',localChangeType:'create',ordre:(packCours.soundPresets||[]).length};
     if(!packCours.soundPresets)packCours.soundPresets=[];packCours.soundPresets.push(nsp);
     ss.soundPresetId=nsp.id;
@@ -4693,7 +4702,7 @@ function pspDoOverwriteSoundPreset(){
   }
 
   closePatSavePop();
-  sp.soundId=ss.soundId;sp.pitch=ss.pitch;sp.env=ss.env;sp.vol=ss.vol;
+  sp.soundId=ss.soundId;sp.pitch=ss.pitch;sp.env=ss.env;sp.vol=ss.vol;sp.atk=ss.atk??0;
   sp.familles_ids=[..._pspNewFamIds];
   sp.localDirty=true;sp.localChangeType=sp.localChangeType||'update';
   setSoundDirtySlot(key,false);
@@ -4704,7 +4713,7 @@ function pspDoOverwriteSoundPreset(){
 function pspDoSaveNewSoundPreset(){
   const btn=_pspBtn;const key=_pspSoundKey;const ss=_pspSoundSs;
   const nom=document.getElementById('psp-name-input').value.trim()||'Preset son';
-  const nsp={id:'sp_teacher_'+Date.now(),nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,
+  const nsp={id:'sp_teacher_'+Date.now(),nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,atk:ss.atk??0,
     familles_ids:[..._pspNewFamIds],source:'teacher',localChangeType:'create',ordre:(packCours.soundPresets||[]).length};
   if(!packCours.soundPresets)packCours.soundPresets=[];packCours.soundPresets.push(nsp);
   ss.soundPresetId=nsp.id;
@@ -4751,11 +4760,11 @@ function saveGroove(){
   // Embarquer les paramètres band courants si dirty (analogie groove.metro)
   if(bandDirty||Object.values(soundDirty).some(Boolean)){
     groove.band_embed={
-      low:   {soundPresetId:soundState[0].soundPresetId,   soundId:soundState[0].soundId,   pitch:soundState[0].pitch,   env:soundState[0].env,   vol:soundState[0].vol},
-      high:  {soundPresetId:soundState[1].soundPresetId,   soundId:soundState[1].soundId,   pitch:soundState[1].pitch,   env:soundState[1].env,   vol:soundState[1].vol},
-      noise: {soundPresetId:soundState[2].soundPresetId,   soundId:soundState[2].soundId,   pitch:soundState[2].pitch,   env:soundState[2].env,   vol:soundState[2].vol},
-      thumbL:{soundPresetId:soundStateThumb[0].soundPresetId,soundId:soundStateThumb[0].soundId,pitch:soundStateThumb[0].pitch,env:soundStateThumb[0].env,vol:soundStateThumb[0].vol},
-      thumbR:{soundPresetId:soundStateThumb[1].soundPresetId,soundId:soundStateThumb[1].soundId,pitch:soundStateThumb[1].pitch,env:soundStateThumb[1].env,vol:soundStateThumb[1].vol},
+      low:   {soundPresetId:soundState[0].soundPresetId,   soundId:soundState[0].soundId,   pitch:soundState[0].pitch,   env:soundState[0].env,   vol:soundState[0].vol,   atk:soundState[0].atk??0},
+      high:  {soundPresetId:soundState[1].soundPresetId,   soundId:soundState[1].soundId,   pitch:soundState[1].pitch,   env:soundState[1].env,   vol:soundState[1].vol,   atk:soundState[1].atk??0},
+      noise: {soundPresetId:soundState[2].soundPresetId,   soundId:soundState[2].soundId,   pitch:soundState[2].pitch,   env:soundState[2].env,   vol:soundState[2].vol,   atk:soundState[2].atk??0},
+      thumbL:{soundPresetId:soundStateThumb[0].soundPresetId,soundId:soundStateThumb[0].soundId,pitch:soundStateThumb[0].pitch,env:soundStateThumb[0].env,vol:soundStateThumb[0].vol,atk:soundStateThumb[0].atk??0},
+      thumbR:{soundPresetId:soundStateThumb[1].soundPresetId,soundId:soundStateThumb[1].soundId,pitch:soundStateThumb[1].pitch,env:soundStateThumb[1].env,vol:soundStateThumb[1].vol,atk:soundStateThumb[1].atk??0},
     };
   } else {
     delete groove.band_embed;
@@ -5053,11 +5062,12 @@ function buildSoundRow(key,label,cls,ss){
   const _soundOnSelect=(spId)=>{
     const sp=getSoundPreset(spId);if(!sp)return;
     const origSpId=ss.soundPresetId;
-    ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;
-    // Changer de preset réinitialise les params → pas dirty sauf si différent du précédent
-    setSoundDirtySlot(key, false);
+    ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;ss.atk=sp.atk??0.0;
+    soundDirty[key]=false;
     if(spId!==origSpId)setBandDirty(true);
     buildSoundPanel();
+    // Appel défensif post-rebuild : garantit que la ligne reconstruite est propre
+    setSoundDirtySlot(key,false);
   };
   soundPresetBtn.addEventListener('click',e=>{
     e.stopPropagation();
@@ -5106,6 +5116,7 @@ function buildSoundRow(key,label,cls,ss){
   const inner=document.createElement('div');inner.className='sound-ctrls-inner';
   const _pitchLbl=SOUND_DEFS[ss.soundId]?.cat==='noise'?'Timbre':'Hauteur';
   inner.appendChild(mkSlider(_pitchLbl,v=>{ss.pitch=normToPitch(v,ss.soundId);setSoundDirtySlot(key,true);setBandDirty(true);},pitchToNorm(ss.pitch,ss.soundId)));
+  inner.appendChild(mkSlider('Attack',v=>{ss.atk=v;setSoundDirtySlot(key,true);setBandDirty(true);},ss.atk??0));
   inner.appendChild(mkSlider('Decay',v=>{ss.env=v;setSoundDirtySlot(key,true);setBandDirty(true);},ss.env));
 
   ctrls.appendChild(inner);
