@@ -446,5 +446,55 @@ create policy "Lecture publique school bands" on public.bands for select
   using (scope = 'school' and approved = true);
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.10.0 — Tables sound_familles + sound_presets
+-- ═══════════════════════════════════════════════════════════════════════════
+
+create table if not exists public.sound_familles (
+  id          text primary key,
+  nom         text not null,
+  scope       text not null default 'school' check (scope in ('school','teacher')),
+  owner_id    uuid references public.profiles(id) on delete set null,
+  ordre       int  default 0,
+  created_at  timestamptz default now()
+);
+alter table public.sound_familles enable row level security;
+drop policy if exists "Lecture sound_familles school"     on public.sound_familles;
+drop policy if exists "Insert sound_familles"             on public.sound_familles;
+drop policy if exists "Update sound_familles owner ou MX" on public.sound_familles;
+drop policy if exists "Delete sound_familles owner ou MX" on public.sound_familles;
+create policy "Lecture sound_familles school" on public.sound_familles for select using (scope='school');
+create policy "Insert sound_familles" on public.sound_familles for insert with check (auth.uid() is not null);
+create policy "Update sound_familles owner ou MX" on public.sound_familles for update using (owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Delete sound_familles owner ou MX" on public.sound_familles for delete using (owner_id=auth.uid() or public.current_role_name()='mx');
+
+create table if not exists public.sound_presets (
+  id           text primary key,
+  nom          text not null,
+  sound_id     text not null,
+  pitch        real default 200,
+  env          real default 0.3,
+  vol          real default 0.5,
+  familles_ids text[] default '{}',
+  scope        text not null default 'school' check (scope in ('school','teacher')),
+  approved     bool default false,
+  owner_id     uuid references public.profiles(id) on delete set null,
+  ordre        int  default 0,
+  reject_reason text default null,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
+);
+alter table public.sound_presets enable row level security;
+drop policy if exists "Lecture sound_presets school"          on public.sound_presets;
+drop policy if exists "Insert sound_presets owner"            on public.sound_presets;
+drop policy if exists "Update sound_presets owner ou MX"      on public.sound_presets;
+drop policy if exists "Delete sound_presets owner ou MX"      on public.sound_presets;
+drop policy if exists "Lecture publique school sound_presets" on public.sound_presets;
+create policy "Lecture sound_presets school" on public.sound_presets for select using ((scope='school' and approved=true) or owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Insert sound_presets owner" on public.sound_presets for insert with check (owner_id=auth.uid());
+create policy "Update sound_presets owner ou MX" on public.sound_presets for update using (owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Delete sound_presets owner ou MX" on public.sound_presets for delete using (owner_id=auth.uid() or public.current_role_name()='mx');
+create policy "Lecture publique school sound_presets" on public.sound_presets for select using (scope='school' and approved=true);
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════

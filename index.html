@@ -957,7 +957,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.9.1</span>
+      <span class="app-version">v3.10.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1571,17 +1571,13 @@ const PTK_DEFAULT = {
   ],
   bands:[
     {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'school',
-     low:'kick',        lowPitch:80,   high:'snare',       highPitch:220,  noise:'hihat_f',   noisePitch:6000,
-     thumbL:'bell',     thumbLPitch:698, thumbR:'clap',    thumbRPitch:600},
+     low:'sp_kick',       high:'sp_snare',        noise:'sp_hihat_f',   thumbL:'sp_bell',       thumbR:'sp_clap'},
     {id:'band_perc',    nom:'Percussions', familles:['bf_perc'],    source:'school',
-     low:'tambour',     lowPitch:82,   high:'clave',       highPitch:1760, noise:'shaker',    noisePitch:3000,
-     thumbL:'conga_b',  thumbLPitch:110, thumbR:'bongo',   thumbRPitch:220},
+     low:'sp_tambour',    high:'sp_clave',         noise:'sp_shaker',    thumbL:'sp_conga_b',    thumbR:'sp_bongo'},
     {id:'band_rock',    nom:'Rock',        familles:['bf_rock'],    source:'school',
-     low:'gros_caisse', lowPitch:65,   high:'caisse_claire',highPitch:220, noise:'charleston',noisePitch:5000,
-     thumbL:'tom_bas',  thumbLPitch:110, thumbR:'rimshot', thumbRPitch:440},
+     low:'sp_gros_caisse',high:'sp_caisse_claire', noise:'sp_charleston',thumbL:'sp_tom_bas',    thumbR:'sp_rimshot'},
     {id:'band_minimal', nom:'Minimaliste', familles:['bf_minimal'], source:'school',
-     low:'tom_bas',     lowPitch:110,  high:'clave',       highPitch:1760, noise:'charleston',noisePitch:5000,
-     thumbL:'triangle_p',thumbLPitch:880, thumbR:'triangle_p',thumbRPitch:1532},
+     low:'sp_tom_bas',    high:'sp_clave',         noise:'sp_charleston',thumbL:'sp_triangle_p', thumbR:'sp_triangle_p'},
   ],
   patterns:[
     {id:'pulse1', nom:'Pulse',                   familles:['fam_base'],                              sequence:'X',                pas:1},
@@ -1662,6 +1658,33 @@ const PTK_DEFAULT = {
   metroPresets: [],
   metroFamilles: [],
   soundFamTags: {},
+  soundFamilles: [
+    {id:'sf_graves', nom:'Graves', ordre:0, source:'school'},
+    {id:'sf_aigus',  nom:'Aigus',  ordre:1, source:'school'},
+    {id:'sf_noise',  nom:'Noise',  ordre:2, source:'school'},
+    {id:'sf_touch',  nom:'Touch',  ordre:3, source:'school'},
+  ],
+  soundPresets: [
+    {id:'sp_kick',          nom:'Kick',          soundId:'kick',          pitch:80,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:0},
+    {id:'sp_gros_caisse',   nom:'Grosse caisse', soundId:'gros_caisse',   pitch:65,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:1},
+    {id:'sp_tambour',       nom:'Tambour',        soundId:'tambour',       pitch:82,   env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:2},
+    {id:'sp_tom_bas',       nom:'Tom grave',      soundId:'tom_bas',       pitch:110,  env:0.3, vol:0.5, familles_ids:['sf_graves'], source:'school', ordre:3},
+    {id:'sp_snare',         nom:'Snare',          soundId:'snare',         pitch:300,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:4},
+    {id:'sp_clave',         nom:'Clave',          soundId:'clave',         pitch:1760, env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:5},
+    {id:'sp_caisse_claire', nom:'Caisse claire',  soundId:'caisse_claire', pitch:220,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:6},
+    {id:'sp_triangle_inst', nom:'Triangle',       soundId:'triangle_inst', pitch:4000, env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:7},
+    {id:'sp_bell',          nom:'Bell',           soundId:'bell',          pitch:698,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:8},
+    {id:'sp_triangle_p',    nom:'Triangle doux',  soundId:'triangle_p',    pitch:880,  env:0.3, vol:0.5, familles_ids:['sf_aigus'],  source:'school', ordre:9},
+    {id:'sp_hihat_f',       nom:'Hi-hat fermé',   soundId:'hihat_f',       pitch:6000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:10},
+    {id:'sp_hihat_o',       nom:'Hi-hat ouvert',  soundId:'hihat_o',       pitch:6000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:11},
+    {id:'sp_shaker',        nom:'Shaker',         soundId:'shaker',        pitch:3000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:12},
+    {id:'sp_charleston',    nom:'Charleston',     soundId:'charleston',    pitch:5000, env:0.3, vol:0.5, familles_ids:['sf_noise'],  source:'school', ordre:13},
+    {id:'sp_conga_b',       nom:'Conga basse',    soundId:'conga_b',       pitch:150,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:14},
+    {id:'sp_bongo',         nom:'Bongo',          soundId:'bongo',         pitch:220,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:15},
+    {id:'sp_strum',         nom:'Strum',          soundId:'strum',         pitch:196,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:16},
+    {id:'sp_rimshot',       nom:'Rimshot',        soundId:'rimshot',       pitch:440,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:17},
+    {id:'sp_clap',          nom:'Clap',           soundId:'clap',          pitch:800,  env:0.3, vol:0.5, familles_ids:['sf_touch'],  source:'school', ordre:18},
+  ],
 };
 
 // Marquer les éléments du dictionnaire comme source 'school'
@@ -1888,15 +1911,15 @@ let state=LAYERS.map(()=>({
   wrapped:false,
 }));
 
-function defaultSoundState(soundId,pitchDef){return{soundId,pitch:pitchDef,env:0.3,vol:0.5};}
+function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5};}
 let soundState=[
-  defaultSoundState('kick',80),
-  defaultSoundState('snare',300),
-  defaultSoundState('hihat_f',6000),
+  defaultSoundState('sp_kick','kick',80),
+  defaultSoundState('sp_snare','snare',300),
+  defaultSoundState('sp_hihat_f','hihat_f',6000),
 ];
 let soundStateThumb=[
-  defaultSoundState('conga_b',150),
-  defaultSoundState('clap',800),
+  defaultSoundState('sp_conga_b','conga_b',150),
+  defaultSoundState('sp_clap','clap',800),
 ];
 const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
 
@@ -2391,6 +2414,8 @@ let currentMode = 'sx'; // SX par défaut ; passe en TX après connexion Google
 let dirtyLayers = [false, false, false];
 let grooveDirty = false;
 let _suppressGrooveDirty = false;
+let bandDirty = false;
+let soundDirty = {low:false, high:false, noise:false, thumbL:false, thumbR:false};
 let encycloDir = false;
 let encEditMode = false; // true = mode édition (TX/MX uniquement)
 let _encPreview = null; // { canonicalKey, chapo, bullets } — aperçu TX sans modifier packCours
@@ -2452,6 +2477,18 @@ function updateGrooveSaveBtn(){
 function updateEncycloSaveBtn(){
   setDirtyUI('encyclo-preset-btn', 'save-btn-encyclo', encycloDir);
   updateSettingsBadge();
+}
+function setBandDirty(v){
+  bandDirty=v;
+  const btn=document.getElementById('save-btn-band');
+  if(btn)btn.classList.toggle('dirty',v);
+  const pb=document.getElementById('band-preset-btn');
+  if(pb)pb.classList.toggle('pm-preset-dirty',v);
+}
+function setSoundDirtySlot(key,v){
+  soundDirty[key]=v;
+  const row=document.querySelector('[data-sound-key="'+key+'"]');
+  if(row){const pb=row.querySelector('.pm-preset-btn');if(pb)pb.classList.toggle('pm-preset-dirty',v);}
 }
 function refreshMenuBtnStates(){
   // Boutons ≡ groove/pattern supprimés (gestion intégrée dans openPresetModal)
@@ -2539,8 +2576,19 @@ function applyGroove(grooveId){
     state[li].wrapped=false;
   });
 
-  // Appliquer le band (si préférence activée)
-  if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){applyBand(groove.band_defaut);}
+  // Appliquer le band — band_embed si dirty à la sauvegarde, sinon preset par défaut
+  if(groove.band_embed){
+    const be=groove.band_embed;
+    const _restoreSlot=(ss,slot)=>{if(!slot)return;ss.soundPresetId=slot.soundPresetId;ss.soundId=slot.soundId;ss.pitch=slot.pitch;ss.env=slot.env??0.3;ss.vol=slot.vol??0.5;};
+    _restoreSlot(soundState[0],be.low);_restoreSlot(soundState[1],be.high);_restoreSlot(soundState[2],be.noise);
+    _restoreSlot(soundStateThumb[0],be.thumbL);_restoreSlot(soundStateThumb[1],be.thumbR);
+    if(groove.band_defaut)currentBandId=groove.band_defaut;
+    Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
+    setBandDirty(true);
+    buildSoundPanel();
+  } else if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){
+    applyBand(groove.band_defaut);
+  }
 
   // Appliquer la signature (si préférence activée) — avec fallback si preset supprimé
   if(prefs.applyGrooveSig&&groove.signature){
@@ -3597,7 +3645,7 @@ function buildBandSection(){
 
   // Bouton 💾 sauvegarder band
   const saveBtn=document.createElement('button');
-  saveBtn.className='btn-sec-ico';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
+  saveBtn.id='save-btn-band';saveBtn.className='btn-sec-ico';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>saveBandState(saveBtn));
   bar.appendChild(saveBtn);
@@ -4505,6 +4553,18 @@ function saveGroove(){
     // Pattern embarqué ssi metro dirty — comme séquence embarquée pour les layers
     metroPattern: metroDirty ? [...(currentSig.metroPattern||[])] : null,
   };
+  // Embarquer les paramètres band courants si dirty (analogie groove.metro)
+  if(bandDirty||Object.values(soundDirty).some(Boolean)){
+    groove.band_embed={
+      low:   {soundPresetId:soundState[0].soundPresetId,   soundId:soundState[0].soundId,   pitch:soundState[0].pitch,   env:soundState[0].env,   vol:soundState[0].vol},
+      high:  {soundPresetId:soundState[1].soundPresetId,   soundId:soundState[1].soundId,   pitch:soundState[1].pitch,   env:soundState[1].env,   vol:soundState[1].vol},
+      noise: {soundPresetId:soundState[2].soundPresetId,   soundId:soundState[2].soundId,   pitch:soundState[2].pitch,   env:soundState[2].env,   vol:soundState[2].vol},
+      thumbL:{soundPresetId:soundStateThumb[0].soundPresetId,soundId:soundStateThumb[0].soundId,pitch:soundStateThumb[0].pitch,env:soundStateThumb[0].env,vol:soundStateThumb[0].vol},
+      thumbR:{soundPresetId:soundStateThumb[1].soundPresetId,soundId:soundStateThumb[1].soundId,pitch:soundStateThumb[1].pitch,env:soundStateThumb[1].env,vol:soundStateThumb[1].vol},
+    };
+  } else {
+    delete groove.band_embed;
+  }
   saveToStorage();
 }
 
@@ -4653,6 +4713,8 @@ function buildPatternSelect(sel, filtreId){
 // ── Helpers familles ──────────────────────────────────────────────────────
 function getFamille(id){ return packCours.familles.find(f=>f.id===id); }
 function getBandFamille(id){ return (packCours.bandFamilles||[]).find(f=>f.id===id); }
+function getSoundPreset(id){ return (packCours.soundPresets||[]).find(sp=>sp.id===id); }
+function getSoundFamille(id){ return (packCours.soundFamilles||[]).find(f=>f.id===id); }
 function getFamillesPattern(pat){ return (pat.familles||[]).map(getFamille).filter(Boolean); }
 function getMetroFamilles(){ return packCours.metroFamilles?.length ? packCours.metroFamilles : SIG_FAMILLES.map(f=>({id:f.id,nom:f.label,source:'school'})); }
 function getMetroFamille(id){ return getMetroFamilles().find(f=>f.id===id); }
