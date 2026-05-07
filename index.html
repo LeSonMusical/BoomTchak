@@ -473,6 +473,8 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-fam-btn.palette{font-weight:600;color:var(--pm-ac,#4a3d8a);background:var(--pm-bg2,#f5f3f0);border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-fam-btn.pm-fam-cancel{color:#c44;font-weight:600;}
 .pm-fam-btn.pm-fam-new{color:#0a0;border-top:1px dashed #ccc;margin-top:6px;text-align:right;}
+.pm-fam-section-hdr{font-size:9px;font-weight:700;text-transform:uppercase;color:#999;padding:8px 10px 3px;letter-spacing:.04em;border-bottom:1px solid #f0ede8;}
+body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 /* Fond colonne gauche en mode palette */
 .pm-fam-col.pm-palette{background:var(--pm-ac,#4a3d8a);border-right-color:var(--pm-ac,#4a3d8a);}
 .pm-fam-col.pm-palette .pm-fam-btn{color:#fff;border-color:rgba(255,255,255,.18);}
@@ -955,7 +957,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.9.0</span>
+      <span class="app-version">v3.9.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1659,6 +1661,7 @@ const PTK_DEFAULT = {
   ],
   metroPresets: [],
   metroFamilles: [],
+  soundFamTags: {},
 };
 
 // Marquer les éléments du dictionnaire comme source 'school'
@@ -2687,7 +2690,7 @@ function openPresetModal(cfg){
   sheet.appendChild(body);
 
   // Boutons mode gérer/réordonner dans le header (groove, pattern, sig et band)
-  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'){
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'||cfg.type==='sound'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
     const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='⠿';
     modeManage.addEventListener('click',()=>{
@@ -2749,7 +2752,14 @@ function openPresetModal(cfg){
       const used=new Set(metroPresets.flatMap(p=>p.familles_ids?.length?p.familles_ids:(p.famille?[p.famille]:[])));
       return getMetroFamilles().filter(f=>used.has(f.id));
     }
-    if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
+    if(cfg.type==='sound'){
+      // Palette mode et manage/reorder : toutes les bandFamilles
+      if(manageMode||reorderMode||paletteTarget) return packCours.bandFamilles||[];
+      // Mode normal : seulement les familles qui taguent au moins un son
+      const tags=packCours.soundFamTags||{};
+      const used=new Set(Object.values(tags).flat());
+      return (packCours.bandFamilles||[]).filter(f=>used.has(f.id));
+    }
     if(cfg.type==='encyclo') return ENCYCLO_CATS.map(c=>({id:c.id,nom:c.label}));
     if(cfg.type==='band'){
       if(manageMode||reorderMode||paletteTarget) return packCours.bandFamilles||[];
@@ -2785,6 +2795,16 @@ function openPresetModal(cfg){
       return items;
     }
     let result;
+    if(cfg.type==='sound'){
+      const tags=packCours.soundFamTags||{};
+      let items=Object.entries(SOUND_DEFS).map(([id,d])=>({id,nom:d.label,cat:d.cat}));
+      if(searchQuery){const q=searchQuery.toLowerCase();return items.filter(i=>i.nom.toLowerCase().includes(q));}
+      if(famFilter&&famFilter!=='all'){
+        if(['low','high','noise','thumb'].includes(famFilter)) return items.filter(i=>i.cat===famFilter);
+        return items.filter(i=>(tags[i.id]||[]).includes(famFilter));
+      }
+      return items;
+    }
     if(cfg.type==='band'){
       const all=(packCours.bands||[]).filter(b=>!b.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(b=>b.nom.toLowerCase().includes(q));}
@@ -2827,7 +2847,7 @@ function openPresetModal(cfg){
       }
       saveToStorage();buildFamCol();buildItems();return;
     }
-    if(cfg.type==='band'){
+    if(cfg.type==='band'||cfg.type==='sound'){
       const fam={id:'bfam_'+Date.now(),nom:nom.trim(),source:'school',localDirty:true};
       if(!packCours.bandFamilles)packCours.bandFamilles=[];
       packCours.bandFamilles.push(fam);
@@ -2840,6 +2860,14 @@ function openPresetModal(cfg){
   }
 
   function pmDeleteFam(fam){
+    if(cfg.type==='sound'){
+      const tags=packCours.soundFamTags||{};
+      const count=Object.values(tags).filter(a=>a.includes(fam.id)).length;
+      if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée sur '+count+' son(s))':''}?`))return;
+      packCours.bandFamilles=(packCours.bandFamilles||[]).filter(f=>f.id!==fam.id);
+      Object.keys(tags).forEach(k=>{if(tags[k])tags[k]=tags[k].filter(id=>id!==fam.id);});
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     if(cfg.type==='sig'){
       const count=metroPresets.filter(p=>(p.familles_ids||[]).includes(fam.id)).length;
       if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' preset(s))':''}?`))return;
@@ -2873,7 +2901,7 @@ function openPresetModal(cfg){
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolMetroFamOrder();buildFamCol();return;
     }
-    if(cfg.type==='band'){
+    if(cfg.type==='band'||cfg.type==='sound'){
       const fams=packCours.bandFamilles||[];
       const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
       const[moved]=fams.splice(si,1);
@@ -2932,7 +2960,7 @@ function openPresetModal(cfg){
       const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
       cancel.addEventListener('click',cancelPalette);
       famCol.appendChild(cancel);
-      const assigned=new Set(paletteTarget.familles||[]);
+      const assigned=new Set(cfg.type==='sound'?((packCours.soundFamTags||{})[paletteTarget.id]||[]):(paletteTarget.familles||[]));
       getFams().forEach(f=>{
         if(assigned.has(f.id))return;
         const b=document.createElement('button');b.className='pm-fam-btn palette';b.textContent=f.nom;
@@ -2976,6 +3004,78 @@ function openPresetModal(cfg){
     mkFilterBtn('all','Tout');
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
+    // Son : colonne gauche avec deux sections (Catégories + Familles)
+    if(cfg.type==='sound'){
+      const catHdr=document.createElement('div');catHdr.className='pm-fam-section-hdr';catHdr.textContent='Catégories';
+      famCol.appendChild(catHdr);
+      INSTR_FAMILLES.forEach(f=>{
+        const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
+        b.textContent=f.label;b.addEventListener('click',()=>_setFam(f.id));famCol.appendChild(b);
+      });
+      const famHdr=document.createElement('div');famHdr.className='pm-fam-section-hdr';famHdr.textContent='Familles';
+      famCol.appendChild(famHdr);
+      const isMx=authProfile?.role==='mx';
+      const bfams=packCours.bandFamilles||[];
+      if(manageMode||reorderMode){
+        famCol.style.touchAction=reorderMode?'none':'';
+        bfams.forEach(f=>{
+          const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
+          if(reorderMode){
+            row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
+            const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';
+            drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
+          }
+          const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
+          nameEl.addEventListener('click',()=>_setFam(f.id));row.appendChild(nameEl);
+          if(manageMode){
+            const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
+            renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameMetroFam(nameEl,f);});
+            const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
+            delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
+            row.appendChild(renBtn);row.appendChild(delBtn);
+          }
+          if(reorderMode){
+            row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
+            row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
+            row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
+            row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
+            row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
+            row.addEventListener('touchmove',e=>{
+              e.preventDefault();if(!_famDragSrcId)return;
+              const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+              const tgt=el?.closest('.pm-fam-manage-row');
+              famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+              if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
+            },{passive:false});
+            row.addEventListener('touchend',e=>{
+              row.classList.remove('pm-fam-dragging');
+              const over=famCol.querySelector('.pm-fam-drag-over');
+              famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+              if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
+              _famDragSrcId=null;
+            },{passive:true});
+          }
+          famCol.appendChild(row);
+        });
+        if(reorderMode){
+          const famEndZ=document.createElement('div');famEndZ.className='pm-fam-manage-row pm-fam-end-zone';famEndZ.dataset.famId='__end__';
+          famEndZ.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));famEndZ.classList.add('pm-fam-drag-over');});
+          famEndZ.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId)pmDropFam(_famDragSrcId,'__end__');});
+          famCol.appendChild(famEndZ);
+        }
+        if(isMx&&manageMode){
+          const nf=document.createElement('button');nf.className='pm-fam-btn pm-fam-new';nf.textContent='＋ Nouvelle famille';
+          nf.addEventListener('click',pmNewFamille);famCol.appendChild(nf);
+        }
+      } else {
+        famCol.style.touchAction='';
+        bfams.forEach(f=>{
+          const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
+          b.textContent=f.nom;b.addEventListener('click',()=>_setFam(f.id));famCol.appendChild(b);
+        });
+      }
+      return;
+    }
 
     if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band')){
       const isMx=authProfile?.role==='mx';
@@ -3075,9 +3175,10 @@ function openPresetModal(cfg){
     container.innerHTML='';
     const isSig=cfg.type==='sig';
     const isBand=cfg.type==='band';
-    const tagIds=isSig?(item.familles_ids||[]):(item.familles||[]);
+    const isSound=cfg.type==='sound';
+    const tagIds=isSig?(item.familles_ids||[]):isSound?((packCours.soundFamTags||{})[item.id]||[]):(item.familles||[]);
     tagIds.forEach(fid=>{
-      const fam=isSig?getMetroFamille(fid):isBand?getBandFamille(fid):getFamille(fid);if(!fam)return;
+      const fam=isSig?getMetroFamille(fid):(isBand||isSound)?getBandFamille(fid):getFamille(fid);if(!fam)return;
       const chip=document.createElement('span');chip.className='pm-tag-chip';chip.textContent=fam.nom;
       const x=document.createElement('button');x.className='pm-tag-x';x.textContent='×';
       x.addEventListener('click',e=>{e.stopPropagation();pmRemoveTag(item,fid);});
@@ -3089,6 +3190,13 @@ function openPresetModal(cfg){
   }
 
   function pmAddTag(item,famId){
+    if(cfg.type==='sound'){
+      const tags=packCours.soundFamTags||(packCours.soundFamTags={});
+      if((tags[item.id]||[]).includes(famId))return;
+      if(!tags[item.id])tags[item.id]=[];
+      tags[item.id].push(famId);
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     if(cfg.type==='sig'){
       if((item.familles_ids||[]).includes(famId))return;
       if(!item.familles_ids)item.familles_ids=[];item.familles_ids.push(famId);
@@ -3123,6 +3231,11 @@ function openPresetModal(cfg){
   }
 
   function pmRemoveTag(item,famId){
+    if(cfg.type==='sound'){
+      const tags=packCours.soundFamTags||(packCours.soundFamTags={});
+      if(tags[item.id])tags[item.id]=tags[item.id].filter(id=>id!==famId);
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     if(cfg.type==='sig'){
       item.familles_ids=(item.familles_ids||[]).filter(id=>id!==famId);
       item.famille=item.familles_ids[0]||familleFromUnit(item.beatUnit||4,item.subdivision||2);
@@ -3310,17 +3423,36 @@ function openPresetModal(cfg){
       requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
       return;
     }
-    // Types non-gérables : logique inchangée
     if(cfg.type==='sound'){
-      const soundItems=Object.entries(SOUND_DEFS)
-        .filter(([,d])=>famFilter==='all'||d.cat===famFilter)
-        .map(([id,d])=>({id,nom:d.label,cat:d.cat}));
-      soundItems.forEach(item=>{
-        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.textContent=item.nom;row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-        itemsWrap.appendChild(row);
+      const items=getFilteredItems();
+      if(reorderMode){
+        // Sons non réordonnables — affichage normal en mode réordonner
+        itemsWrap.style.touchAction='';itemsWrap.style.overflowY='';
+        items.forEach(item=>{
+          const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+          row.textContent=item.nom;row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+          itemsWrap.appendChild(row);
+        });
+        requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+        return;
+      }
+      itemsWrap.style.touchAction='';itemsWrap.style.overflowY='';
+      items.forEach(item=>{
+        if(manageMode){
+          const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
+          const row1=document.createElement('div');row1.className='pm-item-name-row';
+          const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=item.nom;
+          row1.appendChild(nameEl);div.appendChild(row1);
+          const tagsDiv=document.createElement('div');tagsDiv.className='pm-item-tags';
+          pmBuildTags(tagsDiv,item);div.appendChild(tagsDiv);
+          itemsWrap.appendChild(div);
+        } else {
+          const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+          row.textContent=item.nom;row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+          itemsWrap.appendChild(row);
+        }
       });
-      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      if(!manageMode)requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
       return;
     }
     if(cfg.type==='sig'){
@@ -3417,7 +3549,7 @@ function openPresetModal(cfg){
   }
 
   // Enregistrer le callback de rafraîchissement (groove/pattern/sig/band)
-  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'){
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'||cfg.type==='sound'){
     _pmRefresh=()=>{buildFamCol();buildItems();};
   }
 
@@ -8657,6 +8789,7 @@ function loadFromStorage(){
   if(!packCours.bandFamilles||!packCours.bandFamilles.length){
     packCours.bandFamilles=JSON.parse(JSON.stringify(PTK_DEFAULT.bandFamilles));
   }
+  if(!packCours.soundFamTags)packCours.soundFamTags={};
   // Migration band_defaut : anciens IDs courts → nouveaux IDs longs
   const _bandIdMap={electro:'band_electro',perc:'band_perc',rock:'band_rock',minimal:'band_minimal'};
   packCours.grooves.forEach(g=>{
