@@ -957,7 +957,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.1</span>
+      <span class="app-version">v3.10.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2345,20 +2345,32 @@ function playConga(isRight){
   const a=getAC();if(!a)return;
   playSound(soundStateThumb[isRight?1:0],a.currentTime);
 }
+function _buildBandSlotEmbed(){
+  const e={};
+  const _s=(k,ss)=>{if(soundDirty[k])e[k]={soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol};};
+  _s('low',soundState[0]);_s('high',soundState[1]);_s('noise',soundState[2]);
+  _s('thumbL',soundStateThumb[0]);_s('thumbR',soundStateThumb[1]);
+  return Object.keys(e).length?e:null;
+}
+
 function applyBand(id){
   const b=getBand(id);if(!b)return;
   currentBandId=id;
-  const _applySlot=(ss,spId)=>{
+  const se=b._slotEmbed||{};
+  const _applySlot=(ss,spId,embed)=>{
     const sp=getSoundPreset(spId);if(!sp)return;
-    ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;
+    ss.soundPresetId=sp.id;
+    if(embed){ss.soundId=embed.soundId||sp.soundId;ss.pitch=embed.pitch;ss.env=embed.env??0.3;ss.vol=embed.vol??0.5;}
+    else{ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;}
   };
-  _applySlot(soundState[0],b.low);
-  _applySlot(soundState[1],b.high);
-  _applySlot(soundState[2],b.noise);
-  _applySlot(soundStateThumb[0],b.thumbL);
-  _applySlot(soundStateThumb[1],b.thumbR);
-  Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
-  setBandDirty(false);
+  _applySlot(soundState[0],b.low,se.low);
+  _applySlot(soundState[1],b.high,se.high);
+  _applySlot(soundState[2],b.noise,se.noise);
+  _applySlot(soundStateThumb[0],b.thumbL,se.thumbL);
+  _applySlot(soundStateThumb[1],b.thumbR,se.thumbR);
+  soundDirty.low=!!se.low;soundDirty.high=!!se.high;soundDirty.noise=!!se.noise;
+  soundDirty.thumbL=!!se.thumbL;soundDirty.thumbR=!!se.thumbR;
+  setBandDirty(Object.values(soundDirty).some(Boolean));
   buildSoundPanel();
 }
 
@@ -4587,6 +4599,7 @@ function pspDoOverwriteBand(){
   const btn=_pspBtn;
   const band=getBand(_pspBandId);if(!band){closePatSavePop();return;}
 
+  const embed=_buildBandSlotEmbed();
   if(band.source==='school'&&authProfile?.role!=='mx'){
     closePatSavePop();
     const fork=JSON.parse(JSON.stringify(band));
@@ -4595,6 +4608,7 @@ function pspDoOverwriteBand(){
     fork.low=soundState[0].soundPresetId;fork.high=soundState[1].soundPresetId;
     fork.noise=soundState[2].soundPresetId;fork.thumbL=soundStateThumb[0].soundPresetId;fork.thumbR=soundStateThumb[1].soundPresetId;
     fork.familles=[..._pspNewFamIds];
+    if(embed)fork._slotEmbed=embed;else delete fork._slotEmbed;
     if(!packCours.bands)packCours.bands=[];packCours.bands.push(fork);
     currentBandId=fork.id;
     setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
@@ -4607,6 +4621,7 @@ function pspDoOverwriteBand(){
   band.low=soundState[0].soundPresetId;band.high=soundState[1].soundPresetId;
   band.noise=soundState[2].soundPresetId;band.thumbL=soundStateThumb[0].soundPresetId;band.thumbR=soundStateThumb[1].soundPresetId;
   band.familles=[..._pspNewFamIds];
+  if(embed)band._slotEmbed=embed;else delete band._slotEmbed;
   band.localDirty=true;band.localChangeType=band.localChangeType||'update';
   setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
   saveToStorage();buildPublishSection();buildBandSection();buildSoundPanel();
@@ -4616,10 +4631,12 @@ function pspDoOverwriteBand(){
 function pspDoSaveNewBand(){
   const btn=_pspBtn;
   const nom=document.getElementById('psp-name-input').value.trim()||(getBand(_pspBandId)?.nom||'Band')+' (copie)';
+  const _embed=_buildBandSlotEmbed();
   const nb={id:'band_teacher_'+Date.now(),nom,familles:[..._pspNewFamIds],source:'teacher',
     localChangeType:'create',
     low:soundState[0].soundPresetId,high:soundState[1].soundPresetId,
-    noise:soundState[2].soundPresetId,thumbL:soundStateThumb[0].soundPresetId,thumbR:soundStateThumb[1].soundPresetId};
+    noise:soundState[2].soundPresetId,thumbL:soundStateThumb[0].soundPresetId,thumbR:soundStateThumb[1].soundPresetId,
+    ...(_embed?{_slotEmbed:_embed}:{})};
   if(!packCours.bands)packCours.bands=[];packCours.bands.push(nb);
   currentBandId=nb.id;
   setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
@@ -5029,15 +5046,17 @@ function buildSoundRow(key,label,cls,ss){
   const soundPresetBtn=document.createElement('button');
   soundPresetBtn.className='pm-preset-btn';
   const curSp=getSoundPreset(ss.soundPresetId);
-  soundPresetBtn.textContent=curSp?curSp.nom:(SOUND_DEFS[ss.soundId]?.label||'—');
+  const _spBaseName=curSp?curSp.nom:(SOUND_DEFS[ss.soundId]?.label||'—');
+  soundPresetBtn.textContent=soundDirty[key]?_spBaseName+' (mod.)':_spBaseName;
   if(soundDirty[key])soundPresetBtn.classList.add('pm-preset-dirty');
 
   const _soundOnSelect=(spId)=>{
     const sp=getSoundPreset(spId);if(!sp)return;
     const origSpId=ss.soundPresetId;
     ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;
-    setSoundDirtySlot(key, spId!==origSpId);
-    setBandDirty(true);
+    // Changer de preset réinitialise les params → pas dirty sauf si différent du précédent
+    setSoundDirtySlot(key, false);
+    if(spId!==origSpId)setBandDirty(true);
     buildSoundPanel();
   };
   soundPresetBtn.addEventListener('click',e=>{
@@ -5085,8 +5104,9 @@ function buildSoundRow(key,label,cls,ss){
   // ── Collapsible : Hauteur + Enveloppe + actions ───────────────────────────
   const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
   const inner=document.createElement('div');inner.className='sound-ctrls-inner';
-  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);setSoundDirtySlot(key,true);setBandDirty(true);},pitchToNorm(ss.pitch,ss.soundId)));
-  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;setSoundDirtySlot(key,true);setBandDirty(true);},ss.env));
+  const _pitchLbl=SOUND_DEFS[ss.soundId]?.cat==='noise'?'Timbre':'Hauteur';
+  inner.appendChild(mkSlider(_pitchLbl,v=>{ss.pitch=normToPitch(v,ss.soundId);setSoundDirtySlot(key,true);setBandDirty(true);},pitchToNorm(ss.pitch,ss.soundId)));
+  inner.appendChild(mkSlider('Decay',v=>{ss.env=v;setSoundDirtySlot(key,true);setBandDirty(true);},ss.env));
 
   ctrls.appendChild(inner);
   if(!soundPanelOpen[key]) ctrls.classList.add('hidden');
