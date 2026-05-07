@@ -2346,13 +2346,19 @@ function playConga(isRight){
   playSound(soundStateThumb[isRight?1:0],a.currentTime);
 }
 function applyBand(id){
-  const b=getBand(id); if(!b) return;
+  const b=getBand(id);if(!b)return;
   currentBandId=id;
-  soundState[0]={soundId:b.low,   pitch:b.lowPitch,   env:.3,vol:soundState[0].vol};
-  soundState[1]={soundId:b.high,  pitch:b.highPitch,  env:.3,vol:soundState[1].vol};
-  soundState[2]={soundId:b.noise, pitch:b.noisePitch, env:.3,vol:soundState[2].vol};
-  soundStateThumb[0]={soundId:b.thumbL, pitch:b.thumbLPitch, env:.3,vol:soundStateThumb[0].vol};
-  soundStateThumb[1]={soundId:b.thumbR, pitch:b.thumbRPitch, env:.3,vol:soundStateThumb[1].vol};
+  const _applySlot=(ss,spId)=>{
+    const sp=getSoundPreset(spId);if(!sp)return;
+    ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;
+  };
+  _applySlot(soundState[0],b.low);
+  _applySlot(soundState[1],b.high);
+  _applySlot(soundState[2],b.noise);
+  _applySlot(soundStateThumb[0],b.thumbL);
+  _applySlot(soundStateThumb[1],b.thumbR);
+  Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
+  setBandDirty(false);
   buildSoundPanel();
 }
 
@@ -8852,6 +8858,25 @@ function loadFromStorage(){
     packCours.bandFamilles=JSON.parse(JSON.stringify(PTK_DEFAULT.bandFamilles));
   }
   if(!packCours.soundFamTags)packCours.soundFamTags={};
+  // Migration v3.10.0 — soundFamilles + soundPresets
+  if(!packCours.soundFamilles||!packCours.soundFamilles.length){
+    packCours.soundFamilles=JSON.parse(JSON.stringify(PTK_DEFAULT.soundFamilles));
+  }
+  if(!packCours.soundPresets||!packCours.soundPresets.length){
+    packCours.soundPresets=JSON.parse(JSON.stringify(PTK_DEFAULT.soundPresets));
+  }
+  // Migration bands : ancien format {low:'kick', lowPitch:80} → nouveau {low:'sp_kick'}
+  (packCours.bands||[]).forEach(b=>{
+    if(b.lowPitch!==undefined){
+      b.low='sp_'+(b.low||'kick');
+      b.high='sp_'+(b.high||'snare');
+      b.noise='sp_'+(b.noise||'hihat_f');
+      b.thumbL='sp_'+(b.thumbL||'conga_b');
+      b.thumbR='sp_'+(b.thumbR||'clap');
+      delete b.lowPitch;delete b.highPitch;delete b.noisePitch;
+      delete b.thumbLPitch;delete b.thumbRPitch;
+    }
+  });
   // Migration band_defaut : anciens IDs courts → nouveaux IDs longs
   const _bandIdMap={electro:'band_electro',perc:'band_perc',rock:'band_rock',minimal:'band_minimal'};
   packCours.grooves.forEach(g=>{
