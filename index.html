@@ -955,7 +955,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.8.59</span>
+      <span class="app-version">v3.9.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2686,8 +2686,8 @@ function openPresetModal(cfg){
   body.appendChild(famCol);body.appendChild(itemsWrap);
   sheet.appendChild(body);
 
-  // Boutons mode gérer/réordonner dans le header (groove, pattern et sig)
-  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'){
+  // Boutons mode gérer/réordonner dans le header (groove, pattern, sig et band)
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
     const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='⠿';
     modeManage.addEventListener('click',()=>{
@@ -2751,6 +2751,11 @@ function openPresetModal(cfg){
     }
     if(cfg.type==='sound') return INSTR_FAMILLES.map(f=>({id:f.id,nom:f.label}));
     if(cfg.type==='encyclo') return ENCYCLO_CATS.map(c=>({id:c.id,nom:c.label}));
+    if(cfg.type==='band'){
+      if(manageMode||reorderMode||paletteTarget) return packCours.bandFamilles||[];
+      const used=new Set((packCours.bands||[]).filter(b=>!b.localDeletePending).flatMap(b=>b.familles||[]));
+      return (packCours.bandFamilles||[]).filter(f=>used.has(f.id));
+    }
     return packCours.bandFamilles||[];
   }
 
@@ -2780,6 +2785,12 @@ function openPresetModal(cfg){
       return items;
     }
     let result;
+    if(cfg.type==='band'){
+      const all=(packCours.bands||[]).filter(b=>!b.localDeletePending);
+      if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(b=>b.nom.toLowerCase().includes(q));}
+      return famFilter==='__teacher__'?all.filter(b=>b.source==='teacher'):
+             famFilter&&famFilter!=='all'?all.filter(b=>(b.familles||[]).includes(famFilter)):all;
+    }
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return allG.filter(i=>i.nom.toLowerCase().includes(q));}
@@ -2816,6 +2827,12 @@ function openPresetModal(cfg){
       }
       saveToStorage();buildFamCol();buildItems();return;
     }
+    if(cfg.type==='band'){
+      const fam={id:'bfam_'+Date.now(),nom:nom.trim(),source:'school',localDirty:true};
+      if(!packCours.bandFamilles)packCours.bandFamilles=[];
+      packCours.bandFamilles.push(fam);
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
     packCours.familles.push(fam);
     saveToStorage();rebuildAllFamFilters();buildPublishSection();
@@ -2835,6 +2852,13 @@ function openPresetModal(cfg){
       }
       saveToStorage();buildFamCol();buildItems();return;
     }
+    if(cfg.type==='band'){
+      const count=(packCours.bands||[]).filter(b=>(b.familles||[]).includes(fam.id)).length;
+      if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' band(s))':''}?`))return;
+      packCours.bandFamilles=(packCours.bandFamilles||[]).filter(f=>f.id!==fam.id);
+      (packCours.bands||[]).forEach(b=>{if(b.familles)b.familles=b.familles.filter(id=>id!==fam.id);});
+      saveToStorage();buildFamCol();buildItems();return;
+    }
     const count=packCours.patterns.filter(p=>(p.familles||[]).includes(fam.id)).length
               +packCours.grooves.filter(g=>(g.familles||[]).includes(fam.id)).length;
     libDeleteFamille(fam.id,count);
@@ -2848,6 +2872,14 @@ function openPresetModal(cfg){
       if(tgtId==='__end__'){fams.push(moved);}
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolMetroFamOrder();buildFamCol();return;
+    }
+    if(cfg.type==='band'){
+      const fams=packCours.bandFamilles||[];
+      const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
+      const[moved]=fams.splice(si,1);
+      if(tgtId==='__end__'){fams.push(moved);}
+      else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
+      saveToStorage();sbPushSchoolBandFamOrder();buildFamCol();return;
     }
     const fams=packCours.familles;
     const si=fams.findIndex(f=>f.id===srcId);
@@ -2945,7 +2977,7 @@ function openPresetModal(cfg){
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
 
-    if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig')){
+    if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band')){
       const isMx=authProfile?.role==='mx';
       // Bloquer le scroll du container en mode réordonner (sinon le touch scroll prend la main)
       famCol.style.touchAction=reorderMode?'none':'';
@@ -3042,9 +3074,10 @@ function openPresetModal(cfg){
   function pmBuildTags(container,item){
     container.innerHTML='';
     const isSig=cfg.type==='sig';
+    const isBand=cfg.type==='band';
     const tagIds=isSig?(item.familles_ids||[]):(item.familles||[]);
     tagIds.forEach(fid=>{
-      const fam=isSig?getMetroFamille(fid):getFamille(fid);if(!fam)return;
+      const fam=isSig?getMetroFamille(fid):isBand?getBandFamille(fid):getFamille(fid);if(!fam)return;
       const chip=document.createElement('span');chip.className='pm-tag-chip';chip.textContent=fam.nom;
       const x=document.createElement('button');x.className='pm-tag-x';x.textContent='×';
       x.addEventListener('click',e=>{e.stopPropagation();pmRemoveTag(item,fid);});
@@ -3067,6 +3100,12 @@ function openPresetModal(cfg){
         sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({familles_ids:item.familles_ids})}).catch(()=>{});
       }
       saveToStorage();buildFamCol();buildItems();return;
+    }
+    if(cfg.type==='band'){
+      if((item.familles||[]).includes(famId))return;
+      if(!item.familles)item.familles=[];item.familles.push(famId);
+      item.localChangeType=item.localChangeType||'update';
+      saveToStorage();buildPublishSection();buildFamCol();buildItems();return;
     }
     if((item.familles||[]).includes(famId))return;
     if(item.source==='school'&&authProfile?.role!=='mx'){
@@ -3093,6 +3132,11 @@ function openPresetModal(cfg){
         sbFetch(`/rest/v1/metro_presets?id=eq.${item.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({familles_ids:item.familles_ids})}).catch(()=>{});
       }
       saveToStorage();buildFamCol();buildItems();return;
+    }
+    if(cfg.type==='band'){
+      item.familles=(item.familles||[]).filter(id=>id!==famId);
+      item.localChangeType=item.localChangeType||'update';
+      saveToStorage();buildPublishSection();buildFamCol();buildItems();return;
     }
     if(item.source==='school'&&authProfile?.role!=='mx'){
       const fork=txForkItem(cfg.type,item);
@@ -3128,6 +3172,13 @@ function openPresetModal(cfg){
         }
         saveToStorage();buildSigSelector();buildItems();return;
       }
+      if(cfg.type==='band'){
+        item.nom=newNom;
+        item.localChangeType=item.localChangeType||'update';
+        if(!item.localChangedFields)item.localChangedFields=[];
+        if(!item.localChangedFields.includes('nom'))item.localChangedFields.push('nom');
+        saveToStorage();buildPublishSection();buildBandSection();buildItems();return;
+      }
       if(item.source==='school'&&authProfile?.role!=='mx'){
         const fork=txForkItem(cfg.type,item);fork.nom=newNom;
         if(cfg.type==='groove'&&currentGrooveId===item.id)currentGrooveId=fork.id;
@@ -3150,6 +3201,20 @@ function openPresetModal(cfg){
   function pmCreateNew(){
     if(cfg.type==='groove'){_closeOverlay();openGrooveSavePop(null);return;}
     if(cfg.type==='sig'){_closeOverlay();document.getElementById('btn-metro-save').click();return;}
+    if(cfg.type==='band'){
+      const nom=prompt('Nom du nouveau band :');if(!nom?.trim())return;
+      const cur=getBand(currentBandId);
+      const nb={id:'band_user_'+Date.now(),nom:nom.trim(),familles:[],source:'teacher',localChangeType:'create',
+        low:soundState[0].soundId,lowPitch:soundState[0].pitch,high:soundState[1].soundId,highPitch:soundState[1].pitch,
+        noise:soundState[2].soundId,noisePitch:soundState[2].pitch,
+        thumbL:soundStateThumb[0].soundId,thumbLPitch:soundStateThumb[0].pitch,
+        thumbR:soundStateThumb[1].soundId,thumbRPitch:soundStateThumb[1].pitch};
+      if(!packCours.bands)packCours.bands=[];
+      packCours.bands.push(nb);
+      saveToStorage();buildPublishSection();buildBandSection();buildItems();
+      requestAnimationFrame(()=>{const el=itemsWrap.querySelector('[data-pm-id="'+nb.id+'"] .pm-item-name');if(el)pmStartRename(el,nb);});
+      return;
+    }
     // Pattern : crée un pattern vide teacher et l'affiche en rename
     const newPat={id:'user_pat_'+Date.now(),nom:'Nouveau pattern',sequence:'0000',pas:4,familles:[],source:'teacher',localChangeType:'create'};
     packCours.patterns.push(newPat);
@@ -3175,6 +3240,14 @@ function openPresetModal(cfg){
       dropIn(metroPresets);
       if(packCours.metroPresets)dropIn(packCours.metroPresets);
       saveToStorage();sbPushSchoolMetroOrder();buildItems();return;
+    }
+    if(cfg.type==='band'){
+      const arr=packCours.bands||[];
+      const si=arr.findIndex(x=>x.id===srcId);if(si<0)return;
+      const[m]=arr.splice(si,1);
+      if(tgtId==='__end__'){arr.push(m);}
+      else{const ti=arr.findIndex(x=>x.id===tgtId);if(ti<0){arr.splice(si,0,m);return;}arr.splice(ti,0,m);}
+      saveToStorage();sbPushSchoolBandOrder();buildItems();return;
     }
     if(tgtId==='__end__'){
       const arr=cfg.type==='groove'?packCours.grooves:packCours.patterns;
@@ -3252,21 +3325,11 @@ function openPresetModal(cfg){
     }
     if(cfg.type==='sig'){
       // Sig uses getFilteredItems() like groove/pattern — falls through to groove/pattern block below
-    } else
-    if(cfg.type==='band'){
-      const items=famFilter&&famFilter!=='all'?(packCours.bands||[]).filter(b=>(b.familles||[]).includes(famFilter)):(packCours.bands||[]);
-      if(!items.length){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucun élément';itemsWrap.appendChild(e);return;}
-      items.forEach(item=>{
-        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.textContent=item.nom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');
-        row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-        itemsWrap.appendChild(row);
-      });
-      requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
-      return;
+    } else if(cfg.type!=='band'){
+      // Types non groove/pattern/sig/band : return early (sound déjà traité au-dessus)
     }
 
-    // groove / pattern
+    // groove / pattern / band
     const items=getFilteredItems();
 
     if(reorderMode){
@@ -3324,6 +3387,7 @@ function openPresetModal(cfg){
         delBtn.addEventListener('click',e=>{e.stopPropagation();
           if(cfg.type==='sig')_deleteMetroPreset(item);
           else if(cfg.type==='groove')libDeleteGroove(item.id);
+          else if(cfg.type==='band')libDeleteBand(item.id);
           else libDeletePattern(item.id);
         });
         row1.appendChild(nameEl);row1.appendChild(delBtn);div.appendChild(row1);
@@ -3344,7 +3408,7 @@ function openPresetModal(cfg){
     if(manageMode){
       // Bouton + Nouveau en bas
       const newBtn=document.createElement('button');newBtn.className='pm-item pm-item-new';
-      newBtn.textContent='＋ Nouveau '+(cfg.type==='groove'?'groove':cfg.type==='sig'?'preset':'pattern');
+      newBtn.textContent='＋ Nouveau '+(cfg.type==='groove'?'groove':cfg.type==='sig'?'preset':cfg.type==='band'?'band':'pattern');
       newBtn.addEventListener('click',pmCreateNew);
       itemsWrap.appendChild(newBtn);
     } else {
@@ -3352,8 +3416,8 @@ function openPresetModal(cfg){
     }
   }
 
-  // Enregistrer le callback de rafraîchissement (groove/pattern/sig)
-  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'){
+  // Enregistrer le callback de rafraîchissement (groove/pattern/sig/band)
+  if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'){
     _pmRefresh=()=>{buildFamCol();buildItems();};
   }
 
@@ -3374,13 +3438,6 @@ function buildBandSection(){
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
   bar.appendChild(lbl);
-
-  // Bouton menu ≡
-  const menuBtn=document.createElement('button');
-  menuBtn.className='btn-sec-ico';menuBtn.style.cssText='font-size:15px;padding:2px 7px';
-  menuBtn.textContent='≡';menuBtn.title='Gérer les bands';
-  menuBtn.addEventListener('click',()=>openLibPanelBands());
-  bar.appendChild(menuBtn);
 
   // Bouton preset band (remplace filtre famille + select)
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
@@ -4463,6 +4520,7 @@ function buildPatternSelect(sel, filtreId){
 
 // ── Helpers familles ──────────────────────────────────────────────────────
 function getFamille(id){ return packCours.familles.find(f=>f.id===id); }
+function getBandFamille(id){ return (packCours.bandFamilles||[]).find(f=>f.id===id); }
 function getFamillesPattern(pat){ return (pat.familles||[]).map(getFamille).filter(Boolean); }
 function getMetroFamilles(){ return packCours.metroFamilles?.length ? packCours.metroFamilles : SIG_FAMILLES.map(f=>({id:f.id,nom:f.label,source:'school'})); }
 function getMetroFamille(id){ return getMetroFamilles().find(f=>f.id===id); }
@@ -4617,7 +4675,12 @@ function buildSoundRow(key,label,cls,ss){
   arrow.title='Réglages son';
   arrow.textContent=soundPanelOpen[key]?'régl. ▼':'régl. ▶';
 
-  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(arrow);
+  // Bouton 💾 toujours visible dans le header
+  const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-ico';saveIcoHdr.textContent='💾';
+  saveIcoHdr.title='Sauvegarder le band';saveIcoHdr.style.cssText='font-size:11px;padding:1px 4px';
+  saveIcoHdr.addEventListener('click',e=>{e.stopPropagation();saveBandState(saveIcoHdr);});
+
+  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(arrow);
 
   // Rangée 2 : volume (pleine largeur)
   const r2=document.createElement('div');r2.className='sound-h-r2';
@@ -4643,16 +4706,7 @@ function buildSoundRow(key,label,cls,ss){
   inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
   inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
 
-  const actions=document.createElement('div');actions.className='sound-ctrls-actions';
-  const menuIco=document.createElement('button');menuIco.className='btn-sec-ico';menuIco.textContent='≡';
-  menuIco.title='Gérer les bands';menuIco.style.cssText='font-size:13px;padding:1px 4px';
-  menuIco.addEventListener('click',e=>{e.stopPropagation();openLibPanelBands();});
-  const saveIco=document.createElement('button');saveIco.className='btn-sec-ico';saveIco.textContent='💾';
-  saveIco.title='Sauvegarder le band';saveIco.style.cssText='font-size:11px;padding:1px 4px';
-  saveIco.addEventListener('click',e=>{e.stopPropagation();saveBandState(saveIco);});
-  actions.appendChild(menuIco);actions.appendChild(saveIco);
-
-  ctrls.appendChild(inner);ctrls.appendChild(actions);
+  ctrls.appendChild(inner);
   if(!soundPanelOpen[key]) ctrls.classList.add('hidden');
 
   arrow.addEventListener('click',e=>{
@@ -6148,6 +6202,43 @@ async function sbPushSchoolFamOrder() {
   } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé : ' + e.message, 'warn'); }
 }
 
+async function sbPushSchoolBandOrder() {
+  // Quand la table `bands` sera en DB : PATCH ordre de chaque band school
+  // Pour l'instant : persistence locale uniquement
+  saveToStorage();
+}
+
+async function sbPushSchoolBandFamOrder() {
+  // Quand la table `band_familles` sera en DB : PATCH ordre des familles
+  saveToStorage();
+}
+
+async function sbPublishBand(bandId) {
+  if(!authSession||!authProfile)return false;
+  const isMX=authProfile.role==='mx';
+  const b=(packCours.bands||[]).find(x=>x.id===bandId);
+  if(!b)return false;
+  try{
+    // TODO: remplacer par l'endpoint DB bands quand la table sera créée
+    // Pour l'instant on marque localement
+    if(isMX){
+      b.source='school';b.localDirty=false;
+      delete b.localChangeType;delete b.localChangedFields;
+    } else {
+      b.localStatus='submitted';delete b.localChangedFields;
+    }
+    saveToStorage();
+    return true;
+  }catch(e){console.error('Erreur publication band:',e);return false;}
+}
+
+async function sbCancelBandSubmission(bandId){
+  const b=(packCours.bands||[]).find(x=>x.id===bandId);
+  if(!b)return;
+  b.localStatus=undefined;delete b.localChangedFields;
+  saveToStorage();buildPublishSection();buildBandSection();
+}
+
 async function sbPushSchoolMetroFamOrder() {
   if (!authSession || authProfile?.role !== 'mx') return;
   const fams = (packCours.metroFamilles || []).filter(f => f.source === 'school');
@@ -7059,6 +7150,8 @@ function buildPublishSection() {
   const teacherPats    = packCours.patterns.filter(p => p.source === 'teacher' && !p.localDeletePending);
   const teacherGrooves = packCours.grooves.filter(g => g.source === 'teacher' && !g.localDeletePending);
   const teacherMetroPres = (packCours.metroPresets || []).filter(p => p.source === 'teacher');
+  const teacherBands = (packCours.bands || []).filter(b => b.source === 'teacher' && !b.localDeletePending);
+  const pendingDelBands = isMX ? (packCours.bands||[]).filter(b => b.source === 'school' && b.localDeletePending) : [];
   const dirtySchoolPats    = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDirty && !p.localDeletePending) : [];
   const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty && !g.localDeletePending) : [];
   const pendingDelPats  = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDeletePending) : [];
@@ -7090,7 +7183,7 @@ function buildPublishSection() {
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
   const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length + pendingRenameFamsTX.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -7104,7 +7197,8 @@ function buildPublishSection() {
     + dirtySchoolPats.length + dirtySchoolGrooves.length
     + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
     + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length
-    + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length;
+    + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length
+    + teacherBands.filter(b => !b.localStatus || b.localStatus === 'draft').length + pendingDelBands.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -7282,9 +7376,39 @@ function buildPublishSection() {
         `</div></div>`;
     });
   }
-  if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length) {
+  // Bands (TX draft/submitted + MX teacher)
+  if (teacherBands.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#2d5f80;margin-top:6px;margin-bottom:4px">🥁 Bands (${teacherBands.length})</div>`;
+    teacherBands.forEach(b => {
+      const isSubmitted = b.localStatus === 'submitted';
+      const typeLabel = b.localChangeType === 'delete' ? 'Suppression' : b.localChangeType === 'create' ? 'Nouveau' : 'Modif.';
+      const badgeBg = b.localChangeType === 'delete' ? '#fde8e8' : b.localChangeType === 'create' ? '#d4f5e6' : '#fff3cd';
+      const badgeCol = b.localChangeType === 'delete' ? '#c04040' : b.localChangeType === 'create' ? '#0F6E56' : '#856404';
+      const badge = isSubmitted
+        ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">⏳ En attente</span>`
+        : `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${badgeBg};color:${badgeCol};flex-shrink:0">${typeLabel}</span>`;
+      const sounds = `${SOUND_DEFS[b.low]?.label||b.low} / ${SOUND_DEFS[b.high]?.label||b.high} / ${SOUND_DEFS[b.noise]?.label||b.noise}`;
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${b.nom}</span>` +
+          badge +
+        `</div>` +
+        `<div style="font-size:9px;color:#888;margin-bottom:4px">${sounds}</div>` +
+        `<div style="display:flex;gap:5px">` +
+          (isMX
+            ? `<button class="btn-pub-band" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>` +
+              `<button class="btn-pub-band-cancel" data-id="${b.id}" title="Supprimer localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`
+            : isSubmitted
+              ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>` +
+                `<button class="btn-pub-band-cancel" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+              : `<button class="btn-pub-band" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
+                `<button class="btn-pub-band-cancel" data-id="${b.id}" title="Supprimer ce band localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`) +
+        `</div></div>`;
+    });
+  }
+  if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length || pendingDelBands.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
-    [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g}))].forEach(({type,item}) => {
+    [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g})), ...pendingDelBands.map(b=>({type:'band',item:b}))].forEach(({type,item}) => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
         `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
           `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${item.nom}</span>` +
@@ -7460,6 +7584,17 @@ function buildPublishSection() {
       btn.disabled = true; btn.textContent = '…';
       const type = btn.dataset.type;
       const id = btn.dataset.id;
+      if (type === 'band') {
+        // Suppression band : locale seulement pour l'instant (pas de table DB)
+        packCours.bands = (packCours.bands||[]).filter(b => b.id !== id);
+        if (currentBandId === id) {
+          const next = (packCours.bands||[]).find(b => !b.localDeletePending);
+          if (next) { applyBand(next.id); buildBandSection(); }
+        }
+        saveToStorage(); buildPublishSection();
+        showToast('Band supprimé', 'info');
+        return;
+      }
       const ok = type === 'pattern' ? await sbDeletePattern(id) : await sbDeleteGroove(id);
       if (ok) {
         if (type === 'pattern') {
@@ -7486,11 +7621,13 @@ function buildPublishSection() {
 
   container.querySelectorAll('.btn-pub-del-cancel').forEach(btn => {
     btn.addEventListener('click', () => {
-      const arr = btn.dataset.type === 'pattern' ? packCours.patterns : packCours.grooves;
+      const type = btn.dataset.type;
+      const arr = type === 'pattern' ? packCours.patterns : type === 'band' ? (packCours.bands||[]) : packCours.grooves;
       const item = arr.find(x => x.id === btn.dataset.id);
       if (item) { delete item.localDeletePending; delete item.localChangeType; }
       saveToStorage();
-      if (btn.dataset.type === 'pattern') buildLibListPatterns();
+      if (type === 'pattern') buildLibListPatterns();
+      else if (type === 'band') buildBandSection();
       else buildLibListGrooves();
       buildPublishSection();
     });
@@ -7584,6 +7721,43 @@ function buildPublishSection() {
       buildSigSelector();
       buildPublishSection();
       showToast('Preset supprimé', 'info');
+    });
+  });
+
+  // Bands — envoyer/publier
+  container.querySelectorAll('.btn-pub-band').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      const ok = await sbPublishBand(btn.dataset.id);
+      if (ok) {
+        btn.textContent = '✓'; btn.style.background = '#d4f5e6';
+        buildBandSection();
+        showToast(isMX ? 'Band publié' : 'Band soumis', 'info');
+        setTimeout(() => buildPublishSection(), 700);
+      } else { btn.textContent = origText; btn.disabled = false; }
+    });
+  });
+
+  // Bands — annuler
+  container.querySelectorAll('.btn-pub-band-cancel').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const b = (packCours.bands||[]).find(x => x.id === btn.dataset.id);
+      if (!b) return;
+      if (b.localStatus === 'submitted') {
+        btn.disabled = true;
+        await sbCancelBandSubmission(btn.dataset.id);
+        showToast('Soumission annulée', 'info');
+      } else {
+        if (!confirm(`Supprimer le band local « ${b.nom} » ?`)) return;
+        packCours.bands = (packCours.bands||[]).filter(x => x.id !== btn.dataset.id);
+        if (currentBandId === btn.dataset.id) {
+          const next = (packCours.bands||[]).find(x => !x.localDeletePending);
+          if (next) { applyBand(next.id); buildBandSection(); }
+        }
+        saveToStorage(); buildBandSection(); buildPublishSection();
+        showToast('Band supprimé', 'info');
+      }
     });
   });
 }
@@ -8385,7 +8559,32 @@ async function libDeleteGroove(grooveId){
   showToast('Groove supprimé', 'info');
 }
 
-
+async function libDeleteBand(bandId){
+  const band=(packCours.bands||[]).find(b=>b.id===bandId);
+  if(!band)return;
+  if(band.source==='school'){
+    if(authProfile?.role!=='mx'){
+      showToast('Seul un MX peut supprimer un band école','warn');return;
+    }
+    if(!confirm('Marquer le band « '+band.nom+' » pour suppression ?'))return;
+    band.localDeletePending=true;band.localChangeType='delete';
+    saveToStorage();buildBandSection();buildPublishSection();
+    showToast('Suppression en attente de publication','warn');return;
+  }
+  if(band.localStatus==='submitted'){
+    if(!confirm('Ce band est en attente de validation. Annuler et supprimer ?'))return;
+    await sbCancelBandSubmission(bandId);
+  } else {
+    if(!confirm('Supprimer le band « '+band.nom+' » ?'))return;
+  }
+  packCours.bands=packCours.bands.filter(b=>b.id!==bandId);
+  if(currentBandId===bandId){
+    const next=(packCours.bands||[]).filter(b=>!b.localDeletePending)[0];
+    if(next){applyBand(next.id);buildBandSection();}
+  }
+  saveToStorage();buildBandSection();buildPublishSection();
+  showToast('Band supprimé','info');
+}
 
 
 // ═══════════════════════════════════════════════════════════════════════════

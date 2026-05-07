@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.8.59** (session 2026-05-06)
+**v3.9.0** (session 2026-05-07)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.9.0 | Volet Band : suppression bouton ≡ ; openPresetModal type:'band' — modes ✎ Gérer (rename, delete, familles) et ☰ Réordonner (drag-drop bands + familles) ; 💾 dans l'en-tête de chaque row son (toujours visible) ; TX/MX — section Soumettre/Approuver pour bands ; libDeleteBand, sbPublishBand, sbPushSchoolBandOrder ; table `bands` + `band_familles` dans schema.sql |
 | v3.8.59 | Slider vol → sous-volet Vol (classe temps-slider) ; ordre boutons : Temps\|Sign\|Tap\|Vol\|Métro ; Temps ouvert par défaut |
 | v3.8.58 | Fix sous-volets metro : Sign = sig-grid (Mesure/temps/subdiv) ; Temps = 3col seul ; boutons toggle avec état visuel open (fond violet + bordure + gras) |
 | v3.8.57 | 4 sous-volets metro indépendants (Temps, Tap, Sign, Métro) ; Sign = ◀[label]▶ navigation preset (remplacé en v3.8.58) |

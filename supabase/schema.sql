@@ -374,5 +374,67 @@ create policy if not exists "MX peut patcher grooves teacher" on public.grooves 
   using (public.current_role_name() = 'mx');
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.9.0 — Table bands (presets d'instruments) + band_familles
+-- À exécuter dans Supabase SQL Editor (une seule fois, par le MX).
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Familles de bands (partagées par tous les roles)
+create table if not exists public.band_familles (
+  id          text primary key,
+  nom         text not null,
+  scope       text not null default 'school' check (scope in ('school','teacher')),
+  owner_id    uuid references public.profiles(id) on delete set null,
+  ordre       int  default 0,
+  created_at  timestamptz default now()
+);
+
+alter table public.band_familles enable row level security;
+
+create policy if not exists "Lecture band_familles school" on public.band_familles for select
+  using (scope = 'school');
+create policy if not exists "Insert band_familles" on public.band_familles for insert
+  with check (auth.uid() is not null);
+create policy if not exists "Update/delete band_familles owner ou MX" on public.band_familles for update
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy if not exists "Delete band_familles owner ou MX" on public.band_familles for delete
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+
+-- Presets de bands
+create table if not exists public.bands (
+  id          text primary key,
+  nom         text not null,
+  familles_ids text[] default '{}',
+  -- Sons par layer
+  low         text,  low_pitch  real,
+  high        text,  high_pitch real,
+  noise       text,  noise_pitch real,
+  thumb_l     text,  thumb_l_pitch real,
+  thumb_r     text,  thumb_r_pitch real,
+  -- Sample audio optionnel (prévu v3.9+)
+  sample_url  text default null,
+  scope       text not null default 'school' check (scope in ('school','teacher')),
+  approved    bool default false,
+  owner_id    uuid references public.profiles(id) on delete set null,
+  ordre       int  default 0,
+  reject_reason text default null,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+alter table public.bands enable row level security;
+
+create policy if not exists "Lecture bands school approuvés" on public.bands for select
+  using ((scope = 'school' and approved = true) or owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy if not exists "Insert bands owner" on public.bands for insert
+  with check (owner_id = auth.uid());
+create policy if not exists "Update bands owner ou MX" on public.bands for update
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+create policy if not exists "Delete bands owner ou MX" on public.bands for delete
+  using (owner_id = auth.uid() or public.current_role_name() = 'mx');
+
+create policy if not exists "Lecture publique school bands" on public.bands for select
+  using (scope = 'school' and approved = true);
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════
