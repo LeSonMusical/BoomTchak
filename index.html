@@ -957,7 +957,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.0</span>
+      <span class="app-version">v3.10.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2807,12 +2807,11 @@ function openPresetModal(cfg){
       return getMetroFamilles().filter(f=>used.has(f.id));
     }
     if(cfg.type==='sound'){
-      // Palette mode et manage/reorder : toutes les bandFamilles
-      if(manageMode||reorderMode||paletteTarget) return packCours.bandFamilles||[];
-      // Mode normal : seulement les familles qui taguent au moins un son
-      const tags=packCours.soundFamTags||{};
-      const used=new Set(Object.values(tags).flat());
-      return (packCours.bandFamilles||[]).filter(f=>used.has(f.id));
+      // Palette mode et manage/reorder : toutes les soundFamilles
+      if(manageMode||reorderMode||paletteTarget) return packCours.soundFamilles||[];
+      // Mode normal : seulement les familles qui taguent au moins un soundPreset
+      const used=new Set((packCours.soundPresets||[]).flatMap(sp=>sp.familles_ids||[]));
+      return (packCours.soundFamilles||[]).filter(f=>used.has(f.id));
     }
     if(cfg.type==='encyclo') return ENCYCLO_CATS.map(c=>({id:c.id,nom:c.label}));
     if(cfg.type==='band'){
@@ -2850,12 +2849,10 @@ function openPresetModal(cfg){
     }
     let result;
     if(cfg.type==='sound'){
-      const tags=packCours.soundFamTags||{};
-      let items=Object.entries(SOUND_DEFS).map(([id,d])=>({id,nom:d.label,cat:d.cat}));
+      let items=(packCours.soundPresets||[]).filter(sp=>!sp.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return items.filter(i=>i.nom.toLowerCase().includes(q));}
       if(famFilter&&famFilter!=='all'){
-        if(['low','high','noise','thumb'].includes(famFilter)) return items.filter(i=>i.cat===famFilter);
-        return items.filter(i=>(tags[i.id]||[]).includes(famFilter));
+        return items.filter(sp=>(sp.familles_ids||[]).includes(famFilter));
       }
       return items;
     }
@@ -2901,7 +2898,13 @@ function openPresetModal(cfg){
       }
       saveToStorage();buildFamCol();buildItems();return;
     }
-    if(cfg.type==='band'||cfg.type==='sound'){
+    if(cfg.type==='sound'){
+      const fam={id:'sfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.soundFamilles||[]).length,localDirty:true};
+      if(!packCours.soundFamilles)packCours.soundFamilles=[];
+      packCours.soundFamilles.push(fam);
+      saveToStorage();buildFamCol();buildItems();return;
+    }
+    if(cfg.type==='band'){
       const fam={id:'bfam_'+Date.now(),nom:nom.trim(),source:'school',localDirty:true};
       if(!packCours.bandFamilles)packCours.bandFamilles=[];
       packCours.bandFamilles.push(fam);
@@ -2915,11 +2918,10 @@ function openPresetModal(cfg){
 
   function pmDeleteFam(fam){
     if(cfg.type==='sound'){
-      const tags=packCours.soundFamTags||{};
-      const count=Object.values(tags).filter(a=>a.includes(fam.id)).length;
-      if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée sur '+count+' son(s))':''}?`))return;
-      packCours.bandFamilles=(packCours.bandFamilles||[]).filter(f=>f.id!==fam.id);
-      Object.keys(tags).forEach(k=>{if(tags[k])tags[k]=tags[k].filter(id=>id!==fam.id);});
+      const count=(packCours.soundPresets||[]).filter(sp=>(sp.familles_ids||[]).includes(fam.id)).length;
+      if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée sur '+count+' preset(s))':''}?`))return;
+      packCours.soundFamilles=(packCours.soundFamilles||[]).filter(f=>f.id!==fam.id);
+      (packCours.soundPresets||[]).forEach(sp=>{if(sp.familles_ids)sp.familles_ids=sp.familles_ids.filter(id=>id!==fam.id);});
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='sig'){
@@ -2955,7 +2957,15 @@ function openPresetModal(cfg){
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolMetroFamOrder();buildFamCol();return;
     }
-    if(cfg.type==='band'||cfg.type==='sound'){
+    if(cfg.type==='sound'){
+      const fams=packCours.soundFamilles||[];
+      const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
+      const[moved]=fams.splice(si,1);
+      if(tgtId==='__end__'){fams.push(moved);}
+      else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
+      saveToStorage();buildFamCol();return;
+    }
+    if(cfg.type==='band'){
       const fams=packCours.bandFamilles||[];
       const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
       const[moved]=fams.splice(si,1);
@@ -3014,7 +3024,7 @@ function openPresetModal(cfg){
       const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
       cancel.addEventListener('click',cancelPalette);
       famCol.appendChild(cancel);
-      const assigned=new Set(cfg.type==='sound'?((packCours.soundFamTags||{})[paletteTarget.id]||[]):(paletteTarget.familles||[]));
+      const assigned=new Set(cfg.type==='sound'?(paletteTarget.familles_ids||[]):(paletteTarget.familles||[]));
       getFams().forEach(f=>{
         if(assigned.has(f.id))return;
         const b=document.createElement('button');b.className='pm-fam-btn palette';b.textContent=f.nom;
@@ -3058,18 +3068,12 @@ function openPresetModal(cfg){
     mkFilterBtn('all','Tout');
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
 
-    // Son : colonne gauche avec deux sections (Catégories + Familles)
+    // Son : colonne gauche avec section Familles (soundFamilles)
     if(cfg.type==='sound'){
-      const catHdr=document.createElement('div');catHdr.className='pm-fam-section-hdr';catHdr.textContent='Catégories';
-      famCol.appendChild(catHdr);
-      INSTR_FAMILLES.forEach(f=>{
-        const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
-        b.textContent=f.label;b.addEventListener('click',()=>_setFam(f.id));famCol.appendChild(b);
-      });
       const famHdr=document.createElement('div');famHdr.className='pm-fam-section-hdr';famHdr.textContent='Familles';
       famCol.appendChild(famHdr);
       const isMx=authProfile?.role==='mx';
-      const bfams=packCours.bandFamilles||[];
+      const bfams=packCours.soundFamilles||[];
       if(manageMode||reorderMode){
         famCol.style.touchAction=reorderMode?'none':'';
         bfams.forEach(f=>{
@@ -3230,9 +3234,9 @@ function openPresetModal(cfg){
     const isSig=cfg.type==='sig';
     const isBand=cfg.type==='band';
     const isSound=cfg.type==='sound';
-    const tagIds=isSig?(item.familles_ids||[]):isSound?((packCours.soundFamTags||{})[item.id]||[]):(item.familles||[]);
+    const tagIds=isSig?(item.familles_ids||[]):isSound?(item.familles_ids||[]):(item.familles||[]);
     tagIds.forEach(fid=>{
-      const fam=isSig?getMetroFamille(fid):(isBand||isSound)?getBandFamille(fid):getFamille(fid);if(!fam)return;
+      const fam=isSig?getMetroFamille(fid):isSound?getSoundFamille(fid):isBand?getBandFamille(fid):getFamille(fid);if(!fam)return;
       const chip=document.createElement('span');chip.className='pm-tag-chip';chip.textContent=fam.nom;
       const x=document.createElement('button');x.className='pm-tag-x';x.textContent='×';
       x.addEventListener('click',e=>{e.stopPropagation();pmRemoveTag(item,fid);});
@@ -3245,10 +3249,10 @@ function openPresetModal(cfg){
 
   function pmAddTag(item,famId){
     if(cfg.type==='sound'){
-      const tags=packCours.soundFamTags||(packCours.soundFamTags={});
-      if((tags[item.id]||[]).includes(famId))return;
-      if(!tags[item.id])tags[item.id]=[];
-      tags[item.id].push(famId);
+      if((item.familles_ids||[]).includes(famId))return;
+      if(!item.familles_ids)item.familles_ids=[];
+      item.familles_ids.push(famId);
+      item.localDirty=true;item.localChangeType=item.localChangeType||'update';
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='sig'){
@@ -3286,8 +3290,8 @@ function openPresetModal(cfg){
 
   function pmRemoveTag(item,famId){
     if(cfg.type==='sound'){
-      const tags=packCours.soundFamTags||(packCours.soundFamTags={});
-      if(tags[item.id])tags[item.id]=tags[item.id].filter(id=>id!==famId);
+      item.familles_ids=(item.familles_ids||[]).filter(id=>id!==famId);
+      item.localDirty=true;item.localChangeType=item.localChangeType||'update';
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='sig'){
@@ -3339,6 +3343,11 @@ function openPresetModal(cfg){
         }
         saveToStorage();buildSigSelector();buildItems();return;
       }
+      if(cfg.type==='sound'){
+        item.nom=newNom;
+        item.localDirty=true;item.localChangeType=item.localChangeType||'update';
+        saveToStorage();buildPublishSection();buildSoundPanel();buildItems();return;
+      }
       if(cfg.type==='band'){
         item.nom=newNom;
         item.localChangeType=item.localChangeType||'update';
@@ -3368,6 +3377,16 @@ function openPresetModal(cfg){
   function pmCreateNew(){
     if(cfg.type==='groove'){_closeOverlay();openGrooveSavePop(null);return;}
     if(cfg.type==='sig'){_closeOverlay();document.getElementById('btn-metro-save').click();return;}
+    if(cfg.type==='sound'){
+      const nom=prompt('Nom du nouveau preset son :');if(!nom?.trim())return;
+      const ss=_pspSoundSs||soundState[0];
+      const nsp={id:'sp_teacher_'+Date.now(),nom:nom.trim(),soundId:ss.soundId,pitch:ss.pitch,env:ss.env??0.3,vol:ss.vol??0.5,
+        familles_ids:[],source:'teacher',localChangeType:'create',ordre:(packCours.soundPresets||[]).length};
+      if(!packCours.soundPresets)packCours.soundPresets=[];packCours.soundPresets.push(nsp);
+      saveToStorage();buildPublishSection();buildSoundPanel();buildItems();
+      requestAnimationFrame(()=>{const el=itemsWrap.querySelector('[data-pm-id="'+nsp.id+'"] .pm-item-name');if(el)pmStartRename(el,nsp);});
+      return;
+    }
     if(cfg.type==='band'){
       const nom=prompt('Nom du nouveau band :');if(!nom?.trim())return;
       const cur=getBand(currentBandId);
@@ -3407,6 +3426,15 @@ function openPresetModal(cfg){
       dropIn(metroPresets);
       if(packCours.metroPresets)dropIn(packCours.metroPresets);
       saveToStorage();sbPushSchoolMetroOrder();buildItems();return;
+    }
+    if(cfg.type==='sound'){
+      const arr=packCours.soundPresets||[];
+      const si=arr.findIndex(x=>x.id===srcId);if(si<0)return;
+      const[m]=arr.splice(si,1);
+      if(tgtId==='__end__'){arr.push(m);}
+      else{const ti=arr.findIndex(x=>x.id===tgtId);if(ti<0){arr.splice(si,0,m);return;}arr.splice(ti,0,m);}
+      arr.forEach((x,i)=>{x.ordre=i;});
+      saveToStorage();buildItems();return;
     }
     if(cfg.type==='band'){
       const arr=packCours.bands||[];
@@ -3496,17 +3524,32 @@ function openPresetModal(cfg){
           const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
           const row1=document.createElement('div');row1.className='pm-item-name-row';
           const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=item.nom;
-          row1.appendChild(nameEl);div.appendChild(row1);
+          nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+          const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';
+          delBtn.addEventListener('click',e=>{e.stopPropagation();
+            if(!confirm(`Supprimer le preset "${item.nom}" ?`))return;
+            item.localDeletePending=true;item.localChangeType='delete';
+            saveToStorage();buildPublishSection();buildSoundPanel();buildItems();
+          });
+          row1.appendChild(nameEl);row1.appendChild(delBtn);div.appendChild(row1);
           const tagsDiv=document.createElement('div');tagsDiv.className='pm-item-tags';
           pmBuildTags(tagsDiv,item);div.appendChild(tagsDiv);
           itemsWrap.appendChild(div);
         } else {
           const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-          row.textContent=item.nom;row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+          row.textContent=item.nom+(item.source==='teacher'?' ✎':'');
+          row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
           itemsWrap.appendChild(row);
         }
       });
-      if(!manageMode)requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      if(manageMode){
+        const newBtn=document.createElement('button');newBtn.className='pm-item pm-item-new';
+        newBtn.textContent='＋ Nouveau preset son';
+        newBtn.addEventListener('click',pmCreateNew);
+        itemsWrap.appendChild(newBtn);
+      } else {
+        requestAnimationFrame(()=>{const cur=itemsWrap.querySelector('.pm-cur');if(cur)cur.scrollIntoView({block:'center',behavior:'instant'});});
+      }
       return;
     }
     if(cfg.type==='sig'){
@@ -3653,7 +3696,7 @@ function buildBandSection(){
   const saveBtn=document.createElement('button');
   saveBtn.id='save-btn-band';saveBtn.className='btn-sec-ico';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
-  saveBtn.addEventListener('click',()=>saveBandState(saveBtn));
+  saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
   bar.appendChild(saveBtn);
 
   const btnVolet=document.createElement('button');
@@ -3680,39 +3723,6 @@ function buildBandSection(){
 
   const bc=document.getElementById('band-content');
   if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-}
-
-function saveBandState(btn){
-  const b=getBand(currentBandId);
-  if(!b) return;
-  if(b.source==='school'){
-    // Créer un nouveau band user
-    const nom=prompt('Nom du nouveau band :');
-    if(!nom||!nom.trim()) return;
-    const newId='band_user_'+Date.now();
-    const nb={
-      id:newId, nom:nom.trim(), familles:[...( b.familles||[])], source:'teacher',
-      low:soundState[0].soundId, lowPitch:soundState[0].pitch,
-      high:soundState[1].soundId, highPitch:soundState[1].pitch,
-      noise:soundState[2].soundId, noisePitch:soundState[2].pitch,
-      thumbL:soundStateThumb[0].soundId, thumbLPitch:soundStateThumb[0].pitch,
-      thumbR:soundStateThumb[1].soundId, thumbRPitch:soundStateThumb[1].pitch,
-    };
-    packCours.bands.push(nb);
-    currentBandId=newId;
-    saveToStorage();
-    buildBandSection();
-    if(btn)flashSave(btn);
-    return;
-  }
-  // Mettre à jour band user existant
-  b.low=soundState[0].soundId; b.lowPitch=soundState[0].pitch;
-  b.high=soundState[1].soundId; b.highPitch=soundState[1].pitch;
-  b.noise=soundState[2].soundId; b.noisePitch=soundState[2].pitch;
-  b.thumbL=soundStateThumb[0].soundId; b.thumbLPitch=soundStateThumb[0].pitch;
-  b.thumbR=soundStateThumb[1].soundId; b.thumbRPitch=soundStateThumb[1].pitch;
-  saveToStorage();
-  if(btn)flashSave(btn);
 }
 
 // ── Section Groove ────────────────────────────────────────────────────────
@@ -4248,7 +4258,8 @@ function onStepClick(li,si,el){
 
 // ── Sauvegarde pattern couche — popover ──────────────────────────────────
 let _pspLi = -1, _pspBtn = null, _pspContext = 'pattern', _pspGrooveId = null;
-// familles sélectionnées pour le nouveau pattern/groove (dans le popover)
+let _pspSoundKey = null, _pspSoundSs = null, _pspBandId = null;
+// familles sélectionnées pour le nouveau pattern/groove/band/soundPreset (dans le popover)
 let _pspNewFamIds = [];
 
 function saveLayerPattern(li, btn){
@@ -4295,9 +4306,21 @@ function closePatSavePop(){
   document.getElementById('psp-box').classList.add('hidden');
   _pspLi = -1; _pspBtn = null; _pspNewFamIds = [];
   _pspContext = 'pattern'; _pspGrooveId = null;
+  _pspSoundKey = null; _pspSoundSs = null; _pspBandId = null;
   // Réafficher le bouton écraser (peut être masqué en mode re-nouvelle)
   const ovBtn = document.getElementById('psp-btn-overwrite');
   if(ovBtn) ovBtn.style.display = '';
+}
+
+function _getPspFamilles(){
+  if(_pspContext==='soundPreset') return packCours.soundFamilles||[];
+  if(_pspContext==='band') return packCours.bandFamilles||[];
+  return packCours.familles||[];
+}
+function _getPspFamById(fid){
+  if(_pspContext==='soundPreset') return getSoundFamille(fid);
+  if(_pspContext==='band') return getBandFamille(fid);
+  return getFamille(fid);
 }
 
 // Construit les tag chips dans le popover
@@ -4305,7 +4328,7 @@ function buildPspFamTags(){
   const container = document.getElementById('psp-fam-tags');
   container.innerHTML = '';
   _pspNewFamIds.forEach(fid=>{
-    const fam = getFamille(fid); if(!fam) return;
+    const fam = _getPspFamById(fid); if(!fam) return;
     const chip = document.createElement('span'); chip.className = 'fam-tag';
     chip.textContent = fam.nom;
     const x = document.createElement('button'); x.className = 'fam-tag-x'; x.textContent = '×';
@@ -4321,20 +4344,24 @@ function buildPspFamTags(){
 function buildPspFamSel(){
   const sel = document.getElementById('psp-fam-sel');
   sel.innerHTML = '<option value="">— Ajouter une famille —</option>';
-  packCours.familles
+  _getPspFamilles()
     .filter(f => !_pspNewFamIds.includes(f.id))
     .forEach(f=>{
       const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;sel.appendChild(o);
     });
 }
 
-// Dispatchers selon le contexte (pattern ou groove)
+// Dispatchers selon le contexte (pattern, groove, band, soundPreset)
 function pspDoOverwrite(){
   if(_pspContext==='groove'){ pspDoOverwriteGroove(); return; }
+  if(_pspContext==='band'){ pspDoOverwriteBand(); return; }
+  if(_pspContext==='soundPreset'){ pspDoOverwriteSoundPreset(); return; }
   pspDoOverwritePattern();
 }
 function pspDoSaveNew(){
   if(_pspContext==='groove'){ pspDoSaveNewGroove(); return; }
+  if(_pspContext==='band'){ pspDoSaveNewBand(); return; }
+  if(_pspContext==='soundPreset'){ pspDoSaveNewSoundPreset(); return; }
   pspDoSaveNewPattern();
 }
 
@@ -4523,6 +4550,151 @@ function pspDoSaveNewGroove(){
   closePatSavePop();
   // Rebuild l'encyclo pour inclure la nouvelle entrée
   buildEncycloSection();
+}
+
+// ── Popover save band (réutilise psp-box avec _pspContext='band') ───────────
+function openBandSavePop(btn){
+  const band=getBand(currentBandId);if(!band)return;
+  _pspContext='band';_pspBandId=currentBandId;_pspBtn=btn;
+  const nom=band.nom;
+  const canOverwrite=band.source==='teacher'||authProfile?.role==='mx';
+
+  const box=document.getElementById('psp-box');
+  box.className='psp-box psp-groove';
+  let lbl=box.querySelector('.psp-type-label');
+  if(!lbl){lbl=document.createElement('div');lbl.className='psp-type-label';box.prepend(lbl);}
+  lbl.style.color='#2d5f80';lbl.textContent='Band';
+
+  const ovBtn=document.getElementById('psp-btn-overwrite');
+  ovBtn.textContent='✓ Écraser Band « '+nom+' »';
+  ovBtn.disabled=!canOverwrite;
+  ovBtn.style.display='';
+
+  document.getElementById('psp-name-input').value=nom+' (copie)';
+  document.getElementById('psp-name-input').placeholder='Nom du band';
+
+  _pspNewFamIds=band.familles?[...band.familles]:[];
+  buildPspFamTags();buildPspFamSel();
+
+  document.getElementById('psp-new-form').classList.add('hidden');
+  document.getElementById('psp-new-toggle').textContent='＋ Sauvegarder comme nouveau Band ▶';
+
+  document.getElementById('psp-overlay').classList.remove('hidden');
+  box.classList.remove('hidden');
+}
+
+function pspDoOverwriteBand(){
+  const btn=_pspBtn;
+  const band=getBand(_pspBandId);if(!band){closePatSavePop();return;}
+
+  if(band.source==='school'&&authProfile?.role!=='mx'){
+    closePatSavePop();
+    const fork=JSON.parse(JSON.stringify(band));
+    fork.id='band_teacher_'+Date.now();fork.source='teacher';
+    fork.localChangeType='create';delete fork.localDirty;delete fork.localChangedFields;
+    fork.low=soundState[0].soundPresetId;fork.high=soundState[1].soundPresetId;
+    fork.noise=soundState[2].soundPresetId;fork.thumbL=soundStateThumb[0].soundPresetId;fork.thumbR=soundStateThumb[1].soundPresetId;
+    fork.familles=[..._pspNewFamIds];
+    if(!packCours.bands)packCours.bands=[];packCours.bands.push(fork);
+    currentBandId=fork.id;
+    setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
+    saveToStorage();buildPublishSection();buildBandSection();buildSoundPanel();
+    showToast('Band sauvegardé — soumettez-le via ···','info');
+    if(btn)flashSave(btn);return;
+  }
+
+  closePatSavePop();
+  band.low=soundState[0].soundPresetId;band.high=soundState[1].soundPresetId;
+  band.noise=soundState[2].soundPresetId;band.thumbL=soundStateThumb[0].soundPresetId;band.thumbR=soundStateThumb[1].soundPresetId;
+  band.familles=[..._pspNewFamIds];
+  band.localDirty=true;band.localChangeType=band.localChangeType||'update';
+  setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
+  saveToStorage();buildPublishSection();buildBandSection();buildSoundPanel();
+  if(btn)flashSave(btn);
+}
+
+function pspDoSaveNewBand(){
+  const btn=_pspBtn;
+  const nom=document.getElementById('psp-name-input').value.trim()||(getBand(_pspBandId)?.nom||'Band')+' (copie)';
+  const nb={id:'band_teacher_'+Date.now(),nom,familles:[..._pspNewFamIds],source:'teacher',
+    localChangeType:'create',
+    low:soundState[0].soundPresetId,high:soundState[1].soundPresetId,
+    noise:soundState[2].soundPresetId,thumbL:soundStateThumb[0].soundPresetId,thumbR:soundStateThumb[1].soundPresetId};
+  if(!packCours.bands)packCours.bands=[];packCours.bands.push(nb);
+  currentBandId=nb.id;
+  setBandDirty(false);Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
+  saveToStorage();buildPublishSection();buildBandSection();buildSoundPanel();
+  if(btn)flashSave(btn);
+  closePatSavePop();
+}
+
+// ── Popover save soundPreset (réutilise psp-box avec _pspContext='soundPreset') ──
+function openSoundPresetSavePop(key,ss,btn){
+  _pspContext='soundPreset';_pspSoundKey=key;_pspSoundSs=ss;_pspBtn=btn;
+  const sp=getSoundPreset(ss.soundPresetId);
+  const nom=sp?sp.nom:'Preset son';
+  const canOverwrite=!sp||(sp.source==='teacher')||authProfile?.role==='mx';
+
+  const box=document.getElementById('psp-box');
+  box.className='psp-box psp-groove';
+  let lbl=box.querySelector('.psp-type-label');
+  if(!lbl){lbl=document.createElement('div');lbl.className='psp-type-label';box.prepend(lbl);}
+  lbl.style.color='#4a7fa5';lbl.textContent='Preset Son';
+
+  const ovBtn=document.getElementById('psp-btn-overwrite');
+  ovBtn.textContent=sp?'✓ Écraser Preset « '+nom+' »':'— Pas de preset courant —';
+  ovBtn.disabled=!canOverwrite||!sp;
+  ovBtn.style.display='';
+
+  document.getElementById('psp-name-input').value=nom+' (copie)';
+  document.getElementById('psp-name-input').placeholder='Nom du preset';
+
+  _pspNewFamIds=sp&&sp.familles_ids?[...sp.familles_ids]:[];
+  buildPspFamTags();buildPspFamSel();
+
+  document.getElementById('psp-new-form').classList.add('hidden');
+  document.getElementById('psp-new-toggle').textContent='＋ Sauvegarder comme nouveau Preset ▶';
+
+  document.getElementById('psp-overlay').classList.remove('hidden');
+  box.classList.remove('hidden');
+}
+
+function pspDoOverwriteSoundPreset(){
+  const btn=_pspBtn;const key=_pspSoundKey;const ss=_pspSoundSs;
+  const sp=getSoundPreset(ss.soundPresetId);if(!sp){closePatSavePop();return;}
+
+  if(sp.source==='school'&&authProfile?.role!=='mx'){
+    closePatSavePop();
+    const nsp={id:'sp_teacher_'+Date.now(),nom:sp.nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,
+      familles_ids:[..._pspNewFamIds],source:'teacher',localChangeType:'create',ordre:(packCours.soundPresets||[]).length};
+    if(!packCours.soundPresets)packCours.soundPresets=[];packCours.soundPresets.push(nsp);
+    ss.soundPresetId=nsp.id;
+    setSoundDirtySlot(key,false);
+    saveToStorage();buildPublishSection();buildSoundPanel();
+    showToast('Preset son sauvegardé — soumettez-le via ···','info');
+    if(btn)flashSave(btn);return;
+  }
+
+  closePatSavePop();
+  sp.soundId=ss.soundId;sp.pitch=ss.pitch;sp.env=ss.env;sp.vol=ss.vol;
+  sp.familles_ids=[..._pspNewFamIds];
+  sp.localDirty=true;sp.localChangeType=sp.localChangeType||'update';
+  setSoundDirtySlot(key,false);
+  saveToStorage();buildPublishSection();buildSoundPanel();
+  if(btn)flashSave(btn);
+}
+
+function pspDoSaveNewSoundPreset(){
+  const btn=_pspBtn;const key=_pspSoundKey;const ss=_pspSoundSs;
+  const nom=document.getElementById('psp-name-input').value.trim()||'Preset son';
+  const nsp={id:'sp_teacher_'+Date.now(),nom,soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,
+    familles_ids:[..._pspNewFamIds],source:'teacher',localChangeType:'create',ordre:(packCours.soundPresets||[]).length};
+  if(!packCours.soundPresets)packCours.soundPresets=[];packCours.soundPresets.push(nsp);
+  ss.soundPresetId=nsp.id;
+  setSoundDirtySlot(key,false);
+  saveToStorage();buildPublishSection();buildSoundPanel();
+  if(btn)flashSave(btn);
+  closePatSavePop();
 }
 
 // ── Héritage save sheet (utilisé par groove uniquement désormais) ─────────
@@ -4844,6 +5016,7 @@ function buildSoundPanel(){
 
 function buildSoundRow(key,label,cls,ss){
   const row=document.createElement('div');row.className='sound-layer '+cls;
+  row.dataset.soundKey=key;
 
   // ── Header (toujours visible) ─────────────────────────────────────────────
   const header=document.createElement('div');header.className='sound-header';
@@ -4855,19 +5028,28 @@ function buildSoundRow(key,label,cls,ss){
 
   const soundPresetBtn=document.createElement('button');
   soundPresetBtn.className='pm-preset-btn';
-  const curSoundDef=SOUND_DEFS[ss.soundId];
-  soundPresetBtn.textContent=curSoundDef?curSoundDef.label:'—';
-  const _soundOnSelect=(id)=>{ss.soundId=id;const def=SOUND_DEFS[id];soundPresetBtn.textContent=def?def.label:'—';};
+  const curSp=getSoundPreset(ss.soundPresetId);
+  soundPresetBtn.textContent=curSp?curSp.nom:(SOUND_DEFS[ss.soundId]?.label||'—');
+  if(soundDirty[key])soundPresetBtn.classList.add('pm-preset-dirty');
+
+  const _soundOnSelect=(spId)=>{
+    const sp=getSoundPreset(spId);if(!sp)return;
+    const origSpId=ss.soundPresetId;
+    ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=sp.vol??0.5;
+    setSoundDirtySlot(key, spId!==origSpId);
+    setBandDirty(true);
+    buildSoundPanel();
+  };
   soundPresetBtn.addEventListener('click',e=>{
     e.stopPropagation();
     openPresetModal({
-      type:'sound', currentId:ss.soundId, label:'Son', accent:'#4a7fa5', bg:'#eef4f8',
+      type:'sound', currentId:ss.soundPresetId, label:'Son', accent:'#4a7fa5', bg:'#eef4f8',
       onSelect:_soundOnSelect
     });
   });
   attachSwipe(soundPresetBtn,
-    ()=>Object.keys(SOUND_DEFS).map(k=>({id:k})),
-    ()=>ss.soundId, _soundOnSelect
+    ()=>(packCours.soundPresets||[]).filter(sp=>!sp.localDeletePending),
+    ()=>ss.soundPresetId, _soundOnSelect
   );
 
   const arrow=document.createElement('button');arrow.className='btn-sec-ico';
@@ -4877,8 +5059,8 @@ function buildSoundRow(key,label,cls,ss){
 
   // Bouton 💾 toujours visible dans le header
   const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-ico';saveIcoHdr.textContent='💾';
-  saveIcoHdr.title='Sauvegarder le band';saveIcoHdr.style.cssText='font-size:11px;padding:1px 4px';
-  saveIcoHdr.addEventListener('click',e=>{e.stopPropagation();saveBandState(saveIcoHdr);});
+  saveIcoHdr.title='Sauvegarder preset son';saveIcoHdr.style.cssText='font-size:11px;padding:1px 4px';
+  saveIcoHdr.addEventListener('click',e=>{e.stopPropagation();openSoundPresetSavePop(key,ss,saveIcoHdr);});
 
   r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(arrow);
 
@@ -4893,7 +5075,7 @@ function buildSoundRow(key,label,cls,ss){
   volWrap.appendChild(volTrack);volWrap.appendChild(volLbl);
   function updateVol(v){const pct=Math.max(0,Math.min(1,v))*100;volFill.style.width=pct+'%';volThumb.style.left=pct+'%';}
   updateVol(ss.vol);
-  setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);});
+  setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);setSoundDirtySlot(key,true);setBandDirty(true);});
   volWrap.addEventListener('pointerdown',e=>e.stopPropagation());
   volWrap.addEventListener('click',e=>e.stopPropagation());
   r2.appendChild(volWrap);
@@ -4903,8 +5085,8 @@ function buildSoundRow(key,label,cls,ss){
   // ── Collapsible : Hauteur + Enveloppe + actions ───────────────────────────
   const ctrls=document.createElement('div');ctrls.className='sound-ctrls';
   const inner=document.createElement('div');inner.className='sound-ctrls-inner';
-  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);},pitchToNorm(ss.pitch,ss.soundId)));
-  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;},ss.env));
+  inner.appendChild(mkSlider('Hauteur',v=>{ss.pitch=normToPitch(v,ss.soundId);setSoundDirtySlot(key,true);setBandDirty(true);},pitchToNorm(ss.pitch,ss.soundId)));
+  inner.appendChild(mkSlider('Envel.',v=>{ss.env=v;setSoundDirtySlot(key,true);setBandDirty(true);},ss.env));
 
   ctrls.appendChild(inner);
   if(!soundPanelOpen[key]) ctrls.classList.add('hidden');
@@ -4912,7 +5094,6 @@ function buildSoundRow(key,label,cls,ss){
   arrow.addEventListener('click',e=>{
     e.stopPropagation();
     const opening=ctrls.classList.toggle('hidden');
-    // opening=true means now hidden
     arrow.textContent=opening?'régl. ▶':'régl. ▼';
     soundPanelOpen[key]=!opening;
   });
@@ -7352,6 +7533,8 @@ function buildPublishSection() {
   const teacherMetroPres = (packCours.metroPresets || []).filter(p => p.source === 'teacher');
   const teacherBands = (packCours.bands || []).filter(b => b.source === 'teacher' && !b.localDeletePending);
   const pendingDelBands = isMX ? (packCours.bands||[]).filter(b => b.source === 'school' && b.localDeletePending) : [];
+  const teacherSoundPresets = (packCours.soundPresets || []).filter(sp => sp.source === 'teacher' && !sp.localDeletePending);
+  const dirtySchoolSoundPresets = isMX ? (packCours.soundPresets||[]).filter(sp => sp.source === 'school' && sp.localDirty && !sp.localDeletePending) : [];
   const dirtySchoolPats    = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDirty && !p.localDeletePending) : [];
   const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty && !g.localDeletePending) : [];
   const pendingDelPats  = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDeletePending) : [];
@@ -7383,7 +7566,7 @@ function buildPublishSection() {
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
   const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + teacherSoundPresets.length + dirtySchoolSoundPresets.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -7398,7 +7581,8 @@ function buildPublishSection() {
     + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
     + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length
     + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length
-    + teacherBands.filter(b => !b.localStatus || b.localStatus === 'draft').length + pendingDelBands.length;
+    + teacherBands.filter(b => !b.localStatus || b.localStatus === 'draft').length + pendingDelBands.length
+    + teacherSoundPresets.filter(sp => !sp.localStatus || sp.localStatus === 'draft').length + dirtySchoolSoundPresets.length;
   updateSettingsBadge();
 
   if(pubToggle) pubToggle.style.display='';
@@ -7587,7 +7771,7 @@ function buildPublishSection() {
       const badge = isSubmitted
         ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">⏳ En attente</span>`
         : `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${badgeBg};color:${badgeCol};flex-shrink:0">${typeLabel}</span>`;
-      const sounds = `${SOUND_DEFS[b.low]?.label||b.low} / ${SOUND_DEFS[b.high]?.label||b.high} / ${SOUND_DEFS[b.noise]?.label||b.noise}`;
+      const sounds = `${getSoundPreset(b.low)?.nom||b.low} / ${getSoundPreset(b.high)?.nom||b.high} / ${getSoundPreset(b.noise)?.nom||b.noise}`;
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
         `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
           `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${b.nom}</span>` +
@@ -7606,6 +7790,39 @@ function buildPublishSection() {
         `</div></div>`;
     });
   }
+  // Presets son (TX draft/submitted + MX dirty school)
+  const allSoundPresets = [...teacherSoundPresets, ...dirtySchoolSoundPresets];
+  if (allSoundPresets.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#4a7fa5;margin-top:6px;margin-bottom:4px">🔊 Presets son (${allSoundPresets.length})</div>`;
+    allSoundPresets.forEach(sp => {
+      const isSubmitted = sp.localStatus === 'submitted';
+      const isDirtySchool = isMX && sp.source === 'school' && sp.localDirty;
+      const typeLabel = sp.localChangeType === 'delete' ? 'Suppression' : sp.localChangeType === 'create' ? 'Nouveau' : 'Modif.';
+      const badgeBg = sp.localChangeType === 'delete' ? '#fde8e8' : sp.localChangeType === 'create' ? '#d4f5e6' : '#fff3cd';
+      const badgeCol = sp.localChangeType === 'delete' ? '#c04040' : sp.localChangeType === 'create' ? '#0F6E56' : '#856404';
+      const badge = isSubmitted
+        ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">⏳ En attente</span>`
+        : `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${badgeBg};color:${badgeCol};flex-shrink:0">${typeLabel}</span>`;
+      const soundInfo = `${SOUND_DEFS[sp.soundId]?.label||sp.soundId} — p:${Math.round(sp.pitch)} e:${Math.round(sp.env*100)}%`;
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${sp.nom}</span>` +
+          badge +
+        `</div>` +
+        `<div style="font-size:9px;color:#888;margin-bottom:4px">${soundInfo}</div>` +
+        `<div style="display:flex;gap:5px">` +
+          (isMX
+            ? `<button class="btn-pub-sp" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>` +
+              `<button class="btn-pub-sp-cancel" data-id="${sp.id}" data-school="${isDirtySchool?'1':''}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`
+            : isSubmitted
+              ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>` +
+                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+              : `<button class="btn-pub-sp" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
+                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`) +
+        `</div></div>`;
+    });
+  }
+
   if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length || pendingDelBands.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
     [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g})), ...pendingDelBands.map(b=>({type:'band',item:b}))].forEach(({type,item}) => {
@@ -7957,6 +8174,48 @@ function buildPublishSection() {
         }
         saveToStorage(); buildBandSection(); buildPublishSection();
         showToast('Band supprimé', 'info');
+      }
+    });
+  });
+
+  // Presets son — envoyer/publier (TX envoie à l'école, MX publie)
+  container.querySelectorAll('.btn-pub-sp').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sp = (packCours.soundPresets||[]).find(x => x.id === btn.dataset.id);
+      if (!sp) return;
+      const origText = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      if (isMX) {
+        // MX : publier directement (marquer school)
+        sp.source = 'school'; sp.localDirty = false;
+        delete sp.localChangeType; delete sp.localChangedFields; delete sp.localStatus;
+        saveToStorage(); buildSoundPanel(); buildPublishSection();
+        btn.textContent = '✓'; btn.style.background = '#d4f5e6';
+        showToast('Preset son publié', 'info');
+      } else {
+        // TX : soumettre
+        sp.localStatus = 'submitted';
+        saveToStorage(); buildPublishSection();
+        btn.textContent = '✓'; btn.style.background = '#fff8ec';
+        showToast('Preset son soumis', 'info');
+      }
+    });
+  });
+
+  // Presets son — annuler
+  container.querySelectorAll('.btn-pub-sp-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sp = (packCours.soundPresets||[]).find(x => x.id === btn.dataset.id);
+      if (!sp) return;
+      if (btn.dataset.school === '1') {
+        // MX : annuler modifs locales d'un preset école
+        sp.localDirty = false; delete sp.localChangeType; delete sp.localChangedFields;
+        saveToStorage(); buildPublishSection();
+      } else {
+        if (!confirm(`Supprimer le preset son « ${sp.nom} » ?`)) return;
+        packCours.soundPresets = (packCours.soundPresets||[]).filter(x => x.id !== btn.dataset.id);
+        saveToStorage(); buildSoundPanel(); buildPublishSection();
+        showToast('Preset son supprimé', 'info');
       }
     });
   });
