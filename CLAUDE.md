@@ -186,6 +186,22 @@ Le volet Band est le dernier grand chantier de gestion de presets à refactorise
 ### Autres chantiers en attente
 - **Samples audio** — Cadrer la source avec Lamberio, puis implémenter `sampleUrl` dans SOUND_DEFS
 
+### Roadmap court terme — Bouton REC dans le volet Mod des patterns
+
+**Idée produit :** Ajouter dans le volet Mod de chaque layer (côté droit, sur chaque couche) 3 boutons :
+- **⏺ Rec** — entre en mode enregistrement ; les sons joués avec les boutons Main G/D pendant la lecture s'inscrivent dans le pattern courant au pas le plus proche (quantization au step)
+- **⌫ Clear** — efface le pattern courant (met tout à '.')
+- **⎘ Copier/Coller** contextuel — copie le pattern du layer courant ; s'il existe un pattern dans le presse-papier, propose coller à la place
+
+**Fonctionnement du REC :**
+- Nécessite lecture active (`playing`)
+- `state[li].recording = true` → chaque pression `playConga` (ou futur bouton layer dédié) calcule le step courant : `Math.round((now - state[li].startTime) / getBeatSec(li)) % n`
+- En mode rec à 2 mains (sin2 pattern) : bouton Main G → layer thumbL, bouton Main D → layer thumbR
+- Visual : layer en mode rec passe en rouge pulsant (animation CSS)
+- Durée max : 2 mesures ou 1 cycle pattern, puis auto-stop rec
+
+**Complexité estimée :** modérée — 4 à 6h. Les primitives de timing existent déjà (`getBeatSec`, `state[li].stepPos`, `state[li].nextStepTime`). La quantization au step est triviale. Le plus délicat est la gestion de l'UX (countdown avant rec ? feedback visuel précis ?). À cadrer avec Lamberio avant de coder.
+
 ## Résolu (session 2026-05-06 — suite)
 - ✅ **5 sous-volets metro** — Temps (3col BPM+Battue+Swing) | Sign (sig-grid Mesure/temps/subdiv) | Tap | Vol (slider) | Métro (pattern viz) ; Temps ouvert par défaut
 - ✅ **Boutons toggle visuels** — état open = fond violet léger + bordure + gras (`.btn-metro-volet.open`)

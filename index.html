@@ -315,9 +315,14 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-edit-row.hidden{display:none}
 /* Top bar : couleurs volets */
 /* Top bar VOL / Metro */
-#btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;min-width:28px;padding:3px 7px;font-size:14px;line-height:1;opacity:.7}
+#btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.7}
 #btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
 #btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
+.sons-row{display:flex;align-items:center;gap:3px;line-height:1}
+#sons-icon{font-size:14px}
+.sons-lbl{font-size:11px;letter-spacing:.02em;color:inherit}
+.sons-vol-track{width:44px;height:2px;background:rgba(0,0,0,.12);border-radius:1px;overflow:hidden}
+#sons-vol-fill{height:100%;width:100%;background:currentColor;border-radius:1px}
 #btn-tempo{color:#999;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
 #btn-tempo .metro-row{display:flex;align-items:center;gap:3px;line-height:1}
 #btn-tempo .metro-icon{font-size:14px}
@@ -858,6 +863,7 @@ body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color
 body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
+body.dark-mode .sons-vol-track{background:rgba(255,255,255,.08)}
 body.dark-mode #btn-tempo{color:#666;border-color:#444;background:#222220}
 body.dark-mode #btn-tempo .metro-track{background:rgba(255,255,255,.08)}
 body.dark-mode #btn-tempo.active{background:#1e1c22;color:#6858a8;border-color:#3a3448}
@@ -960,12 +966,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.4</span>
+      <span class="app-version">v3.10.5</span>
     </div>
   </div>
   <div class="top-bar-center">
     <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
-    <button class="btn-top" id="btn-vol" title="Court: mute band · Long: section · Glisser: volume">🔊</button>
+    <button class="btn-top" id="btn-vol" title="Court: mute band · Double tap: section · Glisser: volume"><div class="sons-row"><span id="sons-icon">🔊</span><span class="sons-lbl">Sons</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
   </div>
   <div class="top-bar-right">
     <div class="settings-menu-wrap">
@@ -5889,15 +5895,24 @@ function drawCircles(){
   if(circleModeView === 'measure'){
     const rInner = radii[0] - dotR - 3;
     const rOuter = radii[2] + dotR + 5;
+    const isDarkB = document.body.classList.contains('dark-mode');
     for(let b=0; b<currentSig.beatsPerMeasure; b++){
       const a = -Math.PI/2 + 2*Math.PI * b / currentSig.beatsPerMeasure;
       ctx.beginPath();
       ctx.moveTo(cx + rInner*Math.cos(a), cy + rInner*Math.sin(a));
       ctx.lineTo(cx + rOuter*Math.cos(a), cy + rOuter*Math.sin(a));
-      const isDark = document.body.classList.contains('dark-mode');
-      ctx.strokeStyle = b===0 ? (isDark?'#9080C0':'#7060B0') : (isDark?'#555':'#d0ccc5');
+      ctx.strokeStyle = b===0 ? (isDarkB?'#9080C0':'#7060B0') : (isDarkB?'#555':'#d0ccc5');
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
+    }
+    // Numéros des temps en bordure extérieure
+    const rLabel = Math.min(rOuter + 9, H/2 - 3);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(let b=0; b<currentSig.beatsPerMeasure; b++){
+      const a = -Math.PI/2 + 2*Math.PI * b / currentSig.beatsPerMeasure;
+      ctx.font = b===0 ? 'bold 9px sans-serif' : '8px sans-serif';
+      ctx.fillStyle = b===0 ? (isDarkB?'#9080C0':'#7060B0') : (isDarkB?'#555':'#aaa');
+      ctx.fillText(String(b+1), cx + rLabel*Math.cos(a), cy + rLabel*Math.sin(a));
     }
   }
   // Labels nb de pas + durée (en fraction) dans le strip gauche — modes Pattern ET Mesure
@@ -9425,20 +9440,25 @@ function attachEvents(){
 
     btnT.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
   }
-  // ── Btn Vol (top bar) : court=mute band, double tap=section, long+drag=volume ──
+  // ── Btn Vol (top bar) : court=mute band, double tap=section, glisser=volume ──
   {
     const btnV=document.getElementById('btn-vol');
-    const LONG_MS=350, DRAG_PX=6;
-    let _startX=0,_startVol=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
+    const DRAG_PX=6;
+    let _startX=0,_startVol=0,_down=false,_dragMoved=false,_lastTap=0;
 
     function setBandMuted(muted){
       bandMuted=muted;
-      btnV.textContent=muted?'🔇':'🔊';
+      const icon=document.getElementById('sons-icon');
+      if(icon)icon.textContent=muted?'🔇':'🔊';
       btnV.classList.toggle('muted',muted);
+    }
+    function updateBandVolFill(){
+      const fill=document.getElementById('sons-vol-fill');
+      if(fill)fill.style.width=bandVolume+'%';
     }
     function toggleBandSection(){
       sonsOuvert=!sonsOuvert;
-      if(sonsOuvert) instrOuvert=true; // toujours ouvrir les layers au tap
+      if(sonsOuvert) instrOuvert=true;
       const bar=document.querySelector('.band-bar');
       if(bar){
         bar.classList.toggle('visible',sonsOuvert);
@@ -9452,43 +9472,45 @@ function attachEvents(){
 
     btnV.addEventListener('pointerdown',e=>{
       _startX=e.clientX; _startVol=bandVolume;
-      _down=true; _dragMoved=false; _longFired=false;
+      _down=true; _dragMoved=false;
       btnV.setPointerCapture(e.pointerId);
       e.preventDefault();
-      _longTimer=setTimeout(()=>{
-        if(!_dragMoved){ _longFired=true; toggleBandSection(); }
-      },LONG_MS);
     },{passive:false});
 
     btnV.addEventListener('pointermove',e=>{
       if(!_down)return;
-      e.preventDefault(); // empêche le scroll page mobile pendant le glissement
+      e.preventDefault();
       const dx=e.clientX-_startX;
       if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
-      if(!_dragMoved){ clearTimeout(_longTimer); }
       _dragMoved=true;
       bandVolume=Math.max(0,Math.min(100,Math.round(_startVol+dx*0.5)));
       _dragOverlay.show('🔊 '+bandVolume+'%');
+      updateBandVolFill();
       if(bandMuted&&bandVolume>0) setBandMuted(false);
     },{passive:false});
 
     btnV.addEventListener('pointerup',()=>{
-      clearTimeout(_longTimer); _down=false; _dragOverlay.hide();
-      if(_dragMoved||_longFired) return;
-      // Court tap : mute/unmute toutes les couches du groove
-      const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
-      LAYERS.forEach((_,li)=>{
-        state[li].muted=anyUnmuted;
-        const layerDiv=document.querySelector('.layer.'+LAYERS[li].cls);
-        if(layerDiv)layerDiv.classList.toggle('muted-layer',anyUnmuted);
-        const btnM=document.getElementById('btn-mute-lbl-'+li);
-        if(btnM){btnM.classList.toggle('muted',anyUnmuted);btnM.title=(anyUnmuted?'Activer : ':'Muet : ')+LAYERS[li].label;}
-      });
-      btnV.textContent=anyUnmuted?'🔇':'🔊';
-      btnV.classList.toggle('muted',anyUnmuted);
+      _down=false; _dragOverlay.hide();
+      if(_dragMoved) return;
+      // Court tap : double tap = section, sinon mute band
+      const now=Date.now();
+      if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
+      else {
+        const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
+        LAYERS.forEach((_,li)=>{
+          state[li].muted=anyUnmuted;
+          const layerDiv=document.querySelector('.layer.'+LAYERS[li].cls);
+          if(layerDiv)layerDiv.classList.toggle('muted-layer',anyUnmuted);
+          const btnM=document.getElementById('btn-mute-lbl-'+li);
+          if(btnM){btnM.classList.toggle('muted',anyUnmuted);btnM.title=(anyUnmuted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+        });
+        setBandMuted(anyUnmuted);
+        _lastTap=now;
+      }
     });
 
-    btnV.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
+    btnV.addEventListener('pointercancel',()=>{ _down=false; _dragOverlay.hide(); });
+    updateBandVolFill();
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
