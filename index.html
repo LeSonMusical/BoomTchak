@@ -21,7 +21,8 @@ input,textarea{user-select:text;-webkit-user-select:text}
 }
 
 /* ─── LAYOUT GLOBAL ─── */
-body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;width:100%}
+html{overflow-x:hidden;overscroll-behavior-x:none}
+body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
 .frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:.5rem .85rem}
 
 /* ─── TOP BAR ─── */
@@ -62,7 +63,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
 .sig-sel{display:none}
-.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:0;cursor:pointer;min-width:28px;text-align:center;white-space:nowrap;}
+.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:1;cursor:pointer;min-width:28px;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
 .sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(107,95,165,.12)}
@@ -79,6 +80,9 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-volet{padding:2px 6px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:2px;transition:color .12s,background .12s,border-color .12s}
 .btn-metro-volet:hover{color:#6B5FA5}
 .btn-metro-volet.open{color:#4a3d8a;background:rgba(107,95,165,.14);border-color:rgba(107,95,165,.35);font-weight:700}
+#btn-metro-volet-temps{margin-left:auto}
+.metro-3col-sw .metro-3col-lbl{text-align:center}
+.pm-item.pm-pressing{background:rgba(107,95,165,.12)!important;transform:scale(.98);transition:transform .1s}
 .temps-content{display:block}
 .metro-sub{border-top:1px solid rgba(176,168,216,.35)}
 .metro-bloc{border-left:2px solid #b0a8d8;margin-left:4px;padding:.2rem 0 .35rem .5rem;display:flex;flex-direction:column;gap:0}
@@ -500,7 +504,7 @@ body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
-.pm-header-search{font-size:11px;border:1px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 8px;background:#fff;display:none;width:120px;outline:none;}
+.pm-header-search{font-size:11px;border:1px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 8px;background:#fff;display:none;width:min(180px,45vw);outline:none;}
 .pm-header-search.pm-search-open{display:block;}
 .pm-header-search:focus{border-color:var(--pm-ac,#4a3d8a);}
 body.dark-mode .pm-header-search{background:#2a2a28;border-color:#555;color:#e0ddd8;}
@@ -715,8 +719,7 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 .btn-mod-circle{display:none!important}                   /* bouton mod dans row1 : caché en vue linéaire */
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
-#rhythm-canvas{display:block;touch-action:none;cursor:default}
-#rhythm-canvas{cursor:pointer}
+#rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 #circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
@@ -957,7 +960,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.3</span>
+      <span class="app-version">v3.10.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2767,18 +2770,26 @@ function openPresetModal(cfg){
   // Boutons mode gérer/réordonner dans le header (groove, pattern, sig et band)
   if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'||cfg.type==='sound'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
-    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='⠿';
-    modeManage.addEventListener('click',()=>{
-      manageMode=!manageMode;if(manageMode){reorderMode=false;sheet.classList.remove('pm-reorder-on');}paletteTarget=null;
-      modeManage.classList.toggle('active',manageMode);modeReorder.classList.remove('active');
-      buildFamCol();buildItems();
-    });
-    modeReorder.addEventListener('click',()=>{
+    // Fonction toggle réordonner (appelée par appui long sur item)
+    const _toggleReorder=()=>{
       reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
-      modeReorder.classList.toggle('active',reorderMode);modeManage.classList.remove('active');
+      modeManage.classList.toggle('active',false);
       sheet.classList.toggle('pm-reorder-on',reorderMode);
       buildFamCol();buildItems();
+    };
+    modeManage.addEventListener('click',()=>{
+      manageMode=!manageMode;if(manageMode){reorderMode=false;sheet.classList.remove('pm-reorder-on');}paletteTarget=null;
+      modeManage.classList.toggle('active',manageMode);
+      buildFamCol();buildItems();
     });
+    // Appui long sur un item pm-item → entre/sort du mode réordonner
+    const _addLongPress=(el)=>{
+      let _lt=null,_lx=0,_ly=0;
+      el.addEventListener('pointerdown',e=>{_lx=e.clientX;_ly=e.clientY;el.classList.add('pm-pressing');_lt=setTimeout(()=>{_lt=null;el.classList.remove('pm-pressing');_toggleReorder();},450);});
+      el.addEventListener('pointermove',e=>{if(_lt&&Math.hypot(e.clientX-_lx,e.clientY-_ly)>10){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}});
+      const _c=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
+      el.addEventListener('pointerup',_c);el.addEventListener('pointercancel',_c);
+    };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
     searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
@@ -2789,10 +2800,12 @@ function openPresetModal(cfg){
       modeSearch.classList.toggle('active',open);
       if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
     });
-    // Groupe : [✎][☰][🔍][champ] — tout à gauche, ✕ poussé à droite par margin-left:auto
+    // Groupe : [✎][🔍][champ] — bouton ⠿ supprimé (remplacé par appui long sur item)
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
     hdr.insertBefore(modeGroup,hclose);
+    // Exposer _addLongPress pour buildItems
+    sheet._addLongPress=_addLongPress;
   }
   // Encyclopédie : bouton recherche seul (pas de gérer/réordonner)
   if(cfg.type==='encyclo'){
@@ -3560,6 +3573,7 @@ function openPresetModal(cfg){
           const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
           row.textContent=item.nom+(item.source==='teacher'?' ✎':'');
           row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+          if(sheet._addLongPress)sheet._addLongPress(row);
           itemsWrap.appendChild(row);
         }
       });
@@ -3651,6 +3665,7 @@ function openPresetModal(cfg){
         if(cfg.type==='sig'){row.textContent=displayNom;}
         else{row.textContent=displayNom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');}
         row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+        if(sheet._addLongPress)sheet._addLongPress(row);
         itemsWrap.appendChild(row);
       }
     });
@@ -6167,10 +6182,20 @@ function setupCanvasInteraction(){
     drawCircles();
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
+  // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
+  let _cvTouchOnDot = false;
+  cv.addEventListener('touchstart', e=>{
+    const t=e.touches[0],rect=cv.getBoundingClientRect();
+    const sx=cv.width/rect.width,sy=cv.height/rect.height;
+    const hit=circleHitTest((t.clientX-rect.left)*sx,(t.clientY-rect.top)*sy);
+    _cvTouchOnDot=!!(hit&&!hit.badge);
+    if(_cvTouchOnDot)e.preventDefault();
+  },{passive:false});
   cv.addEventListener('touchend', e=>{
-    e.preventDefault();
-    const t = e.changedTouches[0]; onPt(t.clientX, t.clientY);
-  }, {passive:false});
+    if(!_cvTouchOnDot)return;
+    _cvTouchOnDot=false;
+    const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
+  },{passive:true});
 }
 
 function setView(circle){
@@ -9886,13 +9911,15 @@ function attachEvents(){
     document.getElementById('btn-settings').classList.toggle('active', open);
     if (open) { buildPublishSection(); sbFetchPendingApprovals(); updateSmenuTheme(); }
   });
-  document.addEventListener('click', e => {
+  const _closeSettingsMenu = e => {
     const menu = document.getElementById('panel-settings');
     if (menu.classList.contains('open') && !e.target.closest('.settings-menu-wrap')) {
       menu.classList.remove('open');
       document.getElementById('btn-settings').classList.remove('active');
     }
-  });
+  };
+  document.addEventListener('click', _closeSettingsMenu);
+  document.addEventListener('touchstart', _closeSettingsMenu, {passive:true});
 
   // Ligne 1 : toggle thème clair/sombre
   document.getElementById('smenu-theme-row').addEventListener('click', () => {
