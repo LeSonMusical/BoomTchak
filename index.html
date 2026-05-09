@@ -161,6 +161,18 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-3col-lbl{font-size:9px;font-weight:600;color:#888;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
 .metro-vol-row{display:flex;align-items:center;gap:8px;padding:.3rem 0}
 .metro-3col-eq-row{display:flex;align-items:center;gap:2px}
+/* ── Sig volet redesign (v3.10.8) ── */
+.sig-edit-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px;padding:.2rem 0 .15rem;align-items:center}
+.sig-edit-hdr{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;text-align:center}
+.sig-edit-val{font-size:15px;font-weight:700;color:#4a3d8a;text-align:center;display:flex;align-items:center;justify-content:center;min-height:40px;background:rgba(107,95,165,.07);border-radius:5px;border:1px solid rgba(107,95,165,.2);padding:0 4px}
+.sig-div-ctrl{display:flex;flex-direction:column;align-items:center;gap:1px}
+.mpv-beats-range{-webkit-appearance:slider-vertical;height:56px;width:20px;cursor:pointer;accent-color:#6B5FA5;writing-mode:vertical-lr;direction:rtl;touch-action:none}
+.sig-unit-ctrl{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sig-par-mesure{font-size:9px;color:#888;white-space:nowrap;text-align:center}
+/* ── Metro ctrl row (v3.10.8) ── */
+.metro-ctrl-row{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;padding:.15rem 0 .1rem}
+.metro-ctrl-row .mpv-word-btn{flex:1;min-width:0;font-size:9px;padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metro-ctrl-row .mpv-subdiv-row{flex-shrink:0;display:flex;align-items:center;gap:2px}
 /* Nom latin du tempo */
 #metro-tempo-name{color:#6B5FA5;font-weight:700;font-size:11px;letter-spacing:.02em}
 
@@ -835,6 +847,9 @@ body.dark-mode .mpv-label{color:#d0c0ff}
 body.dark-mode .mpv-beats-val{color:#d0c0ff}
 body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
 body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
+body.dark-mode .sig-edit-hdr{color:#666}
+body.dark-mode .sig-edit-val{color:#a89fd0;background:rgba(107,95,165,.12);border-color:rgba(107,95,165,.3)}
+body.dark-mode .sig-par-mesure{color:#666}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -966,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.7</span>
+      <span class="app-version">v3.10.8</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1059,7 +1074,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
       <div class="metro-3col-eq">
-        <span class="metro-3col-lbl">Battue</span>
+        <span class="metro-3col-lbl">Battement</span>
         <div class="metro-3col-eq-row">
           <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
             <option value="1">♪</option>
@@ -1081,41 +1096,26 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 2 : Sign ────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
-    <div class="metro-sig-grid">
-      <div class="metro-sig-col">
-        <button class="mpv-word-btn on" id="mpv-tog-A">^ Mesure</button>
-        <div class="mpv-sig-unit-row">
-          <div class="mpv-beats-ctrl">
-            <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
-            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-            <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
-          </div>
-          <span class="mpv-label">temps :</span>
-        </div>
+    <div class="sig-edit-grid">
+      <div class="sig-edit-hdr">Signature</div>
+      <div class="sig-edit-hdr">Divisions</div>
+      <div class="sig-edit-hdr">Unités</div>
+      <div class="sig-edit-val" id="sig-unit-display">4/4</div>
+      <div class="sig-div-ctrl">
+        <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
+        <input type="range" class="mpv-beats-range" id="mpv-beats-range" min="1" max="33" value="4" step="1">
+        <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+        <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
       </div>
-      <div class="metro-sig-col">
-        <button class="mpv-word-btn on" id="mpv-tog-P">&gt; Temps</button>
-        <div class="mpv-sig-unit-row">
-          <span class="mpv-label">unité</span>
-          <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
-            <option value="4">♩ noire</option>
-            <option value="8">♪ croche</option>
-            <option value="6">♩. pointée</option>
-            <option value="2">𝅗𝅥 blanche</option>
-          </select>
-        </div>
-      </div>
-      <div class="metro-sig-col">
-        <button class="mpv-word-btn" id="mpv-tog-p">~ Subdiv</button>
-        <div class="mpv-sig-unit-row">
-          <span class="mpv-label">divisé en</span>
-          <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-        </div>
+      <div class="sig-unit-ctrl">
+        <select class="mpv-sel" id="mpv-unit-sel">
+          <option value="4">♩ noire</option>
+          <option value="8">♪ croche</option>
+          <option value="2">𝅗𝅥 blanche</option>
+          <option value="1">𝅝 ronde</option>
+          <option value="16">♬ double-croche</option>
+        </select>
+        <span class="sig-par-mesure">par mesure</span>
       </div>
     </div>
   </div><!-- /metro-bloc sign -->
@@ -1123,6 +1123,19 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 3 : Métro ────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-pat" style="display:none">
   <div class="metro-bloc">
+    <div class="metro-ctrl-row">
+      <button class="mpv-word-btn on" id="mpv-tog-A">^ Accent</button>
+      <button class="mpv-word-btn on" id="mpv-tog-P">&gt; Battement</button>
+      <button class="mpv-word-btn" id="mpv-tog-p">- Subdiv</button>
+      <div class="mpv-subdiv-row">
+        <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+          <option value="1">×1</option>
+          <option value="2" selected>×2</option>
+          <option value="3">×3</option>
+          <option value="4">×4</option>
+        </select>
+      </div>
+    </div>
     <div class="metro-pat-row">
       <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
       <div class="metro-pat-viz" id="metro-pattern-viz"></div>
@@ -2139,10 +2152,31 @@ function syncMetroControls(sig) {
   if (!s) return;
   const bv = document.getElementById('mpv-beats-val');
   if (bv) bv.textContent = s.beatsPerMeasure;
+  const br = document.getElementById('mpv-beats-range');
+  if (br) br.value = s.beatsPerMeasure;
   const us = document.getElementById('mpv-unit-sel');
   if (us) us.value = String(s.beatUnit);
   const ss = document.getElementById('mpv-subdiv-sel');
   if (ss) ss.value = String(s.subdivision);
+  updateSigDisplays();
+}
+
+// Applique battement et subdivision par défaut selon l'unité et le nombre de temps sélectionnés
+function _applyDefaultsFromUnit() {
+  const us = document.getElementById('mpv-unit-sel');
+  const bv = document.getElementById('mpv-beats-val');
+  const unit = us ? parseInt(us.value) : 4;
+  const beats = bv ? (parseInt(bv.textContent) || 4) : 4;
+  let fbs;
+  if (unit === 2) fbs = 4; // blanche → battement=blanche (4 croches)
+  else if (unit === 8 && (beats === 6 || beats === 9 || beats === 12)) fbs = 3; // noire pointée
+  else if (unit === 8) fbs = 1; // croche
+  else fbs = 2; // noire (unité 4, 1, 16)
+  const sub = (fbs === 3) ? 3 : (fbs === 1) ? 1 : 2;
+  const batSel = document.getElementById('battue-sel');
+  if (batSel && batSel.value !== String(fbs)) batSel.value = String(fbs);
+  const subSel = document.getElementById('mpv-subdiv-sel');
+  if (subSel && subSel.value !== String(sub)) subSel.value = String(sub);
 }
 
 // Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
@@ -2154,8 +2188,9 @@ function buildSigFromControls() {
   const unit = us ? parseInt(us.value) : 4;
   const ss = document.getElementById('mpv-subdiv-sel');
   const sub = ss ? parseInt(ss.value) : 2;
-  // Hériter les paramètres de timing du sig courant (ne pas dériver de beatUnit)
-  const curFel = currentSig.felBeatSteps || currentSig.stepsPerBeat || 2;
+  // Hériter felBeatSteps depuis battue-sel (en priorité) ou currentSig
+  const batSel = document.getElementById('battue-sel');
+  const curFel = batSel ? (parseInt(batSel.value) || 2) : (currentSig.felBeatSteps || currentSig.stepsPerBeat || 2);
   const match = metroPresets.find(p =>
     p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
   );
@@ -2222,13 +2257,40 @@ function setMetroDirty(isDirty) {
 function updateMetroSaveBtn() { setDirtyUI('sig-sel-btn', 'btn-metro-save', metroDirty); }
 
 // ^ accent fort, > temps, « subdiv, gris silence
+// Calcule un label de type "2+3/8" si le pattern contient plusieurs accents non-équirépartis
+function computeSigLabel() {
+  const mp = currentSig?.metroPattern;
+  const unit = currentSig?.beatUnit || 4;
+  const beats = currentSig?.beatsPerMeasure || 4;
+  if (!mp || !mp.length) return `${beats}/${unit}`;
+  const aPos = mp.reduce((acc, v, i) => { if (v === 'A') acc.push(i); return acc; }, []);
+  if (aPos.length <= 1) return `${beats}/${unit}`;
+  const groups = [];
+  for (let i = 0; i < aPos.length; i++) {
+    const next = aPos[i + 1] ?? mp.length;
+    groups.push(next - aPos[i]);
+  }
+  const allEqual = groups.every(g => g === groups[0]);
+  if (allEqual) return `${beats}/${unit}`;
+  return groups.join('+') + `/${unit}`;
+}
+
+// Met à jour l'affichage de la signature dans le volet Sign et dans le volet Métro
+function updateSigDisplays() {
+  const lbl = computeSigLabel();
+  const sigDisp = document.getElementById('sig-unit-display');
+  if (sigDisp) sigDisp.textContent = lbl;
+  const mpvLbl = document.getElementById('mpv-sig-label');
+  if (mpvLbl) mpvLbl.textContent = lbl;
+}
+
 function renderMetroPatternViz() {
   _lastMetroVizStep = -1; // force le re-highlight au prochain RAF
   const wrap = document.getElementById('metro-pattern-viz');
   if (!wrap) return;
   const mp = currentSig?.metroPattern;
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
-  const SYM = { A: '^', P: '>', p: '', '.': '' };
+  const SYM = { A: '^', P: '>', p: '-', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
   const sub = currentSig?.subdivision || 2;
   wrap.innerHTML = mp.map((v, i) => {
@@ -2236,8 +2298,7 @@ function renderMetroPatternViz() {
       ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
     return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
   }).join('');
-  const lbl = document.getElementById('mpv-sig-label');
-  if (lbl) lbl.textContent = currentSig?.label || '';
+  updateSigDisplays();
   updateMetroSaveBtn();
 }
 
@@ -9703,19 +9764,34 @@ function attachEvents(){
       _navigateMetroPreset(dx>0?-1:1); // swipe droite=précédent, gauche=suivant
     });
   })();
-  // ── L1 : Beats up/down ──
+  // ── L1 : Beats up/down + range slider ──
+  function _setBeatsUI(val) {
+    const bv = document.getElementById('mpv-beats-val');
+    const br = document.getElementById('mpv-beats-range');
+    if (bv) bv.textContent = val;
+    if (br) br.value = val;
+  }
   document.getElementById('mpv-beats-up').addEventListener('click', () => {
     const bv = document.getElementById('mpv-beats-val');
-    bv.textContent = Math.min(20, (parseInt(bv.textContent) || 4) + 1);
+    const next = Math.min(33, (parseInt(bv.textContent) || 4) + 1);
+    _setBeatsUI(next);
     buildSigFromControls();
   });
   document.getElementById('mpv-beats-down').addEventListener('click', () => {
     const bv = document.getElementById('mpv-beats-val');
-    bv.textContent = Math.max(1, (parseInt(bv.textContent) || 4) - 1);
+    const next = Math.max(1, (parseInt(bv.textContent) || 4) - 1);
+    _setBeatsUI(next);
+    buildSigFromControls();
+  });
+  document.getElementById('mpv-beats-range').addEventListener('input', e => {
+    _setBeatsUI(e.target.value);
     buildSigFromControls();
   });
   // ── L1 : Selects unité et subdivision ──
-  document.getElementById('mpv-unit-sel').addEventListener('change', buildSigFromControls);
+  document.getElementById('mpv-unit-sel').addEventListener('change', () => {
+    _applyDefaultsFromUnit();
+    buildSigFromControls();
+  });
   document.getElementById('mpv-subdiv-sel').addEventListener('change', buildSigFromControls);
   // ── L1 : Mots-boutons ON/OFF (mute accent, temps, subdiv) ──
   document.getElementById('mpv-tog-A').addEventListener('click', function() {
