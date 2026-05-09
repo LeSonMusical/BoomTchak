@@ -966,7 +966,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.6</span>
+      <span class="app-version">v3.10.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2164,12 +2164,12 @@ function buildSigFromControls() {
     const btn = document.getElementById('sig-sel-btn');
     if (btn) btn.textContent = match.label || match.id;
   } else {
-    // Sig custom : hérite stepsPerBeat/felBeatSteps → aucun effet sur le tempo de lecture
+  // Sig custom : stepsPerBeat = subdivision (1 step = 1 croche) ; felBeatSteps hérité de la battue
     currentSig = {
       ...currentSig,
       id: '_custom', label: `${beats}/${unit}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: curFel, beatSteps: curFel, felBeatSteps: curFel,
+      stepsPerBeat: sub, beatSteps: sub, felBeatSteps: curFel,
       beatSym: symFromFelBeatSteps(curFel),
       metroPattern: generateMetroPattern(beats, sub),
     };
