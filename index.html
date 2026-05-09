@@ -63,7 +63,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
 .sig-sel{display:none}
-.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:1;cursor:pointer;min-width:28px;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
+.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:1;cursor:pointer;min-width:38px;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
 .sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(107,95,165,.12)}
@@ -74,7 +74,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0;height:22px;min-width:44px;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
+.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 3px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
 .btn-metro-main.on{color:#4a3d8a}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 6px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:2px;transition:color .12s,background .12s,border-color .12s}
@@ -503,8 +503,8 @@ body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 .pm-sheet.pm-reorder-on .pm-item.pm-reorder{border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
-.pm-reorder.pm-dragging{opacity:.4;}
-.pm-reorder.pm-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
+.pm-reorder.pm-dragging,.pm-item.pm-dragging{opacity:.4;}
+.pm-reorder.pm-drag-over,.pm-item.pm-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
@@ -966,7 +966,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.5</span>
+      <span class="app-version">v3.10.6</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1034,11 +1034,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-temps">Temps</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-sign">Sign</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
+    <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-sign">Unit</button>
     <button class="btn-metro-volet" id="btn-metro-volet-pat">Métro</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <!-- ── Sous-volet 1 : Temps ─────────────────────────────────────────── -->
@@ -1083,7 +1083,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-bloc">
     <div class="metro-sig-grid">
       <div class="metro-sig-col">
-        <button class="mpv-word-btn on" id="mpv-tog-A">Mesure</button>
+        <button class="mpv-word-btn on" id="mpv-tog-A">^ Mesure</button>
         <div class="mpv-sig-unit-row">
           <div class="mpv-beats-ctrl">
             <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
@@ -1094,7 +1094,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
       <div class="metro-sig-col">
-        <button class="mpv-word-btn on" id="mpv-tog-P">temps</button>
+        <button class="mpv-word-btn on" id="mpv-tog-P">&gt; Temps</button>
         <div class="mpv-sig-unit-row">
           <span class="mpv-label">unité</span>
           <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
@@ -1106,7 +1106,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
       <div class="metro-sig-col">
-        <button class="mpv-word-btn" id="mpv-tog-p">subdiv.</button>
+        <button class="mpv-word-btn" id="mpv-tog-p">~ Subdiv</button>
         <div class="mpv-sig-unit-row">
           <span class="mpv-label">divisé en</span>
           <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
@@ -1120,7 +1120,25 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
   </div><!-- /metro-bloc sign -->
   </div><!-- /metro-sub-sign -->
-  <!-- ── Sous-volet 3 : Tap ──────────────────────────────────────────── -->
+  <!-- ── Sous-volet 3 : Métro ────────────────────────────────────────── -->
+  <div class="metro-sub" id="metro-sub-pat" style="display:none">
+  <div class="metro-bloc">
+    <div class="metro-pat-row">
+      <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
+      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
+    </div>
+  </div><!-- /metro-bloc pat -->
+  </div><!-- /metro-sub-pat -->
+  <!-- ── Sous-volet 4 : Vol ──────────────────────────────────────────── -->
+  <div class="metro-sub" id="metro-sub-vol" style="display:none">
+  <div class="metro-bloc">
+    <div class="metro-vol-row">
+      <span class="metro-3col-lbl">Vol <span id="metro-vol-val">80%</span></span>
+      <input type="range" class="temps-slider" id="metro-vol" min="0" max="100" value="80" style="flex:1">
+    </div>
+  </div><!-- /metro-bloc vol -->
+  </div><!-- /metro-sub-vol -->
+  <!-- ── Sous-volet 5 : Tap ──────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-tap" style="display:none">
   <div class="metro-bloc">
     <div class="tap-tempo-row">
@@ -1132,24 +1150,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
   </div><!-- /metro-bloc tap -->
   </div><!-- /metro-sub-tap -->
-  <!-- ── Sous-volet 4 : Vol ──────────────────────────────────────────── -->
-  <div class="metro-sub" id="metro-sub-vol" style="display:none">
-  <div class="metro-bloc">
-    <div class="metro-vol-row">
-      <span class="metro-3col-lbl">Vol <span id="metro-vol-val">80%</span></span>
-      <input type="range" class="temps-slider" id="metro-vol" min="0" max="100" value="80" style="flex:1">
-    </div>
-  </div><!-- /metro-bloc vol -->
-  </div><!-- /metro-sub-vol -->
-  <!-- ── Sous-volet 5 : Métro ────────────────────────────────────────── -->
-  <div class="metro-sub" id="metro-sub-pat" style="display:none">
-  <div class="metro-bloc">
-    <div class="metro-pat-row">
-      <span class="mpv-sig-label" id="mpv-sig-label">4/4</span>
-      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-    </div>
-  </div><!-- /metro-bloc pat -->
-  </div><!-- /metro-sub-pat -->
   </div>
   </div><!-- /temps-wrap -->
   <!-- Section Band (Sons) -->
@@ -2788,13 +2788,53 @@ function openPresetModal(cfg){
       modeManage.classList.toggle('active',manageMode);
       buildFamCol();buildItems();
     });
-    // Appui long sur un item pm-item → entre/sort du mode réordonner
-    const _addLongPress=(el)=>{
-      let _lt=null,_lx=0,_ly=0;
-      el.addEventListener('pointerdown',e=>{_lx=e.clientX;_ly=e.clientY;el.classList.add('pm-pressing');_lt=setTimeout(()=>{_lt=null;el.classList.remove('pm-pressing');_toggleReorder();},450);});
-      el.addEventListener('pointermove',e=>{if(_lt&&Math.hypot(e.clientX-_lx,e.clientY-_ly)>10){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}});
+    // Appui long sur un item → réorganisation éphémère (glisser sans rebuild DOM, relâcher = sortie)
+    const _addLongPress=(el,itemId)=>{
+      let _lt=null,_lx=0,_ly=0,_dragging=false;
+      el.addEventListener('touchstart',e=>{
+        if(e.touches.length>1)return;
+        const t=e.touches[0];_lx=t.clientX;_ly=t.clientY;
+        el.classList.add('pm-pressing');
+        _lt=setTimeout(()=>{
+          _lt=null;el.classList.remove('pm-pressing');
+          _dragging=true;
+          reorderMode=true;manageMode=false;paletteTarget=null;
+          modeManage.classList.toggle('active',false);
+          sheet.classList.add('pm-reorder-on');
+          _reorderDragSrcId=itemId;
+          el.classList.add('pm-dragging');
+          el.style.pointerEvents='none';
+          const onEnd=()=>{
+            document.removeEventListener('touchend',onEnd,true);
+            document.removeEventListener('touchcancel',onEnd,true);
+            _dragging=false;
+            el.classList.remove('pm-dragging');
+            el.style.pointerEvents='';
+            const over=itemsWrap.querySelector('.pm-drag-over');
+            itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+            const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
+            _reorderDragSrcId=null;reorderMode=false;sheet.classList.remove('pm-reorder-on');
+            if(tgtPmId&&tgtPmId!==itemId){pmDrop(srcId,tgtPmId);buildFamCol();}
+            else{buildFamCol();buildItems();}
+          };
+          document.addEventListener('touchend',onEnd,true);
+          document.addEventListener('touchcancel',onEnd,true);
+        },450);
+      },{passive:true});
+      el.addEventListener('touchmove',e=>{
+        const t=e.touches[0];
+        if(_lt&&Math.hypot(t.clientX-_lx,t.clientY-_ly)>10){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
+        if(_dragging){
+          e.preventDefault();
+          const under=document.elementFromPoint(t.clientX,t.clientY);
+          const tgt=under?.closest('[data-pm-id]');
+          itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+          if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
+        }
+      },{passive:false});
       const _c=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
-      el.addEventListener('pointerup',_c);el.addEventListener('pointercancel',_c);
+      el.addEventListener('touchend',_c,{passive:true});
+      el.addEventListener('touchcancel',_c,{passive:true});
     };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
@@ -3577,9 +3617,10 @@ function openPresetModal(cfg){
           itemsWrap.appendChild(div);
         } else {
           const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+          row.dataset.pmId=item.id;
           row.textContent=item.nom+(item.source==='teacher'?' ✎':'');
           row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-          if(sheet._addLongPress)sheet._addLongPress(row);
+          if(sheet._addLongPress)sheet._addLongPress(row,item.id);
           itemsWrap.appendChild(row);
         }
       });
@@ -3668,10 +3709,11 @@ function openPresetModal(cfg){
         // Mode normal : sélection
         const row=document.createElement('button');
         row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.dataset.pmId=item.id;
         if(cfg.type==='sig'){row.textContent=displayNom;}
         else{row.textContent=displayNom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');}
         row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-        if(sheet._addLongPress)sheet._addLongPress(row);
+        if(sheet._addLongPress)sheet._addLongPress(row,item.id);
         itemsWrap.appendChild(row);
       }
     });
@@ -6124,6 +6166,7 @@ function drawLinear(){
 
 function circleHitTest(x, y){
   if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
+  const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   if(circleModeView==='linear'){
     // Recalcul des positions identiques à drawLinear()
     const mStepsL=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
@@ -6152,7 +6195,6 @@ function circleHitTest(x, y){
     }
     return null;
   }
-  const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   const dotR = 10, r0 = 16*dotR/Math.PI;
   const radii = [r0, r0+dotR*2, r0+dotR*4];
   const cx = CIRC_LABEL_W + cv.height/2, cy = cv.height/2;
@@ -10211,8 +10253,8 @@ function start(){
 
   // Auth Supabase (async, n'attend pas la fin pour ne pas bloquer l'UI)
   initAuth().catch(e => console.warn('BoomTchak: initAuth échouée', e));
-  // Sync publique au démarrage pour utilisateurs non connectés (école school+approved, lecture anonyme)
-  if (!authSession) sbSyncPublicPool();
+  // Sync DB au démarrage — toujours (publique anon + pool école si authenticié)
+  sbSyncPublicPool();
 }
 
 // Overlay glisser (tempo / volume)
