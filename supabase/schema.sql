@@ -332,24 +332,40 @@ alter table public.metro_presets
 -- MIGRATION v3.8.37 — Lecture publique (anon) pour contenus école approuvés
 -- Permet aux utilisateurs non connectés de charger la base dès le démarrage.
 -- À exécuter dans Supabase SQL Editor (une seule fois, par le MX).
+-- Note : CREATE POLICY IF NOT EXISTS non supporté avant PG17 → bloc DO
 -- ═══════════════════════════════════════════════════════════════════════════
-create policy if not exists "Lecture publique school patterns" on public.patterns for select
-  using (scope = 'school' and approved = true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='patterns' AND policyname='Lecture publique school patterns') THEN
+    CREATE POLICY "Lecture publique school patterns" ON public.patterns FOR SELECT
+      USING (scope = 'school' AND approved = true);
+  END IF;
 
-create policy if not exists "Lecture publique school grooves" on public.grooves for select
-  using (scope = 'school' and approved = true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='grooves' AND policyname='Lecture publique school grooves') THEN
+    CREATE POLICY "Lecture publique school grooves" ON public.grooves FOR SELECT
+      USING (scope = 'school' AND approved = true);
+  END IF;
 
-create policy if not exists "Lecture publique school familles" on public.familles for select
-  using (scope = 'school');
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='familles' AND policyname='Lecture publique school familles') THEN
+    CREATE POLICY "Lecture publique school familles" ON public.familles FOR SELECT
+      USING (scope = 'school');
+  END IF;
 
-create policy if not exists "Lecture publique school encyclo" on public.encyclo for select
-  using (scope = 'school');
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='encyclo' AND policyname='Lecture publique school encyclo') THEN
+    CREATE POLICY "Lecture publique school encyclo" ON public.encyclo FOR SELECT
+      USING (scope = 'school');
+  END IF;
 
-create policy if not exists "Lecture publique school metro_presets" on public.metro_presets for select
-  using (scope = 'school' and approved = true);
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='metro_presets' AND policyname='Lecture publique school metro_presets') THEN
+    CREATE POLICY "Lecture publique school metro_presets" ON public.metro_presets FOR SELECT
+      USING (scope = 'school' AND approved = true);
+  END IF;
 
-create policy if not exists "Lecture publique school metro_familles" on public.metro_familles for select
-  using (scope = 'school');
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='metro_familles' AND policyname='Lecture publique school metro_familles') THEN
+    CREATE POLICY "Lecture publique school metro_familles" ON public.metro_familles FOR SELECT
+      USING (scope = 'school');
+  END IF;
+END $$;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIGRATION v3.8.53 — Paramètres metro embarqués dans grooves + raison de refus
