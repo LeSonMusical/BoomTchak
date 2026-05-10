@@ -119,7 +119,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
 .mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
-.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.7rem 0;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin:.3rem 0}
+.metro-pat-row{display:flex;align-items:center;gap:6px;padding:.4rem 0;margin:.1rem 0}
 .mpv-sig-label{font-size:10px;font-weight:600;color:#9991c4;white-space:nowrap;flex-shrink:0;min-width:24px;text-align:center;background:transparent;line-height:1.4;opacity:.7}
 .metro-pat-viz{display:flex;flex-wrap:wrap;gap:3px;align-items:center;justify-content:center;flex:1;min-width:0}
 .mpv-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0;line-height:1;user-select:none;border:none;cursor:pointer}
@@ -163,7 +163,11 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-vol-row{display:flex;align-items:center;gap:8px;padding:.3rem 0}
 .metro-3col-eq-row{display:flex;align-items:center;gap:2px}
 /* ── Sig volet redesign (v3.10.8) ── */
-.sig-edit-val{font-size:13px;font-weight:800;color:#aaa;padding:0 3px;white-space:nowrap;flex-shrink:0;letter-spacing:.01em}
+.sig-edit-val{color:#aaa;padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center}
+.sig-frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:0;vertical-align:middle}
+.sig-frac-num,.sig-frac-den{font-size:9px;font-weight:800;line-height:1.15;text-align:center}
+.sig-frac-line{width:100%;min-width:10px;height:1px;background:currentColor;margin:1px 0}
+body.dark-mode .sig-edit-val{color:#666}
 /* ── Swing labels ── */
 .swing-pct{font-size:9px;font-weight:700;color:#6B5FA5;text-align:center;line-height:1;padding-bottom:1px}
 .swing-name{font-size:8px;font-style:italic;color:#9991c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;line-height:1.2;padding-top:1px}
@@ -845,7 +849,6 @@ body.dark-mode .mpv-label{color:#d0c0ff}
 body.dark-mode .mpv-beats-val{color:#d0c0ff}
 body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
 body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
-body.dark-mode .sig-edit-val{color:#666}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -977,12 +980,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.14</span>
+      <span class="app-version">v3.10.15</span>
     </div>
   </div>
   <div class="top-bar-center">
     <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
-    <button class="btn-top" id="btn-vol" title="Court: mute band · Double tap: section · Glisser: volume"><div class="sons-row"><span id="sons-icon">🔊</span><span class="sons-lbl">Sons</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
+    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span><span class="sons-lbl">Sons</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
   </div>
   <div class="top-bar-right">
     <div class="settings-menu-wrap">
@@ -2261,6 +2264,7 @@ function computeSigLabel() {
   const mp = currentSig?.metroPattern;
   const unit = currentSig?.beatUnit || 4;
   const beats = currentSig?.beatsPerMeasure || 4;
+  const sub = currentSig?.subdivision || 1;
   if (!mp || !mp.length) return `${beats}/${unit}`;
   const aPos = mp.reduce((acc, v, i) => { if (v === 'A') acc.push(i); return acc; }, []);
   if (aPos.length <= 1) return `${beats}/${unit}`;
@@ -2271,16 +2275,23 @@ function computeSigLabel() {
   }
   const allEqual = groups.every(g => g === groups[0]);
   if (allEqual) return `${beats}/${unit}`;
-  return groups.join('+') + `/${unit}`;
+  // Diviser par subdivision pour obtenir les groupes en unités de battue (ex: 3+4/8 et non 6+8/8)
+  return groups.map(g => Math.round(g / sub)).join('+') + `/${unit}`;
 }
 
-// Met à jour l'affichage de la signature dans le volet Sign et dans le volet Métro
+function _sigFracHtml(lbl) {
+  const sl = lbl.lastIndexOf('/');
+  if (sl < 0) return lbl;
+  return `<span class="sig-frac"><span class="sig-frac-num">${lbl.slice(0,sl)}</span><span class="sig-frac-line"></span><span class="sig-frac-den">${lbl.slice(sl+1)}</span></span>`;
+}
+
+// Met à jour l'affichage de la signature dans le volet Unit et dans le volet Métro
 function updateSigDisplays() {
-  const lbl = computeSigLabel();
+  const frac = _sigFracHtml(computeSigLabel());
   const sigDisp = document.getElementById('sig-unit-display');
-  if (sigDisp) sigDisp.textContent = lbl;
+  if (sigDisp) sigDisp.innerHTML = frac;
   const mpvLbl = document.getElementById('mpv-sig-label');
-  if (mpvLbl) mpvLbl.textContent = lbl;
+  if (mpvLbl) mpvLbl.innerHTML = frac;
 }
 
 function renderMetroPatternViz() {
@@ -6524,7 +6535,7 @@ async function sbSyncPublicPool() {
       sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams });
       updateSyncStatus('Base école chargée');
       rebuildMetroPresets(); rebuildAllFamFilters();
-      buildGrooveSection(); buildLayers();
+      buildGrooveSection(); buildLayers(); buildEncycloSection();
     }
   } catch(e) {
     // Silencieux si RLS bloque la lecture anonyme (non migré)
@@ -9600,11 +9611,17 @@ function attachEvents(){
       if(bc)bc.classList.toggle('open', sonsOuvert&&instrOuvert);
     }
 
+    let _longPressTimer=null;
+    const _clearLong=()=>{if(_longPressTimer){clearTimeout(_longPressTimer);_longPressTimer=null;}};
+
     btnV.addEventListener('pointerdown',e=>{
       _startX=e.clientX; _startVol=bandVolume;
       _down=true; _dragMoved=false;
       btnV.setPointerCapture(e.pointerId);
       e.preventDefault();
+      _longPressTimer=setTimeout(()=>{
+        if(_down&&!_dragMoved){_clearLong();toggleBandSection();}
+      },500);
     },{passive:false});
 
     btnV.addEventListener('pointermove',e=>{
@@ -9612,6 +9629,7 @@ function attachEvents(){
       e.preventDefault();
       const dx=e.clientX-_startX;
       if(!_dragMoved&&Math.abs(dx)<DRAG_PX)return;
+      _clearLong();
       _dragMoved=true;
       bandVolume=Math.max(0,Math.min(100,Math.round(_startVol+dx*0.5)));
       _dragOverlay.show('🔊 '+bandVolume+'%');
@@ -9620,9 +9638,10 @@ function attachEvents(){
     },{passive:false});
 
     btnV.addEventListener('pointerup',()=>{
+      _clearLong();
       _down=false; _dragOverlay.hide();
       if(_dragMoved) return;
-      // Court tap : double tap = section, sinon mute band
+      // Court tap : mute band (appui long géré par timeout)
       const now=Date.now();
       if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
       else {
@@ -9639,11 +9658,15 @@ function attachEvents(){
       }
     });
 
-    btnV.addEventListener('pointercancel',()=>{ _down=false; _dragOverlay.hide(); });
+    btnV.addEventListener('pointercancel',()=>{ _clearLong(); _down=false; _dragOverlay.hide(); });
     updateBandVolFill();
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
+  });
+  // Clic sur espace vide de la barre métro → toggle volet Tempo
+  document.getElementById('section-temps').addEventListener('click',e=>{
+    if(e.target===e.currentTarget) _toggleMetroSub('metro-sub-temps','btn-metro-volet-temps');
   });
   // ── 4 boutons sous-volets metro ──
   function _toggleMetroSub(subId, btnId) {
