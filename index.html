@@ -977,7 +977,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.13</span>
+      <span class="app-version">v3.10.14</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -8505,11 +8505,7 @@ async function initAuth() {
     }
     renderAuthUI();
     setMode('tx'); // Connecté → mode TX automatique
-    if (wasCallback || !packCours.patterns.some(p => p.source === 'school')) {
-      await sbSyncSchoolPool();
-    } else {
-      updateSyncStatus('Base école chargée depuis le cache local');
-    }
+    await sbSyncSchoolPool();
   }
 }
 
