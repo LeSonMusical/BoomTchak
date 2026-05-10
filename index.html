@@ -92,7 +92,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
-.tap-tempo-row{padding:.35rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:4px;border-top:1px solid rgba(176,168,216,.5);border-bottom:1px solid rgba(176,168,216,.5);margin-top:.2rem;margin-bottom:.2rem}
+.tap-tempo-row{padding:.35rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:4px;margin-top:.1rem;margin-bottom:.1rem}
 .tap-left{flex:1;display:flex;align-items:center;gap:4px}
 .tap-right{flex:1;display:flex;align-items:center;gap:4px;justify-content:flex-end}
 .tap-n-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0}
@@ -113,7 +113,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-sig-unit-row .mpv-sel-sm{flex:1;min-width:0}
 .mpv-label{font-size:10px;color:#111;white-space:nowrap;flex-shrink:0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
-.mpv-beats-btn{width:14px;height:22px;border-radius:4px;border:1px solid rgba(107,95,165,.3);background:rgba(107,95,165,.1);color:#4a3d8a;cursor:pointer;font-size:8px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:700}
+.mpv-beats-btn{width:18px;height:22px;border-radius:4px;border:1.5px solid rgba(107,95,165,.5);background:rgba(107,95,165,.15);color:#4a3d8a;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:900}
+.mpv-beats-btn:active{background:rgba(107,95,165,.35)}
 .mpv-beats-val{font-size:10px;font-weight:600;color:#111;min-width:20px;text-align:center;flex-shrink:0;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.3);border-radius:4px;padding:2px 4px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
 .mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #b0a8d8;border-radius:4px;background:transparent;color:#111;cursor:pointer;flex-shrink:0}
@@ -162,13 +163,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-vol-row{display:flex;align-items:center;gap:8px;padding:.3rem 0}
 .metro-3col-eq-row{display:flex;align-items:center;gap:2px}
 /* ── Sig volet redesign (v3.10.8) ── */
-.sig-edit-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px;padding:.2rem 0 .15rem;align-items:center}
-.sig-edit-hdr{font-size:9px;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;text-align:center}
-.sig-edit-val{font-size:15px;font-weight:700;color:#4a3d8a;text-align:center;display:flex;align-items:center;justify-content:center;min-height:40px;background:rgba(107,95,165,.07);border-radius:5px;border:1px solid rgba(107,95,165,.2);padding:0 4px}
-.sig-div-ctrl{display:flex;flex-direction:column;align-items:center;gap:1px}
-.mpv-beats-range{-webkit-appearance:slider-vertical;height:56px;width:20px;cursor:pointer;accent-color:#6B5FA5;writing-mode:vertical-lr;direction:rtl;touch-action:none}
-.sig-unit-ctrl{display:flex;flex-direction:column;align-items:center;gap:3px}
-.sig-par-mesure{font-size:9px;color:#888;white-space:nowrap;text-align:center}
+.sig-edit-val{font-size:11px;font-weight:700;color:#4a3d8a;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.25);border-radius:4px;padding:2px 6px;white-space:nowrap;flex-shrink:0}
 /* ── Metro ctrl row (v3.10.8) ── */
 .metro-ctrl-row{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;padding:.15rem 0 .1rem}
 .metro-ctrl-row .mpv-word-btn{flex:1;min-width:0;font-size:9px;padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -847,9 +842,7 @@ body.dark-mode .mpv-label{color:#d0c0ff}
 body.dark-mode .mpv-beats-val{color:#d0c0ff}
 body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
 body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
-body.dark-mode .sig-edit-hdr{color:#666}
 body.dark-mode .sig-edit-val{color:#a89fd0;background:rgba(107,95,165,.12);border-color:rgba(107,95,165,.3)}
-body.dark-mode .sig-par-mesure{color:#666}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -981,7 +974,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.8</span>
+      <span class="app-version">v3.10.9</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1096,26 +1089,28 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 2 : Sign ────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
-    <div class="sig-edit-grid">
-      <div class="sig-edit-hdr">Signature</div>
-      <div class="sig-edit-hdr">Divisions</div>
-      <div class="sig-edit-hdr">Unités</div>
-      <div class="sig-edit-val" id="sig-unit-display">4/4</div>
-      <div class="sig-div-ctrl">
-        <button class="mpv-beats-btn" id="mpv-beats-up">▲</button>
-        <input type="range" class="mpv-beats-range" id="mpv-beats-range" min="1" max="33" value="4" step="1">
-        <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-        <button class="mpv-beats-btn" id="mpv-beats-down">▼</button>
+    <div class="metro-3col">
+      <div class="metro-3col-bpm" style="align-items:center;justify-content:center">
+        <span class="metro-3col-lbl">Signature</span>
+        <span class="sig-edit-val" id="sig-unit-display">4/4</span>
       </div>
-      <div class="sig-unit-ctrl">
-        <select class="mpv-sel" id="mpv-unit-sel">
+      <div class="metro-3col-eq">
+        <span class="metro-3col-lbl">Divisions</span>
+        <div class="mpv-beats-ctrl" style="gap:4px">
+          <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
+          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+          <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
+        </div>
+      </div>
+      <div class="metro-3col-sw">
+        <span class="metro-3col-lbl">Unité</span>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
           <option value="4">♩ noire</option>
           <option value="8">♪ croche</option>
-          <option value="2">𝅗𝅥 blanche</option>
-          <option value="1">𝅝 ronde</option>
-          <option value="16">♬ double-croche</option>
+          <option value="2">♩♩ blanche</option>
+          <option value="1">○ ronde</option>
+          <option value="16">♬ dbl-croche</option>
         </select>
-        <span class="sig-par-mesure">par mesure</span>
       </div>
     </div>
   </div><!-- /metro-bloc sign -->
@@ -9783,7 +9778,7 @@ function attachEvents(){
     _setBeatsUI(next);
     buildSigFromControls();
   });
-  document.getElementById('mpv-beats-range').addEventListener('input', e => {
+  document.getElementById('mpv-beats-range')?.addEventListener('input', e => {
     _setBeatsUI(e.target.value);
     buildSigFromControls();
   });
