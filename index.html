@@ -974,7 +974,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.9</span>
+      <span class="app-version">v3.10.10</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6126,8 +6126,10 @@ function drawLinear(){
   const su=LAYERS.map((_,li)=>stepU(li));
   const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
   const measU=mSteps*DENOM;
-  let totalU=measU;
-  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=lcm(totalU,cycU[li]);});
+  // Cycle = PPCM des patterns seuls (indépendant de la mesure) ; mesure = repère visuel uniquement
+  let totalU=0;
+  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
+  if(!totalU) totalU=measU;
   const CAP_U=64*DENOM, isCapped=totalU>CAP_U;
   const dispU=Math.min(totalU,CAP_U);
   const numMeasures=Math.ceil(dispU/measU);
@@ -6229,8 +6231,9 @@ function circleHitTest(x, y){
     const DENOM=6;
     const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
     const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
-    let totU=mStepsL*DENOM;
-    LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=lcm(totU,cycUL[li]);});
+    let totU=0;
+    LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=totU>0?lcm(totU,cycUL[li]):cycUL[li];});
+    if(!totU) totU=mStepsL*DENOM;
     const dispU=Math.min(totU,64*DENOM);
     const marginX=8,marginY=16;
     const rowH=Math.floor((cv.height-2*marginY)/3);
