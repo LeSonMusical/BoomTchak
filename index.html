@@ -164,6 +164,8 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .metro-3col-eq-row{display:flex;align-items:center;gap:2px}
 /* ── Sig volet redesign (v3.10.8) ── */
 .sig-edit-val{font-size:11px;font-weight:700;color:#4a3d8a;background:rgba(107,95,165,.08);border:1px solid rgba(107,95,165,.25);border-radius:4px;padding:2px 6px;white-space:nowrap;flex-shrink:0}
+/* ── Swing name label ── */
+.swing-name{font-size:8px;font-style:italic;color:#6B5FA5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;line-height:1.2}
 /* ── Metro ctrl row (v3.10.8) ── */
 .metro-ctrl-row{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;padding:.15rem 0 .1rem}
 .metro-ctrl-row .mpv-word-btn{flex:1;min-width:0;font-size:9px;padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -974,7 +976,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.10</span>
+      <span class="app-version">v3.10.11</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1052,9 +1054,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 1 : Temps ─────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-temps" style="display:block">
   <div class="metro-bloc">
-    <!-- Ligne 1 : BPM | Battue | Swing -->
+    <!-- Ligne 1 : BPM (large) | Battement -->
     <div class="metro-3col">
-      <div class="metro-3col-bpm">
+      <div class="metro-3col-bpm" style="flex:2">
         <div class="metro-3col-top">
           <span id="metro-tempo-name">—</span>
           <span style="color:#ccc;font-size:9px">·</span>
@@ -1079,10 +1081,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" title="BPM ressenti — entrer à la main">
         </div>
       </div>
-      <div class="metro-3col-sw">
-        <span class="metro-3col-lbl">Swing <span id="swing-display">0%</span></span>
-        <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
-      </div>
     </div>
   </div><!-- /metro-bloc temps -->
   </div><!-- /metro-sub-temps -->
@@ -1090,10 +1088,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
-      <div class="metro-3col-bpm" style="align-items:center;justify-content:center">
-        <span class="metro-3col-lbl">Signature</span>
-        <span class="sig-edit-val" id="sig-unit-display">4/4</span>
-      </div>
       <div class="metro-3col-eq">
         <span class="metro-3col-lbl">Divisions</span>
         <div class="mpv-beats-ctrl" style="gap:4px">
@@ -1101,8 +1095,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <span class="mpv-beats-val" id="mpv-beats-val">4</span>
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
+        <span class="sig-edit-val" id="sig-unit-display" style="margin-top:2px">4/4</span>
       </div>
-      <div class="metro-3col-sw">
+      <div class="metro-3col-eq">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
           <option value="4">♩ noire</option>
@@ -1111,6 +1106,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <option value="1">○ ronde</option>
           <option value="16">♬ dbl-croche</option>
         </select>
+      </div>
+      <div class="metro-3col-sw">
+        <span class="metro-3col-lbl">Swing <span id="swing-display">50%</span></span>
+        <span class="swing-name" id="swing-name">Straight</span>
+        <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
       </div>
     </div>
   </div><!-- /metro-bloc sign -->
@@ -2351,9 +2351,9 @@ function scheduler(){
       }
       // X (fort) joue plein volume, x (faible) joue à 40%
       const stepVal=state[li].pattern[si];
-      // Swing : décale les steps impairs (si%2===1) vers l'arrière
-      // swingVal=1.0 → décalage = 1/3 du step = shuffle ternaire parfait
-      const swOff=(swingVal>0&&si%2===1)?swingVal*getBeatSec(li)/3:0;
+      // Swing MPC : swingVal 0-1 → MPC 50-75% ; offset = swingVal*0.5*step
+      // swingVal=0.667 → MPC 66.6% (triolet) ; swingVal=1.0 → MPC 75% (croche pointée)
+      const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
       if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?0.33:1.0);
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
@@ -2375,7 +2375,7 @@ function scheduler(){
         else if(level==='P'&&metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
         else if(level==='p'&&metro.subdivOn){
           // Swing des subdivisions : aligne avec le décalage des steps impairs des layers
-          const swOffM=(swingVal>0&&metroStepPos%2===1)?swingVal*(60/spmNow)/3:0;
+          const swOffM=(swingVal>0&&metroStepPos%2===1)?swingVal*0.5*(60/spmNow):0;
           playMetroClick(metroNextBeatTime+swOffM,'subdiv');
         }
       }
@@ -2702,10 +2702,7 @@ function applyGroove(grooveId){
     const m = groove.metro;
     if (m.swing !== undefined) {
       swingVal = m.swing;
-      const swSlider = document.getElementById('swing-slider');
-      if (swSlider) swSlider.value = Math.round(m.swing * 100);
-      const swDisp = document.getElementById('swing-display');
-      if (swDisp) swDisp.textContent = Math.round(m.swing * 100) + '%';
+      updateSwingDisplay();
     }
     if (m.metroPattern && m.metroPattern.length > 0 && currentSig) {
       // Metro était dirty au save — restaurer le pattern embarqué + tous les params sig
@@ -5720,6 +5717,27 @@ function updateSpmDisplay(){
   const half=Math.round(spm/2),third=Math.round(spm/3),quarter=Math.round(spm/4);
   const eq=document.getElementById('bpm-equiv');
   if(eq)eq.innerHTML='<span style="letter-spacing:-.1em">♩♩</span>='+quarter+'&ensp;♩='+half+'&ensp;♩.='+third;
+}
+// Swing MPC : slider 0-100 → MPC 50-75% ; retourne le nom de style
+function getSwingName(mpcPct){
+  if(mpcPct<=51)  return'Straight';
+  if(mpcPct<=54)  return'Micro-swing';
+  if(mpcPct<=58)  return'Lilt';
+  if(mpcPct<=62)  return'Funk swing';
+  if(mpcPct<=65)  return'Light shuffle';
+  if(mpcPct<=68)  return'Triplet swing';
+  if(mpcPct<=72)  return'Hard shuffle';
+  return'Dotted shuffle';
+}
+// Met à jour les éléments UI swing depuis swingVal (0-1)
+function updateSwingDisplay(){
+  const mpc=50+swingVal*25;
+  const d=document.getElementById('swing-display');
+  if(d) d.textContent=mpc.toFixed(mpc===Math.round(mpc)?0:1)+'%';
+  const n=document.getElementById('swing-name');
+  if(n) n.textContent=getSwingName(mpc);
+  const sl=document.getElementById('swing-slider');
+  if(sl) sl.value=Math.round(swingVal*100);
 }
 function getTempoName(bpm){
   if(bpm<40) return'Grave';
@@ -9667,11 +9685,10 @@ function attachEvents(){
     btn.addEventListener('pointerdown',()=>{_adjustTempoBPM(delta);_rpt=setTimeout(()=>{_rpt=setInterval(()=>_adjustTempoBPM(delta),60);},400);});
     ['pointerup','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{clearTimeout(_rpt);clearInterval(_rpt);}));
   });
-  // ── Swing slider ──
+  // ── Swing slider (MPC 50-75%) ──
   document.getElementById('swing-slider')?.addEventListener('input',e=>{
     swingVal=parseInt(e.target.value)/100;
-    const d=document.getElementById('swing-display');
-    if(d) d.textContent=e.target.value+'%';
+    updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
   });
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
@@ -10138,7 +10155,7 @@ function attachEvents(){
     saveGroove(); // persiste localement sans marquer le groove dirty
   });
   updateBeatDisplay();
-
+  updateSwingDisplay();
 
   // ── Vue circulaire / linéaire ──
   // btn-view créé et écouté dans buildGrooveSection()
