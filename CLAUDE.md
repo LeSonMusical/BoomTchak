@@ -1,7 +1,7 @@
 # BoomTchak — Instructions Claude Code
 
 ## Projet
-App web pédagogique rythme, single-file `index.html` (~9000 lignes), vanilla JS, Supabase.
+App web pédagogique rythme, single-file `index.html` (~10500 lignes), vanilla JS, Supabase.
 Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 
 ## Règles de collaboration
@@ -68,11 +68,16 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.9.0** (session 2026-05-07)
+**v3.10.12** (session 2026-05-10)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.12 | Volet Unit : signature affichée inline à gauche des boutons < N > (sans bordure/fond, couleur neutre) ; Swing déplacé dans Unit (3e colonne) : % MPC au-dessus du slider, nom de style au-dessous |
+| v3.10.11 | Swing MPC 50–75% : formule `offset = swingVal×0.5×stepDuration` (layers + métro) ; `getSwingName(mpcPct)` 8 niveaux (Straight→Dotted shuffle) ; `updateSwingDisplay()` ; swing déplacé de Tempo vers Unit |
+| v3.10.10 | Vue Cycle linéaire : `totalU` = LCM des longueurs de patterns uniquement (signature exclue) ; `measU` = séparateur visuel seulement — cycle reflète la durée réelle des patterns |
+| v3.10.9 | Volet Unit : remplacement de la grille haute par `metro-3col` compact ; boutons < > divisions (mpv-beats-btn) plus visibles ; suppression double bordure `tap-tempo-row` ; blanche = ♩♩, ronde = ○ dans unité |
+| v3.10.8 | Refonte volets metro — Tempo (2 col : BPM large + Battement) ; Unit (3 col : Divisions + Unité + Swing) ; Métro (ctrl-row accents + pattern viz) ; `computeSigLabel()` → "2+3/8" depuis positions accents ; `updateSigDisplays()` ; `_applyDefaultsFromUnit()` auto-sync battement+subdiv ; symbole p → '-' dans renderMetroPatternViz |
 | v3.9.0 | Volet Band : suppression bouton ≡ ; openPresetModal type:'band' — modes ✎ Gérer (rename, delete, familles) et ☰ Réordonner (drag-drop bands + familles) ; 💾 dans l'en-tête de chaque row son (toujours visible) ; TX/MX — section Soumettre/Approuver pour bands ; libDeleteBand, sbPublishBand, sbPushSchoolBandOrder ; table `bands` + `band_familles` dans schema.sql |
 | v3.8.59 | Slider vol → sous-volet Vol (classe temps-slider) ; ordre boutons : Temps\|Sign\|Tap\|Vol\|Métro ; Temps ouvert par défaut |
 | v3.8.58 | Fix sous-volets metro : Sign = sig-grid (Mesure/temps/subdiv) ; Temps = 3col seul ; boutons toggle avec état visuel open (fond violet + bordure + gras) |
@@ -147,6 +152,18 @@ stepSec = (60 / spm) × (stepsPerBeat / subdivision)
 | BPM input `beat-val-input` | ✅ Recalcule SPM depuis BPM ressenti | `♩= N` affiché |
 | Slider `#bpm` | ✅ Ajuste SPM directement | Nom tempo latin |
 
+### Formule swing (v3.10.11+)
+```js
+// Offset sur steps impairs d'un layer :
+const swOff = (swingVal > 0 && si % 2 === 1) ? swingVal * 0.5 * getBeatSec(li) : 0;
+// Offset sur steps impairs du métro (subdiv) :
+const swOffM = (swingVal > 0 && metroStepPos % 2 === 1) ? swingVal * 0.5 * (60/spmNow) : 0;
+```
+- `swingVal` : 0–1 → affichage MPC = `50 + swingVal×25` % (plage 50–75%)
+- `getSwingName(mpcPct)` : Straight | Micro-swing | Lilt | Funk swing | Light shuffle | Triplet swing | Hard shuffle | Dotted shuffle
+- Swing persisté dans `groove.metro` (embarqué avec le groove au save)
+- Contrôle : slider dans volet Unit, colonne 3 (`.metro-3col-sw`)
+
 ### Sig et groove
 - Changer de signature (`changeSig`) met à jour `groove.signature` **silencieusement** (pas de dirty, pas de publish).
 - Le groove n'est marqué dirty que sur une modification explicite de pattern ou de paramètre musical.
@@ -201,6 +218,15 @@ Le volet Band est le dernier grand chantier de gestion de presets à refactorise
 - Durée max : 2 mesures ou 1 cycle pattern, puis auto-stop rec
 
 **Complexité estimée :** modérée — 4 à 6h. Les primitives de timing existent déjà (`getBeatSec`, `state[li].stepPos`, `state[li].nextStepTime`). La quantization au step est triviale. Le plus délicat est la gestion de l'UX (countdown avant rec ? feedback visuel précis ?). À cadrer avec Lamberio avant de coder.
+
+## Résolu (session 2026-05-10 — v3.10.8–v3.10.12)
+- ✅ **Refonte volets metro** — Tempo (BPM large + Battement) | Unit (Divisions + Unité + Swing) | Tap | Vol | Métro ; remplacement de Sign/Temps par Tempo/Unit
+- ✅ **computeSigLabel()** — génère "2+3/8" en lisant les positions des accents A dans metroPattern
+- ✅ **_applyDefaultsFromUnit()** — auto-sync battement et subdivision depuis l'unité choisie
+- ✅ **Swing MPC 50–75%** — formule `offset = swingVal × 0.5 × stepDuration` (layers + métro) ; `getSwingName()` 8 niveaux nommés
+- ✅ **Swing → volet Unit** — colonne 3 avec % MPC au-dessus du slider et nom de style au-dessous
+- ✅ **Signature inline Unit** — `sig-edit-val` neutre (pas de bordure/fond) inline à gauche des < N > divisions
+- ✅ **Vue Cycle LCM patterns only** — `totalU` calculé sur les longueurs de patterns uniquement, signature = séparateur visuel
 
 ## Résolu (session 2026-05-06 — suite)
 - ✅ **5 sous-volets metro** — Temps (3col BPM+Battue+Swing) | Sign (sig-grid Mesure/temps/subdiv) | Tap | Vol (slider) | Métro (pattern viz) ; Temps ouvert par défaut
@@ -290,6 +316,52 @@ openPresetModal(cfg)
     sbPushSchoolOrder(type)     → items patterns/grooves
     sbPushSchoolMetroOrder()    → items metro_presets
 ```
+
+---
+
+## Encyclopédie — Cahier des charges des articles concept
+
+### Structure d'un article (8 sections)
+
+| # | Titre de section | Contenu |
+|---|-----------------|---------|
+| 1 | **En bref** | L'essentiel en 3 phrases courtes, accessible à tous |
+| 2 | **En théorie** | Définition formelle, terminologie précise |
+| 3 | **En pratique** | En situation de musicien — exemples, ressenti, analogies |
+| 4 | **Dans BoomTchak** | Pointer l'UI concerné, expliquer les usages concrets |
+| 5 | **Pour aller plus loin** | Approfondissements spécifiques (ex : tempo absolu vs ressenti, machine vs humain) |
+| 6 | **Histoire / Culture / Écriture** | Selon pertinence de la notion (pas toujours présent) |
+| 7 | **Voir aussi** | Liens vers articles connexes |
+
+### Règles de rédaction
+- Accès direct à une section depuis un autre article (système d'ancres : `article#section`)
+- Chaque section : titre + contenu ; à l'intérieur d'un contenu : aller à la ligne entre paragraphes
+- Ton pédagogique, pas condescendant — le musicien est au centre
+- Pas de jargon non défini dans l'article lui-même
+
+### Liste des 12 articles validés
+`Tempo` | `Mesure` | `Temps` | `Pulsation` | `Division` | `Rythme` | `Pattern` | `Groove` | `Syncope` (+ Contretemps) | `Polymétrie` | `Shuffle` | `Cycle`
+
+### Format DB cible (extension à prévoir)
+Le format actuel `{ chapo, bullets }` est insuffisant pour 8 sections nommées avec ancres.
+Structure cible :
+```js
+packCours.encyclo[key] = {
+  titre: string,
+  sections: [
+    { id: 'en-bref',       titre: 'En bref',       contenu: string },
+    { id: 'en-theorie',    titre: 'En théorie',    contenu: string },
+    { id: 'en-pratique',   titre: 'En pratique',   contenu: string },
+    { id: 'dans-boomtchak',titre: 'Dans BoomTchak',contenu: string },
+    { id: 'plus-loin',     titre: 'Pour aller plus loin', contenu: string },
+    { id: 'culture',       titre: 'Histoire / Culture / Écriture', contenu: string },  // optionnel
+    { id: 'voir-aussi',    titre: 'Voir aussi',    liens: string[] }
+  ]
+}
+```
+Migration DB : champ `bullets jsonb` étendu ou remplacé par `sections jsonb`.
+
+---
 
 ## Conventions
 - Commentaires en français, code en anglais

@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.4.49
+> Mis à jour au fil du développement — v3.10.12
 
 ---
 
@@ -95,6 +95,10 @@ key text PK, chapo text, bullets jsonb,  -- [["Titre","Texte"], ...]
 scope ('school'|'teacher'), approved bool,
 owner_id uuid FK profiles, updated_at
 ```
+
+**Extension prévue (articles concept v3.10+)** : le champ `bullets jsonb` sera étendu ou remplacé
+par `sections jsonb` pour supporter le format 8 sections nommées avec ancres (voir CLAUDE.md §Encyclopédie).
+Migration à prévoir : `ALTER TABLE public.encyclo ADD COLUMN IF NOT EXISTS sections jsonb;`
 
 ### Colonnes supprimées (migration v3.1 → v3.1+)
 - `patterns.unite_temps`, `patterns.pas_par_mesure`
@@ -209,6 +213,11 @@ Fix (3 points) :
 **Décision de design** : l'encyclopédie est un contenu éditorial MX-only.
 Le workflow naturel est : MX édite → MX publie en DB → tous les TX reçoivent au sync suivant.
 Les éditions TX restent locales (annotations personnelles).
+
+**Évolution v3.10+ — Articles concept** : 12 articles pédagogiques (Tempo, Mesure, Temps, Pulsation,
+Division, Rythme, Pattern, Groove, Syncope, Polymétrie, Shuffle, Cycle) au format 8 sections nommées
+(En bref / En théorie / En pratique / Dans BoomTchak / Pour aller plus loin / Histoire-Culture /
+Voir aussi). Structure et cahier des charges complets dans CLAUDE.md §Encyclopédie.
 
 ---
 
@@ -499,7 +508,40 @@ Valider le modèle avec Lamberio avant tout codage.
 
 ---
 
-## 16. Historique des versions
+## 16. Architecture volet métronome (v3.10+)
+
+### Sous-volets (5 boutons toggle indépendants)
+| Volet | ID | Contenu |
+|-------|----|---------|
+| **Tempo** | `metro-sub-tempo` | 2 colonnes : BPM (slider large + −/+) + Battement (select felBeatSteps + input BPM) |
+| **Unit** | `metro-sub-unit` | 3 colonnes : Divisions (sig inline + < N >) + Unité (select beatUnit) + Swing (slider MPC) |
+| **Tap** | `metro-sub-tap` | Bouton tap-tempo ; calcule la moyenne des intervalles |
+| **Vol** | `metro-sub-vol` | Slider volume métronome (classe `temps-slider`) |
+| **Métro** | `metro-sub-pat` | ctrl-row accents (^/>/−) + select subdivision + pattern viz |
+
+### Fonctions clés (v3.10.8+)
+
+| Fonction | Rôle |
+|----------|------|
+| `computeSigLabel()` | Lit les positions 'A' dans metroPattern → génère "2+3/8" ou "4/4" |
+| `updateSigDisplays()` | Synchronise `sig-unit-display` et `mpv-sig-label` via `computeSigLabel()` |
+| `_applyDefaultsFromUnit()` | Auto-sync felBeatSteps et subdivision depuis l'unité sélectionnée |
+| `getSwingName(mpcPct)` | Retourne le nom du style de swing pour un % MPC donné (50–75%) |
+| `updateSwingDisplay()` | Synchronise `swing-display` (%) et `swing-name` (style) depuis `swingVal` |
+| `syncMetroControls(sig)` | Synchronise tous les contrôles du volet depuis `currentSig` |
+
+### Formule swing (v3.10.11)
+```js
+// Steps impairs d'un layer (si % 2 === 1) :
+const swOff = swingVal * 0.5 * getBeatSec(li);
+// Steps impairs du métro :
+const swOffM = swingVal * 0.5 * (60 / spmNow);
+```
+Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted shuffle).
+
+---
+
+## 17. Historique des versions
 
 | Version | Changements principaux |
 |---------|----------------------|
@@ -518,3 +560,9 @@ Valider le modèle avec Lamberio avant tout codage.
 | v3.4.47 | applyGroove : resync alignée sur le prochain temps 1 du métronome (getMetroBeatSec) |
 | v3.4.48 | Encyclopédie : misc_tempo (SPM/BPM), misc_signature (sigChangeLock), misc_mesure (↺ Mesure), nouvel article misc_visualisation |
 | v3.4.49 | Signatures 7/4, 7/8, 11/8, 13/8 ; encyclopédie misc_signature étendue ; chantier futur metro-comme-pattern documenté |
+| v3.9.0 | Volet Band : modal type:'band' modes ✎/☰ ; TX/MX CRUD bands ; table `bands`+`band_familles` |
+| v3.10.8 | Refonte volets metro Tempo/Unit/Métro ; computeSigLabel() ; updateSigDisplays() ; _applyDefaultsFromUnit() |
+| v3.10.9 | Volet Unit compact (metro-3col) ; boutons < > visibles ; blanche=♩♩ ; ronde=○ |
+| v3.10.10 | Vue Cycle : totalU = LCM patterns only (signature = séparateur visuel) |
+| v3.10.11 | Swing MPC 50–75% : formule ×0.5×stepDuration ; getSwingName() 8 niveaux ; déplacé vers Unit |
+| v3.10.12 | Signature inline gauche dans Unit (sig-edit-val neutre) ; swing colonne 3 (% + nom) |
