@@ -462,7 +462,8 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-sheet.pm-open{transform:translateY(0);}
 .pm-handle{width:36px;height:4px;background:#ccc;border-radius:2px;margin:8px auto 0;flex-shrink:0;}
 .pm-header{display:flex;align-items:center;gap:6px;padding:10px 14px 8px;border-bottom:1px solid #e0ddd8;font-weight:600;font-size:13px;flex-shrink:0;color:var(--pm-ac,#4a3d8a);}
-.pm-close{background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:2px 8px;border-radius:4px;margin-left:auto;}
+.pm-close{background:none;border:1px solid #ccc;cursor:pointer;font-size:14px;color:#666;padding:2px 8px;border-radius:4px;margin-left:auto;line-height:1.4;}
+.pm-close:hover{border-color:#999;color:#333;}
 .pm-body{display:flex;flex:1;overflow:hidden;}
 .pm-fam-col{width:32%;border-right:1px solid #e0ddd8;overflow-y:auto;flex-shrink:0;touch-action:pan-y;overscroll-behavior:contain;}
 .pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;}
@@ -980,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.15</span>
+      <span class="app-version">v3.10.16</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -9662,13 +9663,38 @@ function attachEvents(){
     updateBandVolFill();
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
+    _toggleAllMetroSubs();
   });
-  // Clic sur espace vide de la barre métro → toggle volet Tempo
+  // Clic sur espace vide de la barre métro → collapse/restore tous les sous-volets
   document.getElementById('section-temps').addEventListener('click',e=>{
-    if(e.target===e.currentTarget) _toggleMetroSub('metro-sub-temps','btn-metro-volet-temps');
+    if(e.target===e.currentTarget) _toggleAllMetroSubs();
   });
   // ── 4 boutons sous-volets metro ──
+  const _METRO_SUBS_MAP=[
+    {subId:'metro-sub-temps',btnId:'btn-metro-volet-temps'},
+    {subId:'metro-sub-sign',btnId:'btn-metro-volet-sign'},
+    {subId:'metro-sub-tap',btnId:'btn-metro-volet-tap'},
+    {subId:'metro-sub-vol',btnId:'btn-metro-volet-vol'},
+    {subId:'metro-sub-pat',btnId:'btn-metro-volet-pat'},
+  ];
+  let _metroCollapsedState=null;
+  function _toggleAllMetroSubs(){
+    const anyOpen=_METRO_SUBS_MAP.some(({subId})=>{const s=document.getElementById(subId);return s&&s.style.display!=='none';});
+    if(anyOpen){
+      _metroCollapsedState=_METRO_SUBS_MAP.map(({subId})=>{const s=document.getElementById(subId);return s?s.style.display!=='none':false;});
+      _METRO_SUBS_MAP.forEach(({subId,btnId})=>{
+        const s=document.getElementById(subId),b=document.getElementById(btnId);
+        if(s)s.style.display='none';if(b)b.classList.remove('open');
+      });
+    } else {
+      const saved=_metroCollapsedState||[true,false,false,false,false];
+      _METRO_SUBS_MAP.forEach(({subId,btnId},i)=>{
+        const s=document.getElementById(subId),b=document.getElementById(btnId);
+        if(s)s.style.display=saved[i]?'block':'none';
+        if(b)b.classList.toggle('open',!!saved[i]);
+      });
+    }
+  }
   function _toggleMetroSub(subId, btnId) {
     const sub = document.getElementById(subId);
     const btn = document.getElementById(btnId);
