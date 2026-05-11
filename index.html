@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.17</span>
+      <span class="app-version">v3.10.18</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2256,6 +2256,7 @@ function highlightMetroStep() {
 function setMetroDirty(isDirty) {
   metroDirty = isDirty;
   setDirtyUI('sig-sel-btn', 'btn-metro-save', isDirty);
+  updateGrooveSaveBtn();
 }
 function updateMetroSaveBtn() { setDirtyUI('sig-sel-btn', 'btn-metro-save', metroDirty); }
 
@@ -2579,7 +2580,7 @@ function setLayerDirty(li, isDirty){
 }
 
 function updateGrooveSaveBtn(){
-  setDirtyUI('groove-preset-btn', 'save-btn-groove', grooveDirty);
+  setDirtyUI('groove-preset-btn', 'save-btn-groove', grooveDirty || metroDirty || bandDirty);
 }
 
 function updateEncycloSaveBtn(){
@@ -2592,6 +2593,7 @@ function setBandDirty(v){
   if(btn)btn.classList.toggle('dirty',v);
   const pb=document.getElementById('band-preset-btn');
   if(pb)pb.classList.toggle('pm-preset-dirty',v);
+  updateGrooveSaveBtn();
 }
 function setSoundDirtySlot(key,v){
   soundDirty[key]=v;
@@ -4922,7 +4924,7 @@ function saveGroovePattern(btn){
   if(!currentGrooveId){ if(btn)flashSave(btn); return; }
   const groove=getGroove(currentGrooveId);
   if(!groove){ if(btn)flashSave(btn); return; }
-  if(!grooveDirty){ saveGroove(); if(btn)flashSave(btn); return; }
+  if(!grooveDirty && !metroDirty && !bandDirty){ saveGroove(); if(btn)flashSave(btn); return; }
   openGrooveSavePop(btn);
 }
 
@@ -9750,7 +9752,6 @@ function attachEvents(){
     swingVal=parseInt(e.target.value)/100;
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
-    grooveDirty=true; updateGrooveSaveBtn();
   });
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
@@ -9795,7 +9796,6 @@ function attachEvents(){
     sl.value=newPos;
     saveToStorage();
     setMetroDirty(true); updateMetroSaveBtn();
-    grooveDirty=true; updateGrooveSaveBtn();
     updateBeatDisplay();updateSpmDisplay();
   });
   // ── Saisie manuelle BPM ressenti (beat-val-input) ──
