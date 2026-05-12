@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.21</span>
+      <span class="app-version">v3.10.22</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1107,18 +1107,22 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
+      <!-- Col 1 : Signature -->
+      <div class="metro-3col-eq">
+        <span class="metro-3col-lbl">Signature</span>
+        <span class="sig-edit-val" id="sig-unit-display">4/4</span>
+      </div>
+      <!-- Col 2 : Divisions -->
       <div class="metro-3col-eq">
         <span class="metro-3col-lbl">Divisions</span>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span class="sig-edit-val" id="sig-unit-display">4/4</span>
-          <div class="mpv-beats-ctrl" style="gap:4px">
-            <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
-            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-            <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
-          </div>
+        <div class="mpv-beats-ctrl" style="gap:4px">
+          <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
+          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+          <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <div class="metro-3col-eq">
+      <!-- Col 3 : Unité (légèrement rétrécie) -->
+      <div class="metro-3col-eq" style="flex:0.75">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
           <option value="4">♩ noire</option>
@@ -1128,6 +1132,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <option value="16">♬ dbl-croche</option>
         </select>
       </div>
+      <!-- Col 4 : Swing -->
       <div class="metro-3col-sw">
         <span class="metro-3col-lbl">Swing</span>
         <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
@@ -9985,11 +9990,15 @@ function attachEvents(){
     ['pointerup','pointerleave'].forEach(ev=>btn.addEventListener(ev,()=>{clearTimeout(_rpt);clearInterval(_rpt);}));
   });
   // ── Swing slider (MPC 50-75%) ──
-  document.getElementById('swing-slider')?.addEventListener('input',e=>{
+  const _swSlider=document.getElementById('swing-slider');
+  _swSlider?.addEventListener('input',e=>{
     swingVal=parseInt(e.target.value)/100;
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
+    _dragOverlay.show((50+swingVal*25).toFixed(0)+'%');
   });
+  _swSlider?.addEventListener('pointerup',()=>_dragOverlay.hide());
+  _swSlider?.addEventListener('pointercancel',()=>_dragOverlay.hide());
   document.getElementById('swing-display')?.addEventListener('click',()=>{
     swingVal=0;updateSwingDisplay();
     setMetroDirty(true);updateMetroSaveBtn();

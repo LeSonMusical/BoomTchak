@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.21** (session 2026-05-12)
+**v3.10.22** (session 2026-05-12)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.22 | Volet Unit 4 colonnes : Signature + Divisions + Unité (flex:0.75) + Swing ; overlay BPM-style sur swing-slider (input → _dragOverlay.show('%') + pointerup hide) |
 | v3.10.21 | Fix groove dirty au chargement : applyGroove ne propage plus bandDirty/metroDirty vers updateGrooveSaveBtn quand band_embed/metro_embed restaurés ; sliders rappel valeur : swing tap-to-reset, prefs audio offset + soft vel montrent valeur + label textuel (Synchro/Bluetooth, Doux/Fort) tap-to-reset |
 | v3.10.20 | Refactor familles : PTK_DEFAULT source:'school' (fix rang grooves) ; type column sur familles (groove/pattern/both) ; band_familles + sound_familles branchées en DB (POST/PATCH/DELETE réels) ; _deletePending pour suppression famille band/sound via section Publier ; sbMergeSchoolData merge band/sound familles ; rename familles band/sound direct DB ; getFams() filtre par type |
 | v3.10.19 | Modal preset : appui long famille → réordonner (MX) ; fix doublon famille (assigned sig uses familles_ids + guards lib-panel) ; préfs : slider décalage audio/image (-100..+300ms) + slider volume step doux (x, 5..80%) |
