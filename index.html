@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.20</span>
+      <span class="app-version">v3.10.21</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1017,15 +1017,19 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
               <option value="bpm">BPM constant (pulsation)</option>
             </select>
           </label>
-          <div class="smenu-pref-lbl" style="gap:6px">
-            <span style="flex:1">Décalage audio/image :</span>
-            <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="width:80px;accent-color:#6B5FA5">
-            <span id="pref-audio-offset-val" style="min-width:36px;text-align:right;font-size:10px">0 ms</span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div class="smenu-pref-lbl" style="gap:6px">
+              <span style="flex:1">Décalage audio/image :</span>
+              <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="width:80px;accent-color:#6B5FA5">
+            </div>
+            <span id="pref-audio-offset-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 0">0 ms · Synchro</span>
           </div>
-          <div class="smenu-pref-lbl" style="gap:6px">
-            <span style="flex:1">Volume step doux (x) :</span>
-            <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
-            <span id="pref-soft-vel-val" style="min-width:28px;text-align:right;font-size:10px">33%</span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div class="smenu-pref-lbl" style="gap:6px">
+              <span style="flex:1">Volume step doux (x) :</span>
+              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
+            </div>
+            <span id="pref-soft-vel-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 33%">33% · Moyen</span>
           </div>
         </div>
         <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
@@ -1126,7 +1130,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       </div>
       <div class="metro-3col-sw">
         <span class="metro-3col-lbl">Swing</span>
-        <span class="swing-pct" id="swing-display">50%</span>
+        <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
         <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
         <span class="swing-name" id="swing-name">Straight</span>
       </div>
@@ -2703,8 +2707,8 @@ function applyGroove(grooveId){
     _restoreSlot(soundState[0],be.low);_restoreSlot(soundState[1],be.high);_restoreSlot(soundState[2],be.noise);
     _restoreSlot(soundStateThumb[0],be.thumbL);_restoreSlot(soundStateThumb[1],be.thumbR);
     if(groove.band_defaut)currentBandId=groove.band_defaut;
-    Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
-    setBandDirty(true);
+    // band_embed restauré depuis groove sauvegardé : pas de dirty (état déjà capturé)
+    bandDirty=false;Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);
     buildSoundPanel();
   } else if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){
     applyBand(groove.band_defaut);
@@ -2746,7 +2750,8 @@ function applyGroove(grooveId){
       syncMetroControls();
       renderMetroPatternViz();
       updateBeatDisplay();
-      setMetroDirty(true); updateMetroSaveBtn(); // preset non sauvegardé
+      // metro_embed restauré depuis groove sauvegardé : pas de dirty (état déjà capturé)
+      metroDirty=false;
     } else if (m.felBeatSteps !== undefined && currentSig) {
       currentSig = { ...currentSig, felBeatSteps: m.felBeatSteps };
       updateBeatDisplay();
@@ -5868,6 +5873,21 @@ function updateSwingDisplay(){
   if(n) n.textContent=getSwingName(mpc);
   const sl=document.getElementById('swing-slider');
   if(sl) sl.value=Math.round(swingVal*100);
+}
+function getAudioOffsetName(ms){
+  if(ms<-50)return'Avance forte';
+  if(ms<-10)return'Avance';
+  if(ms<=10)return'Synchro';
+  if(ms<=80)return'Léger retard';
+  if(ms<=180)return'Bluetooth';
+  return'Grand retard';
+}
+function getSoftVelName(pct){
+  if(pct<=15)return'Très doux';
+  if(pct<=25)return'Doux';
+  if(pct<=45)return'Moyen';
+  if(pct<=65)return'Fort';
+  return'Très fort';
 }
 function getTempoName(bpm){
   if(bpm<40) return'Grave';
@@ -9970,6 +9990,10 @@ function attachEvents(){
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
   });
+  document.getElementById('swing-display')?.addEventListener('click',()=>{
+    swingVal=0;updateSwingDisplay();
+    setMetroDirty(true);updateMetroSaveBtn();
+  });
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
     const valEl=document.getElementById('metro-bpm-val');
@@ -10411,16 +10435,20 @@ function attachEvents(){
     const pSigLock=document.getElementById('pref-sig-lock');
     if(pSigLock){pSigLock.value=prefs.sigChangeLock||'spm';pSigLock.addEventListener('change',()=>{prefs.sigChangeLock=pSigLock.value;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
     const pAO=document.getElementById('pref-audio-offset'),pAOv=document.getElementById('pref-audio-offset-val');
+    const _updateAO=()=>{const ms=parseInt(pAO.value);pAOv.textContent=ms+' ms · '+getAudioOffsetName(ms);};
     if(pAO){
       pAO.value=Math.round((prefs.audioOffset||0)*1000);
-      pAOv.textContent=pAO.value+' ms';
-      pAO.addEventListener('input',()=>{prefs.audioOffset=parseInt(pAO.value)/1000;pAOv.textContent=pAO.value+' ms';localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+      _updateAO();
+      pAO.addEventListener('input',()=>{prefs.audioOffset=parseInt(pAO.value)/1000;_updateAO();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+      pAOv.addEventListener('click',()=>{pAO.value=0;prefs.audioOffset=0;_updateAO();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
     }
     const pSV=document.getElementById('pref-soft-vel'),pSVv=document.getElementById('pref-soft-vel-val');
+    const _updateSV=()=>{const p=parseInt(pSV.value);pSVv.textContent=p+'% · '+getSoftVelName(p);};
     if(pSV){
       pSV.value=Math.round((prefs.softVel||0.33)*100);
-      pSVv.textContent=pSV.value+'%';
-      pSV.addEventListener('input',()=>{prefs.softVel=parseInt(pSV.value)/100;pSVv.textContent=pSV.value+'%';localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+      _updateSV();
+      pSV.addEventListener('input',()=>{prefs.softVel=parseInt(pSV.value)/100;_updateSV();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+      pSVv.addEventListener('click',()=>{pSV.value=33;prefs.softVel=0.33;_updateSV();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
     }
   }
 
