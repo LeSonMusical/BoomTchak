@@ -512,5 +512,11 @@ create policy "Delete sound_presets owner ou MX" on public.sound_presets for del
 create policy "Lecture publique school sound_presets" on public.sound_presets for select using (scope='school' and approved=true);
 
 -- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.10.20 — Colonne type sur familles (pattern/groove/both)
+-- ═══════════════════════════════════════════════════════════════════════════
+alter table public.familles add column if not exists type text not null default 'both'
+  check (type in ('pattern','groove','both'));
+
+-- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════
