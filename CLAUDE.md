@@ -38,6 +38,8 @@ Le verbe "Publier" est réservé aux modifications MX. Pour TX, le verbe est "Ap
 | Tag famille | ✅ section Tags | ✅ section Tags | n/a | ✅ section Tags | ✅ section Tags | n/a |
 | Metro preset | ✅ via modal sig ✎ | ✅ via modal sig ✎ | ✅ via modal sig ✎ | ✅ publish | ✅ publish | ✅ direct |
 | Famille métro | n/a | ✅ MX via modal sig ✎ | ✅ MX via modal sig ✎ | ✅ MX direct DB | n/a | n/a |
+| Famille band | n/a | ✅ MX direct DB (_pmStartRenameFamille) | n/a | ✅ MX POST band_familles | ✅ MX PATCH band_familles | ✅ _deletePending→Publier |
+| Famille son | n/a | ✅ MX direct DB (_pmStartRenameFamille) | n/a | ✅ MX POST sound_familles | ✅ MX PATCH sound_familles | ✅ _deletePending→Publier |
 
 ### Gaps connus (à traiter)
 - `GAP_ENC_DEL` : Pas de delete encyclopédie TX ni MX (hors scope actuel)
@@ -68,11 +70,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.22** (session 2026-05-12)
+**v3.10.23** (session 2026-05-12)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.23 | Fix volet Unit : Signature flex:0 0 auto (auto-size au contenu) ; Unité flex:0.65 ; 4 colonnes équilibrées sans débordement sur Swing |
 | v3.10.22 | Volet Unit 4 colonnes : Signature + Divisions + Unité (flex:0.75) + Swing ; overlay BPM-style sur swing-slider (input → _dragOverlay.show('%') + pointerup hide) |
 | v3.10.21 | Fix groove dirty au chargement : applyGroove ne propage plus bandDirty/metroDirty vers updateGrooveSaveBtn quand band_embed/metro_embed restaurés ; sliders rappel valeur : swing tap-to-reset, prefs audio offset + soft vel montrent valeur + label textuel (Synchro/Bluetooth, Doux/Fort) tap-to-reset |
 | v3.10.20 | Refactor familles : PTK_DEFAULT source:'school' (fix rang grooves) ; type column sur familles (groove/pattern/both) ; band_familles + sound_familles branchées en DB (POST/PATCH/DELETE réels) ; _deletePending pour suppression famille band/sound via section Publier ; sbMergeSchoolData merge band/sound familles ; rename familles band/sound direct DB ; getFams() filtre par type |
@@ -169,7 +172,7 @@ const swOffM = (swingVal > 0 && metroStepPos % 2 === 1) ? swingVal * 0.5 * (60/s
 - `swingVal` : 0–1 → affichage MPC = `50 + swingVal×25` % (plage 50–75%)
 - `getSwingName(mpcPct)` : Straight | Micro-swing | Lilt | Funk swing | Light shuffle | Triplet swing | Hard shuffle | Dotted shuffle
 - Swing persisté dans `groove.metro` (embarqué avec le groove au save)
-- Contrôle : slider dans volet Unit, colonne 3 (`.metro-3col-sw`)
+- Contrôle : slider dans volet Unit, colonne 4 (`.metro-3col-sw`)
 
 ### Sig et groove
 - Changer de signature (`changeSig`) met à jour `groove.signature` **silencieusement** (pas de dirty, pas de publish).
@@ -308,18 +311,20 @@ openPresetModal(cfg)
     → utilisé sur : sig-sel-btn, groove-preset-btn, preset-btn-{id}, band-preset-btn, soundPresetBtn
 
   Fonctions internes :
-    getFams()           → familles filtrées selon type (fallback .famille si familles_ids absent)
+    getFams()           → familles filtrées selon type+cfg.type (pattern→pattern+both, groove→groove+both)
     getFilteredItems()  → items filtrés (famFilter + searchQuery) ; sig : teacher en bas
-    pmNewFamille()      → crée famille
-    pmDeleteFam(fam)    → supprime famille + détache les tags
+    pmNewFamille()      → crée famille (type déduit depuis cfg.type ; POST DB si band/sound MX)
+    pmDeleteFam(fam)    → supprime famille (school → _deletePending→Publier ; autres → local)
     pmDropFam(src,tgt)  → réordonne familles + persist DB
     pmDrop(src,tgt)     → réordonne items + persist DB
     pmAddTag / pmRemoveTag
-    pmStartRename / _pmStartRenameMetroFam
+    pmStartRename / _pmStartRenameMetroFam / _pmStartRenameFamille(nameEl,fam,table)
 
   Persistance ordre :
     sbPushSchoolFamOrder()      → familles école (patterns/grooves)
     sbPushSchoolMetroFamOrder() → familles métronome
+    sbPushSchoolBandFamOrder()  → familles band (band_familles)
+    sbPushSchoolSoundFamOrder() → familles son (sound_familles)
     sbPushSchoolOrder(type)     → items patterns/grooves
     sbPushSchoolMetroOrder()    → items metro_presets
 ```
