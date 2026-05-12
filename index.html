@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.19</span>
+      <span class="app-version">v3.10.20</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1590,19 +1590,19 @@ const PTK_DEFAULT = {
   meta:{titre:'', auteur:'', version:'2.0', date:''},
   // Familles partagées (patterns, grooves, encyclo) — source de vérité unique
   familles:[
-    {id:'fam_base',       nom:'Référentiel'},
-    {id:'fam_euclidien',  nom:'Euclidien'},
-    {id:'fam_afrocubain', nom:'Afro-cubain'},
-    {id:'fam_africain',   nom:'Africain'},
-    {id:'fam_bresilien',  nom:'Brésilien'},
-    {id:'fam_caraibe',    nom:'Caraïbe'},
-    {id:'fam_flamenco',   nom:'Flamenco'},
+    {id:'fam_base',       nom:'Référentiel', source:'school'},
+    {id:'fam_euclidien',  nom:'Euclidien',   source:'school'},
+    {id:'fam_afrocubain', nom:'Afro-cubain', source:'school'},
+    {id:'fam_africain',   nom:'Africain',    source:'school'},
+    {id:'fam_bresilien',  nom:'Brésilien',   source:'school'},
+    {id:'fam_caraibe',    nom:'Caraïbe',     source:'school'},
+    {id:'fam_flamenco',   nom:'Flamenco',    source:'school'},
   ],
   bandFamilles:[
-    {id:'bf_electro', nom:'Électro'},
-    {id:'bf_perc',    nom:'Percussions'},
-    {id:'bf_rock',    nom:'Rock'},
-    {id:'bf_minimal', nom:'Minimaliste'},
+    {id:'bf_electro', nom:'Électro',      source:'school'},
+    {id:'bf_perc',    nom:'Percussions',  source:'school'},
+    {id:'bf_rock',    nom:'Rock',         source:'school'},
+    {id:'bf_minimal', nom:'Minimaliste',  source:'school'},
   ],
   bands:[
     {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'school',
@@ -2953,16 +2953,19 @@ function openPresetModal(cfg){
   }
 
   function getFams(){
+    // Filtre sur type : groove ne voit que 'groove'+'both', pattern que 'pattern'+'both'
+    const grooveFams=()=>packCours.familles.filter(f=>!f.type||f.type==='groove'||f.type==='both');
+    const patternFams=()=>packCours.familles.filter(f=>!f.type||f.type==='pattern'||f.type==='both');
     if(cfg.type==='groove'){
-      // En mode gérer/réordonner/palette : toutes les familles
-      if(manageMode||reorderMode||paletteTarget){return packCours.familles;}
+      // En mode gérer/réordonner/palette : toutes les familles groove
+      if(manageMode||reorderMode||paletteTarget){return grooveFams();}
       const used=new Set(packCours.grooves.filter(g=>!g.localDeletePending).flatMap(g=>g.familles||[]));
-      return packCours.familles.filter(f=>used.has(f.id));
+      return grooveFams().filter(f=>used.has(f.id));
     }
     if(cfg.type==='pattern'){
-      if(manageMode||reorderMode||paletteTarget){return packCours.familles;}
+      if(manageMode||reorderMode||paletteTarget){return patternFams();}
       const used=new Set(packCours.patterns.filter(p=>!p.localDeletePending).flatMap(p=>p.familles||[]));
-      return packCours.familles.filter(f=>used.has(f.id));
+      return patternFams().filter(f=>used.has(f.id));
     }
     if(cfg.type==='sig'){
       if(manageMode||reorderMode||paletteTarget) return getMetroFamilles();
@@ -3056,25 +3059,32 @@ function openPresetModal(cfg){
       const fam={id:'mfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.metroFamilles||[]).length};
       if(!packCours.metroFamilles)packCours.metroFamilles=[];
       packCours.metroFamilles.push(fam);
-      // Pousser en DB (MX)
       if(authProfile?.role==='mx'){
         sbFetch('/rest/v1/metro_familles',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:fam.id,nom:fam.nom,scope:'school',ordre:fam.ordre,owner_id:authProfile.id})}).catch(()=>{});
       }
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='sound'){
-      const fam={id:'sfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.soundFamilles||[]).length,localDirty:true};
+      const fam={id:'sfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.soundFamilles||[]).length};
       if(!packCours.soundFamilles)packCours.soundFamilles=[];
       packCours.soundFamilles.push(fam);
+      if(authProfile?.role==='mx'){
+        sbFetch('/rest/v1/sound_familles',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:fam.id,nom:fam.nom,scope:'school',ordre:fam.ordre,owner_id:authProfile.id})}).catch(()=>{});
+      }
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='band'){
-      const fam={id:'bfam_'+Date.now(),nom:nom.trim(),source:'school',localDirty:true};
+      const fam={id:'bfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.bandFamilles||[]).length};
       if(!packCours.bandFamilles)packCours.bandFamilles=[];
       packCours.bandFamilles.push(fam);
+      if(authProfile?.role==='mx'){
+        sbFetch('/rest/v1/band_familles',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id:fam.id,nom:fam.nom,scope:'school',ordre:fam.ordre,owner_id:authProfile.id})}).catch(()=>{});
+      }
       saveToStorage();buildFamCol();buildItems();return;
     }
-    const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',localDirty:true};
+    // groove ou pattern : type déduit du contexte
+    const famType=cfg.type==='groove'?'groove':cfg.type==='pattern'?'pattern':'both';
+    const fam={id:'fam_user_'+Date.now(),nom:nom.trim(),category:'rytm',source:'school',type:famType,localDirty:true};
     packCours.familles.push(fam);
     saveToStorage();rebuildAllFamFilters();buildPublishSection();
     buildFamCol();buildItems();
@@ -3083,6 +3093,15 @@ function openPresetModal(cfg){
   function pmDeleteFam(fam){
     if(cfg.type==='sound'){
       const count=(packCours.soundPresets||[]).filter(sp=>(sp.familles_ids||[]).includes(fam.id)).length;
+      if(fam.source==='school'){
+        // Famille école → suppression différée via section Publier
+        const msg=count>0?`Marquer "${fam.nom}" pour suppression ?\n(utilisée par ${count} preset(s))`:`Marquer "${fam.nom}" pour suppression ?`;
+        if(!confirm(msg))return;
+        fam._deletePending=true;
+        saveToStorage();buildFamCol();buildPublishSection();
+        showToast('Suppression famille en attente de publication','warn');
+        return;
+      }
       if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée sur '+count+' preset(s))':''}?`))return;
       packCours.soundFamilles=(packCours.soundFamilles||[]).filter(f=>f.id!==fam.id);
       (packCours.soundPresets||[]).forEach(sp=>{if(sp.familles_ids)sp.familles_ids=sp.familles_ids.filter(id=>id!==fam.id);});
@@ -3092,7 +3111,6 @@ function openPresetModal(cfg){
       const count=metroPresets.filter(p=>(p.familles_ids||[]).includes(fam.id)).length;
       if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' preset(s))':''}?`))return;
       packCours.metroFamilles=(packCours.metroFamilles||[]).filter(f=>f.id!==fam.id);
-      // Retirer le tag de tous les presets
       metroPresets.forEach(p=>{if(p.familles_ids)p.familles_ids=p.familles_ids.filter(id=>id!==fam.id);});
       (packCours.metroPresets||[]).forEach(p=>{if(p.familles_ids)p.familles_ids=p.familles_ids.filter(id=>id!==fam.id);});
       if(authProfile?.role==='mx'){
@@ -3102,6 +3120,14 @@ function openPresetModal(cfg){
     }
     if(cfg.type==='band'){
       const count=(packCours.bands||[]).filter(b=>(b.familles||[]).includes(fam.id)).length;
+      if(fam.source==='school'){
+        const msg=count>0?`Marquer "${fam.nom}" pour suppression ?\n(utilisée par ${count} band(s))`:`Marquer "${fam.nom}" pour suppression ?`;
+        if(!confirm(msg))return;
+        fam._deletePending=true;
+        saveToStorage();buildFamCol();buildPublishSection();
+        showToast('Suppression famille en attente de publication','warn');
+        return;
+      }
       if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' band(s))':''}?`))return;
       packCours.bandFamilles=(packCours.bandFamilles||[]).filter(f=>f.id!==fam.id);
       (packCours.bands||[]).forEach(b=>{if(b.familles)b.familles=b.familles.filter(id=>id!==fam.id);});
@@ -3127,7 +3153,7 @@ function openPresetModal(cfg){
       const[moved]=fams.splice(si,1);
       if(tgtId==='__end__'){fams.push(moved);}
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
-      saveToStorage();buildFamCol();return;
+      saveToStorage();sbPushSchoolSoundFamOrder();buildFamCol();return;
     }
     if(cfg.type==='band'){
       const fams=packCours.bandFamilles||[];
@@ -3153,6 +3179,32 @@ function openPresetModal(cfg){
     _pmFamFilter[cfg.type]=id;
     if(cfg.type==='groove')_pmFamFilter['pattern']=id;
     buildFamCol();buildItems();
+  }
+
+  function _pmStartRenameFamille(nameEl,fam,table){
+    nameEl.contentEditable='true';nameEl.focus();
+    const range=document.createRange();range.selectNodeContents(nameEl);
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+    nameEl.dataset.orig=nameEl.textContent;
+    const commit=()=>{
+      nameEl.contentEditable='false';
+      const newNom=nameEl.textContent.trim();
+      if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
+      if(newNom===nameEl.dataset.orig)return;
+      fam.nom=newNom;
+      // Mise à jour dans packCours (band ou sound selon table)
+      const arr=table==='band_familles'?(packCours.bandFamilles||[]):(packCours.soundFamilles||[]);
+      const cp=arr.find(f=>f.id===fam.id);if(cp)cp.nom=newNom;
+      if(authProfile?.role==='mx'){
+        sbFetch(`/rest/v1/${table}?id=eq.${fam.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({nom:newNom})}).catch(()=>{});
+      }
+      saveToStorage();buildFamCol();
+    };
+    nameEl.addEventListener('blur',commit,{once:true});
+    nameEl.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();nameEl.blur();}
+      if(e.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}
+    });
   }
 
   function _pmStartRenameMetroFam(nameEl,fam){
@@ -3251,7 +3303,7 @@ function openPresetModal(cfg){
           nameEl.addEventListener('click',()=>_setFam(f.id));row.appendChild(nameEl);
           if(manageMode){
             const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
-            renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameMetroFam(nameEl,f);});
+            renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameFamille(nameEl,f,'sound_familles');});
             const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
             delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
             row.appendChild(renBtn);row.appendChild(delBtn);
@@ -3339,6 +3391,8 @@ function openPresetModal(cfg){
           const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
           if(cfg.type==='sig'){
             renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameMetroFam(nameEl,f);});
+          } else if(cfg.type==='band'){
+            renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameFamille(nameEl,f,'band_familles');});
           } else {
             renBtn.addEventListener('click',e=>{e.stopPropagation();libStartRenameFamille(nameEl,f,()=>{buildFamCol();});});
           }
@@ -6573,16 +6627,18 @@ async function sbFetchProfile() {
 // Migration requise dans Supabase (voir schema.sql) : politique "Lecture publique school"
 async function sbSyncPublicPool() {
   try {
-    const [patterns, grooves, familles, encyclo, metroPres, metroFams] = await Promise.all([
+    const [patterns, grooves, familles, encyclo, metroPres, metroFams, bandFams, soundFams] = await Promise.all([
       sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
       sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
       sbFetch('/rest/v1/metro_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/band_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/sound_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
     ]);
     if (Array.isArray(patterns) && patterns.length) {
-      sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams });
+      sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams, bandFamilles: bandFams, soundFamilles: soundFams });
       updateSyncStatus('Base école chargée');
       rebuildMetroPresets(); rebuildAllFamFilters();
       buildGrooveSection(); buildLayers(); buildEncycloSection();
@@ -6597,15 +6653,17 @@ async function sbSyncSchoolPool() {
   if (!authSession) return;
   updateSyncStatus('Synchronisation…');
   try {
-    const [patterns, grooves, familles, encyclo, metroPres, metroFams] = await Promise.all([
+    const [patterns, grooves, familles, encyclo, metroPres, metroFams, bandFams, soundFams] = await Promise.all([
       sbFetch('/rest/v1/patterns?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/grooves?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc'),
       sbFetch('/rest/v1/encyclo?scope=eq.school&select=*'),
       sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
       sbFetch('/rest/v1/metro_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/band_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
+      sbFetch('/rest/v1/sound_familles?scope=eq.school&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
     ]);
-    sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams });
+    sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams, bandFamilles: bandFams, soundFamilles: soundFams });
     // MX : seeder les presets de base si la DB n'en contient encore aucun
     if (authProfile?.role === 'mx' && Array.isArray(metroPres) && !metroPres.some(p => p.source === 'base')) {
       await _seedBaseMetroPresets();
@@ -6650,7 +6708,7 @@ async function sbSyncSchoolPool() {
   }
 }
 
-function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: mpRows, metroFamilles: mfRows }) {
+function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: mpRows, metroFamilles: mfRows, bandFamilles: bfRows, soundFamilles: sfRows }) {
   const isMX = authProfile?.role === 'mx';
   // Isolation localStorage partagé MX/TX :
   // MX ne crée jamais d'items source='teacher' — purger les forks TX pour voir l'état école validé
@@ -6715,6 +6773,22 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   if (Array.isArray(mfRows) && mfRows.length > 0) {
     if (!packCours.metroFamilles) packCours.metroFamilles = [];
     packCours.metroFamilles = mfRows.map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' }));
+  }
+  // Merge des familles de bands
+  if (Array.isArray(bfRows) && bfRows.length > 0) {
+    const localDirtyBFIds = new Set((packCours.bandFamilles||[]).filter(f => f._deletePending).map(f => f.id));
+    packCours.bandFamilles = [
+      ...(packCours.bandFamilles||[]).filter(f => localDirtyBFIds.has(f.id)),
+      ...bfRows.filter(f => !localDirtyBFIds.has(f.id)).map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' })),
+    ].sort((a,b) => (a.ordre??9999)-(b.ordre??9999));
+  }
+  // Merge des familles de sons
+  if (Array.isArray(sfRows) && sfRows.length > 0) {
+    const localDirtySFIds = new Set((packCours.soundFamilles||[]).filter(f => f._deletePending).map(f => f.id));
+    packCours.soundFamilles = [
+      ...(packCours.soundFamilles||[]).filter(f => localDirtySFIds.has(f.id)),
+      ...sfRows.filter(f => !localDirtySFIds.has(f.id)).map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' })),
+    ].sort((a,b) => (a.ordre??9999)-(b.ordre??9999));
   }
   // Merge des presets métronome école
   if (Array.isArray(mpRows)) {
@@ -6856,8 +6930,37 @@ async function sbPushSchoolBandOrder() {
 }
 
 async function sbPushSchoolBandFamOrder() {
-  // Quand la table `band_familles` sera en DB : PATCH ordre des familles
-  saveToStorage();
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const fams = (packCours.bandFamilles || []).filter(f => f.source === 'school' && !f._deletePending);
+  if (!fams.length) return;
+  try {
+    const results = await Promise.all(fams.map((f, idx) =>
+      sbFetch(`/rest/v1/band_familles?id=eq.${f.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+    const missed = results.filter(r => !r || !r.length).length;
+    if (missed) showToast(`⚠ ${missed} famille(s) band non mises à jour — vérifier migration DB`, 'warn');
+  } catch(e) { console.error('Ordre familles band non persisté :', e); showToast('⚠ Ordre familles band non sauvegardé : ' + e.message, 'warn'); }
+}
+
+async function sbPushSchoolSoundFamOrder() {
+  if (!authSession || authProfile?.role !== 'mx') return;
+  const fams = (packCours.soundFamilles || []).filter(f => f.source === 'school' && !f._deletePending);
+  if (!fams.length) return;
+  try {
+    const results = await Promise.all(fams.map((f, idx) =>
+      sbFetch(`/rest/v1/sound_familles?id=eq.${f.id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({ ordre: idx }),
+      })
+    ));
+    const missed = results.filter(r => !r || !r.length).length;
+    if (missed) showToast(`⚠ ${missed} famille(s) son non mises à jour — vérifier migration DB`, 'warn');
+  } catch(e) { console.error('Ordre familles son non persisté :', e); showToast('⚠ Ordre familles son non sauvegardé : ' + e.message, 'warn'); }
 }
 
 async function sbPublishBand(bandId) {
@@ -7805,7 +7908,9 @@ function buildPublishSection() {
   const dirtySchoolGrooves = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDirty && !g.localDeletePending) : [];
   const pendingDelPats  = isMX ? packCours.patterns.filter(p => p.source === 'school' && p.localDeletePending) : [];
   const pendingDelGrvs  = isMX ? packCours.grooves.filter(g => g.source === 'school' && g.localDeletePending) : [];
-  const pendingDelFams  = isMX ? packCours.familles.filter(f => f._deletePending) : [];
+  const pendingDelFams      = isMX ? packCours.familles.filter(f => f._deletePending) : [];
+  const pendingDelBandFams  = isMX ? (packCours.bandFamilles||[]).filter(f => f._deletePending) : [];
+  const pendingDelSoundFams = isMX ? (packCours.soundFamilles||[]).filter(f => f._deletePending) : [];
   // TX : demandes de suppression (forks tx_del_)
   const txDelPats   = !isMX ? packCours.patterns.filter(p => p.source === 'teacher' && p.localDeletePending) : [];
   const txDelGrooves = !isMX ? packCours.grooves.filter(g => g.source === 'teacher' && g.localDeletePending) : [];
@@ -7832,7 +7937,7 @@ function buildPublishSection() {
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
   const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + teacherSoundPresets.length + dirtySchoolSoundPresets.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + teacherSoundPresets.length + dirtySchoolSoundPresets.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBandFams.length + pendingDelSoundFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -7845,7 +7950,7 @@ function buildPublishSection() {
   _localPendingCount = draftPats.length + draftGrvs.length + draftDelPats.length + draftDelGrvs.length
     + dirtySchoolPats.length + dirtySchoolGrooves.length
     + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
-    + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + dirtyFams.length
+    + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBandFams.length + pendingDelSoundFams.length + dirtyFams.length
     + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length
     + teacherBands.filter(b => !b.localStatus || b.localStatus === 'draft').length + pendingDelBands.length
     + teacherSoundPresets.filter(sp => !sp.localStatus || sp.localStatus === 'draft').length + dirtySchoolSoundPresets.length;
@@ -8089,7 +8194,7 @@ function buildPublishSection() {
     });
   }
 
-  if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length || pendingDelBands.length) {
+  if (pendingDelPats.length || pendingDelGrvs.length || pendingDelFams.length || pendingDelBandFams.length || pendingDelSoundFams.length || pendingDelBands.length) {
     html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppressions en attente</div>`;
     [...pendingDelPats.map(p=>({type:'pattern',item:p})), ...pendingDelGrvs.map(g=>({type:'groove',item:g})), ...pendingDelBands.map(b=>({type:'band',item:b}))].forEach(({type,item}) => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
@@ -8103,6 +8208,7 @@ function buildPublishSection() {
           `<button class="btn-pub-del-cancel" data-type="${type}" data-id="${item.id}" title="Annuler la suppression" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
+    // Familles pattern/groove
     pendingDelFams.forEach(fam => {
       html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
         `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
@@ -8112,6 +8218,30 @@ function buildPublishSection() {
         `<div style="display:flex;gap:5px">` +
           `<button class="btn-pub-fam-del-confirm" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
           `<button class="btn-pub-fam-del-cancel" data-id="${fam.id}" title="Annuler la suppression famille" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
+        `</div></div>`;
+    });
+    // Familles band
+    pendingDelBandFams.forEach(fam => {
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${fam.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Famille band</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-bandfam-del-confirm" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
+          `<button class="btn-pub-bandfam-del-cancel" data-id="${fam.id}" title="Annuler" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
+        `</div></div>`;
+    });
+    // Familles son
+    pendingDelSoundFams.forEach(fam => {
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${fam.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Famille son</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-soundfam-del-confirm" data-id="${fam.id}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Confirmer</button>` +
+          `<button class="btn-pub-soundfam-del-cancel" data-id="${fam.id}" title="Annuler" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -8335,6 +8465,46 @@ function buildPublishSection() {
   container.querySelectorAll('.btn-pub-fam-del-cancel').forEach(btn => {
     btn.addEventListener('click', () => {
       const fam = packCours.familles.find(f => f.id === btn.dataset.id);
+      if (fam) delete fam._deletePending;
+      saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-bandfam-del-confirm').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      const famId = btn.dataset.id;
+      (packCours.bands||[]).forEach(b => { if (b.familles) b.familles = b.familles.filter(f => f !== famId); });
+      await sbFetch(`/rest/v1/band_familles?id=eq.${famId}`, { method: 'DELETE' }).catch(()=>{});
+      packCours.bandFamilles = (packCours.bandFamilles||[]).filter(f => f.id !== famId);
+      saveToStorage(); buildPublishSection();
+      showToast('Famille band supprimée de la base', 'info');
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-bandfam-del-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fam = (packCours.bandFamilles||[]).find(f => f.id === btn.dataset.id);
+      if (fam) delete fam._deletePending;
+      saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-soundfam-del-confirm').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = '…';
+      const famId = btn.dataset.id;
+      (packCours.soundPresets||[]).forEach(sp => { if (sp.familles_ids) sp.familles_ids = sp.familles_ids.filter(f => f !== famId); });
+      await sbFetch(`/rest/v1/sound_familles?id=eq.${famId}`, { method: 'DELETE' }).catch(()=>{});
+      packCours.soundFamilles = (packCours.soundFamilles||[]).filter(f => f.id !== famId);
+      saveToStorage(); buildPublishSection();
+      showToast('Famille son supprimée de la base', 'info');
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-soundfam-del-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fam = (packCours.soundFamilles||[]).find(f => f.id === btn.dataset.id);
       if (fam) delete fam._deletePending;
       saveToStorage(); buildPublishSection();
     });

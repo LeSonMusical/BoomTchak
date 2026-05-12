@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.19** (session 2026-05-12)
+**v3.10.20** (session 2026-05-12)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.20 | Refactor familles : PTK_DEFAULT source:'school' (fix rang grooves) ; type column sur familles (groove/pattern/both) ; band_familles + sound_familles branchées en DB (POST/PATCH/DELETE réels) ; _deletePending pour suppression famille band/sound via section Publier ; sbMergeSchoolData merge band/sound familles ; rename familles band/sound direct DB ; getFams() filtre par type |
 | v3.10.19 | Modal preset : appui long famille → réordonner (MX) ; fix doublon famille (assigned sig uses familles_ids + guards lib-panel) ; préfs : slider décalage audio/image (-100..+300ms) + slider volume step doux (x, 5..80%) |
 | v3.10.18 | grooveDirty propagé depuis metroDirty/bandDirty : saveGroovePattern gate sur `grooveDirty\|\|metroDirty\|\|bandDirty` ; updateGrooveSaveBtn reflète les trois flags ; setMetroDirty/setBandDirty rafraîchissent la disquette groove |
 | v3.10.17 | Fix grooveDirty : swing et battue (felBeatSteps) marquent désormais grooveDirty → disquette '!' + section Soumettre/Publier |
