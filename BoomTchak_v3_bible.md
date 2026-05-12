@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.10.12
+> Mis à jour au fil du développement — v3.10.23
 
 ---
 
@@ -65,11 +65,36 @@ packCours = {
 ```
 id text PK, nom text, scope ('school'|'teacher'),
 owner_id uuid FK profiles, created_at,
-ordre int DEFAULT 0     -- ordre d'affichage (ajouté v3.4.79)
+ordre int DEFAULT 0,    -- ordre d'affichage (ajouté v3.4.79)
+type text DEFAULT 'both' CHECK (type IN ('pattern','groove','both'))  -- ajouté v3.10.20
 ```
-Migration si table existante : `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS ordre int default 0;`
+Migration : `ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'both' CHECK (type IN ('pattern','groove','both'));`
 Fetch school : `?scope=eq.school&select=*&order=ordre.asc,created_at.asc`
-Persistance : `sbPushSchoolFamOrder()` appelé après drag-drop dans `libDropFamille()`
+Persistance : `sbPushSchoolFamOrder()` appelé après drag-drop
+
+**Filtrage par type dans `getFams()` (v3.10.20+) :**
+- `cfg.type === 'groove'` → familles avec `type IN ('groove','both')`
+- `cfg.type === 'pattern'` → familles avec `type IN ('pattern','both')`
+- `cfg.type === 'band'` → `packCours.bandFamilles` (table séparée)
+- `cfg.type === 'sound'` → `packCours.soundFamilles` (table séparée)
+
+### `band_familles`
+```
+id text PK, nom text, scope ('school'|'teacher'),
+owner_id uuid FK profiles, created_at,
+ordre int DEFAULT 0
+```
+Fetch school : `?scope=eq.school&select=*&order=ordre.asc,created_at.asc`
+Persistance : `sbPushSchoolBandFamOrder()` après drag-drop ; rename direct PATCH (MX uniquement)
+Suppression école : `_deletePending = true` → section Publier → DELETE DB
+
+### `sound_familles`
+```
+id text PK, nom text, scope ('school'|'teacher'),
+owner_id uuid FK profiles, created_at,
+ordre int DEFAULT 0
+```
+Même architecture que `band_familles`. Persistance : `sbPushSchoolSoundFamOrder()`
 
 ### `patterns`
 ```
@@ -141,14 +166,30 @@ Lors de l'approbation par MX : `owner_id` est mis à `null`.
 
 ---
 
-### FAMILLES
+### FAMILLES (pattern/groove)
 
-| Opération | TX | MX | Supabase | Gaps |
-|-----------|----|----|----------|------|
-| Créer | ✅ local seulement | ✅ local + INSERT DB | POST /familles (upsert) | ⚠️ Famille TX jamais en DB — si TX soumet un pattern avec cette famille, l'ID est inconnu de MX |
-| Renommer | ✅ local seulement | ✅ local + UPSERT DB | POST /familles | ⚠️ Même problème |
-| Supprimer | ✅ local + cascade patterns/grooves | ✅ local + cascade + DELETE DB | DELETE /familles | ❌ Si TX supprime une famille utilisée par un pattern soumis → orphelin en DB |
-| Réordonner | ✅ local | ✅ local | ❌ pas de colonne ordre | ❌ Ordre perdu après sync pour tous |
+| Opération | TX | MX | Supabase | Notes |
+|-----------|----|----|----------|-------|
+| Créer | ✅ local (source:'teacher') | ✅ local + POST DB (source:'school') | POST /familles | ⚠️ Famille TX jamais en DB — ID inconnu de MX à l'approbation |
+| Renommer (school) | ✅ _pendingRename → section Soumettre | ✅ PATCH /familles direct | PATCH /familles | — |
+| Renommer (teacher) | ✅ local | ✅ local | — | — |
+| Supprimer (school) | — | ✅ _deletePending → section Publier → DELETE DB | DELETE /familles | — |
+| Supprimer (teacher) | ✅ local + cascade | ✅ local + cascade | — | — |
+| Réordonner | ✅ local | ✅ PATCH ordre batch | `sbPushSchoolFamOrder()` | Filtre `source:'school'` dans la requête |
+| Filtrage par type | — | — | champ `type` (pattern/groove/both) | `getFams()` filtre selon `cfg.type` |
+
+### FAMILLES BAND (`band_familles`)
+
+| Opération | TX | MX | Supabase | Notes |
+|-----------|----|----|----------|-------|
+| Créer | ❌ (MX uniquement) | ✅ POST /band_familles | POST /band_familles | — |
+| Renommer | ❌ | ✅ PATCH /band_familles direct | `_pmStartRenameFamille(el,fam,'band_familles')` | — |
+| Supprimer (school) | ❌ | ✅ _deletePending → section Publier | DELETE /band_familles | — |
+| Réordonner | ❌ | ✅ PATCH ordre batch | `sbPushSchoolBandFamOrder()` | — |
+
+### FAMILLES SON (`sound_familles`)
+
+Même architecture que FAMILLES BAND — table `sound_familles`, fonctions `sbPushSchoolSoundFamOrder()`, `_pmStartRenameFamille(el,fam,'sound_familles')`.
 
 ---
 
@@ -377,24 +418,34 @@ et changement de signature.
 
 ---
 
-## 10. Familles multi-axes — Concept futur (noté v3.4.35)
+## 10. Familles — Architecture (v3.10.20+)
 
-### Problème actuel
-Les familles sont une liste plate partagée par tous les types d'items → liste longue, peu discriminante.
+### Séparation par type d'item (implémentée v3.10.20)
 
-### Solution envisagée
-Tags multi-axes AND-filtrables :
-- Axes : `style`, `metrique`, `feeling`, `difficulte`, `pedagogue`
-- Chaque famille appartient à un axe (champ `category` déjà présent en DB)
-- Un item peut avoir plusieurs tags de différents axes
-- Filtre : sélection AND inter-axes (chip-based UI)
+La table `familles` contient désormais une colonne `type` (`pattern` | `groove` | `both`).
+`getFams()` dans `openPresetModal` filtre selon `cfg.type` :
+- `cfg.type === 'pattern'` → `type IN ('pattern','both')`
+- `cfg.type === 'groove'` → `type IN ('groove','both')`
 
-### À décider avant implémentation
-- Standardisation des valeurs de `category` en DB
-- Champ `scope` (types d'items compatibles) : optionnel ou obligatoire ?
-- Migration des données existantes
+Les familles band et son sont dans des tables séparées (`band_familles`, `sound_familles`),
+stockées dans `packCours.bandFamilles` et `packCours.soundFamilles`.
 
-**Status : à mettre en chantier après validation archi avec Lamberio.**
+### PTK_DEFAULT — règle `source:'school'` (correctif v3.10.20)
+Toutes les entrées dans `PTK_DEFAULT.familles` et `PTK_DEFAULT.bandFamilles` doivent avoir `source:'school'`.
+Sans ce champ, `sbPushSchoolFamOrder()` les ignorait → l'ordre des grooves/patterns était perdu après sync.
+
+### `_deletePending` — règle pour familles école
+La suppression d'une famille `source:'school'` ne se fait jamais immédiatement.
+Le flag `_deletePending = true` est posé localement → la famille apparaît dans `buildPublishSection()` (MX).
+MX confirme → DELETE /famille_table. Ce comportement est identique pour `familles`, `band_familles` et `sound_familles`.
+
+### Concept futur — Tags multi-axes (noté v3.4.35, partiellement implémenté)
+La séparation par `type` est une première étape. L'idée originale allait plus loin :
+- Axes AND-filtrables : `style`, `metrique`, `feeling`, `difficulte`, `pedagogue`
+- Champ `category` déjà présent en DB pour cela
+- Un item peut avoir plusieurs tags de différents axes (chip-based UI)
+
+**Status : séparation type/item implémentée. Multi-axes (catégories) : à valider avec Lamberio avant implémentation.**
 
 ---
 
@@ -480,7 +531,9 @@ Valider le modèle avec Lamberio avant tout codage.
 
 | Fonction | Endpoint | Rôle |
 |----------|----------|------|
-| `sbSyncSchoolPool()` | GET patterns/grooves/familles/encyclo | Sync école au login/manuel |
+| `sbSyncSchoolPool()` | GET patterns/grooves/familles/encyclo/metro_presets/metro_familles/band_familles/sound_familles | Sync école au login/manuel |
+| `sbSyncPublicPool()` | Idem (anon key) | Sync publique au démarrage (sans auth) |
+| `sbMergeSchoolData(data)` | — | Fusionne DB → packCours (patterns, grooves, familles, encyclo, metro*, bandFamilles, soundFamilles) |
 | `sbPublishPattern(id)` | POST /patterns (upsert) | Soumission TX ou publication MX |
 | `sbPublishGroove(id)` | POST /grooves (upsert) | Idem pour grooves |
 | `sbApproveItem(type, id)` | PATCH → scope='school', owner_id=null | Approbation MX |
@@ -488,8 +541,12 @@ Valider le modèle avec Lamberio avant tout codage.
 | `sbCancelSubmission(type, id)` | DELETE | Annulation TX |
 | `sbCheckRejections()` | GET patterns+grooves (owner=moi, approved=false) | Détecte les refus MX côté TX |
 | `sbFetchPendingApprovals()` | GET patterns+grooves (scope='teacher', approved=false) | Liste approbations pour MX |
-| `sbSaveFamille(fam)` | POST /familles (upsert) | Sauvegarde famille MX en DB |
+| `sbSaveFamille(fam)` | POST /familles (upsert) | Sauvegarde famille école MX en DB |
 | `sbDeleteFamille(id)` | DELETE /familles | Suppression famille MX en DB |
+| `sbPushSchoolFamOrder()` | PATCH /familles (batch ordre) | Persistance ordre familles pattern/groove |
+| `sbPushSchoolBandFamOrder()` | PATCH /band_familles (batch ordre) | Persistance ordre familles band |
+| `sbPushSchoolSoundFamOrder()` | PATCH /sound_familles (batch ordre) | Persistance ordre familles son |
+| `sbPushSchoolOrder(type)` | PATCH /patterns ou /grooves (batch ordre) | Persistance ordre items |
 
 ---
 
@@ -514,7 +571,7 @@ Valider le modèle avec Lamberio avant tout codage.
 | Volet | ID | Contenu |
 |-------|----|---------|
 | **Tempo** | `metro-sub-tempo` | 2 colonnes : BPM (slider large + −/+) + Battement (select felBeatSteps + input BPM) |
-| **Unit** | `metro-sub-unit` | 3 colonnes : Divisions (sig inline + < N >) + Unité (select beatUnit) + Swing (slider MPC) |
+| **Unit** | `metro-sub-unit` | 4 colonnes : Signature (flex auto) + Divisions (< N >) + Unité (flex 0.65, select beatUnit) + Swing (slider MPC, overlay drag) |
 | **Tap** | `metro-sub-tap` | Bouton tap-tempo ; calcule la moyenne des intervalles |
 | **Vol** | `metro-sub-vol` | Slider volume métronome (classe `temps-slider`) |
 | **Métro** | `metro-sub-pat` | ctrl-row accents (^/>/−) + select subdivision + pattern viz |
@@ -566,3 +623,8 @@ Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted 
 | v3.10.10 | Vue Cycle : totalU = LCM patterns only (signature = séparateur visuel) |
 | v3.10.11 | Swing MPC 50–75% : formule ×0.5×stepDuration ; getSwingName() 8 niveaux ; déplacé vers Unit |
 | v3.10.12 | Signature inline gauche dans Unit (sig-edit-val neutre) ; swing colonne 3 (% + nom) |
+| v3.10.19 | Modal preset : appui long famille → réordonner (MX) ; préfs sliders décalage audio/image + volume doux |
+| v3.10.20 | Refactor familles : PTK_DEFAULT source:'school' ; type column familles (pattern/groove/both) ; band_familles + sound_familles DB (POST/PATCH/DELETE) ; _deletePending suppression famille school ; sbMergeSchoolData band/sound familles ; getFams() filtre par type |
+| v3.10.21 | Fix groove dirty au chargement (applyGroove ne propage plus bandDirty/metroDirty sur embed restore) ; sliders rappel valeur+label textuel ; swing tap-to-reset |
+| v3.10.22 | Volet Unit 4 colonnes (Signature+Divisions+Unité+Swing) ; overlay _dragOverlay sur swing-slider |
+| v3.10.23 | Fix Unit : Signature flex:0 0 auto ; Unité flex:0.65 (sans empiéter sur Swing) |
