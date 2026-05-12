@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.18</span>
+      <span class="app-version">v3.10.19</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1017,6 +1017,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
               <option value="bpm">BPM constant (pulsation)</option>
             </select>
           </label>
+          <div class="smenu-pref-lbl" style="gap:6px">
+            <span style="flex:1">Décalage audio/image :</span>
+            <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="width:80px;accent-color:#6B5FA5">
+            <span id="pref-audio-offset-val" style="min-width:36px;text-align:right;font-size:10px">0 ms</span>
+          </div>
+          <div class="smenu-pref-lbl" style="gap:6px">
+            <span style="flex:1">Volume step doux (x) :</span>
+            <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
+            <span id="pref-soft-vel-val" style="min-width:28px;text-align:right;font-size:10px">33%</span>
+          </div>
         </div>
         <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
         <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
@@ -2328,7 +2338,7 @@ let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
@@ -2371,7 +2381,7 @@ function scheduler(){
       // Swing MPC : swingVal 0-1 → MPC 50-75% ; offset = swingVal*0.5*step
       // swingVal=0.667 → MPC 66.6% (triolet) ; swingVal=1.0 → MPC 75% (croche pointée)
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
-      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?0.33:1.0);
+      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
@@ -2407,7 +2417,7 @@ function scheduler(){
 function visualLoop(){
   if(!playing)return;
   if(circleView){ visualLoopCircle(); return; }
-  const now=getAC().currentTime;
+  const now=getAC().currentTime-prefs.audioOffset;
   LAYERS.forEach((layer,li)=>{
     const beatSec=getBeatSec(li);
     const elapsed=now-state[li].startTime;
@@ -3178,7 +3188,7 @@ function openPresetModal(cfg){
       const cancel=document.createElement('button');cancel.className='pm-fam-btn pm-fam-cancel';cancel.textContent='× Annuler';
       cancel.addEventListener('click',cancelPalette);
       famCol.appendChild(cancel);
-      const assigned=new Set(cfg.type==='sound'?(paletteTarget.familles_ids||[]):(paletteTarget.familles||[]));
+      const assigned=new Set((cfg.type==='sound'||cfg.type==='sig')?(paletteTarget.familles_ids||[]):(paletteTarget.familles||[]));
       getFams().forEach(f=>{
         if(assigned.has(f.id))return;
         const b=document.createElement('button');b.className='pm-fam-btn palette';b.textContent=f.nom;
@@ -3281,9 +3291,28 @@ function openPresetModal(cfg){
         }
       } else {
         famCol.style.touchAction='';
+        const _isMxSnd=authProfile?.role==='mx';
         bfams.forEach(f=>{
           const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
-          b.textContent=f.nom;b.addEventListener('click',()=>_setFam(f.id));famCol.appendChild(b);
+          b.textContent=f.nom;b.addEventListener('click',()=>_setFam(f.id));
+          if(_isMxSnd){
+            let _flt=null;
+            b.addEventListener('touchstart',e=>{
+              if(e.touches.length>1)return;b.classList.add('pm-pressing');
+              _flt=setTimeout(()=>{
+                _flt=null;b.classList.remove('pm-pressing');
+                reorderMode=true;manageMode=false;paletteTarget=null;
+                modeManage.classList.toggle('active',false);
+                sheet.classList.add('pm-reorder-on');
+                buildFamCol();buildItems();
+              },450);
+            },{passive:true});
+            const _fc=()=>{if(_flt){clearTimeout(_flt);_flt=null;}b.classList.remove('pm-pressing');};
+            b.addEventListener('touchmove',_fc,{passive:true});
+            b.addEventListener('touchend',_fc,{passive:true});
+            b.addEventListener('touchcancel',_fc,{passive:true});
+          }
+          famCol.appendChild(b);
         });
       }
       return;
@@ -3358,10 +3387,28 @@ function openPresetModal(cfg){
     } else {
       famCol.style.touchAction='';
       // Mode normal : boutons filtre simples
+      const _isMxFam=authProfile?.role==='mx';
       getFams().forEach(f=>{
         const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
         b.textContent=f.nom;
         b.addEventListener('click',()=>_setFam(f.id));
+        if(_isMxFam){
+          let _flt=null;
+          b.addEventListener('touchstart',e=>{
+            if(e.touches.length>1)return;b.classList.add('pm-pressing');
+            _flt=setTimeout(()=>{
+              _flt=null;b.classList.remove('pm-pressing');
+              reorderMode=true;manageMode=false;paletteTarget=null;
+              modeManage.classList.toggle('active',false);
+              sheet.classList.add('pm-reorder-on');
+              buildFamCol();buildItems();
+            },450);
+          },{passive:true});
+          const _fc=()=>{if(_flt){clearTimeout(_flt);_flt=null;}b.classList.remove('pm-pressing');};
+          b.addEventListener('touchmove',_fc,{passive:true});
+          b.addEventListener('touchend',_fc,{passive:true});
+          b.addEventListener('touchcancel',_fc,{passive:true});
+        }
         famCol.appendChild(b);
       });
       // Encyclopédie : filtre famille secondaire (grooves/patterns)
@@ -5929,7 +5976,7 @@ function drawCircles(){
 
   ctx.clearRect(0, 0, W, H);
 
-  const now = playing ? getAC().currentTime : 0;
+  const now = playing ? getAC().currentTime - prefs.audioOffset : 0;
 
   // Calcul fraction needle par layer
   let fracMeasure = 0;
@@ -6243,7 +6290,7 @@ function drawLinear(){
   if(playing){
     const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const baseStepSec=60/spm;
-    const now=getAC().currentTime;
+    const now=getAC().currentTime-prefs.audioOffset;
     // linearCycleStartTime : référence fixe au play, jamais recalibrée → position PPCM correcte
     const elU=((now-linearCycleStartTime)/baseStepSec*DENOM);
     const cycElU=((elU%totalU)+totalU)%totalU; // unités dans le cycle PPCM
@@ -8641,7 +8688,7 @@ function libBuildPatternTags(container, pat){
       if(pat.source==='school' && authProfile?.role!=='mx'){
         const fork=txForkItem('pattern', pat);
         if(!fork.familles)fork.familles=[];
-        fork.familles.push(sel.value);
+        if(!fork.familles.includes(sel.value))fork.familles.push(sel.value);
         if (!fork.localChangedFields) fork.localChangedFields = [];
         if (!fork.localChangedFields.includes('famille_add')) fork.localChangedFields.push('famille_add');
         saveToStorage(); buildLibListPatterns(); buildPublishSection();
@@ -8649,7 +8696,7 @@ function libBuildPatternTags(container, pat){
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
         if(!pat.familles) pat.familles = [];
-        pat.familles.push(sel.value);
+        if(!pat.familles.includes(sel.value))pat.familles.push(sel.value);
         markItemDirty(pat, 'famille_add');
         libBuildPatternTags(container, pat);
         saveToStorage(); buildPublishSection();
@@ -9115,13 +9162,13 @@ function libBuildGrooveTags(container, groove){
       if(groove.source==='school' && authProfile?.role!=='mx'){
         const fork=txForkItem('groove', groove);
         if(!fork.familles)fork.familles=[];
-        fork.familles.push(sel.value);
+        if(!fork.familles.includes(sel.value))fork.familles.push(sel.value);
         if (!fork.localChangedFields) fork.localChangedFields = [];
         if (!fork.localChangedFields.includes('famille_add')) fork.localChangedFields.push('famille_add');
         saveToStorage(); buildLibListGrooves(); buildPublishSection();
         showToast('Modification sauvegardée — soumettez-la via ···', 'info');
       } else {
-        if(!groove.familles)groove.familles=[]; groove.familles.push(sel.value); markItemDirty(groove,'famille_add'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
+        if(!groove.familles)groove.familles=[]; if(!groove.familles.includes(sel.value))groove.familles.push(sel.value); markItemDirty(groove,'famille_add'); libBuildGrooveTags(container,groove); saveToStorage(); buildPublishSection();
       }
     });
     sel.addEventListener('blur',()=>{ if(sel.parentNode)sel.parentNode.removeChild(sel); });
@@ -10193,6 +10240,18 @@ function attachEvents(){
     if(pBand){pBand.checked=prefs.applyGrooveBand;pBand.addEventListener('change',()=>{prefs.applyGrooveBand=pBand.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
     const pSigLock=document.getElementById('pref-sig-lock');
     if(pSigLock){pSigLock.value=prefs.sigChangeLock||'spm';pSigLock.addEventListener('change',()=>{prefs.sigChangeLock=pSigLock.value;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
+    const pAO=document.getElementById('pref-audio-offset'),pAOv=document.getElementById('pref-audio-offset-val');
+    if(pAO){
+      pAO.value=Math.round((prefs.audioOffset||0)*1000);
+      pAOv.textContent=pAO.value+' ms';
+      pAO.addEventListener('input',()=>{prefs.audioOffset=parseInt(pAO.value)/1000;pAOv.textContent=pAO.value+' ms';localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+    }
+    const pSV=document.getElementById('pref-soft-vel'),pSVv=document.getElementById('pref-soft-vel-val');
+    if(pSV){
+      pSV.value=Math.round((prefs.softVel||0.33)*100);
+      pSVv.textContent=pSV.value+'%';
+      pSV.addEventListener('input',()=>{prefs.softVel=parseInt(pSV.value)/100;pSVv.textContent=pSV.value+'%';localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+    }
   }
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
