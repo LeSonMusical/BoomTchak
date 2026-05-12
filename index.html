@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.22</span>
+      <span class="app-version">v3.10.23</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1107,8 +1107,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
-      <!-- Col 1 : Signature -->
-      <div class="metro-3col-eq">
+      <!-- Col 1 : Signature — taille auto (juste le texte) -->
+      <div class="metro-3col-eq" style="flex:0 0 auto;align-items:center;padding-right:4px">
         <span class="metro-3col-lbl">Signature</span>
         <span class="sig-edit-val" id="sig-unit-display">4/4</span>
       </div>
@@ -1121,8 +1121,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 3 : Unité (légèrement rétrécie) -->
-      <div class="metro-3col-eq" style="flex:0.75">
+      <!-- Col 3 : Unité (rétrécie pour ne pas empiéter sur Swing) -->
+      <div class="metro-3col-eq" style="flex:0.65">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
           <option value="4">♩ noire</option>
