@@ -68,11 +68,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.18** (session 2026-05-11)
+**v3.10.19** (session 2026-05-12)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.19 | Modal preset : appui long famille → réordonner (MX) ; fix doublon famille (assigned sig uses familles_ids + guards lib-panel) ; préfs : slider décalage audio/image (-100..+300ms) + slider volume step doux (x, 5..80%) |
 | v3.10.18 | grooveDirty propagé depuis metroDirty/bandDirty : saveGroovePattern gate sur `grooveDirty\|\|metroDirty\|\|bandDirty` ; updateGrooveSaveBtn reflète les trois flags ; setMetroDirty/setBandDirty rafraîchissent la disquette groove |
 | v3.10.17 | Fix grooveDirty : swing et battue (felBeatSteps) marquent désormais grooveDirty → disquette '!' + section Soumettre/Publier |
 | v3.10.16 | Toggle métro collapse/restore tous sous-volets (mémorise état) ; pm-close avec bordure visible ; isolation scroll modaux (body overflow hidden) ; couleurs adaptatives modal pattern/son par layer ; sync DB au démarrage même sans auth (sbSyncPublicPool) ; RLS anon presets DO $ block PG-compatible ; computeSigLabel corrigé (groupes / subdivision) ; signature fraction empilée ; suppression bordures metro-pat-row ; rebuild encyclo après sync public |
