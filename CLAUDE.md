@@ -44,6 +44,13 @@ Le verbe "Publier" est réservé aux modifications MX. Pour TX, le verbe est "Ap
 ### Gaps connus (à traiter)
 - `GAP_ENC_DEL` : Pas de delete encyclopédie TX ni MX (hors scope actuel)
 
+### Gaps résolus (session 2026-05-13)
+G1 (fork école TX), G2 (familles TX soumission), G3 (annulation auto Supabase), G4 (MX save DB), G5 (encyclo MX→DB), G7 (raison de refus), G9 (delete école UI MX) — tous implémentés et vérifiés.
+
+### Long terme
+- G6 (tempo min/max) : abandonné — `tempo.defaut` suffit
+- G10 (historique soumissions) : long terme
+
 ## Règle de déploiement (OBLIGATOIRE — à chaque session)
 Après chaque push de branche feature :
 1. Créer une PR draft si elle n'existe pas

@@ -497,33 +497,25 @@ Valider le modèle avec Lamberio avant tout codage.
 
 ## 13. Gaps identifiés — Backlog priorisé
 
-### Résolu ✅ (vérifié session 2026-04-28)
+### Résolu ✅ (vérifié session 2026-05-13)
 | # | Description | Localisation |
 |---|-------------|--------------|
 | G0 | **Bug initAuth() bloquant** — `authSession` vidé si `authProfile` null après `sbFetchProfile()` | ll. 5291–5296 |
 | G8 | **Ordre patterns/grooves persisté** — `sbPushSchoolOrder()` appelée après drag-drop | ll. 4123–4137, 5666, 6319 |
 | GAP_FAM_RENAME_TX | **Renommage TX famille** — soumission indépendante via `_pendingRename` + section "Tags familles" | ll. 5117–5126 |
+| G1 | **Fork item école TX** — `txForkItem()` présent, appelé sur patterns, grooves, familles (fork → source:'teacher' soumettable) | |
+| G2 | **Famille TX transmise à la soumission** — `sbPushTeacherFamilles()` appelé auto avant chaque `sbPublishPattern/Groove` | |
+| G3 | **Suppression locale → annulation Supabase auto** — `sbCancelSubmission()` appelé auto si item `localStatus:'submitted'` supprimé | |
+| G4 | **MX → Tout sauver en DB** — `dirtySchoolPats/Grooves` visibles section Publier MX, bouton ↑ École | |
+| G5 | **Encyclo MX → DB** — `_pendingDB` + `sbSaveEncycloEntry()` ; TX soumet via `sbSubmitEncycloTX()` | |
+| G7 | **Raison de refus** — MX saisit motif → PATCH `reject_reason` → TX voit toast individuels | v3.8.53 |
+| G9 | **Suppression item école depuis UI MX** — `localDeletePending` + section Publier → DELETE DB | |
 
-### Priorité haute
-| # | Description | Impact |
-|---|-------------|--------|
-| G1 | **Fork item école** : TX modifie un item école → copie automatique en source:'teacher' pour soumission | TX ne peut pas proposer d'amélioration d'un item école |
-| G2 | **Famille TX transmise à la soumission** : push les familles TX (scope:'teacher') au moment du submit pattern/groove | MX voit des IDs de famille inconnus |
-| G3 | **Suppression locale → annulation Supabase auto** : si item localStatus:'submitted', DELETE Supabase avant supprimer localement | Orphelins en DB |
-| G4 | **MX → Tout sauver en DB** : patterns/grooves/encyclo/familles MX doivent pouvoir être publiés directement en école | Perte de données si localStorage vidé |
-
-### Priorité moyenne
-| # | Description | Impact |
-|---|-------------|--------|
-| G5 | **Encyclo MX → DB** : bouton "Publier en DB" dans la section encyclopédie pour MX | Éditions MX perdues si localStorage vidé |
-| G6 | **Édition tempo/signature post-création** | Groove figé après création |
-| G7 | **Raison de refus** : MX peut saisir un message lors du rejet, TX le voit dans le toast | UX de communication TX/MX |
-
-### Priorité basse
-| # | Description | Impact |
-|---|-------------|--------|
-| G9 | **Suppression item école depuis l'UI MX** | MX doit passer par le dashboard Supabase |
-| G10 | **Historique des soumissions** | Traçabilité TX/MX |
+### Long terme (hors scope courant)
+| # | Description | Décision |
+|---|-------------|----------|
+| G6 | **Édition tempo min/max post-création** | Abandonné — `tempo.defaut` persisté au save groove suffit en pratique |
+| G10 | **Historique des soumissions** | Long terme — traçabilité TX/MX, pas prioritaire |
 
 ---
 
