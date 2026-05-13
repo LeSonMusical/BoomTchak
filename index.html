@@ -628,6 +628,18 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-mod:disabled{opacity:.3;cursor:default}
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
+.mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
+.btn-rec{padding:1px 9px;font-size:11px;font-weight:700;letter-spacing:.03em;flex-shrink:0;border-radius:4px;cursor:pointer;border:1.5px solid #bbb;background:#fff;color:#999;line-height:1.5}
+.btn-rec.armed{border-color:#D85A30;color:#D85A30;background:#fff5f2}
+.btn-rec.recording{border-color:#c0391b;background:#D85A30;color:#fff;animation:rec-blink .65s step-end infinite}
+@keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.play-btns.rec-mode{gap:6px}
+.play-btns.rec-mode .play-thumb{flex:3}
+.rec-ctrl{flex:1.5;min-width:52px;display:none;flex-direction:column;gap:5px;align-items:stretch;justify-content:center}
+.play-btns.rec-mode .rec-ctrl{display:flex}
+.rec-ctrl-btn{padding:7px 4px;border:none;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;color:#fff;line-height:1.2;text-align:center}
+.rec-ctrl-ok{background:#2a8a5e}
+.rec-ctrl-cancel{background:#555}
 /* ── Items bibliothèque — layout 2 lignes ── */
 .lib-item{display:flex;align-items:stretch;gap:0;padding:5px 8px 5px 0;border-bottom:1px solid #f0ede8;transition:background .1s}
 .lib-item:last-child{border-bottom:none}
@@ -981,7 +993,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.24</span>
+      <span class="app-version">v3.11.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1226,8 +1238,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <!-- Volet Jouer -->
 <div class="play-drawer" id="play-drawer">
   <button class="play-drawer-close" id="play-drawer-close">✕</button>
-  <div class="play-btns">
+  <div class="play-btns" id="play-btns">
     <button class="play-thumb play-thumb-l" id="play-thumb-l">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main gauche</span></button>
+    <div class="rec-ctrl" id="rec-ctrl">
+      <button class="rec-ctrl-btn rec-ctrl-ok" id="rec-ctrl-ok">✓ Garder</button>
+      <button class="rec-ctrl-btn rec-ctrl-cancel" id="rec-ctrl-cancel">✗ Annuler</button>
+    </div>
     <button class="play-thumb play-thumb-r" id="play-thumb-r">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main droite</span></button>
   </div>
 </div>
@@ -1962,6 +1978,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
+  recArmed:false, recording:false, recMode:'replace', originalPattern:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2453,8 +2470,64 @@ function playSound(ss,atTime,velMult){
 function scheduleNote(li,atTime,velMult){playSound(soundState[li],atTime,velMult??1);}
 function playConga(isRight){
   const a=getAC();if(!a)return;
-  playSound(soundStateThumb[isRight?1:0],a.currentTime);
+  // En mode rec : joue le son du layer enregistré (pas le son du pouce)
+  if(recLayerIdx>=0&&(state[recLayerIdx].recArmed||state[recLayerIdx].recording)){
+    playSound(soundState[recLayerIdx],a.currentTime);
+  } else {
+    playSound(soundStateThumb[isRight?1:0],a.currentTime);
+  }
 }
+
+function updateRecBtn(li){
+  const btn=document.getElementById('btn-rec-'+li);if(!btn)return;
+  btn.classList.remove('armed','recording');
+  if(state[li].recording)btn.classList.add('recording');
+  else if(state[li].recArmed)btn.classList.add('armed');
+}
+
+function startRec(li){
+  // Annuler tout rec en cours sur un autre layer
+  if(recLayerIdx>=0&&recLayerIdx!==li)stopRec(recLayerIdx,false);
+  // Sauvegarder le pattern original pour Cancel
+  state[li].originalPattern=[...state[li].pattern];
+  state[li].recArmed=true;
+  state[li].recording=playing;
+  recLayerIdx=li;
+  // Ouvrir volet jouer si fermé
+  const playDrawer=document.getElementById('play-drawer');
+  if(!playDrawer.classList.contains('open')){
+    playDrawer.classList.add('open');
+    jouerOpen=true;
+    document.getElementById('btn-jouer').classList.add('active');
+    buildSoundPanel();
+  }
+  // Couleur des pouces = couleur du layer
+  const c=_LAYER_REC_COLORS[li];
+  document.getElementById('play-thumb-l').style.background=c;
+  document.getElementById('play-thumb-r').style.background=c;
+  // Afficher contrôles Garder/Annuler
+  document.getElementById('play-btns').classList.add('rec-mode');
+  updateRecBtn(li);
+}
+
+function stopRec(li,validate){
+  if(!validate&&state[li].originalPattern){
+    state[li].pattern=state[li].originalPattern;
+    buildStepsDOM(li,state[li].wrapped);
+    if(circleView)drawCircles();
+  }
+  state[li].originalPattern=null;
+  state[li].recArmed=false;
+  state[li].recording=false;
+  recLayerIdx=-1;
+  // Restaurer couleurs pouces
+  document.getElementById('play-thumb-l').style.background='';
+  document.getElementById('play-thumb-r').style.background='';
+  // Masquer contrôles rec
+  document.getElementById('play-btns').classList.remove('rec-mode');
+  updateRecBtn(li);
+}
+
 function _buildBandSlotEmbed(){
   const e={};
   const _s=(k,ss)=>{if(soundDirty[k])e[k]={soundId:ss.soundId,pitch:ss.pitch,env:ss.env,vol:ss.vol,atk:ss.atk??0};};
@@ -2487,6 +2560,7 @@ function applyBand(id){
 // ── Playback ──────────────────────────────────────────────────────────────
 function startPlay(){
   playing=true;
+  if(recLayerIdx>=0){state[recLayerIdx].recording=true;updateRecBtn(recLayerIdx);}
   const a=getAC();
   const now=a.currentTime;
   LAYERS.forEach((_,li)=>{
@@ -2503,6 +2577,7 @@ function startPlay(){
 
 function stopPlay(){
   playing=false;
+  if(recLayerIdx>=0){state[recLayerIdx].recording=false;updateRecBtn(recLayerIdx);}
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
   if(circleView){
@@ -2627,6 +2702,9 @@ let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
+let recLayerIdx = -1;    // li du layer en cours de rec (-1 = aucun)
+let patClipboard = null; // presse-papiers pattern (cross-layer)
+const _LAYER_REC_COLORS = ['#378ADD','#D85A30','#1D9E75'];
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
 let colorScheme = localStorage.getItem('boomtchak_theme') || 'system';
@@ -4432,19 +4510,71 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);
     });
 
-    // Assemblage — édit : flex direct ; transf : groupe unitaire (wrap ensemble)
+    // — Copier/Coller/Effacer —
+    const bCopy=document.createElement('button');bCopy.className='btn-mod btn-mod-sm';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
+    bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
+    const bPaste=document.createElement('button');bPaste.className='btn-mod btn-mod-sm';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
+    bPaste.addEventListener('click',()=>{
+      if(!patClipboard)return;
+      state[li].pattern=[...patClipboard];
+      nPas.textContent=String(state[li].pattern.length);
+      shNum.textContent='0';
+      buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
+    });
+    const bClear=document.createElement('button');bClear.className='btn-mod btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
+    bClear.addEventListener('click',()=>{
+      miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
+        state[li].pattern=state[li].pattern.map(()=>'.');
+        buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
+      });
+    });
+
+    // — Rec ⏺ + mode Rem/Ovd —
+    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺ Rec';bRec.title='Enregistrer depuis les boutons Jouer';
+    bRec.addEventListener('click',()=>{
+      if(state[li].recArmed||state[li].recording)stopRec(li,false);
+      else startRec(li);
+    });
+    const bOvd=document.createElement('button');bOvd.className='btn-mod';bOvd.id='btn-ovd-'+li;
+    bOvd.textContent=state[li].recMode==='overdub'?'Ovd':'Rem';
+    bOvd.title='Rem : remplace le cycle en boucle ; Ovd : ajoute sur le pattern existant';
+    bOvd.addEventListener('click',()=>{
+      state[li].recMode=state[li].recMode==='overdub'?'replace':'overdub';
+      bOvd.textContent=state[li].recMode==='overdub'?'Ovd':'Rem';
+      bOvd.classList.toggle('on',state[li].recMode==='overdub');
+    });
+
+    // Assemblage — 4 groupes : Lecture | Édition | Rec | Transf
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
-    modPanel.appendChild(bMinus); modPanel.appendChild(nPas); modPanel.appendChild(bPlus);
+    const mkGrp=()=>{const g=document.createElement('div');g.className='mod-group';return g;};
+
+    // Groupe 1 — Lecture : shift + vitesse
+    const grLecture=mkGrp();
+    grLecture.appendChild(bShL);grLecture.appendChild(shNum);grLecture.appendChild(bShR);
+    grLecture.appendChild(mkSep());
+    grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);
+    modPanel.appendChild(grLecture);
     modPanel.appendChild(mkSep());
-    modPanel.appendChild(bShL); modPanel.appendChild(shNum); modPanel.appendChild(bShR);
+
+    // Groupe 2 — Édition : pas + copy/paste/clear
+    const grEdit=mkGrp();
+    grEdit.appendChild(bMinus);grEdit.appendChild(nPas);grEdit.appendChild(bPlus);
+    grEdit.appendChild(mkSep());
+    grEdit.appendChild(bCopy);grEdit.appendChild(bPaste);grEdit.appendChild(bClear);
+    modPanel.appendChild(grEdit);
     modPanel.appendChild(mkSep());
-    modPanel.appendChild(bSpeed);
-    modPanel.appendChild(bTern);
+
+    // Groupe 3 — Rec
+    const grRec=mkGrp();
+    grRec.appendChild(bRec);grRec.appendChild(bOvd);
+    modPanel.appendChild(grRec);
     modPanel.appendChild(mkSep());
+
+    // Groupe 4 — Transf
     const modTransf=document.createElement('div');modTransf.className='mod-transf';
-    modTransf.appendChild(bSwap); modTransf.appendChild(bInv); modTransf.appendChild(bRot);
+    modTransf.appendChild(bSwap);modTransf.appendChild(bInv);modTransf.appendChild(bRot);
     modTransf.appendChild(mkSep());
-    modTransf.appendChild(bDice); modTransf.appendChild(bMagic);
+    modTransf.appendChild(bDice);modTransf.appendChild(bMagic);
     modPanel.appendChild(modTransf);
 
     layerDiv.appendChild(modPanel);
@@ -10530,6 +10660,14 @@ function attachEvents(){
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
     playConga(true);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
+  });
+
+  // ── Rec : Garder / Annuler ──
+  document.getElementById('rec-ctrl-ok').addEventListener('click',()=>{
+    if(recLayerIdx>=0)stopRec(recLayerIdx,true);
+  });
+  document.getElementById('rec-ctrl-cancel').addEventListener('click',()=>{
+    if(recLayerIdx>=0)stopRec(recLayerIdx,false);
   });
 
   // ── Mode TX (requiert connexion Google) ──
