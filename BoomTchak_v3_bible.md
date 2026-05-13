@@ -620,3 +620,4 @@ Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted 
 | v3.10.21 | Fix groove dirty au chargement (applyGroove ne propage plus bandDirty/metroDirty sur embed restore) ; sliders rappel valeur+label textuel ; swing tap-to-reset |
 | v3.10.22 | Volet Unit 4 colonnes (Signature+Divisions+Unité+Swing) ; overlay _dragOverlay sur swing-slider |
 | v3.10.23 | Fix Unit : Signature flex:0 0 auto ; Unité flex:0.65 (sans empiéter sur Swing) |
+| v3.10.24 | Fix modal preset famFilter (famille du preset courant prioritaire) ; swing overlay %·nom ; sbMergeSchoolData inclut type famille ; sbSyncPublicPool re-applique groove après sync ; drawCircles clamp el<0→0 (sync image-son groove change) |
