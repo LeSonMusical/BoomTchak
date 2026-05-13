@@ -77,11 +77,12 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.23** (session 2026-05-12)
+**v3.10.24** (session 2026-05-13)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.10.24 | Fix modal preset : ouvre sur famille du preset courant (priorité inversée vs filtre mémorisé) ; swing overlay = %·nom ; sbMergeSchoolData inclut type famille ; sbSyncPublicPool re-applique groove courant après sync ; drawCircles clamp el<0→0 pour sync image-son au changement de groove |
 | v3.10.23 | Fix volet Unit : Signature flex:0 0 auto (auto-size au contenu) ; Unité flex:0.65 ; 4 colonnes équilibrées sans débordement sur Swing |
 | v3.10.22 | Volet Unit 4 colonnes : Signature + Divisions + Unité (flex:0.75) + Swing ; overlay BPM-style sur swing-slider (input → _dragOverlay.show('%') + pointerup hide) |
 | v3.10.21 | Fix groove dirty au chargement : applyGroove ne propage plus bandDirty/metroDirty vers updateGrooveSaveBtn quand band_embed/metro_embed restaurés ; sliders rappel valeur : swing tap-to-reset, prefs audio offset + soft vel montrent valeur + label textuel (Synchro/Bluetooth, Doux/Fort) tap-to-reset |
@@ -220,21 +221,34 @@ Le volet Band est le dernier grand chantier de gestion de presets à refactorise
 ### Autres chantiers en attente
 - **Samples audio** — Cadrer la source avec Lamberio, puis implémenter `sampleUrl` dans SOUND_DEFS
 
-### Roadmap court terme — Bouton REC dans le volet Mod des patterns
+### Prochains chantiers — REC Capture + Practice (v3.11)
 
-**Idée produit :** Ajouter dans le volet Mod de chaque layer (côté droit, sur chaque couche) 3 boutons :
-- **⏺ Rec** — entre en mode enregistrement ; les sons joués avec les boutons Main G/D pendant la lecture s'inscrivent dans le pattern courant au pas le plus proche (quantization au step)
-- **⌫ Clear** — efface le pattern courant (met tout à '.')
-- **⎘ Copier/Coller** contextuel — copie le pattern du layer courant ; s'il existe un pattern dans le presse-papier, propose coller à la place
+Deux cas d'usage distincts, deux features séparées (cadrage session 2026-05-13) :
 
-**Fonctionnement du REC :**
-- Nécessite lecture active (`playing`)
-- `state[li].recording = true` → chaque pression `playConga` (ou futur bouton layer dédié) calcule le step courant : `Math.round((now - state[li].startTime) / getBeatSec(li)) % n`
-- En mode rec à 2 mains (sin2 pattern) : bouton Main G → layer thumbL, bouton Main D → layer thumbR
-- Visual : layer en mode rec passe en rouge pulsant (animation CSS)
-- Durée max : 2 mesures ou 1 cycle pattern, puis auto-stop rec
+#### Phase 1 — Bouton REC Création (volet Mod, ~3–4h)
+- **⏺ Rec** par layer dans le volet Mod (nécessite `playing`)
+- 1 main, 1 layer ; overdub ou replace selon bouton
+- Quantisé au step le plus proche : `Math.round((now - state[li].startTime) / getBeatSec(li)) % n`
+- `state[li].recording = true` ; visuel rouge pulsant ; auto-stop après 1 cycle
+- Bouton ⌫ Clear (vide pattern → '.') et ⎘ Copier/Coller également à prévoir
 
-**Complexité estimée :** modérée — 4 à 6h. Les primitives de timing existent déjà (`getBeatSec`, `state[li].stepPos`, `state[li].nextStepTime`). La quantization au step est triviale. Le plus délicat est la gestion de l'UX (countdown avant rec ? feedback visuel précis ?). À cadrer avec Lamberio avant de coder.
+**Options à implémenter :**
+- 1 ou 2 mains (Main G/D → layers thumbL/thumbR si sin2)
+- Replace (repartir de zéro) vs Overdub (ajouter sur l'existant)
+
+#### Phase 2 — Volet Practice / Reproduction-Validation (~8–12h)
+Nouveau panneau pédagogique, le plus unique de BoomTchak :
+- Sélectionner un pattern de référence (école ou perso)
+- Lecture en boucle du pattern de référence ; capture naturelle (non quantisée) des taps
+- Comparaison step par step : écart ms par tap, représentation visuelle couleur (rouge/vert)
+- Score global (% précision) après correction de l'offset systématique (calibration latence)
+- Option "Garder comme pattern" avec quantisation optionnelle
+
+**Points techniques à résoudre avant de coder :**
+- Algorithme d'alignement tap↔step (distance + pénalité step manqué/tap en trop)
+- Correction offset latence audio (récupérer `prefs.audioOffset` déjà en prefs)
+- Mobile : timestamp iOS/Android fiables ? (performance.now vs AudioContext.currentTime)
+- UX : countdown avant démarrage ? Nombre de cycles d'entraînement ?
 
 ## Résolu (session 2026-05-10 — v3.10.8–v3.10.12)
 - ✅ **Refonte volets metro** — Tempo (BPM large + Battement) | Unit (Divisions + Unité + Swing) | Tap | Vol | Métro ; remplacement de Sign/Temps par Tempo/Unit

@@ -981,7 +981,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.10.23</span>
+      <span class="app-version">v3.10.24</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2777,6 +2777,7 @@ function applyGroove(grooveId){
     const mpLen=Math.max(1,(currentSig.metroPattern||[]).length);
     const stepsLeft=(mpLen-metroStepPos%mpLen)%mpLen;
     const syncTime=Math.max(now, metroNextBeatTime+stepsLeft*stepSec);
+    linearCycleStartTime=syncTime;
     LAYERS.forEach((_,li)=>{
       state[li].stepPos=0;
       state[li].nextStepTime=syncTime;
@@ -2838,10 +2839,8 @@ function openPresetModal(cfg){
   hdr.appendChild(htitle);hdr.appendChild(hclose);
   sheet.appendChild(hdr);
 
-  // famFilter : 1) filtre mémorisé pour ce type, 2) sinon famille du preset courant, 3) 'all'
+  // famFilter : 1) famille du preset courant, 2) filtre mémorisé, 3) 'all'
   let famFilter=(()=>{
-    const saved=_pmFamFilter[cfg.type];
-    if(saved)return saved;
     if(cfg.currentId&&(cfg.type==='groove'||cfg.type==='pattern')){
       const arr=cfg.type==='groove'?packCours.grooves:packCours.patterns;
       const cur=arr?.find(x=>x.id===cfg.currentId);
@@ -2851,6 +2850,8 @@ function openPresetModal(cfg){
       const cur=metroPresets.find(p=>p.id===cfg.currentId);
       if(cur?.familles_ids?.length)return cur.familles_ids[0];
     }
+    const saved=_pmFamFilter[cfg.type];
+    if(saved)return saved;
     return'all';
   })();
   // États modes gérer/réordonner (groove et pattern uniquement)
@@ -6064,12 +6065,13 @@ function drawCircles(){
     const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
     const measureSec = (60/spm) * stepsPerMeasure;
     const el = now - state[0].startTime;
-    fracMeasure = ((el % measureSec) + measureSec) % measureSec / measureSec;
+    fracMeasure = el < 0 ? 0 : ((el % measureSec) + measureSec) % measureSec / measureSec;
   }
   const fracs = LAYERS.map((_,li)=>{
     if(!playing) return 0;
     if(circleModeView === 'measure') return fracMeasure;
     const bs = getBeatSec(li), el = now - state[li].startTime;
+    if(el < 0) return 0;
     const cyc = bs * state[li].pattern.length;
     return ((el % cyc) + cyc) % cyc / cyc;
   });
@@ -6090,8 +6092,7 @@ function drawCircles(){
     let curSi = -1;
     if(playing){
       const bs = getBeatSec(li), el = now - state[li].startTime;
-      curSi = Math.floor(el/bs) % n;
-      if(curSi !== flashStep[li]) flashStep[li] = curSi;
+      if(el >= 0){ curSi = Math.floor(el/bs) % n; if(curSi !== flashStep[li]) flashStep[li] = curSi; }
     }
 
     // Points — en mode mesure : répétitions du pattern si plus court que la mesure
@@ -6104,7 +6105,7 @@ function drawCircles(){
       const maxRep = Math.ceil(measureSecM / patSecM);
       if(playing){
         const elM = now - state[li].startTime;
-        const posInMeasure = ((elM % measureSecM) + measureSecM) % measureSecM;
+        const posInMeasure = elM < 0 ? 0 : ((elM % measureSecM) + measureSecM) % measureSecM;
         currentRepM = Math.min(Math.floor(posInMeasure / patSecM), maxRep - 1);
       }
       for(let rep=0; rep<maxRep; rep++){
@@ -6666,7 +6667,9 @@ async function sbSyncPublicPool() {
       sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams, bandFamilles: bandFams, soundFamilles: soundFams });
       updateSyncStatus('Base école chargée');
       rebuildMetroPresets(); rebuildAllFamFilters();
-      buildGrooveSection(); buildLayers(); buildEncycloSection();
+      buildGrooveSection(); buildEncycloSection();
+      if(!playing&&currentGrooveId&&getGroove(currentGrooveId)) applyGroove(currentGrooveId);
+      else buildLayers();
     }
   } catch(e) {
     // Silencieux si RLS bloque la lecture anonyme (non migré)
@@ -6787,7 +6790,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     if (localDirtyFIds.has(f.id)) return; // modif MX en attente — garder version locale
     // Remplace le défaut PTK s'il existe avec le même id (les défauts n'ont pas source:'school') pour que sbPushSchoolFamOrder puisse les patcher
     packCours.familles = packCours.familles.filter(x => x.id !== f.id);
-    packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school', ordre: f.ordre ?? 0 });
+    packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school', ordre: f.ordre ?? 0, type: f.type || 'both' });
   });
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
@@ -9995,7 +9998,7 @@ function attachEvents(){
     swingVal=parseInt(e.target.value)/100;
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
-    _dragOverlay.show((50+swingVal*25).toFixed(0)+'%');
+    const _mpc=50+swingVal*25;_dragOverlay.show(_mpc.toFixed(0)+'% · '+getSwingName(_mpc));
   });
   _swSlider?.addEventListener('pointerup',()=>_dragOverlay.hide());
   _swSlider?.addEventListener('pointercancel',()=>_dragOverlay.hide());
