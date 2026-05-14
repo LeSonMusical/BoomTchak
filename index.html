@@ -1000,7 +1000,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.3</span>
+      <span class="app-version">v3.11.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1985,7 +1985,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'overdub', originalPattern:null,
+  recArmed:false, recording:false, recMode:'overdub', originalPattern:null, recBuffer:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2408,6 +2408,12 @@ function scheduler(){
         if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
         if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
         if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
+        // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
+        if(li===recLayerIdx&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
+          state[li].pattern=[...state[li].recBuffer];
+          state[li].recBuffer=null;
+          _recDomUpdateLi=li;
+        }
       }
       // X (fort) joue plein volume, x (faible) joue à 40%
       const stepVal=state[li].pattern[si];
@@ -2449,6 +2455,7 @@ function scheduler(){
 
 function visualLoop(){
   if(!playing)return;
+  if(_recDomUpdateLi>=0){const rli=_recDomUpdateLi;_recDomUpdateLi=-1;buildStepsDOM(rli,state[rli].wrapped);}
   if(circleView){ visualLoopCircle(); return; }
   const now=getAC().currentTime-prefs.audioOffset;
   LAYERS.forEach((layer,li)=>{
@@ -2517,13 +2524,40 @@ function startRec(li){
   updateRecBtn(li);
 }
 
+function recTap(tapTime){
+  const li=recLayerIdx;
+  if(li<0||!state[li].recording)return;
+  const n=state[li].pattern.length;
+  const bs=getBeatSec(li);
+  // Step quantisé : position dans le cycle courant
+  const cycleStart=state[li].nextStepTime-state[li].stepPos*bs;
+  const si=((Math.round((tapTime-cycleStart)/bs)%n)+n)%n;
+  if(state[li].recMode==='overdub'){
+    if(state[li].pattern[si]==='.') state[li].pattern[si]='X';
+  } else {
+    // RPL : accumule dans le buffer + feedback immédiat dans le pattern courant
+    if(!state[li].recBuffer) state[li].recBuffer=Array(n).fill('.');
+    state[li].recBuffer[si]='X';
+    state[li].pattern[si]='X';
+  }
+  setLayerDirty(li,true);
+  _recDomUpdateLi=li;
+}
+
 function stopRec(li,validate){
   if(!validate&&state[li].originalPattern){
     state[li].pattern=state[li].originalPattern;
     buildStepsDOM(li,state[li].wrapped);
     if(circleView)drawCircles();
+  } else if(validate&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
+    // Appliquer le dernier cycle partiel s'il contient des taps
+    state[li].pattern=[...state[li].recBuffer];
+    buildStepsDOM(li,state[li].wrapped);
+    if(circleView)drawCircles();
+    setLayerDirty(li,true);
   }
   state[li].originalPattern=null;
+  state[li].recBuffer=null;
   state[li].recArmed=false;
   state[li].recording=false;
   recLayerIdx=-1;
@@ -2709,8 +2743,9 @@ let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
-let recLayerIdx = -1;    // li du layer en cours de rec (-1 = aucun)
-let patClipboard = null; // presse-papiers pattern (cross-layer)
+let recLayerIdx = -1;       // li du layer en cours de rec (-1 = aucun)
+let _recDomUpdateLi = -1;   // li dont le DOM steps doit être reconstruit au prochain rAF
+let patClipboard = null;    // presse-papiers pattern (cross-layer)
 const _LAYER_REC_COLORS = ['#378ADD','#D85A30','#1D9E75'];
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
@@ -10655,13 +10690,17 @@ function attachEvents(){
   document.getElementById('play-thumb-l').addEventListener('pointerdown',e=>{
     e.preventDefault();
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
+    const tapTime=ac.currentTime;
     playConga(false);
+    if(recLayerIdx>=0&&state[recLayerIdx].recording)recTap(tapTime);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
   document.getElementById('play-thumb-r').addEventListener('pointerdown',e=>{
     e.preventDefault();
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
+    const tapTime=ac.currentTime;
     playConga(true);
+    if(recLayerIdx>=0&&state[recLayerIdx].recording)recTap(tapTime);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
 
