@@ -658,8 +658,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 .mod-grp-clip .btn-mod{min-width:26px;text-align:center}
-.rec-ctrl-mode{background:#555;border-radius:2px;font-size:10px;margin-top:8px;padding:5px 8px}
-.rec-ctrl-mode.rec-ctrl-ovr{background:#7B5EA7}
+/* Replace = rouge léger (supprime les steps) ; Overdub = violet léger */
+.rec-ctrl-mode{border:1px solid #c0392b;border-radius:2px;background:rgba(192,57,43,.12);font-size:10px;margin-top:8px;padding:5px 8px;color:#ddd}
+.rec-ctrl-mode.rec-ctrl-ovr{border-color:#9b7bc0;background:rgba(123,94,167,.15);color:#ddd}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
@@ -667,9 +668,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .play-btns.rec-mode .play-thumb{flex:3}
 .rec-ctrl{flex:1.5;min-width:68px;display:none;flex-direction:column;gap:4px;align-items:stretch;justify-content:center}
 .play-btns.rec-mode .rec-ctrl{display:flex}
-.rec-ctrl-btn{padding:5px 3px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center;background:transparent}
-.rec-ctrl-garder{border-color:#1a7a50;color:#1a7a50}
-.rec-ctrl-erase{border-color:#c0392b;color:#c0392b}
+.rec-ctrl-btn{padding:5px 3px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center;background:transparent;color:#ccc}
+.rec-ctrl-garder{border-color:#1a7a50}
+.rec-ctrl-erase{border-color:#c0392b}
 .play-thumb-layer-name{display:block;font-size:9px;font-weight:700;min-height:12px;line-height:1.3;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
 /* ── Items bibliothèque — layout 2 lignes ── */
 .lib-item{display:flex;align-items:stretch;gap:0;padding:5px 8px 5px 0;border-bottom:1px solid #f0ede8;transition:background .1s}
@@ -1035,7 +1036,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.6</span>
+      <span class="app-version">v3.12.7</span>
     </div>
   </div>
   <div class="top-bar-center">
