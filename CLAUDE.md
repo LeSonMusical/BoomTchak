@@ -77,11 +77,19 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.10.24** (session 2026-05-13)
+**v3.11.11** (session 2026-05-14)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.11.11 | Revert layout circulaire : portrait = layers sous canvas ; desktop ≥600px Pattern/Mesure = canvas gauche + layers droite ; Cycle = layers sous dans tous les cas (circle-linear class) |
+| v3.11.10 | (annulé — layout côte-à-côte portrait trop étroit sur smartphone) |
+| v3.11.9 | Fix bouton Capturer rouge en dark mode (spécificité CSS .active écrasait .rec-armed) ; layers sous canvas vue circle paysage (corrigé par v3.11.11) |
+| v3.11.8 | Mod panel 3 cas adaptatifs via ResizeObserver : lmp-large (≥400px) 1 ligne, défaut (240–399px) 2 lignes, lmp-narrow (<240px) 3 lignes |
+| v3.11.7 | Bouton ⏺ rec : même fond/bordure que btn-mod (var --cs/--cb) ; portrait rec+taille ligne 1 / clip ligne 2 ; play-drawer bordure verte/rouge selon mode |
+| v3.11.6 | Rec UI : bRec cadré ⏺, Capturer rouge plein, portrait rec↑edit↓ |
+| v3.11.5 | Rec phase 2 : recTap quantisé, OVR écrit direct, RPL looper (cycle boundary), _recDomUpdateLi pour rAF DOM, startRec/stopRec complets |
+| v3.11.1–4 | Rec phase 1 UI : btn-rec par layer, 4 groupes mod (lecture/transf/clip/recsize), volet Jouer en rec-mode, couleur thumb = couleur layer, rec-ctrl Garder/Annuler/OVR |
 | v3.10.24 | Fix modal preset : ouvre sur famille du preset courant (priorité inversée vs filtre mémorisé) ; swing overlay = %·nom ; sbMergeSchoolData inclut type famille ; sbSyncPublicPool re-applique groove courant après sync ; drawCircles clamp el<0→0 pour sync image-son au changement de groove |
 | v3.10.23 | Fix volet Unit : Signature flex:0 0 auto (auto-size au contenu) ; Unité flex:0.65 ; 4 colonnes équilibrées sans débordement sur Swing |
 | v3.10.22 | Volet Unit 4 colonnes : Signature + Divisions + Unité (flex:0.75) + Swing ; overlay BPM-style sur swing-slider (input → _dragOverlay.show('%') + pointerup hide) |
@@ -223,18 +231,14 @@ Le volet Band est le dernier grand chantier de gestion de presets à refactorise
 
 ### Prochains chantiers — REC Capture + Practice (v3.11)
 
-Deux cas d'usage distincts, deux features séparées (cadrage session 2026-05-13) :
-
-#### Phase 1 — Bouton REC Création (volet Mod, ~3–4h)
-- **⏺ Rec** par layer dans le volet Mod (nécessite `playing`)
-- 1 main, 1 layer ; overdub ou replace selon bouton
-- Quantisé au step le plus proche : `Math.round((now - state[li].startTime) / getBeatSec(li)) % n`
-- `state[li].recording = true` ; visuel rouge pulsant ; auto-stop après 1 cycle
-- Bouton ⌫ Clear (vide pattern → '.') et ⎘ Copier/Coller également à prévoir
-
-**Options à implémenter :**
-- 1 ou 2 mains (Main G/D → layers thumbL/thumbR si sin2)
-- Replace (repartir de zéro) vs Overdub (ajouter sur l'existant)
+#### ✅ Phase 1 — Bouton REC Création (volet Mod) — implémenté v3.11.1–v3.11.7
+- ⏺ Rec par layer dans volet Mod ; visuel rouge pulsant quand `playing`
+- Modes OVR (overdub direct) et RPL (looper : applique au cycle boundary)
+- Quantisation : `si = round((tapTime - cycleStart) / getBeatSec(li)) % n`
+- Volet Jouer s'ouvre en rec-mode (bordure rouge, bouton Capturer rouge, thumbs couleur layer)
+- Garder (valide) / Annuler (restaure `originalPattern`) / OVR-RPL toggle
+- Clipboard : copier / coller / effacer par layer
+- Mod panel adaptatif 3 cas (v3.11.8) + layout circulaire réglé (v3.11.9–v3.11.11)
 
 #### Phase 2 — Volet Practice / Reproduction-Validation (~8–12h)
 Nouveau panneau pédagogique, le plus unique de BoomTchak :
@@ -249,6 +253,19 @@ Nouveau panneau pédagogique, le plus unique de BoomTchak :
 - Correction offset latence audio (récupérer `prefs.audioOffset` déjà en prefs)
 - Mobile : timestamp iOS/Android fiables ? (performance.now vs AudioContext.currentTime)
 - UX : countdown avant démarrage ? Nombre de cycles d'entraînement ?
+
+## Résolu (session 2026-05-14 — v3.11.1–v3.11.11)
+- ✅ **Bouton ⏺ Rec par layer** — volet Mod, 4 groupes (lecture / transf / clip / recsize) ; `state[li].recArmed/recording/recMode/originalPattern/recBuffer`
+- ✅ **Mode OVR** — overdub : écrit 'X' directement dans `state[li].pattern`
+- ✅ **Mode RPL** — looper : accumule dans `recBuffer`, applique à `si===0` (cycle boundary) ; garde le dernier cycle si aucun nouveau tap
+- ✅ **recTap(tapTime)** — quantisation : `cycleStart = nextStepTime − stepPos × getBeatSec(li)` ; `si = round((tapTime − cycleStart) / bs) % n`
+- ✅ **Volet Jouer en rec-mode** — bordure rouge (`play-drawer.rec-mode`), bouton Capturer rouge (`rec-armed`/`rec-recording`), thumbs couleur layer, `_recPrevJouerOpen` restaure l'état
+- ✅ **Garder / Annuler** — `stopRec(li, true/false)` ; Annuler restaure `originalPattern`
+- ✅ **Clipboard layer** — copier / coller / effacer (`patClipboard` global cross-layer)
+- ✅ **Fix dark mode Capturer rouge** — règles `body.dark-mode .btn-jouer-wrap.rec-armed/rec-recording` (spécificité 0,3,0)
+- ✅ **Mod panel adaptatif 3 cas** — `ResizeObserver` sur `layer-mod-panel` → classes `lmp-large` / défaut / `lmp-narrow` (v3.11.8)
+- ✅ **Layout vue circulaire** — portrait : layers sous canvas ; desktop ≥600px Pattern/Mesure : canvas+layers côte à côte ; Cycle : layers sous dans tous les cas via `body.circle-linear` (v3.11.9–v3.11.11)
+- ✅ **Règles de design documentées** dans `BoomTchak_v3_bible.md` (section Layout adaptatif)
 
 ## Résolu (session 2026-05-10 — v3.10.8–v3.10.12)
 - ✅ **Refonte volets metro** — Tempo (BPM large + Battement) | Unit (Divisions + Unité + Swing) | Tap | Vol | Métro ; remplacement de Sign/Temps par Tempo/Unit
