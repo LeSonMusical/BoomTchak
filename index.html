@@ -417,6 +417,7 @@ body.rec-tapped .btn-cap-ann,body.rec-tapped .btn-cap-val{display:flex}
 .btn-play-main.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
 /* Prêt rec (armé, pas en lecture) */
 body.rec-active .btn-play-main:not(.active){border-color:#D85A30;color:#D85A30}
+body.rec-active .btn-play-main:not(.active)::before{content:'⏺';font-size:14px;margin-right:5px;opacity:.85}
 /* En lecture + rec */
 body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 .btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #c0bdb7;border-radius:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
@@ -1042,7 +1043,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.9</span>
+      <span class="app-version">v3.12.10</span>
     </div>
   </div>
   <div class="top-bar-center">
