@@ -408,7 +408,7 @@ body.dark-mode .enc-related{border-top-color:#333}
 .btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #c0bdb7;border-radius:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
 .btn-jouer-wrap:hover{background:#f0ede8}
 .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-.btn-jouer-wrap.rec-armed{background:#fff0f0;color:#D85A30;border-color:#D85A30}
+.btn-jouer-wrap.rec-armed{background:#D85A30;color:#fff;border-color:#c0391b}
 .btn-jouer-wrap.rec-recording{background:#D85A30;color:#fff;border-color:#c0391b;animation:rec-blink .65s step-end infinite}
 .hand{font-size:22px;line-height:1}
 
@@ -626,7 +626,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-grp-transf{grid-area:transf;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:center}
 .mod-grp-edit{grid-area:edit;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
 .mod-grp-rec{grid-area:rec;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
-@media(orientation:portrait){.layer-mod-panel{grid-template-columns:1fr 1fr;grid-template-areas:"lecture edit" "transf rec"}.mod-grp-transf{justify-self:start}.mod-grp-edit{justify-self:end}.mod-grp-rec{justify-self:end}}
+@media(orientation:portrait){.layer-mod-panel{grid-template-columns:1fr 1fr;grid-template-areas:"lecture rec" "transf edit"}.mod-grp-transf{justify-self:start}.mod-grp-edit{justify-self:end}.mod-grp-rec{justify-self:end}}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
 .btn-mod-sm{padding:1px 3px}
@@ -636,9 +636,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{background:none;border:none;cursor:pointer;font-size:16px;padding:1px 3px;line-height:1.2;color:#ccc;flex-shrink:0}
-.btn-rec.armed{color:#D85A30;outline:2px solid #D85A30;outline-offset:2px;border-radius:50%}
-.btn-rec.recording{color:#D85A30;animation:rec-blink .65s step-end infinite}
+.btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid #bbb;border-radius:4px;cursor:pointer;color:#aaa;line-height:1.5;flex-shrink:0}
+.btn-rec.armed{border-color:#D85A30;color:#D85A30;background:#fff5f2}
+.btn-rec.recording{border-color:#c0391b;background:#D85A30;color:#fff;animation:rec-blink .65s step-end infinite}
 .mod-grp-edit .btn-mod{min-width:26px;text-align:center}
 .rec-ctrl-mode{background:#555}
 .rec-ctrl-mode.rec-ctrl-ovr{background:#7B5EA7}
@@ -1005,7 +1005,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.5</span>
+      <span class="app-version">v3.11.6</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4606,7 +4606,7 @@ function buildLayers(){
     });
 
     // — Rec ⏺ + mode Rem/Ovd —
-    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='●';bRec.title='Enregistrer depuis les boutons Jouer';
+    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
       if(state[li].recArmed||state[li].recording)stopRec(li,false);
       else startRec(li);
