@@ -797,7 +797,7 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #band-content{order:2;width:100%;flex-shrink:0}
   body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
   body.view-circle #circle-view{order:4;flex:0 0 auto;align-self:flex-start}
-  body.view-circle #layers-wrap{order:4;flex:1;min-width:0;display:block;padding-left:.75rem}
+  body.view-circle #layers-wrap{order:5;flex:0 0 100%;display:block;padding-left:0}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
 }
 
@@ -912,6 +912,8 @@ body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
 body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+body.dark-mode .btn-jouer-wrap.rec-armed{background:#D85A30;color:#fff;border-color:#c0391b}
+body.dark-mode .btn-jouer-wrap.rec-recording{background:#D85A30;color:#fff;border-color:#c0391b;animation:rec-blink .65s step-end infinite}
 body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1018,7 +1020,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.8</span>
+      <span class="app-version">v3.11.9</span>
     </div>
   </div>
   <div class="top-bar-center">
