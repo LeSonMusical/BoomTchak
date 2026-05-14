@@ -376,29 +376,32 @@ LAYERS.forEach((_, li) => {
 
 Bouton toggle `↺ Pattern` / `↺ Mesure` / `↺ Cycle` affiché au-dessus du canvas `#rhythm-canvas`.
 
-### Layout adaptatif — règles de design (v3.11.10+)
+### Layout adaptatif — règles de design (v3.11.11)
 
-| Vue | Portrait | Paysage |
-|-----|----------|---------|
-| **Circulaire Pattern** (`cycle`) | canvas gauche, layers droite | canvas gauche, layers droite |
-| **Circulaire Mesure** (`measure`) | canvas gauche, layers droite | canvas gauche, layers droite |
-| **Cycle linéaire** (`linear`) | layers **sous** le canvas | layers **sous** le canvas |
+**Vue circulaire (Pattern `cycle` et Mesure `measure`) :**
+| Contexte | Disposition |
+|----------|-------------|
+| Portrait (< 600 px) | layers **sous** le canvas (flex-direction:column) |
+| Desktop ≥ 600 px | canvas **gauche** + layers **droite** (flex-direction:row) |
+
+**Vue Cycle (linéaire `linear`) — toujours :**
+- layers **sous** le canvas, portrait ET paysage
 
 **Implémentation CSS :**
-- Body class `view-circle` : layout flex-direction:row (side-by-side), `#circle-view flex:0 0 auto`, `#layers-wrap flex:1`
-- Body class `view-circle.circle-linear` override : `#circle-view flex:0 0 100%`, `#layers-wrap order:5 flex:0 0 100%`
-- `circle-linear` est toggleé par `setView()` et les handlers de `setupCircleModeToggle()`
+- Base `body.view-circle` : `flex-direction:column` (portrait, layers sous)
+- `@media(min-width:600px)` `body.view-circle` : `flex-direction:row;flex-wrap:wrap`, `#circle-view flex:0 0 auto`, `#layers-wrap order:4 flex:1`
+- `@media(min-width:600px)` `body.view-circle.circle-linear` : `#circle-view flex:0 0 100%`, `#layers-wrap order:5 flex:0 0 100%`
+- Body class `circle-linear` toggleée par `setView()`, `setupCircleModeToggle()`, et le badge canvas `↺ Cycle`
+- `resizeCanvas` (non-linear) : `maxW = isDesktop ? min(szW, frameW×0.46) : frameW−16`
 
-**Panneau mod adaptatif (ResizeObserver, v3.11.8+) :**
-| Largeur `layer-mod-panel` | Classe | Layout |
-|---------------------------|--------|--------|
+**Panneau mod adaptatif (ResizeObserver sur `layer-mod-panel`, v3.11.8+) :**
+| Largeur panneau | Classe | Layout |
+|-----------------|--------|--------|
 | ≥ 400 px | `lmp-large` | 1 ligne — Lecture \| Transf \| Clip \| RecSize |
 | 240–399 px | *(défaut)* | 2 lignes — Lecture+RecSize / Transf+Clip |
-| < 240 px | `lmp-narrow` | 3 lignes — Lecture+RecSize / Transf pleine / Clip pleine |
+| < 240 px | `lmp-narrow` | 3 lignes — Lecture+RecSize / Transf (pleine) / Clip (pleine) |
 
-En mode circulaire portrait, le canvas prend ~50 % de la largeur du frame (`resizeCanvas` :
-`maxW = min(szW, frameW × 0.50)`), laissant l'autre moitié aux layers (déclenche `lmp-narrow`
-ou `lmp-tight` selon la taille de l'écran).
+`checkModPanelSize(li)` mesure `mp.clientWidth` et pose `lmp-large` / `lmp-narrow`. Attaché via `attachModPanelObserver(li)` (partage le tableau `layerObservers`).
 
 ### Mode Mesure — formules clés
 ```
