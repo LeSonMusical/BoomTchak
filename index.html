@@ -408,6 +408,8 @@ body.dark-mode .enc-related{border-top-color:#333}
 .btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #c0bdb7;border-radius:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
 .btn-jouer-wrap:hover{background:#f0ede8}
 .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn-jouer-wrap.rec-armed{background:#fff0f0;color:#D85A30;border-color:#D85A30}
+.btn-jouer-wrap.rec-recording{background:#D85A30;color:#fff;border-color:#c0391b;animation:rec-blink .65s step-end infinite}
 .hand{font-size:22px;line-height:1}
 
 /* ─── VOLET JOUER ─── */
@@ -634,9 +636,12 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{background:none;border:none;cursor:pointer;font-size:16px;padding:1px 3px;line-height:1.2;opacity:.35;flex-shrink:0}
-.btn-rec.armed{opacity:1;outline:2px solid #D85A30;outline-offset:2px;border-radius:50%}
-.btn-rec.recording{opacity:1;animation:rec-blink .65s step-end infinite}
+.btn-rec{background:none;border:none;cursor:pointer;font-size:16px;padding:1px 3px;line-height:1.2;color:#ccc;flex-shrink:0}
+.btn-rec.armed{color:#D85A30;outline:2px solid #D85A30;outline-offset:2px;border-radius:50%}
+.btn-rec.recording{color:#D85A30;animation:rec-blink .65s step-end infinite}
+.mod-grp-edit .btn-mod{min-width:26px;text-align:center}
+.rec-ctrl-mode{background:#555}
+.rec-ctrl-mode.rec-ctrl-ovr{background:#7B5EA7}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
@@ -1000,7 +1005,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.4</span>
+      <span class="app-version">v3.11.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1250,6 +1255,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="rec-ctrl" id="rec-ctrl">
       <button class="rec-ctrl-btn rec-ctrl-ok" id="rec-ctrl-ok">✓ Garder</button>
       <button class="rec-ctrl-btn rec-ctrl-cancel" id="rec-ctrl-cancel">✗ Annuler</button>
+      <button class="rec-ctrl-btn rec-ctrl-mode" id="rec-ctrl-mode">OVR</button>
     </div>
     <button class="play-thumb play-thumb-r" id="play-thumb-r">◉<br><span style="font-size:10px;font-weight:400;opacity:.7">main droite</span></button>
   </div>
@@ -2498,10 +2504,24 @@ function updateRecBtn(li){
   if(state[li].recording)btn.classList.add('recording');
   else if(state[li].recArmed)btn.classList.add('armed');
 }
+function _updateBtnJouerRec(){
+  const btn=document.getElementById('btn-jouer');if(!btn)return;
+  btn.classList.remove('rec-armed','rec-recording');
+  if(recLayerIdx<0){
+    btn.innerHTML='<span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>';
+    return;
+  }
+  btn.textContent='⏺ Capturer';
+  const li=recLayerIdx;
+  if(state[li].recording)btn.classList.add('rec-recording');
+  else btn.classList.add('rec-armed');
+}
 
 function startRec(li){
   // Annuler tout rec en cours sur un autre layer
   if(recLayerIdx>=0&&recLayerIdx!==li)stopRec(recLayerIdx,false);
+  // Sauvegarder l'état du volet jouer pour restauration
+  _recPrevJouerOpen=jouerOpen;
   // Sauvegarder le pattern original pour Cancel
   state[li].originalPattern=[...state[li].pattern];
   state[li].recArmed=true;
@@ -2515,13 +2535,17 @@ function startRec(li){
     document.getElementById('btn-jouer').classList.add('active');
     buildSoundPanel();
   }
+  // Initialiser bouton mode OVR/RPL dans rec-ctrl
+  const modeBtn=document.getElementById('rec-ctrl-mode');
+  if(modeBtn){const isOvr=state[li].recMode==='overdub';modeBtn.textContent=isOvr?'OVR':'RPL';modeBtn.classList.toggle('rec-ctrl-ovr',isOvr);}
   // Couleur des pouces = couleur du layer
   const c=_LAYER_REC_COLORS[li];
   document.getElementById('play-thumb-l').style.background=c;
   document.getElementById('play-thumb-r').style.background=c;
-  // Afficher contrôles Garder/Annuler
+  // Afficher contrôles Garder/Annuler/Mode
   document.getElementById('play-btns').classList.add('rec-mode');
   updateRecBtn(li);
+  _updateBtnJouerRec();
 }
 
 function recTap(tapTime){
@@ -2567,6 +2591,15 @@ function stopRec(li,validate){
   // Masquer contrôles rec
   document.getElementById('play-btns').classList.remove('rec-mode');
   updateRecBtn(li);
+  _updateBtnJouerRec(); // recLayerIdx=-1 → restaure "Jouer"
+  // Restaurer état volet jouer (fermer si était fermé avant le rec)
+  if(!_recPrevJouerOpen){
+    const pd=document.getElementById('play-drawer');
+    pd.classList.remove('open');
+    jouerOpen=false;
+    document.getElementById('btn-jouer').classList.remove('active');
+    buildSoundPanel();
+  }
 }
 
 function _buildBandSlotEmbed(){
@@ -2601,7 +2634,7 @@ function applyBand(id){
 // ── Playback ──────────────────────────────────────────────────────────────
 function startPlay(){
   playing=true;
-  if(recLayerIdx>=0){state[recLayerIdx].recording=true;updateRecBtn(recLayerIdx);}
+  if(recLayerIdx>=0){state[recLayerIdx].recording=true;updateRecBtn(recLayerIdx);_updateBtnJouerRec();}
   const a=getAC();
   const now=a.currentTime;
   LAYERS.forEach((_,li)=>{
@@ -2618,7 +2651,7 @@ function startPlay(){
 
 function stopPlay(){
   playing=false;
-  if(recLayerIdx>=0){state[recLayerIdx].recording=false;updateRecBtn(recLayerIdx);}
+  if(recLayerIdx>=0){state[recLayerIdx].recording=false;updateRecBtn(recLayerIdx);_updateBtnJouerRec();}
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
   if(circleView){
@@ -2743,9 +2776,10 @@ let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
-let recLayerIdx = -1;       // li du layer en cours de rec (-1 = aucun)
-let _recDomUpdateLi = -1;   // li dont le DOM steps doit être reconstruit au prochain rAF
-let patClipboard = null;    // presse-papiers pattern (cross-layer)
+let recLayerIdx = -1;         // li du layer en cours de rec (-1 = aucun)
+let _recDomUpdateLi = -1;     // li dont le DOM steps doit être reconstruit au prochain rAF
+let _recPrevJouerOpen = false;// état du volet jouer avant ouverture par startRec
+let patClipboard = null;      // presse-papiers pattern (cross-layer)
 const _LAYER_REC_COLORS = ['#378ADD','#D85A30','#1D9E75'];
 let currentBandId = 'band_electro';
 const soundFamFilter = {low:'low', high:'high', noise:'noise', thumbL:'thumb', thumbR:'thumb'};
@@ -4553,9 +4587,9 @@ function buildLayers(){
     });
 
     // — Copier/Coller/Effacer —
-    const bCopy=document.createElement('button');bCopy.className='btn-mod btn-mod-sm';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-mod';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
     bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
-    const bPaste=document.createElement('button');bPaste.className='btn-mod btn-mod-sm';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
+    const bPaste=document.createElement('button');bPaste.className='btn-mod';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
     bPaste.addEventListener('click',()=>{
       if(!patClipboard)return;
       state[li].pattern=[...patClipboard];
@@ -4563,7 +4597,7 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
+    const bClear=document.createElement('button');bClear.className='btn-mod';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
@@ -4572,18 +4606,10 @@ function buildLayers(){
     });
 
     // — Rec ⏺ + mode Rem/Ovd —
-    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='🔴';bRec.title='Enregistrer depuis les boutons Jouer';
+    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='●';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
       if(state[li].recArmed||state[li].recording)stopRec(li,false);
       else startRec(li);
-    });
-    const bOvd=document.createElement('button');bOvd.className='btn-mod';bOvd.id='btn-ovd-'+li;
-    bOvd.textContent=state[li].recMode==='overdub'?'OVR':'RPL';
-    bOvd.title='OVR : overdub — ajoute sur le pattern existant ; RPL : remplace le cycle en boucle';
-    bOvd.addEventListener('click',()=>{
-      state[li].recMode=state[li].recMode==='overdub'?'replace':'overdub';
-      bOvd.textContent=state[li].recMode==='overdub'?'OVR':'RPL';
-      bOvd.classList.toggle('on',state[li].recMode==='overdub');
     });
 
     // Assemblage — 4 zones grid : lecture | transf | edit | rec
@@ -4612,7 +4638,7 @@ function buildLayers(){
 
     // Zone Rec
     const grRec=document.createElement('div');grRec.className='mod-grp-rec';
-    grRec.appendChild(bRec);grRec.appendChild(bOvd);
+    grRec.appendChild(bRec);
     modPanel.appendChild(grRec);
 
     layerDiv.appendChild(modPanel);
@@ -10704,12 +10730,20 @@ function attachEvents(){
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
 
-  // ── Rec : Garder / Annuler ──
+  // ── Rec : Garder / Annuler / Mode OVR-RPL ──
   document.getElementById('rec-ctrl-ok').addEventListener('click',()=>{
     if(recLayerIdx>=0)stopRec(recLayerIdx,true);
   });
   document.getElementById('rec-ctrl-cancel').addEventListener('click',()=>{
     if(recLayerIdx>=0)stopRec(recLayerIdx,false);
+  });
+  document.getElementById('rec-ctrl-mode').addEventListener('click',()=>{
+    if(recLayerIdx<0)return;
+    state[recLayerIdx].recMode=state[recLayerIdx].recMode==='overdub'?'replace':'overdub';
+    const isOvr=state[recLayerIdx].recMode==='overdub';
+    const btn=document.getElementById('rec-ctrl-mode');
+    btn.textContent=isOvr?'OVR':'RPL';
+    btn.classList.toggle('rec-ctrl-ovr',isOvr);
   });
 
   // ── Mode TX (requiert connexion Google) ──
