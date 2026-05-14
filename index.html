@@ -1023,7 +1023,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.11</span>
+      <span class="app-version">v3.12.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2433,7 +2433,7 @@ function scheduler(){
         if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
         if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
-        if(li===recLayerIdx&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
+        if(recLayers.includes(li)&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
           state[li].pattern=[...state[li].recBuffer];
           state[li].recBuffer=null;
           _recDomUpdateLi=li;
@@ -2508,9 +2508,10 @@ function playSound(ss,atTime,velMult){
 function scheduleNote(li,atTime,velMult){playSound(soundState[li],atTime,velMult??1);}
 function playConga(isRight){
   const a=getAC();if(!a)return;
-  // En mode rec : joue le son du layer enregistré (pas le son du pouce)
-  if(recLayerIdx>=0&&(state[recLayerIdx].recArmed||state[recLayerIdx].recording)){
-    playSound(soundState[recLayerIdx],a.currentTime);
+  // En mode rec : joue le son du layer ciblé par ce pouce
+  const recLi=_getRecLiForThumb(isRight);
+  if(recLi>=0&&(state[recLi].recArmed||state[recLi].recording)){
+    playSound(soundState[recLi],a.currentTime);
   } else {
     playSound(soundStateThumb[isRight?1:0],a.currentTime);
   }
@@ -2522,29 +2523,49 @@ function updateRecBtn(li){
   if(state[li].recording)btn.classList.add('recording');
   else if(state[li].recArmed)btn.classList.add('armed');
 }
+function _getRecLiForThumb(isRight){
+  // Retourne le li du layer ciblé par ce pouce (gauche=petit index, droite=grand index)
+  if(recLayers.length===0)return -1;
+  if(recLayers.length===1)return recLayers[0];
+  const sorted=[...recLayers].sort((a,b)=>a-b);
+  return isRight?sorted[1]:sorted[0];
+}
+function _updateThumbColors(){
+  const lL=document.getElementById('play-thumb-l');
+  const lR=document.getElementById('play-thumb-r');
+  if(recLayers.length===0){lL.style.background='';lR.style.background='';return;}
+  const sorted=[...recLayers].sort((a,b)=>a-b);
+  if(sorted.length===1){
+    const c=_LAYER_REC_COLORS[sorted[0]];lL.style.background=c;lR.style.background=c;
+  } else {
+    lL.style.background=_LAYER_REC_COLORS[sorted[0]];
+    lR.style.background=_LAYER_REC_COLORS[sorted[1]];
+  }
+}
 function _updateBtnJouerRec(){
   const btn=document.getElementById('btn-jouer');if(!btn)return;
   btn.classList.remove('rec-armed','rec-recording');
-  if(recLayerIdx<0){
+  if(recLayers.length===0){
     btn.innerHTML='<span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>';
     return;
   }
   btn.textContent='⏺ Capturer';
-  const li=recLayerIdx;
-  if(state[li].recording)btn.classList.add('rec-recording');
+  if(recLayers.some(li=>state[li].recording))btn.classList.add('rec-recording');
   else btn.classList.add('rec-armed');
 }
 
 function startRec(li){
-  // Annuler tout rec en cours sur un autre layer
-  if(recLayerIdx>=0&&recLayerIdx!==li)stopRec(recLayerIdx,false);
-  // Sauvegarder l'état du volet jouer pour restauration
-  _recPrevJouerOpen=jouerOpen;
+  // Si ce layer est déjà en rec → l'arrêter (toggle)
+  if(recLayers.includes(li)){stopRec(li,false);return;}
+  // Si 2 layers déjà en rec → valider et retirer le plus ancien (FIFO)
+  if(recLayers.length>=2)stopRec(recLayers[0],true);
+  // Mémoriser l'état du volet jouer uniquement pour le 1er layer
+  if(recLayers.length===0)_recPrevJouerOpen=jouerOpen;
   // Sauvegarder le pattern original pour Cancel
   state[li].originalPattern=[...state[li].pattern];
   state[li].recArmed=true;
   state[li].recording=playing;
-  recLayerIdx=li;
+  recLayers.push(li);
   // Ouvrir volet jouer si fermé
   const playDrawer=document.getElementById('play-drawer');
   if(!playDrawer.classList.contains('open')){
@@ -2553,13 +2574,11 @@ function startRec(li){
     document.getElementById('btn-jouer').classList.add('active');
     buildSoundPanel();
   }
-  // Initialiser bouton mode OVR/RPL dans rec-ctrl
+  // Bouton mode OVR/RPL : synchroniser sur le mode du dernier layer ajouté
   const modeBtn=document.getElementById('rec-ctrl-mode');
   if(modeBtn){const isOvr=state[li].recMode==='overdub';modeBtn.textContent=isOvr?'OVR':'RPL';modeBtn.classList.toggle('rec-ctrl-ovr',isOvr);}
-  // Couleur des pouces = couleur du layer
-  const c=_LAYER_REC_COLORS[li];
-  document.getElementById('play-thumb-l').style.background=c;
-  document.getElementById('play-thumb-r').style.background=c;
+  // Couleur des pouces : gauche = layer haut (petit index), droite = layer bas
+  _updateThumbColors();
   // Afficher contrôles Garder/Annuler/Mode + bordure rouge
   document.getElementById('play-btns').classList.add('rec-mode');
   document.getElementById('play-drawer').classList.add('rec-mode');
@@ -2567,8 +2586,8 @@ function startRec(li){
   _updateBtnJouerRec();
 }
 
-function recTap(tapTime){
-  const li=recLayerIdx;
+function recTap(tapTime,isRight){
+  const li=_getRecLiForThumb(isRight);
   if(li<0||!state[li].recording)return;
   const n=state[li].pattern.length;
   const bs=getBeatSec(li);
@@ -2603,22 +2622,25 @@ function stopRec(li,validate){
   state[li].recBuffer=null;
   state[li].recArmed=false;
   state[li].recording=false;
-  recLayerIdx=-1;
-  // Restaurer couleurs pouces
-  document.getElementById('play-thumb-l').style.background='';
-  document.getElementById('play-thumb-r').style.background='';
-  // Masquer contrôles rec + restaurer bordure verte
-  document.getElementById('play-btns').classList.remove('rec-mode');
-  document.getElementById('play-drawer').classList.remove('rec-mode');
+  recLayers=recLayers.filter(x=>x!==li);
   updateRecBtn(li);
-  _updateBtnJouerRec(); // recLayerIdx=-1 → restaure "Jouer"
-  // Restaurer état volet jouer (fermer si était fermé avant le rec)
-  if(!_recPrevJouerOpen){
-    const pd=document.getElementById('play-drawer');
-    pd.classList.remove('open');
-    jouerOpen=false;
-    document.getElementById('btn-jouer').classList.remove('active');
-    buildSoundPanel();
+  if(recLayers.length===0){
+    // Plus aucun rec actif → restaurer l'UI complète
+    _updateThumbColors();
+    document.getElementById('play-btns').classList.remove('rec-mode');
+    document.getElementById('play-drawer').classList.remove('rec-mode');
+    _updateBtnJouerRec();
+    if(!_recPrevJouerOpen){
+      const pd=document.getElementById('play-drawer');
+      pd.classList.remove('open');
+      jouerOpen=false;
+      document.getElementById('btn-jouer').classList.remove('active');
+      buildSoundPanel();
+    }
+  } else {
+    // Il reste encore un layer en rec → mettre à jour les couleurs des pouces uniquement
+    _updateThumbColors();
+    _updateBtnJouerRec();
   }
 }
 
@@ -2654,7 +2676,7 @@ function applyBand(id){
 // ── Playback ──────────────────────────────────────────────────────────────
 function startPlay(){
   playing=true;
-  if(recLayerIdx>=0){state[recLayerIdx].recording=true;updateRecBtn(recLayerIdx);_updateBtnJouerRec();}
+  recLayers.forEach(li=>{state[li].recording=true;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   const a=getAC();
   const now=a.currentTime;
   LAYERS.forEach((_,li)=>{
@@ -2671,7 +2693,7 @@ function startPlay(){
 
 function stopPlay(){
   playing=false;
-  if(recLayerIdx>=0){state[recLayerIdx].recording=false;updateRecBtn(recLayerIdx);_updateBtnJouerRec();}
+  recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
   if(circleView){
@@ -2796,7 +2818,7 @@ let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
-let recLayerIdx = -1;         // li du layer en cours de rec (-1 = aucun)
+let recLayers = [];            // file FIFO des layers en rec (max 2)
 let _recDomUpdateLi = -1;     // li dont le DOM steps doit être reconstruit au prochain rAF
 let _recPrevJouerOpen = false;// état du volet jouer avant ouverture par startRec
 let patClipboard = null;      // presse-papiers pattern (cross-layer)
@@ -10754,7 +10776,7 @@ function attachEvents(){
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
     const tapTime=ac.currentTime;
     playConga(false);
-    if(recLayerIdx>=0&&state[recLayerIdx].recording)recTap(tapTime);
+    if(recLayers.length>0)recTap(tapTime,false);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
   document.getElementById('play-thumb-r').addEventListener('pointerdown',e=>{
@@ -10762,21 +10784,23 @@ function attachEvents(){
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}ac.resume();
     const tapTime=ac.currentTime;
     playConga(true);
-    if(recLayerIdx>=0&&state[recLayerIdx].recording)recTap(tapTime);
+    if(recLayers.length>0)recTap(tapTime,true);
     const btn=e.currentTarget;btn.classList.add('flash');btn.addEventListener('animationend',()=>btn.classList.remove('flash'),{once:true});
   });
 
   // ── Rec : Garder / Annuler / Mode OVR-RPL ──
   document.getElementById('rec-ctrl-ok').addEventListener('click',()=>{
-    if(recLayerIdx>=0)stopRec(recLayerIdx,true);
+    [...recLayers].forEach(li=>stopRec(li,true));
   });
   document.getElementById('rec-ctrl-cancel').addEventListener('click',()=>{
-    if(recLayerIdx>=0)stopRec(recLayerIdx,false);
+    [...recLayers].forEach(li=>stopRec(li,false));
   });
   document.getElementById('rec-ctrl-mode').addEventListener('click',()=>{
-    if(recLayerIdx<0)return;
-    state[recLayerIdx].recMode=state[recLayerIdx].recMode==='overdub'?'replace':'overdub';
-    const isOvr=state[recLayerIdx].recMode==='overdub';
+    if(recLayers.length===0)return;
+    // Basculer OVR/RPL sur tous les layers en rec
+    const refMode=state[recLayers[0]].recMode==='overdub'?'replace':'overdub';
+    recLayers.forEach(li=>{state[li].recMode=refMode;});
+    const isOvr=refMode==='overdub';
     const btn=document.getElementById('rec-ctrl-mode');
     btn.textContent=isOvr?'OVR':'RPL';
     btn.classList.toggle('rec-ctrl-ovr',isOvr);
