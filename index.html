@@ -413,8 +413,9 @@ body.dark-mode .enc-related{border-top-color:#333}
 .hand{font-size:22px;line-height:1}
 
 /* ─── VOLET JOUER ─── */
-.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;padding:14px 12px 18px;display:none}
+.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 18px;display:none}
 .play-drawer.open{display:block}
+.play-drawer.rec-mode{border-top-color:#D85A30}
 .play-drawer-close{position:absolute;top:8px;right:10px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:none;border:none;color:#888;cursor:pointer}
 .play-drawer-close:hover{color:#fff;background:#333}
 .play-btns{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:4px}
@@ -620,13 +621,13 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .lib-panel-close:hover{background:#e0ddd8}
 .lib-list{flex:1;overflow-y:auto;padding:6px 0;overscroll-behavior:contain}
 /* ─── MOD PANEL ─── */
-.layer-mod-panel{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"lecture transf edit rec";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel{display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"lecture transf clip recsize";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none!important}
 .mod-grp-lecture{grid-area:lecture;display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .mod-grp-transf{grid-area:transf;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:center}
-.mod-grp-edit{grid-area:edit;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
-.mod-grp-rec{grid-area:rec;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
-@media(orientation:portrait){.layer-mod-panel{grid-template-columns:1fr 1fr;grid-template-areas:"lecture rec" "transf edit"}.mod-grp-transf{justify-self:start}.mod-grp-edit{justify-self:end}.mod-grp-rec{justify-self:end}}
+.mod-grp-clip{grid-area:clip;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
+.mod-grp-recsize{grid-area:recsize;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:end}
+@media(orientation:portrait){.layer-mod-panel{grid-template-columns:1fr 1fr;grid-template-areas:"lecture recsize" "transf clip"}.mod-grp-transf{justify-self:start}.mod-grp-clip{justify-self:end}.mod-grp-recsize{justify-self:end}}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
 .btn-mod-sm{padding:1px 3px}
@@ -636,10 +637,10 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid #bbb;border-radius:4px;cursor:pointer;color:#aaa;line-height:1.5;flex-shrink:0}
-.btn-rec.armed{border-color:#D85A30;color:#D85A30;background:#fff5f2}
-.btn-rec.recording{border-color:#c0391b;background:#D85A30;color:#fff;animation:rec-blink .65s step-end infinite}
-.mod-grp-edit .btn-mod{min-width:26px;text-align:center}
+.btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
+.btn-rec.armed{opacity:1;border-color:#D85A30;color:#D85A30;background:#fff5f2}
+.btn-rec.recording{opacity:1;border-color:#c0391b;background:#D85A30;color:#fff;animation:rec-blink .65s step-end infinite}
+.mod-grp-clip .btn-mod{min-width:26px;text-align:center}
 .rec-ctrl-mode{background:#555}
 .rec-ctrl-mode.rec-ctrl-ovr{background:#7B5EA7}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -887,6 +888,9 @@ body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
+body.dark-mode .btn-rec{background:#2a2a28;border-color:rgba(255,255,255,.12)}
+body.dark-mode .btn-rec.armed{background:rgba(216,90,48,.2);border-color:#D85A30}
+body.dark-mode .btn-rec.recording{background:#D85A30;border-color:#c0391b}
 body.dark-mode .hdivider{background:#333330}
 body.dark-mode .encyclo-wrap{color:#c0bdb7;border-left-color:#444}
 body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
@@ -1005,7 +1009,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.6</span>
+      <span class="app-version">v3.11.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2542,8 +2546,9 @@ function startRec(li){
   const c=_LAYER_REC_COLORS[li];
   document.getElementById('play-thumb-l').style.background=c;
   document.getElementById('play-thumb-r').style.background=c;
-  // Afficher contrôles Garder/Annuler/Mode
+  // Afficher contrôles Garder/Annuler/Mode + bordure rouge
   document.getElementById('play-btns').classList.add('rec-mode');
+  document.getElementById('play-drawer').classList.add('rec-mode');
   updateRecBtn(li);
   _updateBtnJouerRec();
 }
@@ -2588,8 +2593,9 @@ function stopRec(li,validate){
   // Restaurer couleurs pouces
   document.getElementById('play-thumb-l').style.background='';
   document.getElementById('play-thumb-r').style.background='';
-  // Masquer contrôles rec
+  // Masquer contrôles rec + restaurer bordure verte
   document.getElementById('play-btns').classList.remove('rec-mode');
+  document.getElementById('play-drawer').classList.remove('rec-mode');
   updateRecBtn(li);
   _updateBtnJouerRec(); // recLayerIdx=-1 → restaure "Jouer"
   // Restaurer état volet jouer (fermer si était fermé avant le rec)
@@ -4629,17 +4635,16 @@ function buildLayers(){
     modTransf.appendChild(bDice);modTransf.appendChild(bMagic);
     modPanel.appendChild(modTransf);
 
-    // Zone Édition : pas + copy/paste/clear
-    const grEdit=document.createElement('div');grEdit.className='mod-grp-edit';
-    grEdit.appendChild(bMinus);grEdit.appendChild(nPas);grEdit.appendChild(bPlus);
-    grEdit.appendChild(mkSep());
-    grEdit.appendChild(bCopy);grEdit.appendChild(bPaste);grEdit.appendChild(bClear);
-    modPanel.appendChild(grEdit);
+    // Zone Clip (clipboard : copy/paste/clear) — ligne 2 droite en portrait
+    const grClip=document.createElement('div');grClip.className='mod-grp-clip';
+    grClip.appendChild(bCopy);grClip.appendChild(bPaste);grClip.appendChild(bClear);
+    modPanel.appendChild(grClip);
 
-    // Zone Rec
-    const grRec=document.createElement('div');grRec.className='mod-grp-rec';
-    grRec.appendChild(bRec);
-    modPanel.appendChild(grRec);
+    // Zone RecSize (⏺ rec + − N + taille) — ligne 1 droite en portrait
+    const grRecSize=document.createElement('div');grRecSize.className='mod-grp-recsize';
+    grRecSize.appendChild(bRec);grRecSize.appendChild(mkSep());
+    grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
+    modPanel.appendChild(grRecSize);
 
     layerDiv.appendChild(modPanel);
 
