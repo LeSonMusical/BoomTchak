@@ -618,7 +618,8 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .lib-panel-close:hover{background:#e0ddd8}
 .lib-list{flex:1;overflow-y:auto;padding:6px 0;overscroll-behavior:contain}
 /* ─── MOD PANEL ─── */
-.layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.mod-side{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .layer-mod-panel.hidden{display:none}
 .btn-mod{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.5;flex-shrink:0}
@@ -995,7 +996,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.1</span>
+      <span class="app-version">v3.11.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4513,9 +4514,9 @@ function buildLayers(){
     });
 
     // — Copier/Coller/Effacer —
-    const bCopy=document.createElement('button');bCopy.className='btn-icon';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-mod btn-mod-sm';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
     bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
-    const bPaste=document.createElement('button');bPaste.className='btn-icon';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
+    const bPaste=document.createElement('button');bPaste.className='btn-mod btn-mod-sm';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
     bPaste.addEventListener('click',()=>{
       if(!patClipboard)return;
       state[li].pattern=[...patClipboard];
@@ -4523,7 +4524,7 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
     });
-    const bClear=document.createElement('button');bClear.className='btn-icon';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
+    const bClear=document.createElement('button');bClear.className='btn-mod btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
@@ -4532,7 +4533,7 @@ function buildLayers(){
     });
 
     // — Rec ⏺ + mode Rem/Ovd —
-    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⭕';bRec.title='Enregistrer depuis les boutons Jouer';
+    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='🔴';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
       if(state[li].recArmed||state[li].recording)stopRec(li,false);
       else startRec(li);
@@ -4546,38 +4547,37 @@ function buildLayers(){
       bOvd.classList.toggle('on',state[li].recMode==='overdub');
     });
 
-    // Assemblage — 4 groupes : Lecture | Édition | Rec | Transf
+    // Assemblage — 2 blocs : gauche (Lecture + Transf) | droite (Édition + Rec)
     const mkSep=()=>{const s=document.createElement('span');s.className='mod-sep';return s;};
     const mkGrp=()=>{const g=document.createElement('div');g.className='mod-group';return g;};
 
-    // Groupe 1 — Lecture : shift + vitesse
+    // Bloc gauche : Lecture (shift + vitesse) puis Transf
+    const modLeft=document.createElement('div');modLeft.className='mod-side';
     const grLecture=mkGrp();
     grLecture.appendChild(bShL);grLecture.appendChild(shNum);grLecture.appendChild(bShR);
     grLecture.appendChild(mkSep());
     grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);
-    modPanel.appendChild(grLecture);
-    modPanel.appendChild(mkSep());
-
-    // Groupe 2 — Édition : pas + copy/paste/clear
-    const grEdit=mkGrp();
-    grEdit.appendChild(bMinus);grEdit.appendChild(nPas);grEdit.appendChild(bPlus);
-    grEdit.appendChild(mkSep());
-    grEdit.appendChild(bCopy);grEdit.appendChild(bPaste);grEdit.appendChild(bClear);
-    modPanel.appendChild(grEdit);
-    modPanel.appendChild(mkSep());
-
-    // Groupe 3 — Rec
-    const grRec=mkGrp();
-    grRec.appendChild(bRec);grRec.appendChild(bOvd);
-    modPanel.appendChild(grRec);
-    modPanel.appendChild(mkSep());
-
-    // Groupe 4 — Transf
+    modLeft.appendChild(grLecture);
+    modLeft.appendChild(mkSep());
     const modTransf=document.createElement('div');modTransf.className='mod-transf';
     modTransf.appendChild(bSwap);modTransf.appendChild(bInv);modTransf.appendChild(bRot);
     modTransf.appendChild(mkSep());
     modTransf.appendChild(bDice);modTransf.appendChild(bMagic);
-    modPanel.appendChild(modTransf);
+    modLeft.appendChild(modTransf);
+    modPanel.appendChild(modLeft);
+
+    // Bloc droit : Édition (pas + copy/paste/clear) puis Rec
+    const modRight=document.createElement('div');modRight.className='mod-side';
+    const grEdit=mkGrp();
+    grEdit.appendChild(bMinus);grEdit.appendChild(nPas);grEdit.appendChild(bPlus);
+    grEdit.appendChild(mkSep());
+    grEdit.appendChild(bCopy);grEdit.appendChild(bPaste);grEdit.appendChild(bClear);
+    modRight.appendChild(grEdit);
+    modRight.appendChild(mkSep());
+    const grRec=mkGrp();
+    grRec.appendChild(bRec);grRec.appendChild(bOvd);
+    modRight.appendChild(grRec);
+    modPanel.appendChild(modRight);
 
     layerDiv.appendChild(modPanel);
 
