@@ -629,10 +629,12 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{padding:1px 9px;font-size:11px;font-weight:700;letter-spacing:.03em;flex-shrink:0;border-radius:4px;cursor:pointer;border:1.5px solid #bbb;background:#fff;color:#999;line-height:1.5}
-.btn-rec.armed{border-color:#D85A30;color:#D85A30;background:#fff5f2}
-.btn-rec.recording{border-color:#c0391b;background:#D85A30;color:#fff;animation:rec-blink .65s step-end infinite}
-@keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-rec{background:none;border:none;cursor:pointer;font-size:16px;padding:1px 3px;line-height:1.2;opacity:.35;flex-shrink:0}
+.btn-rec.armed{opacity:1;outline:2px solid #D85A30;outline-offset:2px;border-radius:50%}
+.btn-rec.recording{opacity:1;animation:rec-blink .65s step-end infinite}
+@keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
+.btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
+.btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:6px}
 .play-btns.rec-mode .play-thumb{flex:3}
 .rec-ctrl{flex:1.5;min-width:52px;display:none;flex-direction:column;gap:5px;align-items:stretch;justify-content:center}
@@ -993,7 +995,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.0</span>
+      <span class="app-version">v3.11.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1978,7 +1980,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'replace', originalPattern:null,
+  recArmed:false, recording:false, recMode:'overdub', originalPattern:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -4511,9 +4513,9 @@ function buildLayers(){
     });
 
     // — Copier/Coller/Effacer —
-    const bCopy=document.createElement('button');bCopy.className='btn-mod btn-mod-sm';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-icon';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
     bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
-    const bPaste=document.createElement('button');bPaste.className='btn-mod btn-mod-sm';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
+    const bPaste=document.createElement('button');bPaste.className='btn-icon';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
     bPaste.addEventListener('click',()=>{
       if(!patClipboard)return;
       state[li].pattern=[...patClipboard];
@@ -4521,7 +4523,7 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
+    const bClear=document.createElement('button');bClear.className='btn-icon';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
@@ -4530,17 +4532,17 @@ function buildLayers(){
     });
 
     // — Rec ⏺ + mode Rem/Ovd —
-    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺ Rec';bRec.title='Enregistrer depuis les boutons Jouer';
+    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⭕';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
       if(state[li].recArmed||state[li].recording)stopRec(li,false);
       else startRec(li);
     });
     const bOvd=document.createElement('button');bOvd.className='btn-mod';bOvd.id='btn-ovd-'+li;
-    bOvd.textContent=state[li].recMode==='overdub'?'Ovd':'Rem';
-    bOvd.title='Rem : remplace le cycle en boucle ; Ovd : ajoute sur le pattern existant';
+    bOvd.textContent=state[li].recMode==='overdub'?'OVR':'RPL';
+    bOvd.title='OVR : overdub — ajoute sur le pattern existant ; RPL : remplace le cycle en boucle';
     bOvd.addEventListener('click',()=>{
       state[li].recMode=state[li].recMode==='overdub'?'replace':'overdub';
-      bOvd.textContent=state[li].recMode==='overdub'?'Ovd':'Rem';
+      bOvd.textContent=state[li].recMode==='overdub'?'OVR':'RPL';
       bOvd.classList.toggle('on',state[li].recMode==='overdub');
     });
 
