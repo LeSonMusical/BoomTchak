@@ -1035,7 +1035,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.4</span>
+      <span class="app-version">v3.12.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4695,13 +4695,6 @@ function buildLayers(){
         state[li].pattern=state[li].pattern.map(()=>'.');
         buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
       });
-    });
-
-    // — Rec ⏺ + mode Rem/Ovd —
-    const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺';bRec.title='Enregistrer depuis les boutons Jouer';
-    bRec.addEventListener('click',()=>{
-      if(state[li].recArmed||state[li].recording)stopRec(li,false);
-      else startRec(li);
     });
 
     // Assemblage — 4 zones grid : lecture | transf | edit | rec
