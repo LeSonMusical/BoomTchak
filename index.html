@@ -781,25 +781,18 @@ body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5
 body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
-body.view-circle .frame{display:flex;flex-direction:column}
-body.view-circle #circle-view{width:100%;order:3}     /* après section-groove (order:2) */
-body.view-circle #section-band{order:1}
-body.view-circle #band-content{order:2}
-body.view-circle #section-groove{order:2}
-body.view-circle #layers-wrap{order:4;display:block;width:100%}
-body.view-circle #section-encyclo{order:5}
-
-/* Desktop ≥600px : split circle gauche / controls droite */
-@media(min-width:600px){
-  body.view-circle .frame{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:0}
-  body.view-circle #temps-wrap{order:0;width:100%;flex-shrink:0}
-  body.view-circle #section-band{order:1;width:100%;flex-shrink:0}
-  body.view-circle #band-content{order:2;width:100%;flex-shrink:0}
-  body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
-  body.view-circle #circle-view{order:4;flex:0 0 auto;align-self:flex-start}
-  body.view-circle #layers-wrap{order:5;flex:0 0 100%;display:block;padding-left:0}
-  body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
-}
+/* Vue circulaire — canvas gauche / layers droite (portrait ET paysage) */
+body.view-circle .frame{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:0}
+body.view-circle #temps-wrap{order:0;width:100%;flex-shrink:0}
+body.view-circle #section-band{order:1;width:100%;flex-shrink:0}
+body.view-circle #band-content{order:2;width:100%;flex-shrink:0}
+body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
+body.view-circle #circle-view{order:4;flex:0 0 auto;align-self:flex-start}
+body.view-circle #layers-wrap{order:4;flex:1;min-width:0;display:block;padding-left:.5rem}
+body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
+/* Vue Cycle (linéaire) — layers SOUS le canvas, toujours */
+body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
+body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
 
 /* ─── RÉGLAGES / THÈME ─── */
 .theme-toggle{display:flex;gap:3px}
@@ -1020,7 +1013,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.11.9</span>
+      <span class="app-version">v3.11.10</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6244,10 +6237,9 @@ function resizeCanvas(){
   const szNatural = Math.round(2*(r2+dotR+6));   // diamètre naturel du cercle
   const szW = szNatural + 2 * CIRC_LABEL_W;       // canvas symétrique : cercle centré (cx = szW/2)
 
-  // Sur desktop (≥600px) : le canvas partage la ligne avec les controls
+  // Canvas toujours à gauche, layers à droite — 50% de la largeur du frame
   const frameW = frame ? frame.clientWidth : window.innerWidth;
-  const isDesktop = window.innerWidth >= 600;
-  const maxW = isDesktop ? Math.min(szW, Math.floor(frameW*0.46)) : frameW - 16;
+  const maxW = Math.min(szW, Math.floor(frameW * 0.50));
   const scale = Math.min(1, maxW / szW);
 
   cv.width = szW; cv.height = szNatural;
@@ -6481,7 +6473,7 @@ function drawCircles(){
       ctx.fillRect(bx-bw,by,bw,bh);
       ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
       ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';resizeCanvas();setupCircleModeToggle();}};
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';document.body.classList.add('circle-linear');resizeCanvas();setupCircleModeToggle();}};
     } else { _circleBadge=null; }
   } else { _circleBadge=null; }
 }
@@ -6716,6 +6708,8 @@ function setupCanvasInteraction(){
 function setView(circle){
   circleView = circle;
   document.body.classList.toggle('view-circle', circle);
+  if(!circle) document.body.classList.remove('circle-linear');
+  else document.body.classList.toggle('circle-linear', circleModeView==='linear');
   document.getElementById('btn-view').textContent = circle ? '⊞' : '◎';
   document.getElementById('btn-view').title = circle ? 'Vue linéaire' : 'Vue circulaire';
 
@@ -6761,9 +6755,9 @@ function setupCircleModeToggle(){
   freshM.classList.toggle('active', circleModeView==='measure');
   if(freshL) freshL.classList.toggle('active', circleModeView==='linear');
   const allBtns=[fresh,freshM,freshL].filter(Boolean);
-  fresh.addEventListener('click', ()=>{ circleModeView='cycle';    _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
-  freshM.addEventListener('click',()=>{ circleModeView='measure';  _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
-  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
+  fresh.addEventListener('click', ()=>{ circleModeView='cycle';   document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
+  freshM.addEventListener('click',()=>{ circleModeView='measure'; document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
+  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; document.body.classList.add('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
