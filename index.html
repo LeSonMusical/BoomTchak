@@ -403,12 +403,13 @@ body.dark-mode .enc-related{border-top-color:#333}
 .bottom-left{flex:1;display:flex;align-items:center;justify-content:center}
 .bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
 .bottom-right{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-.btn-rec-box{height:44px;min-width:130px;background:#fff;border:2px solid #c0bdb7;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
+.btn-rec-box{height:44px;background:#fff;border:2px solid #D85A30;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
 body.rec-active .btn-rec-box{display:flex}
 body.rec-active #btn-jouer{display:none}
 body.rec-active .play-drawer-close{display:none}
-.btn-cap-single{flex:1;border:none;background:transparent;font-size:11px;font-weight:700;color:#D85A30;cursor:pointer;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-cap-single{flex:1;border:none;background:transparent;font-size:11px;font-weight:700;color:#D85A30;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 body.rec-tapped .btn-cap-single{display:none}
+.step-unit-lbl{font-size:9px;color:#aaa;font-weight:600;padding:0 1px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-cap-ann{display:none;flex:1;border:none;border-right:1px solid rgba(255,255,255,.25);background:#c0392b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;min-width:44px}
 .btn-cap-val{display:none;flex:2;border:none;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;padding:0 10px}
 body.rec-tapped .btn-cap-ann,body.rec-tapped .btn-cap-val{display:flex}
@@ -662,10 +663,10 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
 .btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
-.mod-grp-clip .btn-mod{min-width:26px;text-align:center}
-/* Replace = violet (plus visible, remplace les steps) ; Overdub = neutre */
-.rec-ctrl-mode{border:1px solid #7B5EA7;border-radius:0;background:rgba(123,94,167,.18);font-size:10px;margin-top:16px;padding:7px 10px;color:#ddd}
-.rec-ctrl-mode.rec-ctrl-ovr{border-color:#666;background:rgba(255,255,255,.06);color:#aaa}
+.mod-grp-clip .btn-mod{min-width:32px;text-align:center;font-size:16px;padding:1px 4px}
+/* Replace = violet encadré ; Overdub = discret sans cadre — spécificité .rec-ctrl-btn.rec-ctrl-mode pour l'emporter sur .rec-ctrl-btn */
+.rec-ctrl-btn.rec-ctrl-mode{border:1.5px solid #7B5EA7;border-radius:4px;background:rgba(123,94,167,.18);font-size:10px;margin-top:12px;padding:6px 8px;color:#ddd}
+.rec-ctrl-btn.rec-ctrl-mode.rec-ctrl-ovr{border-color:transparent;background:transparent;color:#888}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
@@ -924,7 +925,7 @@ body.dark-mode .encyclo-bkey{color:#e0ddd8}
 body.dark-mode .encyclo-bval{color:#888}
 body.dark-mode .encyclo-vide{color:#555}
 body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
-body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#555}
+body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#D85A30}
 body.dark-mode .btn-cap-val{background:#1a8a66}
 body.dark-mode .btn-cap-ann{background:#a0302b}
 body.dark-mode .btn-rec.armed{background:rgba(0,0,0,.3)}
@@ -1042,7 +1043,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.13</span>
+      <span class="app-version">v3.12.14</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1168,13 +1169,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
-      <!-- Col 1 : Signature — taille auto (juste le texte) -->
-      <div class="metro-3col-eq" style="flex:0 0 auto;align-items:center;padding-right:4px">
+      <!-- Col 1 : Signature — rétrécit en premier (flex-shrink:1) -->
+      <div class="metro-3col-eq" style="flex:0 1 auto;align-items:center;padding-right:4px;min-width:0;overflow:hidden">
         <span class="metro-3col-lbl">Signature</span>
-        <span class="sig-edit-val" id="sig-unit-display">4/4</span>
+        <span class="sig-edit-val" id="sig-unit-display" style="overflow:hidden;text-overflow:ellipsis">4/4</span>
       </div>
-      <!-- Col 2 : Divisions -->
-      <div class="metro-3col-eq">
+      <!-- Col 2 : Divisions — taille fixe (flex-shrink:0) -->
+      <div class="metro-3col-eq" style="flex:0 0 auto">
         <span class="metro-3col-lbl">Divisions</span>
         <div class="mpv-beats-ctrl" style="gap:4px">
           <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
@@ -1182,8 +1183,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 3 : Unité (rétrécie pour ne pas empiéter sur Swing) -->
-      <div class="metro-3col-eq" style="flex:0.65">
+      <!-- Col 3 : Unité — rétrécit en second -->
+      <div class="metro-3col-eq" style="flex:0 1 52px;min-width:0">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
           <option value="4">♩ noire</option>
@@ -1400,7 +1401,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>
     </button>
     <div class="btn-rec-box" id="btn-rec-box">
-      <button class="btn-cap-single" id="btn-capture">Capture</button>
+      <button class="btn-cap-single" id="btn-capture"><span class="hand">🤚</span>Capture<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span></button>
       <button class="btn-cap-ann" id="btn-jouer-ann">✗</button>
       <button class="btn-cap-val" id="btn-jouer-val">✓ Valider</button>
     </div>
@@ -4498,6 +4499,7 @@ function buildLayers(){
       else if(nextHalf){bSpeed.textContent='/2';bSpeed.classList.add('on');}
       else{bSpeed.textContent='=';bSpeed.classList.remove('on');}
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
+      if(typeof _updateStepUnitLbl==='function')_updateStepUnitLbl();
     };
     updateSpeedBtns();
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); };
@@ -4534,6 +4536,13 @@ function buildLayers(){
       state[li].ternOn=!state[li].ternOn;
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
+    // — Indicateur unité de step (1/8, 1/16, 1/4, 1/8T…) —
+    const stepUnitLbl=document.createElement('span');stepUnitLbl.className='step-unit-lbl';stepUnitLbl.id='step-unit-lbl-'+li;
+    const _updateStepUnitLbl=()=>{
+      const d=state[li].doubleOn,h=state[li].halfOn,t=state[li].ternOn;
+      stepUnitLbl.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
+    };
+    _updateStepUnitLbl();
 
     // — Shift ◀ [n] ▶ —
     const bShL=document.createElement('button');bShL.className='btn-mod btn-mod-sm';bShL.textContent='◀';bShL.title='Décaler gauche';
@@ -4684,9 +4693,9 @@ function buildLayers(){
     });
 
     // — Copier/Coller/Effacer —
-    const bCopy=document.createElement('button');bCopy.className='btn-mod';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-mod';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
     bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
-    const bPaste=document.createElement('button');bPaste.className='btn-mod';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
+    const bPaste=document.createElement('button');bPaste.className='btn-mod';bPaste.textContent='⇩';bPaste.title='Coller le pattern copié';
     bPaste.addEventListener('click',()=>{
       if(!patClipboard)return;
       state[li].pattern=[...patClipboard];
@@ -4694,7 +4703,7 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
+    const bClear=document.createElement('button');bClear.className='btn-mod';bClear.textContent='✕';bClear.title='Effacer tout (vider le pattern)';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
@@ -4709,7 +4718,7 @@ function buildLayers(){
     const grLecture=document.createElement('div');grLecture.className='mod-grp-lecture';
     grLecture.appendChild(bShL);grLecture.appendChild(shNum);grLecture.appendChild(bShR);
     grLecture.appendChild(mkSep());
-    grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);
+    grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);grLecture.appendChild(stepUnitLbl);
     modPanel.appendChild(grLecture);
 
     // Zone Transf (centre paysage / ligne 2 gauche portrait)
