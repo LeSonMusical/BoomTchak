@@ -409,7 +409,7 @@ body.rec-active #btn-jouer{display:none}
 body.rec-active .play-drawer-close{display:none}
 .btn-cap-single{flex:1;border:none;background:transparent;font-size:11px;font-weight:700;color:#D85A30;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 body.rec-tapped .btn-cap-single{display:none}
-.step-unit-lbl{font-size:9px;color:#aaa;font-weight:600;padding:0 1px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
+.step-unit-lbl{font-size:9px;color:var(--cs);font-weight:600;padding:0 1px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-cap-ann{display:none;flex:1;border:none;border-right:1px solid rgba(255,255,255,.25);background:#c0392b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;min-width:44px}
 .btn-cap-val{display:none;flex:2;border:none;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;padding:0 10px}
 body.rec-tapped .btn-cap-ann,body.rec-tapped .btn-cap-val{display:flex}
@@ -1043,7 +1043,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.15</span>
+      <span class="app-version">v3.12.16</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1183,19 +1183,19 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 3 : Unité — rétrécit en second -->
-      <div class="metro-3col-eq" style="flex:0 1 52px;min-width:0">
+      <!-- Col 3 : Unité — icône seule, rétrécit au besoin -->
+      <div class="metro-3col-eq" style="flex:0 1 auto;min-width:0">
         <span class="metro-3col-lbl">Unité</span>
-        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
-          <option value="4">♩ noire</option>
-          <option value="8">♪ croche</option>
-          <option value="2">♩♩ blanche</option>
-          <option value="1">○ ronde</option>
-          <option value="16">♬ dbl-croche</option>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0;max-width:100%">
+          <option value="4">♩</option>
+          <option value="8">♪</option>
+          <option value="2">♩♩</option>
+          <option value="1">○</option>
+          <option value="16">♬</option>
         </select>
       </div>
-      <!-- Col 4 : Swing -->
-      <div class="metro-3col-sw">
+      <!-- Col 4 : Swing — max 1/3 de la section -->
+      <div class="metro-3col-sw" style="max-width:33%">
         <span class="metro-3col-lbl">Swing</span>
         <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
         <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
@@ -4704,7 +4704,7 @@ function buildLayers(){
       shNum.textContent='0';
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);updateSwapBtn();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod';bClear.textContent='✕';bClear.title='Effacer tout (vider le pattern)';
+    const bClear=document.createElement('button');bClear.className='btn-mod';bClear.textContent='⌫';bClear.title='Effacer tout (vider le pattern)';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
