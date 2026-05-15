@@ -69,11 +69,11 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(107,95,165,.12)}
 .spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
-.temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
+.temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:36px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
-.temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
+.temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);margin-top:-9px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
-.temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
+.temps-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 3px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
 .btn-metro-main.on{color:#4a3d8a}
@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.25</span>
+      <span class="app-version">v3.12.26</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2050,7 +2050,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'replace', originalPattern:null, recBuffer:null,
+  recArmed:false, recording:false, recMode:'replace', originalPattern:null, prevPattern:null, recBuffer:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2490,6 +2490,7 @@ function scheduler(){
         if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
         if(recLayers.includes(li)&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
+          state[li].prevPattern=[...state[li].pattern]; // garde la prise précédente pour ↺ Reprendre
           state[li].pattern=[...state[li].recBuffer];
           state[li].recBuffer=null;
           _recDomUpdateLi=li;
@@ -2702,6 +2703,7 @@ function stopRec(li,validate){
     setLayerDirty(li,true);
   }
   state[li].originalPattern=null;
+  state[li].prevPattern=null;
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
   state[li].recBuffer=null;
@@ -6249,7 +6251,7 @@ function updateSwingDisplay(){
   const n=document.getElementById('swing-name');
   if(n) n.textContent=getSwingName(mpc);
   const sl=document.getElementById('swing-slider');
-  if(sl) sl.value=Math.round(swingVal*100);
+  if(sl) sl.value=Math.round(Math.sqrt(Math.max(0,swingVal))*100);
 }
 function getAudioOffsetName(ms){
   if(ms<-50)return'Avance forte';
@@ -10371,10 +10373,11 @@ function attachEvents(){
   // ── Swing slider (MPC 50-75%) ──
   const _swSlider=document.getElementById('swing-slider');
   _swSlider?.addEventListener('input',e=>{
-    swingVal=parseInt(e.target.value)/100;
+    const t=parseInt(e.target.value)/100;
+    swingVal=t*t; // quadratique : plus de précision sur les petites valeurs (MPC 50–67%)
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
-    const _mpc=50+swingVal*25;_dragOverlay.show('<span style="font-size:20px;font-weight:900">'+_mpc.toFixed(0)+'%</span><br><span style="font-size:11px;font-weight:400;opacity:.85">'+getSwingName(_mpc)+'</span>');
+    const _mpc=50+swingVal*25;_dragOverlay.show('<span style="font-size:20px;font-weight:900">'+_mpc.toFixed(1)+'%</span><br><span style="font-size:11px;font-weight:400;opacity:.85">'+getSwingName(_mpc)+'</span>');
   });
   _swSlider?.addEventListener('pointerup',()=>_dragOverlay.hide());
   _swSlider?.addEventListener('pointercancel',()=>_dragOverlay.hide());
@@ -10942,9 +10945,11 @@ function attachEvents(){
 
   // ── Rec : Reprendre / Valider / Annuler / Mode ──
   document.getElementById('rec-ctrl-reprendre').addEventListener('click',()=>{
-    // Effacer la prise courante et repartir de zéro (originalPattern), rester en rec
+    // Annule la dernière prise (prevPattern si dispo, sinon originalPattern), reste en rec
     recLayers.forEach(li=>{
-      state[li].pattern=[...state[li].originalPattern];
+      const target=state[li].prevPattern||state[li].originalPattern;
+      if(target) state[li].pattern=[...target];
+      state[li].prevPattern=null; // une seule annulation possible
       state[li].recBuffer=null;
       state[li].hasEverTapped=false;
       buildStepsDOM(li,state[li].wrapped);
