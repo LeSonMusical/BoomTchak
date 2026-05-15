@@ -441,6 +441,8 @@ body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;co
 .play-thumb.flash{animation:thumbflash .18s ease-out}
 .play-thumb-l{background:#7B5EA7}
 .play-thumb-r{background:#C8961A}
+.play-thumb.rec-thumb-fort{box-shadow:0 0 0 4px rgba(255,255,255,.35) inset,0 2px 10px rgba(0,0,0,.35)}
+.play-thumb.rec-thumb-doux{opacity:.48;filter:saturate(.55)}
 @keyframes thumbflash{0%{filter:brightness(1)}50%{filter:brightness(2.2) saturate(1.5)}100%{filter:brightness(1)}}
 
 /* ─── MODE TX ─── */
@@ -1050,7 +1052,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.18</span>
+      <span class="app-version">v3.12.19</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2574,6 +2576,8 @@ function _updateThumbColors(){
   const sR=document.getElementById('play-thumb-r-sub');
   if(recLayers.length===0){
     lL.style.background='';lR.style.background='';
+    lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
+    lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
     if(nL)nL.textContent='';if(nR)nR.textContent='';
     if(sL)sL.textContent='main gauche';if(sR)sR.textContent='main droite';
     return;
@@ -2585,9 +2589,12 @@ function _updateThumbColors(){
     if(nL)nL.textContent=name;if(nR)nR.textContent=name;
     // 1 layer : gauche = fort (X), droite = doux (x)
     if(sL)sL.textContent='fort';if(sR)sR.textContent='doux';
+    lL.classList.add('rec-thumb-fort');lR.classList.add('rec-thumb-doux');
   } else {
     lL.style.background=_LAYER_REC_COLORS[sorted[0]];
     lR.style.background=_LAYER_REC_COLORS[sorted[1]];
+    lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
+    lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
     if(nL)nL.textContent=LAYERS[sorted[0]].label;
     if(nR)nR.textContent=LAYERS[sorted[1]].label;
     if(sL)sL.textContent='';if(sR)sR.textContent='';
@@ -10440,6 +10447,20 @@ function attachEvents(){
     buildSigFromControls();
   });
   // ── L1 : Selects unité et subdivision ──
+  (()=>{
+    const unitSel=document.getElementById('mpv-unit-sel');
+    const unitCol=unitSel?.closest('.metro-3col-eq');
+    const UNIT_FULL={4:'♩ noire',8:'♪ croche',2:'♩♩ blanche',1:'○ ronde',16:'♬ dbl-croche'};
+    const UNIT_SHORT={4:'♩',8:'♪',2:'♩♩',1:'○',16:'♬'};
+    function _refreshUnitLabels(w){
+      const labels=w>=78?UNIT_FULL:UNIT_SHORT;
+      Array.from(unitSel.options).forEach(o=>{ o.textContent=labels[parseInt(o.value)]??o.textContent; });
+    }
+    if(unitCol&&unitSel){
+      new ResizeObserver(entries=>_refreshUnitLabels(entries[0].contentRect.width)).observe(unitCol);
+      _refreshUnitLabels(unitCol.offsetWidth);
+    }
+  })();
   document.getElementById('mpv-unit-sel').addEventListener('change', () => {
     _applyDefaultsFromUnit();
     buildSigFromControls();
@@ -11051,8 +11072,22 @@ const _dragOverlay=(()=>{
 // Lancer l'application
 start();
 attachEvents();
-// Maintenir l'AudioContext actif après retour sur la page (iOS suspend AC en arrière-plan)
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden && ac) ac.resume(); });
+// Maintenir l'AudioContext actif après retour (iOS/Firefox suspend AC en arrière-plan)
+function _resumeAfterBackground(){
+  if(!ac)return;
+  ac.resume().then(()=>{
+    if(!playing)return;
+    // Resync nextStepTime pour éviter un burst de steps accumulés pendant la mise en veille
+    const now=ac.currentTime;
+    LAYERS.forEach((_,li)=>{ if(state[li].nextStepTime<now) state[li].nextStepTime=now+0.05; });
+    if(metroNextBeatTime<now) metroNextBeatTime=now+0.05;
+    // Redémarrer le scheduler si la chaîne setTimeout est morte (Firefox iOS)
+    if(!schedTimerID) schedTimerID=setTimeout(scheduler,SCHED_MS);
+  });
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) _resumeAfterBackground(); });
+window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
+window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
