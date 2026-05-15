@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.20</span>
+      <span class="app-version">v3.12.21</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2051,6 +2051,7 @@ let state=LAYERS.map(()=>({
   nextSpeedDir:'double',
   wrapped:false,
   recArmed:false, recording:false, recMode:'replace', originalPattern:null, recBuffer:null,
+  stepDiv:1, stepDivBase:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2553,7 +2554,9 @@ function playConga(isRight){
   // En mode rec : joue le son du layer ciblé par ce pouce
   const recLi=_getRecLiForThumb(isRight);
   if(recLi>=0&&(state[recLi].recArmed||state[recLi].recording)){
-    playSound(soundState[recLi],a.currentTime);
+    // 1 layer en rec : pouce droit = son doux (x), pouce gauche = son fort (X)
+    const velMult=(recLayers.length===1&&isRight)?prefs.softVel:1.0;
+    playSound(soundState[recLi],a.currentTime,velMult);
   } else {
     playSound(soundStateThumb[isRight?1:0],a.currentTime);
   }
@@ -4403,7 +4406,7 @@ function buildLayers(){
     // Bouton rec ⏺ (dans row1, à droite du i)
     const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
-      if(state[li].recArmed||state[li].recording)stopRec(li,false);
+      if(state[li].recArmed||state[li].recording)stopRec(li,true); // OFF = valider la prise
       else startRec(li);
     });
 
@@ -4742,7 +4745,11 @@ function buildLayers(){
     const grLecture=document.createElement('div');grLecture.className='mod-grp-lecture';
     grLecture.appendChild(bShL);grLecture.appendChild(shNum);grLecture.appendChild(bShR);
     grLecture.appendChild(mkSep());
-    grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);grLecture.appendChild(stepUnitLbl);
+    // Groupe vitesse+tern+unité en nowrap pour que l'unité reste toujours à droite de T
+    const _speedGrp=document.createElement('span');
+    _speedGrp.style.cssText='display:inline-flex;align-items:center;gap:3px;flex-shrink:0;overflow:visible';
+    _speedGrp.appendChild(bSpeed);_speedGrp.appendChild(bTern);_speedGrp.appendChild(stepUnitLbl);
+    grLecture.appendChild(_speedGrp);
     modPanel.appendChild(grLecture);
 
     // Zone Transf (centre paysage / ligne 2 gauche portrait)
@@ -4757,9 +4764,43 @@ function buildLayers(){
     grClip.appendChild(bCopy);grClip.appendChild(bPaste);grClip.appendChild(bClear);
     modPanel.appendChild(grClip);
 
-    // Zone Size (− N + taille) — ligne 1 droite en portrait
+    // Diviseur de longueur /2× /3× (à gauche du compteur)
+    let _stepDiv=state[li].stepDiv||1;
+    let _stepDivBase=state[li].stepDivBase||null;
+    const bStepDiv=document.createElement('button');
+    bStepDiv.className='btn-mod btn-mod-sm';bStepDiv.title='Diviser la longueur du pattern (/ 2 ou / 3)';
+    bStepDiv.textContent=_stepDiv>1?'/'+_stepDiv+'×':'';
+    bStepDiv.classList.toggle('on',_stepDiv>1);
+    bStepDiv.style.cssText='font-size:9px;letter-spacing:-.02em;min-width:24px';
+    const _applyStepDiv=(newDiv)=>{
+      const base=_stepDivBase||state[li].pattern.length;
+      if(newDiv===1){
+        // Restaurer la longueur de base
+        const cur=state[li].pattern.length,tgt=base;
+        if(tgt>cur) for(let i=cur;i<tgt;i++) state[li].pattern.push('.');
+        else state[li].pattern=state[li].pattern.slice(0,tgt);
+        _stepDivBase=null;
+      } else {
+        // Stocker base au premier changement
+        if(_stepDiv===1) _stepDivBase=state[li].pattern.length;
+        const tgt=Math.max(1,Math.round((_stepDivBase||base)/newDiv));
+        const cur=state[li].pattern.length;
+        if(tgt<cur) state[li].pattern=state[li].pattern.slice(0,tgt);
+        else for(let i=cur;i<tgt;i++) state[li].pattern.push('.');
+      }
+      _stepDiv=newDiv;state[li].stepDiv=newDiv;state[li].stepDivBase=_stepDivBase;
+      bStepDiv.textContent=newDiv>1?'/'+newDiv+'×':'';
+      bStepDiv.classList.toggle('on',newDiv>1);
+      _reszMark();
+    };
+    bStepDiv.addEventListener('click',()=>{
+      const next=_stepDiv===1?2:_stepDiv===2?3:1;
+      _applyStepDiv(next);
+    });
+
+    // Zone Size (/ N + taille) — ligne 1 droite en portrait
     const grRecSize=document.createElement('div');grRecSize.className='mod-grp-recsize';
-    grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
+    grRecSize.appendChild(bStepDiv);grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
     modPanel.appendChild(grRecSize);
 
     layerDiv.appendChild(modPanel);
