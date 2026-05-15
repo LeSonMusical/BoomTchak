@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.27</span>
+      <span class="app-version">v3.12.28</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3171,51 +3171,51 @@ function openPresetModal(cfg){
     });
     // Appui long sur un item → réorganisation éphémère (glisser sans rebuild DOM, relâcher = sortie)
     const _addLongPress=(el,itemId)=>{
-      let _lt=null,_lx=0,_ly=0,_dragging=false;
-      el.addEventListener('touchstart',e=>{
-        if(e.touches.length>1)return;
-        const t=e.touches[0];_lx=t.clientX;_ly=t.clientY;
+      let _lt=null,_sx=0,_sy=0,_pid=null;
+      el.addEventListener('pointerdown',e=>{
+        if(e.pointerType==='mouse')return;
+        _pid=e.pointerId;_sx=e.clientX;_sy=e.clientY;
         el.classList.add('pm-pressing');
         _lt=setTimeout(()=>{
-          _lt=null;el.classList.remove('pm-pressing');
-          _dragging=true;
+          _lt=null;
+          el.classList.remove('pm-pressing');
           reorderMode=true;manageMode=false;paletteTarget=null;
           modeManage.classList.toggle('active',false);
           sheet.classList.add('pm-reorder-on');
           _reorderDragSrcId=itemId;
           el.classList.add('pm-dragging');
-          el.style.pointerEvents='none';
-          const onEnd=()=>{
-            document.removeEventListener('touchend',onEnd,true);
-            document.removeEventListener('touchcancel',onEnd,true);
-            _dragging=false;
+          try{el.setPointerCapture(_pid);}catch(_){}
+          const _onMove=ev=>{
+            if(ev.pointerId!==_pid)return;
+            const under=document.elementFromPoint(ev.clientX,ev.clientY);
+            const tgt=under?.closest('[data-pm-id]');
+            itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+            if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
+          };
+          const _onEnd=ev=>{
+            if(ev.pointerId!==_pid)return;
             el.classList.remove('pm-dragging');
-            el.style.pointerEvents='';
             const over=itemsWrap.querySelector('.pm-drag-over');
             itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
             const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
             _reorderDragSrcId=null;reorderMode=false;sheet.classList.remove('pm-reorder-on');
+            el.removeEventListener('pointermove',_onMove);
+            el.removeEventListener('pointerup',_onEnd);
+            el.removeEventListener('pointercancel',_onEnd);
             if(tgtPmId&&tgtPmId!==itemId){pmDrop(srcId,tgtPmId);buildFamCol();}
             else{buildFamCol();buildItems();}
           };
-          document.addEventListener('touchend',onEnd,true);
-          document.addEventListener('touchcancel',onEnd,true);
+          el.addEventListener('pointermove',_onMove);
+          el.addEventListener('pointerup',_onEnd);
+          el.addEventListener('pointercancel',_onEnd);
         },450);
-      },{passive:true});
-      el.addEventListener('touchmove',e=>{
-        const t=e.touches[0];
-        if(_lt&&Math.hypot(t.clientX-_lx,t.clientY-_ly)>10){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
-        if(_dragging){
-          e.preventDefault();
-          const under=document.elementFromPoint(t.clientX,t.clientY);
-          const tgt=under?.closest('[data-pm-id]');
-          itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
-          if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
-        }
-      },{passive:false});
-      const _c=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
-      el.addEventListener('touchend',_c,{passive:true});
-      el.addEventListener('touchcancel',_c,{passive:true});
+      });
+      el.addEventListener('pointermove',e=>{
+        if(e.pointerId!==_pid)return;
+        if(_lt&&Math.hypot(e.clientX-_sx,e.clientY-_sy)>12){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
+      });
+      const _pc=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
+      el.addEventListener('pointerup',_pc);el.addEventListener('pointercancel',_pc);
     };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
@@ -3592,11 +3592,11 @@ function openPresetModal(cfg){
       const isMx=authProfile?.role==='mx';
       const bfams=packCours.soundFamilles||[];
       if(manageMode||reorderMode){
-        famCol.style.touchAction=reorderMode?'none':'';
+        famCol.style.touchAction='';
         bfams.forEach(f=>{
           const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
           if(reorderMode){
-            row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
+            row.setAttribute('draggable','true');row.dataset.famId=f.id;
             const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';
             drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
           }
@@ -3614,21 +3614,28 @@ function openPresetModal(cfg){
             row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
             row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
             row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-            row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
-            row.addEventListener('touchmove',e=>{
-              e.preventDefault();if(!_famDragSrcId)return;
-              const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+            {let _frt=null,_frpid=null,_frd=false,_frx=0,_fry=0;
+            row.addEventListener('pointerdown',e=>{
+              if(e.pointerType==='mouse')return;
+              _frpid=e.pointerId;_frx=e.clientX;_fry=e.clientY;_frd=false;
+              _frt=setTimeout(()=>{_frt=null;_frd=true;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');try{row.setPointerCapture(_frpid);}catch(_){}},150);
+            });
+            row.addEventListener('pointermove',e=>{
+              if(e.pointerId!==_frpid)return;
+              if(_frt&&Math.hypot(e.clientX-_frx,e.clientY-_fry)>12){clearTimeout(_frt);_frt=null;}
+              if(!_frd)return;
+              const el=document.elementFromPoint(e.clientX,e.clientY);
               const tgt=el?.closest('.pm-fam-manage-row');
               famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
               if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
-            },{passive:false});
-            row.addEventListener('touchend',e=>{
+            });
+            const _frEnd=e=>{
+              if(e.pointerId!==_frpid)return;
+              if(_frt){clearTimeout(_frt);_frt=null;}
               row.classList.remove('pm-fam-dragging');
-              const over=famCol.querySelector('.pm-fam-drag-over');
-              famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
-              if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
-              _famDragSrcId=null;
-            },{passive:true});
+              if(_frd){_frd=false;const over=famCol.querySelector('.pm-fam-drag-over');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;}
+            };
+            row.addEventListener('pointerup',_frEnd);row.addEventListener('pointercancel',_frEnd);}
           }
           famCol.appendChild(row);
         });
@@ -3673,13 +3680,12 @@ function openPresetModal(cfg){
 
     if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band')){
       const isMx=authProfile?.role==='mx';
-      // Bloquer le scroll du container en mode réordonner (sinon le touch scroll prend la main)
-      famCol.style.touchAction=reorderMode?'none':'';
+      famCol.style.touchAction='';
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
         // Poignée drag : mode réordonner seulement (MX ou non, la persistance est gatée côté sbPushSchoolFamOrder)
         if(reorderMode){
-          row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
+          row.setAttribute('draggable','true');row.dataset.famId=f.id;
           const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
           drag.addEventListener('mousedown',e=>e.stopPropagation());
           row.appendChild(drag);
@@ -3707,22 +3713,29 @@ function openPresetModal(cfg){
           row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
           row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-          // Touch drag
-          row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
-          row.addEventListener('touchmove',e=>{
-            e.preventDefault();if(!_famDragSrcId)return;
-            const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+          // Touch drag : court appui (150ms) + pointer capture — scroll libre si pas de drag
+          {let _frt=null,_frpid=null,_frd=false,_frx=0,_fry=0;
+          row.addEventListener('pointerdown',e=>{
+            if(e.pointerType==='mouse')return;
+            _frpid=e.pointerId;_frx=e.clientX;_fry=e.clientY;_frd=false;
+            _frt=setTimeout(()=>{_frt=null;_frd=true;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');try{row.setPointerCapture(_frpid);}catch(_){}},150);
+          });
+          row.addEventListener('pointermove',e=>{
+            if(e.pointerId!==_frpid)return;
+            if(_frt&&Math.hypot(e.clientX-_frx,e.clientY-_fry)>12){clearTimeout(_frt);_frt=null;}
+            if(!_frd)return;
+            const el=document.elementFromPoint(e.clientX,e.clientY);
             const tgt=el?.closest('.pm-fam-manage-row');
             famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
             if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
-          },{passive:false});
-          row.addEventListener('touchend',e=>{
+          });
+          const _frEnd=e=>{
+            if(e.pointerId!==_frpid)return;
+            if(_frt){clearTimeout(_frt);_frt=null;}
             row.classList.remove('pm-fam-dragging');
-            const over=famCol.querySelector('.pm-fam-drag-over');
-            famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
-            if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
-            _famDragSrcId=null;
-          },{passive:true});
+            if(_frd){_frd=false;const over=famCol.querySelector('.pm-fam-drag-over');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;}
+          };
+          row.addEventListener('pointerup',_frEnd);row.addEventListener('pointercancel',_frEnd);}
         }
         famCol.appendChild(row);
       });
@@ -4120,10 +4133,10 @@ function openPresetModal(cfg){
     const items=getFilteredItems();
 
     if(reorderMode){
-      // Mode réordonner : poignée ≡ à droite, touch-action none pour éviter scroll parasite
-      itemsWrap.style.touchAction='none';itemsWrap.style.overflowY='auto';
+      // Mode réordonner : poignée ≡ à droite, scroll autorisé (pointer capture gère le drag)
+      itemsWrap.style.overflowY='auto';
       items.forEach(item=>{
-        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');div.style.touchAction='none';
+        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');
         const name=document.createElement('span');name.style.flex='1';name.textContent=cfg.type==='sig'?(item.label||item.id):(item.nom||'').replace(/^● modifié /,'');
         const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='⠿';
         div.appendChild(name);div.appendChild(handle);
@@ -4132,21 +4145,29 @@ function openPresetModal(cfg){
         div.addEventListener('dragend',()=>{div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));_reorderDragSrcId=null;});
         div.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(item.id!==_reorderDragSrcId)div.classList.add('pm-drag-over');});
         div.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId&&_reorderDragSrcId!==item.id)pmDrop(_reorderDragSrcId,item.id);});
-        // Drag tactile — sur le div entier (touch-action:none déjà défini)
-        div.addEventListener('touchstart',e=>{e.preventDefault();_reorderDragSrcId=item.id;div.classList.add('pm-dragging');},{passive:false});
-        div.addEventListener('touchmove',e=>{
-          e.preventDefault();if(!_reorderDragSrcId)return;
-          const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
+        // Drag tactile : court appui (150ms) + pointer capture — scroll libre si pas de drag
+        {let _rt=null,_rpid=null,_rd=false,_rx=0,_ry=0;
+        div.addEventListener('pointerdown',e=>{
+          if(e.pointerType==='mouse')return;
+          _rpid=e.pointerId;_rx=e.clientX;_ry=e.clientY;_rd=false;
+          _rt=setTimeout(()=>{_rt=null;_rd=true;_reorderDragSrcId=item.id;div.classList.add('pm-dragging');try{div.setPointerCapture(_rpid);}catch(_){}},150);
+        });
+        div.addEventListener('pointermove',e=>{
+          if(e.pointerId!==_rpid)return;
+          if(_rt&&Math.hypot(e.clientX-_rx,e.clientY-_ry)>12){clearTimeout(_rt);_rt=null;}
+          if(!_rd)return;
+          const el=document.elementFromPoint(e.clientX,e.clientY);
           const tgt=el?.closest('.pm-reorder');
           itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
           if(tgt&&tgt.dataset.id!==_reorderDragSrcId)tgt.classList.add('pm-drag-over');
-        },{passive:false});
-        div.addEventListener('touchend',e=>{
-          e.preventDefault();const over=itemsWrap.querySelector('.pm-drag-over');
-          div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
-          if(over&&_reorderDragSrcId&&over.dataset.id!==_reorderDragSrcId)pmDrop(_reorderDragSrcId,over.dataset.id);
-          _reorderDragSrcId=null;
-        },{passive:false});
+        });
+        const _rEnd=e=>{
+          if(e.pointerId!==_rpid)return;
+          if(_rt){clearTimeout(_rt);_rt=null;}
+          div.classList.remove('pm-dragging');
+          if(_rd){_rd=false;const over=itemsWrap.querySelector('.pm-drag-over');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(over&&_reorderDragSrcId&&over.dataset.id!==item.id)pmDrop(_reorderDragSrcId,over.dataset.id);_reorderDragSrcId=null;}
+        };
+        div.addEventListener('pointerup',_rEnd);div.addEventListener('pointercancel',_rEnd);}
         itemsWrap.appendChild(div);
       });
       // Zone de dépôt en fin de liste
@@ -7333,7 +7354,7 @@ async function sbPushSchoolFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) non mises à jour — vérifier migration DB (colonne ordre)`, 'warn');
-  } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé : ' + e.message, 'warn'); }
+  } catch(e) { console.error('Ordre familles non persisté :', e); if(!e.message.includes('401'))showToast('⚠ Ordre familles non sauvegardé : '+e.message,'warn'); }
 }
 
 async function sbPushSchoolBandOrder() {
