@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.24</span>
+      <span class="app-version">v3.12.25</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1578,8 +1578,8 @@ const ENCYCLO = {
       ["⇅  Inversion des accents","Échange forts et faibles : X ↔ x. Les silences restent inchangés."],
       ["⊙  Rotation des accents","Fait tourner les niveaux d'un cran : · → x → X → ·."],
       ["/2  ×2  T  Vitesse","Modifient la vitesse de la couche indépendamment des autres. /2 : step = noire (2× plus lent). ×2 : step = double croche (2× plus rapide). T (ternaire) : step = croche ternaire, vitesse ×3/2 — combiner /2+T donne la noire ternaire."],
-      ["⊛  Dé","Redistribue les steps au hasard (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],
-      ["✦  Magie","Génère un nouveau pattern musicalement cohérent via deux phases : placement euclidien des sons forts (répartition régulière sur n steps) puis sons faibles déterminés par une chaîne de Markov (un son faible suit volontiers un son fort). L'intensité algorithmique varie aléatoirement. La vitesse de la couche peut aussi changer : 1 chance sur 3 de basculer en /2 ou ×2, avec 20 % de chance supplémentaire d'activer le mode T."]
+      ["🎲  Dé","Redistribue les steps au hasard (Fisher-Yates) en préservant les proportions exactes de X, x et · — même densité, même balance d'accents, ordre inédit."],
+      ["✨  Magie","Génère un nouveau pattern musicalement cohérent via deux phases : placement euclidien des sons forts (répartition régulière sur n steps) puis sons faibles déterminés par une chaîne de Markov (un son faible suit volontiers un son fort). L'intensité algorithmique varie aléatoirement. La vitesse de la couche peut aussi changer : 1 chance sur 3 de basculer en /2 ou ×2, avec 20 % de chance supplémentaire d'activer le mode T."]
     ]
   },
   misc_familles:{
@@ -2177,6 +2177,7 @@ function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
   metroStepPos = 0; metroBeatPos = 0;
+  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
   setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
@@ -2233,6 +2234,7 @@ function previewMetroPreset(id) {
   };
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
+  if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(false); _editingMetroPresetId = null;
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
@@ -2324,6 +2326,7 @@ function buildSigFromControls() {
     if (btn) btn.textContent = currentSig.label;
   }
   metroStepPos = 0; metroBeatPos = 0;
+  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
   setMetroDirty(true); updateMetroSaveBtn();
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
@@ -2435,6 +2438,14 @@ let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true,
 let metroBeatPos=0, metroStepPos=0, metroNextBeatTime=0, metroStartTime=0;
 let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBeatTime)
+
+// Recalibrate metroStartTime so highlightMetroStep() stays in phase with the audio schedule.
+// Call whenever metroNextBeatTime is rescaled (tempo/battue change) or metroStepPos resets.
+function _syncMetroStartTime(spm) {
+  if (!playing || !ac) return;
+  const stepSec = (60 / spm) * ((currentSig.stepsPerBeat || 2) / (currentSig.subdivision || 2));
+  metroStartTime = metroNextBeatTime - metroStepPos * stepSec;
+}
 
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
@@ -4641,7 +4652,7 @@ function buildLayers(){
       state[li].pattern=state[li].pattern.map(p=>p==='.'?'x':p==='x'?'X':'.');
       buildStepsDOM(li,state[li].wrapped); if(circleView)drawCircles(); setLayerDirty(li,true);
     });
-    const bDice=document.createElement('button');bDice.className='btn-mod btn-mod-sm';bDice.textContent='⊛';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
+    const bDice=document.createElement('button');bDice.className='btn-mod btn-mod-sm';bDice.textContent='🎲';bDice.title='Shuffle : réordonne en gardant X, x, . identiques';
     bDice.addEventListener('click',()=>{
       // Fisher-Yates shuffle — préserve la proportion exacte de X, x et .
       const arr=[...state[li].pattern];
@@ -4655,7 +4666,7 @@ function buildLayers(){
     });
 
     // — Magie ✨ (Euclide + Markov, intensité aléatoire linéaire) —
-    const bMagic=document.createElement('button');bMagic.className='btn-mod btn-mod-sm';bMagic.textContent='✦';bMagic.title='Magie : génération musicalement équilibrée';
+    const bMagic=document.createElement('button');bMagic.className='btn-mod btn-mod-sm';bMagic.textContent='✨';bMagic.title='Magie : génération musicalement équilibrée';
     bMagic.addEventListener('click',()=>{
       const n=state[li].pattern.length;
 
@@ -10342,7 +10353,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const newSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
+        if(oldSpm>0&&newSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);_syncMetroStartTime(newSpm);}
       }
     }
     _lastBpmPos=newPos;
@@ -10407,7 +10418,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const nSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&nSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);
+        if(oldSpm>0&&nSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);_syncMetroStartTime(nSpm);}
       }
     }
     _lastBpmPos=newPos;
@@ -10429,7 +10440,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const nSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&nSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);
+        if(oldSpm>0&&nSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);_syncMetroStartTime(nSpm);}
       }
     }
     _lastBpmPos=newPos;
@@ -10853,13 +10864,13 @@ function attachEvents(){
   updateSmenuTheme();
 
   document.getElementById('bpm').addEventListener('input',function(){
-    // Rescale metroNextBeatTime pour éviter le décalage métro au changement de tempo
+    // Rescale metroNextBeatTime + recalibre metroStartTime pour garder le visuel en phase
     if(playing && ac){
       const now=ac.currentTime;
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const newSpm=posToSPM(parseInt(this.value))*globalSpeedMult;
-        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
+        if(oldSpm>0&&newSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);_syncMetroStartTime(newSpm);}
       }
     }
     _lastBpmPos=parseInt(this.value);
