@@ -77,11 +77,18 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.11.11** (session 2026-05-14)
+**v3.12.13** (session 2026-05-15)
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.12.13 | Toggle ⏺ layer quand rec actif = valider les notes (stopRec true) au lieu d'annuler ; Replace = mode par défaut et encadré violet ; Overdub = discret (rec-ctrl-ovr) |
+| v3.12.12 | Bouton Garder supprimé (redondant) ; Effacer → ↺ Reprendre orange : revient à originalPattern + remet hasEverTapped=false |
+| v3.12.11 | Transport rec-prêt : point rouge 7px absolu (top-right) sans impact sur taille bouton ; retrait icône ⏺ du bouton Capture |
+| v3.12.10 | Bouton transport rec-prêt : icône ⏺▶ via ::before (remplacé par point rouge en v3.12.11) |
+| v3.12.9 | Capture forte/douce : 1 layer en rec → pouce gauche = fort (X), pouce droit = doux (x) ; sous-titres "fort"/"doux" sur les pouces ; IDs play-thumb-l-sub/r-sub |
+| v3.12.8 | Transport : états arrêt/prêt-rec/lecture-rec distincts CSS (border orange / fond rouge clignotant) ; Replace encadré violet (mode le plus visible) ; article BoomTchak chargé après sbSyncPublicPool |
+| v3.12.1–7 | Refonte UX Rec : bottom-bar Capture → scinde en ✗ Annuler + ✓ Valider après 1er tap ; modal rec-ctrl avec Reprendre/mode ; bouton ⏺ dans volet layer (à droite de 'i') ; couleur thumb = couleur layer ; rec-mode CSS body classes |
 | v3.11.11 | Revert layout circulaire : portrait = layers sous canvas ; desktop ≥600px Pattern/Mesure = canvas gauche + layers droite ; Cycle = layers sous dans tous les cas (circle-linear class) |
 | v3.11.10 | (annulé — layout côte-à-côte portrait trop étroit sur smartphone) |
 | v3.11.9 | Fix bouton Capturer rouge en dark mode (spécificité CSS .active écrasait .rec-armed) ; layers sous canvas vue circle paysage (corrigé par v3.11.11) |
@@ -231,12 +238,16 @@ Le volet Band est le dernier grand chantier de gestion de presets à refactorise
 
 ### Prochains chantiers — REC Capture + Practice (v3.11)
 
-#### ✅ Phase 1 — Bouton REC Création (volet Mod) — implémenté v3.11.1–v3.11.7
-- ⏺ Rec par layer dans volet Mod ; visuel rouge pulsant quand `playing`
-- Modes OVR (overdub direct) et RPL (looper : applique au cycle boundary)
+#### ✅ Phase 1 — REC Capture (volet Mod + volet Jouer) — implémenté v3.11.1–v3.12.13
+- ⏺ Rec par layer dans volet Mod (à droite de 'i') ; visuel rouge pulsant quand `playing`
+- Modes Replace (défaut, encadré violet) et Overdub (discret) ; `state[li].recMode` = 'replace' par défaut
 - Quantisation : `si = round((tapTime - cycleStart) / getBeatSec(li)) % n`
-- Volet Jouer s'ouvre en rec-mode (bordure rouge, bouton Capturer rouge, thumbs couleur layer)
-- Garder (valide) / Annuler (restaure `originalPattern`) / OVR-RPL toggle
+- Volet Jouer en rec-mode : thumbs colorés par layer, sous-titres "fort"/"doux" (1 layer) ou nom layer (2 layers)
+- Nuance forte/douce : 1 layer → pouce gauche = 'X' (fort), pouce droit = 'x' (doux/ghost)
+- Bottom-bar : bouton **Capture** → après 1er tap, se scinde en **✗ Annuler** + **✓ Valider**
+- Modal rec-ctrl : **↺ Reprendre** (orange, revient à originalPattern) + bouton mode Replace/Overdub
+- Transport : point rouge absolu top-right quand rec-prêt ; rouge clignotant en lecture rec
+- Toggle ⏺ layer quand déjà en rec → **valide** les notes capturées (ne restaure pas originalPattern)
 - Clipboard : copier / coller / effacer par layer
 - Mod panel adaptatif 3 cas (v3.11.8) + layout circulaire réglé (v3.11.9–v3.11.11)
 
@@ -254,15 +265,23 @@ Nouveau panneau pédagogique, le plus unique de BoomTchak :
 - Mobile : timestamp iOS/Android fiables ? (performance.now vs AudioContext.currentTime)
 - UX : countdown avant démarrage ? Nombre de cycles d'entraînement ?
 
+## Résolu (session 2026-05-15 — v3.12.1–v3.12.13)
+- ✅ **Refonte UX Rec** — bottom-bar : bouton Capture → scinde en ✗ Annuler + ✓ Valider après 1er tap (`body.rec-tapped`) ; modal rec-ctrl avec ↺ Reprendre (orange) + mode Replace/Overdub
+- ✅ **Forte/douce** — `recTap` : 1 layer → pouce gauche = 'X', pouce droit = 'x' ; `_updateThumbColors` affiche "fort"/"doux" comme sous-titre des pouces
+- ✅ **Replace = mode par défaut** — `state[li].recMode = 'replace'` ; bouton mode encadré violet en Replace, discret (rec-ctrl-ovr) en Overdub
+- ✅ **Toggle ⏺ quand rec actif = valider** — `startRec` appelle `stopRec(li, true)` au lieu de `false` : les notes capturées sont gardées
+- ✅ **Transport rec-états** — point rouge 7px absolu (top-right) quand rec-prêt ; rouge clignotant en lecture rec (CSS body.rec-active)
+- ✅ **Article BoomTchak auto-chargé** — `showEncycloEntry('poumtchak')` après `sbSyncPublicPool` (DB fraîche)
+
 ## Résolu (session 2026-05-14 — v3.11.1–v3.11.11)
 - ✅ **Bouton ⏺ Rec par layer** — volet Mod, 4 groupes (lecture / transf / clip / recsize) ; `state[li].recArmed/recording/recMode/originalPattern/recBuffer`
 - ✅ **Mode OVR** — overdub : écrit 'X' directement dans `state[li].pattern`
 - ✅ **Mode RPL** — looper : accumule dans `recBuffer`, applique à `si===0` (cycle boundary) ; garde le dernier cycle si aucun nouveau tap
 - ✅ **recTap(tapTime)** — quantisation : `cycleStart = nextStepTime − stepPos × getBeatSec(li)` ; `si = round((tapTime − cycleStart) / bs) % n`
-- ✅ **Volet Jouer en rec-mode** — bordure rouge (`play-drawer.rec-mode`), bouton Capturer rouge (`rec-armed`/`rec-recording`), thumbs couleur layer, `_recPrevJouerOpen` restaure l'état
-- ✅ **Garder / Annuler** — `stopRec(li, true/false)` ; Annuler restaure `originalPattern`
+- ✅ **Volet Jouer en rec-mode** — bordure rouge (`play-drawer.rec-mode`), thumbs couleur layer, `_recPrevJouerOpen` restaure l'état
+- ✅ **stopRec(li, validate)** — `validate=true` : garde le pattern (apply recBuffer si replace) ; `validate=false` : restaure `originalPattern`
 - ✅ **Clipboard layer** — copier / coller / effacer (`patClipboard` global cross-layer)
-- ✅ **Fix dark mode Capturer rouge** — règles `body.dark-mode .btn-jouer-wrap.rec-armed/rec-recording` (spécificité 0,3,0)
+- ✅ **Fix dark mode bouton Capturer** — règles CSS avec spécificité 0,3,0 (v3.11.9)
 - ✅ **Mod panel adaptatif 3 cas** — `ResizeObserver` sur `layer-mod-panel` → classes `lmp-large` / défaut / `lmp-narrow` (v3.11.8)
 - ✅ **Layout vue circulaire** — portrait : layers sous canvas ; desktop ≥600px Pattern/Mesure : canvas+layers côte à côte ; Cycle : layers sous dans tous les cas via `body.circle-linear` (v3.11.9–v3.11.11)
 - ✅ **Règles de design documentées** dans `BoomTchak_v3_bible.md` (section Layout adaptatif)

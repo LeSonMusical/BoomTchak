@@ -1042,7 +1042,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.12</span>
+      <span class="app-version">v3.12.13</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1291,7 +1291,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <div class="rec-ctrl" id="rec-ctrl">
       <button class="rec-ctrl-btn rec-ctrl-reprendre" id="rec-ctrl-reprendre" title="Effacer la prise et recommencer">↺ Reprendre</button>
-      <button class="rec-ctrl-btn rec-ctrl-mode" id="rec-ctrl-mode"><span style="font-size:8px;opacity:.65;font-weight:400;display:block">mode</span>Overdub</button>
+      <button class="rec-ctrl-btn rec-ctrl-mode" id="rec-ctrl-mode"><span style="font-size:8px;opacity:.65;font-weight:400;display:block">mode</span>Replace</button>
     </div>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
   </div>
@@ -2032,7 +2032,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'overdub', originalPattern:null, recBuffer:null,
+  recArmed:false, recording:false, recMode:'replace', originalPattern:null, recBuffer:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2592,8 +2592,8 @@ function _updateGarderEff(){
 }
 
 function startRec(li){
-  // Si ce layer est déjà en rec → l'arrêter (toggle)
-  if(recLayers.includes(li)){stopRec(li,false);return;}
+  // Si ce layer est déjà en rec → valider et retirer ce layer (les notes capturées sont gardées)
+  if(recLayers.includes(li)){stopRec(li,true);return;}
   // Si 2 layers déjà en rec → valider et retirer le plus ancien (FIFO)
   if(recLayers.length>=2)stopRec(recLayers[0],true);
   // Mémoriser l'état du volet jouer uniquement pour le 1er layer

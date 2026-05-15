@@ -617,6 +617,74 @@ Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted 
 
 ---
 
+## 18. Architecture Rec Capture (v3.11–v3.12)
+
+### Principe général
+Le mode Rec permet de saisir un pattern en tapant en temps réel sur les pouces, pendant la lecture en boucle. Les taps sont quantisés sur la grille du layer concerné.
+
+### État par layer
+```js
+state[li].recArmed        // true = armé (lecture pas encore démarrée)
+state[li].recording       // true = en enregistrement actif (lecture en cours)
+state[li].recMode         // 'replace' (défaut) | 'overdub'
+state[li].originalPattern // snapshot au startRec (pour Annuler)
+state[li].recBuffer       // buffer mode replace (null en overdub)
+state[li].hasEverTapped   // true dès le 1er tap (déclenche body.rec-tapped)
+```
+
+### État global
+```js
+recLayers[]              // liste des layers actuellement en rec (max 2)
+body.rec-active          // classe CSS : mode rec activé (≥1 layer)
+body.rec-tapped          // classe CSS : au moins 1 tap reçu → bottom-bar scindée
+```
+
+### Fonctions clés
+| Fonction | Rôle |
+|----------|------|
+| `startRec(li)` | Arme le layer ; si déjà en rec → `stopRec(li, true)` (valide) |
+| `stopRec(li, validate)` | `true` = garde ; `false` = restaure `originalPattern` |
+| `recTap(tapTime, isRight)` | Quantise et écrit la note ; nuance fort/doux selon pouce |
+| `_getRecLiForThumb(isRight)` | 1 layer → même layer ; 2 layers → sorted[0/1] |
+| `_updateThumbColors()` | Couleur fond thumbs + sous-titres fort/doux ou layer name |
+| `_updateGarderEff()` | Toggle `body.rec-tapped` selon `hasEverTapped` |
+| `updateRecBtn(li)` | Met à jour l'icône ⏺/● du bouton rec du layer |
+
+### Nuance forte/douce (1 layer en rec)
+- Pouce gauche → `'X'` (forte)
+- Pouce droit → `'x'` (douce/ghost)
+- Sous-titres pouces : "fort" / "doux" (au lieu de "main gauche" / "main droite")
+- 2 layers en rec : chaque pouce = un layer, pas de distinction forte/douce
+
+### Mode Replace vs Overdub
+| Mode | Comportement | Style bouton |
+|------|-------------|--------------|
+| **Replace** (défaut) | Accumule dans `recBuffer` + preview live ; applique à `si===0` (boundary) | Violet encadré (`.rec-ctrl-mode` sans classe) |
+| **Overdub** | Écrit directement dans `state[li].pattern` (ne remplace pas les steps existants) | Discret (`.rec-ctrl-ovr`) |
+
+### Workflow UX
+1. Appui ⏺ sur un layer → `startRec(li)` → volet Jouer s'ouvre
+2. Play démarre → `state[li].recording = true` ; thumbs colorés
+3. Tap pouce gauche/droit → `recTap(tapTime, isRight)` → note écrite
+4. Après 1er tap → `body.rec-tapped` → bouton Capture se scinde en ✗ Annuler + ✓ Valider
+5. **↺ Reprendre** (modal) → revient à `originalPattern`, repart de zéro (sans quitter rec)
+6. **✓ Valider** → `stopRec(li, true)` pour tous les layers → notes gardées ; fin du mode rec
+7. **✗ Annuler** → `stopRec(li, false)` pour tous les layers → `originalPattern` restauré
+8. Re-appui ⏺ sur un layer déjà en rec → `stopRec(li, true)` (valide ce layer, continue les autres)
+
+### CSS classes body
+```css
+body.rec-active          /* ≥1 layer en rec : affiche btn-rec-box, masque btn-jouer */
+body.rec-tapped          /* 1er tap reçu : scinde Capture en Annuler+Valider */
+body.drawer-open         /* volet Jouer ouvert : padding-bottom scroll */
+```
+
+### Transport en mode rec
+- **Arrêt + rec-prêt** : bordure orange, point rouge 7px absolu (top-right du bouton)
+- **Lecture + rec** : fond rouge, animation rec-blink 0.65s step-end
+
+---
+
 ## 17. Historique des versions
 
 | Version | Changements principaux |
@@ -648,3 +716,5 @@ Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted 
 | v3.10.22 | Volet Unit 4 colonnes (Signature+Divisions+Unité+Swing) ; overlay _dragOverlay sur swing-slider |
 | v3.10.23 | Fix Unit : Signature flex:0 0 auto ; Unité flex:0.65 (sans empiéter sur Swing) |
 | v3.10.24 | Fix modal preset famFilter (famille du preset courant prioritaire) ; swing overlay %·nom ; sbMergeSchoolData inclut type famille ; sbSyncPublicPool re-applique groove après sync ; drawCircles clamp el<0→0 (sync image-son groove change) |
+| v3.11.1–11 | Rec Capture phase 1 : ⏺ par layer, modes OVR/RPL, quantisation recTap, thumbs colorés, layout circulaire corrigé, mod panel adaptatif |
+| v3.12.1–13 | Rec Capture UX finale : bottom-bar Capture→Valider/Annuler ; forte/douce X/x ; Replace par défaut encadré ; toggle ⏺ = valider ; ↺ Reprendre ; transport point rouge rec-prêt |
