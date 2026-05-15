@@ -131,6 +131,9 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-P{background:#6B5FA5;color:#fff}
 .mpv-p{background:#c4bde8;color:#6B5FA5}
 .mpv-dot{background:#e8e5f0;color:transparent}
+.mpv-A-off{background:#b8b8c0;color:#6a6a78}
+.mpv-P-off{background:#c8c8d0;color:#7a7a85}
+.mpv-p-off{background:#d8d8e0;color:#9898a5}
 .mpv-save-btn{font-size:15px;padding:1px 5px;border:none;background:transparent;color:#1D9E75;cursor:pointer;flex-shrink:0;line-height:1.3;transition:all .15s}
 .mpv-save-btn.dirty{color:#c00;font-size:12px;font-weight:700}
 /* ── Vol + Tempo (ligne 1 metro) ── */
@@ -902,6 +905,10 @@ body.dark-mode .mpv-label{color:#d0c0ff}
 body.dark-mode .mpv-beats-val{color:#d0c0ff}
 body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
 body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
+body.dark-mode .mpv-dot{background:#251f35}
+body.dark-mode .mpv-A-off{background:#383648;color:#6a6880}
+body.dark-mode .mpv-P-off{background:#383648;color:#6a6880}
+body.dark-mode .mpv-p-off{background:#2e2c3a;color:#585670}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -1043,7 +1050,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.17</span>
+      <span class="app-version">v3.12.18</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1169,8 +1176,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
-      <!-- Col 1 : Signature — rétrécit en premier (flex-shrink:1) -->
-      <div class="metro-3col-eq" style="flex:0 1 auto;align-items:center;padding-right:4px;min-width:0;overflow:hidden">
+      <!-- Col 1 : Signature — partage l'espace disponible -->
+      <div class="metro-3col-eq" style="flex:1;align-items:center;padding-right:4px;min-width:0;overflow:hidden">
         <span class="metro-3col-lbl">Signature</span>
         <span class="sig-edit-val" id="sig-unit-display" style="overflow:hidden;text-overflow:ellipsis">4/4</span>
       </div>
@@ -1183,8 +1190,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 3 : Unité — icône seule, rétrécit au besoin -->
-      <div class="metro-3col-eq" style="flex:0 1 auto;min-width:0">
+      <!-- Col 3 : Unité — partage l'espace disponible -->
+      <div class="metro-3col-eq" style="flex:1;min-width:0">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0;max-width:100%">
           <option value="4">♩</option>
@@ -1194,8 +1201,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <option value="16">♬</option>
         </select>
       </div>
-      <!-- Col 4 : Swing — extrême droite, max 1/3 -->
-      <div class="metro-3col-sw" style="max-width:33%;margin-left:auto">
+      <!-- Col 4 : Swing — fixe 1/3 à droite -->
+      <div class="metro-3col-sw" style="flex:0 0 33%;max-width:33%">
         <span class="metro-3col-lbl">Swing</span>
         <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
         <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
@@ -2262,11 +2269,11 @@ function _applyDefaultsFromUnit() {
   const unit = us ? parseInt(us.value) : 4;
   const beats = bv ? (parseInt(bv.textContent) || 4) : 4;
   let fbs;
-  if (unit === 2) fbs = 4; // blanche → battement=blanche (4 croches)
-  else if (unit === 8 && (beats === 6 || beats === 9 || beats === 12)) fbs = 3; // noire pointée
-  else if (unit === 8) fbs = 1; // croche
-  else fbs = 2; // noire (unité 4, 1, 16)
-  const sub = (fbs === 3) ? 3 : (fbs === 1) ? 1 : 2;
+  if (unit === 2 || unit === 1) fbs = 4; // blanche/ronde → battement=blanche (4 croches)
+  else if (unit === 16) fbs = 1; // dbl-croche → battement=croche (1 croche)
+  else if (unit === 8 && beats % 3 === 0) fbs = 3; // noire pointée (6/8, 9/8, 12/8…)
+  else fbs = 2; // noire (unité 4 ou croche binaire)
+  const sub = (fbs === 3) ? 3 : 2;
   const batSel = document.getElementById('battue-sel');
   if (batSel && batSel.value !== String(fbs)) batSel.value = String(fbs);
   const subSel = document.getElementById('mpv-subdiv-sel');
@@ -2395,11 +2402,14 @@ function renderMetroPatternViz() {
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
   const SYM = { A: '^', P: '>', p: '-', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
+  const MUTED = { A: 'mpv-A-off', P: 'mpv-P-off', p: 'mpv-p-off' };
+  const active = { A: metro.accentOn, P: metro.tempsOn, p: metro.subdivOn };
   const sub = currentSig?.subdivision || 2;
   wrap.innerHTML = mp.map((v, i) => {
     const sep = (i > 0 && i % sub === 0)
       ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
-    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
+    const cls = (v === '.') ? 'mpv-dot' : (active[v] === false ? MUTED[v] : CLS[v]) || 'mpv-dot';
+    return `${sep}<span class="mpv-step ${cls}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
   }).join('');
   updateSigDisplays();
   updateMetroSaveBtn();
@@ -10439,14 +10449,17 @@ function attachEvents(){
   document.getElementById('mpv-tog-A').addEventListener('click', function() {
     metro.accentOn = !metro.accentOn;
     this.classList.toggle('on', metro.accentOn);
+    renderMetroPatternViz();
   });
   document.getElementById('mpv-tog-P').addEventListener('click', function() {
     metro.tempsOn = !metro.tempsOn;
     this.classList.toggle('on', metro.tempsOn);
+    renderMetroPatternViz();
   });
   document.getElementById('mpv-tog-p').addEventListener('click', function() {
     metro.subdivOn = !metro.subdivOn;
     this.classList.toggle('on', metro.subdivOn);
+    renderMetroPatternViz();
   });
   // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
   document.getElementById('metro-pattern-viz').addEventListener('click', e => {
