@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.26</span>
+      <span class="app-version">v3.12.27</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2050,7 +2050,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'replace', originalPattern:null, prevPattern:null, recBuffer:null,
+  recArmed:false, recording:false, recMode:'overdub', originalPattern:null, prevPattern:null, recBuffer:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2639,8 +2639,9 @@ function startRec(li){
   if(recLayers.length>=2)stopRec(recLayers[0],true);
   // Mémoriser l'état du volet jouer uniquement pour le 1er layer
   if(recLayers.length===0)_recPrevJouerOpen=jouerOpen;
-  // Sauvegarder le pattern original pour Cancel
+  // Sauvegarder le pattern original pour Cancel ; restaurer le dernier mode utilisé
   state[li].originalPattern=[...state[li].pattern];
+  state[li].recMode=prefs.recMode||'overdub';
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
   state[li].recArmed=true;
@@ -3459,12 +3460,16 @@ function openPresetModal(cfg){
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolBandFamOrder();buildFamCol();return;
     }
-    const fams=packCours.familles;
-    const si=fams.findIndex(f=>f.id===srcId);
+    // Reordonner uniquement le sous-ensemble typé pour que les rangs groove/pattern soient indépendants
+    const typeOk=f=>cfg.type==='groove'?(!f.type||f.type==='groove'||f.type==='both'):(!f.type||f.type==='pattern'||f.type==='both');
+    const subset=packCours.familles.filter(typeOk);
+    const others=packCours.familles.filter(f=>!typeOk(f));
+    const si=subset.findIndex(f=>f.id===srcId);
     if(si<0)return;
-    const[moved]=fams.splice(si,1);
-    if(tgtId==='__end__'){fams.push(moved);}
-    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
+    const[moved]=subset.splice(si,1);
+    if(tgtId==='__end__'){subset.push(moved);}
+    else{const ti=subset.findIndex(f=>f.id===tgtId);if(ti<0){subset.splice(si,0,moved);}else{subset.splice(ti,0,moved);}}
+    packCours.familles=[...subset,...others];
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
@@ -7170,6 +7175,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     packCours.familles = packCours.familles.filter(x => x.id !== f.id);
     packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school', ordre: f.ordre ?? 0, type: f.type || 'both' });
   });
+  // Trier par ordre après le merge pour que l'ordre drag-drop MX soit restauré après sync
+  packCours.familles.sort((a, b) => (a.ordre ?? 9999) - (b.ordre ?? 9999));
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
@@ -10962,6 +10969,7 @@ function attachEvents(){
     if(recLayers.length===0)return;
     const refMode=state[recLayers[0]].recMode==='overdub'?'replace':'overdub';
     recLayers.forEach(li=>{state[li].recMode=refMode;});
+    prefs.recMode=refMode; localStorage.setItem('btk_prefs',JSON.stringify(prefs)); // mémoriser le dernier mode
     const isOvr=refMode==='overdub';
     const btn=document.getElementById('rec-ctrl-mode');
     btn.innerHTML='<span style="font-size:8px;opacity:.65;font-weight:400;display:block">mode</span>'+(isOvr?'Overdub':'Replace');
