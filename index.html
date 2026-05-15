@@ -641,7 +641,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .lib-list{flex:1;overflow-y:auto;padding:6px 0;overscroll-behavior:contain}
 /* ─── MOD PANEL ─── */
 /* mod panel — base = serré (2 lignes, 240–399 px) */
-.layer-mod-panel{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"lecture recsize" "transf clip";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel{display:grid;grid-template-columns:1.45fr 1fr;grid-template-areas:"lecture recsize" "transf clip";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none!important}
 .mod-grp-lecture{grid-area:lecture;display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .mod-grp-transf{grid-area:transf;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:start}
@@ -653,7 +653,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .layer-mod-panel.lmp-large .mod-grp-clip{justify-self:end}
 .layer-mod-panel.lmp-large .mod-grp-recsize{justify-self:end}
 /* étroit <240 px : 3 lignes, transf et clip pleine largeur */
-.layer-mod-panel.lmp-narrow{grid-template-columns:1fr 1fr;grid-template-areas:"lecture recsize" "transf transf" "clip clip"}
+.layer-mod-panel.lmp-narrow{grid-template-columns:1.45fr 1fr;grid-template-areas:"lecture recsize" "transf transf" "clip clip"}
 .layer-mod-panel.lmp-narrow .mod-grp-transf{justify-self:start}
 .layer-mod-panel.lmp-narrow .mod-grp-clip{justify-self:start}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.22</span>
+      <span class="app-version">v3.12.23</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2311,12 +2311,12 @@ function buildSigFromControls() {
     const btn = document.getElementById('sig-sel-btn');
     if (btn) btn.textContent = match.label || match.id;
   } else {
-  // Sig custom : stepsPerBeat = subdivision (1 step = 1 croche) ; felBeatSteps hérité de la battue
+  // Sig custom : subdivision indépendante de stepsPerBeat (felBeatSteps) ; pas d'effet sur vitesse layers
     currentSig = {
       ...currentSig,
       id: '_custom', label: `${beats}/${unit}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: sub, beatSteps: sub, felBeatSteps: curFel,
+      stepsPerBeat: curFel, beatSteps: curFel, felBeatSteps: curFel,
       beatSym: symFromFelBeatSteps(curFel),
       metroPattern: generateMetroPattern(beats, sub),
     };
@@ -4766,33 +4766,30 @@ function buildLayers(){
     grClip.appendChild(bCopy);grClip.appendChild(bPaste);grClip.appendChild(bClear);
     modPanel.appendChild(grClip);
 
-    // Diviseur de longueur /2× /3× (à gauche du compteur)
-    // Multiplicateur/diviseur de longueur : [/] [2↔3] [×]
-    let _coeff=2;
-    const bCoeff=document.createElement('button');
-    bCoeff.className='btn-mod btn-mod-sm';bCoeff.title='Coefficient (cliquer pour alterner 2/3)';
-    bCoeff.textContent='2';bCoeff.style.cssText='font-weight:800;min-width:16px;padding:1px 4px';
-    bCoeff.addEventListener('click',()=>{ _coeff=_coeff===2?3:2; bCoeff.textContent=String(_coeff); });
-    const bDivN=document.createElement('button');
-    bDivN.className='btn-mod btn-mod-sm';bDivN.title='Diviser le nombre de pas par le coefficient';
-    bDivN.textContent='/';bDivN.style.cssText='font-weight:700';
-    bDivN.addEventListener('click',()=>{
-      const tgt=Math.max(1,Math.floor(state[li].pattern.length/_coeff));
-      state[li].pattern=state[li].pattern.slice(0,tgt);_reszMark();
+    // Sélecteur ×/÷ de longueur (menu : −, ×2, /2, ×3, /3)
+    const selStep=document.createElement('select');
+    selStep.className='mpv-sel mpv-sel-sm';
+    selStep.style.cssText='font-size:10px;min-width:38px;padding:1px 2px;cursor:pointer';
+    selStep.title='Multiplier ou diviser le nombre de pas';
+    ['−','×2','/2','×3','/3'].forEach(v=>{
+      const o=document.createElement('option');o.value=v;o.textContent=v;selStep.appendChild(o);
     });
-    const bMulN=document.createElement('button');
-    bMulN.className='btn-mod btn-mod-sm';bMulN.title='Multiplier le nombre de pas par le coefficient';
-    bMulN.textContent='×';bMulN.style.cssText='font-weight:700';
-    bMulN.addEventListener('click',()=>{
-      const cur=state[li].pattern.length,tgt=cur*_coeff;
-      for(let i=cur;i<tgt;i++) state[li].pattern.push('.');
+    selStep.addEventListener('change',()=>{
+      const v=selStep.value;selStep.value='−';if(v==='−')return;
+      const cur=state[li].pattern.length;
+      let tgt=cur;
+      if(v==='×2')tgt=cur*2;
+      else if(v==='×3')tgt=cur*3;
+      else if(v==='/2')tgt=Math.max(1,Math.floor(cur/2));
+      else if(v==='/3')tgt=Math.max(1,Math.floor(cur/3));
+      if(tgt>cur)for(let i=cur;i<tgt;i++)state[li].pattern.push('.');
+      else state[li].pattern=state[li].pattern.slice(0,tgt);
       _reszMark();
     });
 
-    // Zone Size — [/][coef][×][−][N][+]
+    // Zone Size — [select ×/÷][−][N][+]
     const grRecSize=document.createElement('div');grRecSize.className='mod-grp-recsize';
-    grRecSize.appendChild(bDivN);grRecSize.appendChild(bCoeff);grRecSize.appendChild(bMulN);
-    grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
+    grRecSize.appendChild(selStep);grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
     modPanel.appendChild(grRecSize);
 
     layerDiv.appendChild(modPanel);
