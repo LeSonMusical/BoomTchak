@@ -1043,7 +1043,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.14</span>
+      <span class="app-version">v3.12.15</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4490,6 +4490,7 @@ function buildLayers(){
     // — Vitesse cyclique = → ×2 → /2 → = —
     const bSpeed=document.createElement('button');bSpeed.className='btn-mod';bSpeed.id='mod-speed-'+li;bSpeed.title='Vitesse : tap pour cycler = → ×2 → = → /2 → = … (appliqué au prochain cycle)';
     let bTern; // déclaré ici, initialisé après (guard dans updateSpeedBtns)
+    let _updateStepUnitLbl; // forward déclaration (const serait en TDZ lors du 1er appel updateSpeedBtns)
     const updateSpeedBtns=()=>{
       let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
       if(state[li].pendingClear){nextHalf=false;nextDbl=false;}
@@ -4499,7 +4500,7 @@ function buildLayers(){
       else if(nextHalf){bSpeed.textContent='/2';bSpeed.classList.add('on');}
       else{bSpeed.textContent='=';bSpeed.classList.remove('on');}
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
-      if(typeof _updateStepUnitLbl==='function')_updateStepUnitLbl();
+      if(_updateStepUnitLbl)_updateStepUnitLbl();
     };
     updateSpeedBtns();
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); };
@@ -4538,7 +4539,7 @@ function buildLayers(){
     });
     // — Indicateur unité de step (1/8, 1/16, 1/4, 1/8T…) —
     const stepUnitLbl=document.createElement('span');stepUnitLbl.className='step-unit-lbl';stepUnitLbl.id='step-unit-lbl-'+li;
-    const _updateStepUnitLbl=()=>{
+    _updateStepUnitLbl=()=>{
       const d=state[li].doubleOn,h=state[li].halfOn,t=state[li].ternOn;
       stepUnitLbl.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
     };
