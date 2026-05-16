@@ -1059,7 +1059,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.6</span>
+      <span class="app-version">v3.13.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4397,6 +4397,9 @@ function buildGrooveSection(){
 const layerObservers=[];
 function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
+  // En vue Pas : vider #step-rows-wrap AVANT la reconstruction pour éviter les IDs dupliqués
+  // (#steps-low etc. seraient présents à la fois dans step-rows-wrap ET dans les nouveaux layer-div)
+  if(_isStepView()){const srw=document.getElementById('step-rows-wrap');if(srw)while(srw.firstChild)srw.removeChild(srw.firstChild);}
   const cont=document.getElementById('layers');if(!cont)return;
   cont.innerHTML='';
 
@@ -4837,14 +4840,12 @@ function buildLayers(){
     attachLayerObserver(li);
     attachModPanelObserver(li);
   });
-  // Toutes vues : garantir que #layers-wrap est après #circle-view
-  setTimeout(()=>{
-    _setupStepViewDOM();
-    if(_isStepView()){
-      _moveRow2ToStepView(true);
-      requestAnimationFrame(()=>LAYERS.forEach((_,li)=>checkWrap(li)));
-    }
-  },0);
+  // Toutes vues : garantir que #layers-wrap est après #circle-view (synchrone = pas de flash)
+  _setupStepViewDOM();
+  if(_isStepView()){
+    _moveRow2ToStepView(true); // synchrone → le vide et le nouveau contenu arrivent dans la même frame
+    requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
+  }
 }
 
 function findPatternBySeq(arr){
@@ -6974,11 +6975,9 @@ function setView(shape, cycle){
 
   if(stepView){
     LAYERS.forEach((_,li)=>buildStepsDOM(li,false));
-    // déplacer row2 puis checkWrap avec vraies dimensions (row2 visible dans step-rows-wrap)
-    setTimeout(()=>{
-      _moveRow2ToStepView(true);
-      requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
-    },0);
+    _moveRow2ToStepView(true); // synchrone — les step rows apparaissent dans la même frame
+    // checkWrap en rAF pour avoir les vraies dimensions après layout
+    requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   } else if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
