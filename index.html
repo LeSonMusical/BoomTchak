@@ -826,6 +826,12 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
 }
 
+/* ─── BARRE INFO RYTHMIQUE GLOBALE (toutes vues, quand volet Groove ouvert) ─── */
+#rhythm-info-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:5px 8px;font-size:9px;border-top:2px solid #e0d090;border-bottom:1px solid rgba(224,208,144,.35);background:rgba(224,208,144,.06);box-sizing:border-box}
+#rhythm-info-bar .rib-sep{color:rgba(224,208,144,.55);margin:0 2px}
+body.dark-mode #rhythm-info-bar{border-top-color:#786840;border-bottom-color:rgba(120,104,64,.35);background:rgba(120,104,64,.07)}
+body.dark-mode #rhythm-info-bar .rib-sep{color:rgba(120,104,64,.7)}
+
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* Principe : display:contents sur .layer → enfants deviennent fils directs de #layers
    CSS variables (--cs,--cl…) héritées normalement. Pas de déplacement DOM. */
@@ -833,13 +839,9 @@ body.step-seq #layers{display:flex;flex-direction:column;gap:0}
 body.step-seq .layer{display:contents}
 /* Zone haut : step rows (order:0) */
 body.step-seq .layer-row2{order:0;display:flex!important;border-left:3px solid var(--cs);margin-bottom:2px}
-/* Zone milieu : barre info globale (order:1) */
-#step-seq-global{display:none;width:100%;box-sizing:border-box;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:5px 8px;font-size:9px;border-top:2px solid #e0d090;border-bottom:1px solid rgba(224,208,144,.35);background:rgba(224,208,144,.06)}
-body.step-seq #step-seq-global{order:1;display:flex!important}
-body.dark-mode #step-seq-global{border-top-color:#786840;border-bottom-color:rgba(120,104,64,.35);background:rgba(120,104,64,.07)}
-/* Zone bas : contrôles + mod panels (order:2) — même order → DOM order les groupe par layer */
-body.step-seq .layer-row1{order:2;margin-top:4px;border-left:3px solid var(--cs)}
-body.step-seq .layer-mod-panel{order:2;border-left:3px solid var(--cs)}
+/* Zone bas : contrôles + mod panels (order:1) — même order → DOM order les groupe par layer */
+body.step-seq .layer-row1{order:1;margin-top:4px;border-left:3px solid var(--cs)}
+body.step-seq .layer-mod-panel{order:1;border-left:3px solid var(--cs)}
 /* Strip info gauche en step-seq (nb pas, unité, durée) */
 .step-seq-info{display:none;width:70px;flex-shrink:0;padding:4px 4px 3px;font-size:9px;line-height:1.4;align-self:stretch;box-sizing:border-box}
 body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
@@ -1074,7 +1076,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.1</span>
+      <span class="app-version">v3.13.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1294,6 +1296,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
   <div id="view-mode-bar" style="display:none"></div>
+  <!-- Barre info rythmique globale (sig, cycle, métrie, rapport) -->
+  <div id="rhythm-info-bar" style="display:none"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Modal : sauvegarde preset métronome -->
@@ -4390,9 +4394,11 @@ function buildGrooveSection(){
     const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
+    const rib=document.getElementById('rhythm-info-bar');
     if(lw)lw.style.display=layersOuverts?'':'none';
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(hd)hd.style.display=layersOuverts?'':'none';
+    if(rib)rib.style.display=layersOuverts?'flex':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
     updateViewModeBar();
@@ -4404,9 +4410,11 @@ function buildGrooveSection(){
       const lw=document.getElementById('layers-wrap');
       const cv=document.getElementById('circle-view');
       const hd=document.querySelector('.hdivider');
+      const rib=document.getElementById('rhythm-info-bar');
       if(lw)lw.style.display=layersOuverts?'':'none';
       if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
       if(hd)hd.style.display=layersOuverts?'':'none';
+      if(rib)rib.style.display=layersOuverts?'flex':'none';
       btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
       btnVolet.classList.toggle('open',layersOuverts);
       updateViewModeBar();
@@ -4840,10 +4848,7 @@ function buildLayers(){
     attachLayerObserver(li);
     attachModPanelObserver(li);
   });
-  // Barre info globale step-seq (insérée après les layers, order:1 via CSS)
-  const globalDiv=document.createElement('div');globalDiv.id='step-seq-global';
-  cont.appendChild(globalDiv);
-  updateStepSeqGlobal();
+  updateRhythmInfoBar();
 }
 
 function findPatternBySeq(arr){
@@ -6935,12 +6940,12 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
-    setTimeout(()=>updateStepSeqGlobal(),0);
+    setTimeout(()=>updateRhythmInfoBar(),0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
 }
@@ -7001,68 +7006,59 @@ function updateStepSeqInfo(li){
   el.innerHTML=`<span style="font-weight:700;color:${col.fill}">${n} pas</span>`+
     `<span style="color:${col.fill};opacity:.8">en ${unit}</span>`+
     `<span style="color:#888;font-size:8px">= ${durStr}</span>`;
-  updateStepSeqGlobal();
+  updateRhythmInfoBar();
 }
 
-// ── updateStepSeqGlobal() : barre info globale step-seq (signature, rapport, cycle, phénomène) ──
-function updateStepSeqGlobal(){
-  const el=document.getElementById('step-seq-global');
+// ── updateRhythmInfoBar() : barre info rythmique globale (toutes vues) ──
+function updateRhythmInfoBar(){
+  const el=document.getElementById('rhythm-info-bar');
   if(!el) return;
-  if(!document.body.classList.contains('step-seq')){el.innerHTML='';return;}
-  if(!state||!state[0]||!state[0].pattern) return;
-  // Durées par layer en fractions de beats (raw, non réduites pour le calcul PPCM)
-  const fracs=LAYERS.map((_,li)=>{
-    const f=_layerDurFrac(li);
-    // Utiliser raw num/den (non réduits entre eux) pour éviter les faux PPCM
-    // mais _layerDurFrac retourne déjà réduits — on repart de raw_num/raw_den si dispo
-    return{num:f.num,den:f.den};
-  });
-  // Dénominateur commun des 3 fractions
+  if(!state||!state[0]||!state[0].pattern||!layersOuverts){el.style.display='none';return;}
+  // Durées par layer en fractions de temps (felt beats)
+  const fracs=LAYERS.map((_,li)=>_layerDurFrac(li));
+  // Dénominateur commun → numérateurs entiers
   const D=lcm(fracs[0].den,lcm(fracs[1].den,fracs[2].den));
-  // Numérateurs mis à l'échelle du dénominateur commun
   const N=fracs.map(f=>f.num*(D/f.den));
   // Rapport simplifié
   const gAll=gcd(N[0],gcd(N[1],N[2]));
   const ratio=N.map(v=>v/gAll);
-  // PPCM des numérateurs → longueur du cycle en temps (felt beats)
+  // PPCM → longueur du cycle en temps
   const L=lcm(N[0],lcm(N[1],N[2]));
-  // cycle = L/D temps (fraction entière)
-  const gLD=gcd(L,D);
-  const cycTpsNr=L/gLD, cycTpsDr=D/gLD;
+  const gLD=gcd(L,D); const cycTpsNr=L/gLD, cycTpsDr=D/gLD;
   const cycTpsStr=cycTpsDr===1?cycTpsNr+'':_fracStr(cycTpsNr,cycTpsDr);
-  // Cycle en mesures = (L/D) / beatsPerMeasure
+  // Cycle en mesures
   const bpm_val=currentSig?(currentSig.beatsPerMeasure||4):4;
-  const cycMesNumRaw=cycTpsNr, cycMesDenRaw=cycTpsDr*bpm_val;
-  const gM=gcd(cycMesNumRaw,cycMesDenRaw);
-  const cycMesNr=cycMesNumRaw/gM, cycMesDr=cycMesDenRaw/gM;
+  const gM=gcd(cycTpsNr,cycTpsDr*bpm_val);
+  const cycMesNr=cycTpsNr/gM, cycMesDr=(cycTpsDr*bpm_val)/gM;
   const cycMesStr=cycMesDr===1?cycMesNr+'':_fracStr(cycMesNr,cycMesDr);
-  // Phénomène : détection basée sur le rapport simplifié
-  const allSame=ratio[0]===ratio[1]&&ratio[1]===ratio[2];
-  let pheno='';
-  if(!allSame){
-    // Polyrythmie = éléments du rapport premiers entre eux (ex 2:3, 3:4)
-    // Polymétrie  = l'un est multiple d'un autre (ex 1:2, 2:4)
-    // Poly mixte  = mélange des deux
-    const g01=gcd(ratio[0],ratio[1]),g12=gcd(ratio[1],ratio[2]),g02=gcd(ratio[0],ratio[2]);
-    const hasCoprime=g01===1||g12===1||g02===1;
-    const hasMultiple=ratio.some((v,i)=>ratio.some((w,j)=>i!==j&&w%v===0&&w!==v));
-    if(hasCoprime&&hasMultiple) pheno='Poly mixte';
-    else if(hasCoprime) pheno='Polyrythmie';
-    else pheno='Polymétrie';
-  }
-  // Couleurs layers pour le rapport
-  const cols=LAYERS.map((_,li)=>CIRCLE_COLORS[li].fill);
-  const ratioHtml=ratio.map((v,i)=>`<b style="color:${cols[i]}">${v}</b>`).join('<span style="color:#aaa">:</span>');
-  // Signature
+  // ── Infos globales (section 3) ──
+  // Type métrique : basé sur signature et layers ternaires
   const sigLabel=currentSig?computeSigLabel():'';
-  // Assemblage HTML
-  let html='';
-  if(sigLabel) html+=`<span title="Signature">${sigLabel}</span><span style="color:rgba(224,208,144,.5)">|</span>`;
-  html+=`<span title="Rapport durées">${ratioHtml}</span>`;
-  html+=`<span style="color:rgba(224,208,144,.5)">|</span>`;
-  html+=`<span title="Longueur du cycle">${cycMesStr} mes. · ${cycTpsStr} tps</span>`;
-  if(pheno) html+=`<span style="color:rgba(224,208,144,.5)">|</span><span style="font-style:italic;color:#d4c87a">${pheno}</span>`;
-  el.innerHTML=html;
+  const isAsym=sigLabel.includes('+');
+  const ternCount=LAYERS.filter((_,li)=>state[li].ternOn).length;
+  const timeChar=isAsym?'Asymétrique':ternCount===3?'Ternaire':ternCount>0?'Ambivalent':'';
+  // Rapport significatif : ∃ paire (a,b) où ni a∤b ni b∤a
+  const isSig=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
+  // Phénomène poly (si rapport significatif)
+  let polyLabel='';
+  if(isSig){
+    const g01=gcd(ratio[0],ratio[1]),g12=gcd(ratio[1],ratio[2]),g02=gcd(ratio[0],ratio[2]);
+    const allCoprime=g01===1&&g12===1&&g02===1;
+    const hasMultiple=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&b%a===0&&b!==a));
+    polyLabel=allCoprime?'Polyrythmie':hasMultiple?'Poly mixte':'Polyrythmie';
+  }
+  const infoLabel=[timeChar,polyLabel].filter(Boolean).join(' · ');
+  // ── Assemblage des sections ──
+  const sep='<span class="rib-sep">|</span>';
+  const cols=LAYERS.map((_,li)=>CIRCLE_COLORS[li].fill);
+  const ratioHtml=ratio.map((v,i)=>`<b style="color:${cols[i]}">${v}</b>`).join('<span style="color:#aaa;margin:0 1px">:</span>');
+  const parts=[];
+  if(sigLabel) parts.push(`<span title="Signature">${sigLabel}</span>`);
+  parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
+  if(infoLabel) parts.push(`<span title="Caractère rythmique" style="font-style:italic;color:#d4c87a">${infoLabel}</span>`);
+  if(isSig) parts.push(`<span title="Rapport des durées">${ratioHtml}</span>`);
+  el.style.display='flex';
+  el.innerHTML=parts.join(sep);
 }
 
 function visualLoopCircle(){
