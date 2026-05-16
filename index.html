@@ -1087,7 +1087,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.6</span>
+      <span class="app-version">v3.13.8</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6653,23 +6653,7 @@ function drawCircles(){
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
   ctx.fillStyle='#1a1a18'; ctx.fill();
-
-  // Badge polymétrie (mode mesure uniquement)
-  if(circleModeView==='measure'){
-    const pi=getPolymetricInfo();
-    if(pi.isPolymetric){
-      const isDarkB=document.body.classList.contains('dark-mode');
-      const bdText='⊡ poly '+pi.ratio;
-      ctx.font='bold 9px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='top';
-      const tw=ctx.measureText(bdText).width;
-      const bx=W-2,by=2,bw=tw+8,bh=13;
-      ctx.fillStyle=isDarkB?'rgba(200,140,30,.22)':'rgba(180,120,0,.1)';
-      ctx.fillRect(bx-bw,by,bw,bh);
-      ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
-      ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{viewShape='linear';viewCycleLinear='cycle';_applyView();}};
-    } else { _circleBadge=null; }
-  } else { _circleBadge=null; }
+  _circleBadge=null;
 }
 
 // ── Polymétrie ───────────────────────────────────────────────────────────────
@@ -7047,31 +7031,45 @@ function updateRhythmInfoBar(){
   const cycMesNr=cycTpsNr/gM, cycMesDr=(cycTpsDr*bpm_val)/gM;
   const cycMesStr=cycMesDr===1?cycMesNr+'':_fracStr(cycMesNr,cycMesDr);
   // ── Infos globales (section 3) ──
-  // Type métrique : basé sur signature et layers ternaires
   const sigLabel=currentSig?computeSigLabel():'';
   const isAsym=sigLabel.includes('+');
-  const ternCount=LAYERS.filter((_,li)=>state[li].ternOn).length;
-  const timeChar=isAsym?'Asymétrique':ternCount===3?'Ternaire':ternCount>0?'Ambivalent':'';
-  // Rapport significatif : ∃ paire (a,b) où ni a∤b ni b∤a
-  const isSig=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
-  // Phénomène poly (si rapport significatif)
-  let polyLabel='';
-  if(isSig){
-    const g01=gcd(ratio[0],ratio[1]),g12=gcd(ratio[1],ratio[2]),g02=gcd(ratio[0],ratio[2]);
-    const allCoprime=g01===1&&g12===1&&g02===1;
-    const hasMultiple=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&b%a===0&&b!==a));
-    polyLabel=allCoprime?'Polyrythmie':hasMultiple?'Polymétrie':'Polyrythmie';
+  const ternFlags=LAYERS.map((_,li)=>!!state[li].ternOn);
+  const ternAll=ternFlags.every(Boolean);
+  const ternNone=ternFlags.every(t=>!t);
+  const ternCount=ternFlags.filter(Boolean).length;
+  // Signature asymétrique (mètre irrégulier)
+  const timeChar=isAsym?'Asymétrique':(ternAll?'Ternaire':'');
+  // Polymétrie : longueurs de cycles différentes, indépendamment du ternaire
+  // → compare les durées de cycle sans effet ternaire (pure longueur + vitesse)
+  function _pureLenFrac(li){
+    const s=state[li],n=s.pattern.length;
+    const dbl=s.doubleOn,hlf=s.halfOn;
+    const fbs=currentSig?(currentSig.felBeatSteps||2):2;
+    const num=n*(hlf?2:1),den=fbs*(dbl?2:hlf?1:1);
+    const g=gcd(num,den);return{num:num/g,den:den/g};
   }
+  const pf=LAYERS.map((_,li)=>_pureLenFrac(li));
+  const Dp=lcm(pf[0].den,lcm(pf[1].den,pf[2].den));
+  const Np=pf.map(f=>f.num*(Dp/f.den));
+  const gp=gcd(Np[0],gcd(Np[1],Np[2]));
+  const pureRatio=Np.map(v=>v/gp);
+  const hasLenPoly=pureRatio.some((a,i)=>pureRatio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
+  // Polyrythmie : divisions du temps différentes (mix ternaire/binaire)
+  const hasTernMix=!ternAll&&!ternNone; // certains ternaires, d'autres non
+  // Rapport lisible (valeurs uniques)
+  const ratioStr=[...new Set(ratio)].join(':');
+  const isSig=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
+  let polyLabel='';
+  if(hasTernMix&&hasLenPoly) polyLabel=`Poly ${ratioStr}`;
+  else if(hasTernMix) polyLabel=`Polyrythmie ${ratioStr}`;
+  else if(hasLenPoly) polyLabel=`Polymétrie ${ratioStr}`;
   const infoLabel=[timeChar,polyLabel].filter(Boolean).join(' · ');
-  // ── Assemblage des sections ──
+  // ── Assemblage (3 colonnes : sig | cycle | phénomène) ──
   const sep='<span class="rib-sep">|</span>';
-  const cols=LAYERS.map((_,li)=>CIRCLE_COLORS[li].fill);
-  const ratioHtml=ratio.map((v,i)=>`<b style="color:${cols[i]}">${v}</b>`).join('<span style="color:#aaa;margin:0 1px">:</span>');
   const parts=[];
   if(sigLabel) parts.push(`<span class="rib-sig" title="Signature — cliquer pour ouvrir/fermer le volet Métro">${sigLabel}</span>`);
   parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
   if(infoLabel) parts.push(`<span class="rib-pheno" title="Caractère rythmique">${infoLabel}</span>`);
-  if(isSig) parts.push(`<span title="Rapport des durées">${ratioHtml}</span>`);
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
   const sigEl=el.querySelector('.rib-sig');
