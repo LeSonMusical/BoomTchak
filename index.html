@@ -794,14 +794,13 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
+body.view-step #circle-view{padding-bottom:0}
 #step-rows-wrap{display:none;flex-direction:column;width:100%;gap:1px;padding:4px 0}
 body.view-step #step-rows-wrap{display:flex}
 body.view-step #rhythm-canvas{display:none!important}
 body.view-step #step-rows-wrap .layer-row2{display:flex!important;border-left:3px solid var(--cs,#aaa)}
 body.view-step #step-rows-wrap .btn-layer-toggle{display:none!important}
 body.view-step .btn-steps-toggle{display:none!important}
-.view-name-lbl{font-size:10px;color:#C8961A;font-weight:700;min-width:34px;text-align:center;flex-shrink:0;line-height:1;align-self:center}
-body.dark-mode .view-name-lbl{color:#C8961A}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
@@ -1058,7 +1057,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.2</span>
+      <span class="app-version">v3.13.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4359,22 +4358,17 @@ function buildGrooveSection(){
 
   const btnShape=document.createElement('button');
   btnShape.id='btn-view-shape';btnShape.className='btn-view';
-  btnShape.textContent=viewShape==='circle'?'◎':'━';
+  btnShape.textContent=viewShape==='circle'?'◎':'☰';
   btnShape.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';
   btnShape.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle',null));
   bar.appendChild(btnShape);
 
   const btnCycleV=document.createElement('button');
   btnCycleV.id='btn-view-cycle';btnCycleV.className='btn-view';
-  btnCycleV.textContent=viewCycle==='common'?'│':'☰';
+  btnCycleV.textContent=viewCycle==='common'?'⊙':'⊛';
   btnCycleV.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';
   btnCycleV.addEventListener('click',()=>setView(null,viewCycle==='common'?'layer':'common'));
   bar.appendChild(btnCycleV);
-
-  const lblView=document.createElement('span');
-  lblView.id='view-name-lbl';lblView.className='view-name-lbl';
-  lblView.textContent=getViewName();
-  bar.appendChild(lblView);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
@@ -6410,10 +6404,8 @@ function _moveRow2ToStepView(toStep){
 function _updateViewButtons(){
   const bs=document.getElementById('btn-view-shape');
   const bc=document.getElementById('btn-view-cycle');
-  const lv=document.getElementById('view-name-lbl');
-  if(bs){bs.textContent=viewShape==='circle'?'◎':'━';bs.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';}
-  if(bc){bc.textContent=viewCycle==='common'?'│':'☰';bc.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';}
-  if(lv)lv.textContent=getViewName();
+  if(bs){bs.textContent=viewShape==='circle'?'◎':'☰';bs.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';}
+  if(bc){bc.textContent=viewCycle==='common'?'⊙':'⊛';bc.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';}
 }
 const flashStep = [-1,-1,-1];
 const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
@@ -6936,7 +6928,7 @@ function setView(shape, cycle){
   // Toutes les vues utilisent le layout view-circle (canvas/step-rows en haut, mod en bas)
   document.body.classList.add('view-circle');
   document.body.classList.toggle('view-step', stepView);
-  document.body.classList.toggle('circle-linear', circleView && circleModeView==='linear');
+  document.body.classList.toggle('circle-linear', (circleView && circleModeView==='linear') || stepView);
   _updateViewButtons();
 
   cancelAnimationFrame(visualRafID);
