@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.29</span>
+      <span class="app-version">v3.12.30</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6945,16 +6945,37 @@ let authSession = null;   // { access_token, refresh_token }
 let authProfile = null;   // { id, email, role, display_name }
 
 // ── API helper ───────────────────────────────────────────────────────────────
+async function sbRefreshSession() {
+  if (!authSession?.refresh_token) return false;
+  try {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: authSession.refresh_token })
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data.access_token) return false;
+    authSession = { access_token: data.access_token, refresh_token: data.refresh_token || authSession.refresh_token };
+    localStorage.setItem('sb_session', JSON.stringify(authSession));
+    return true;
+  } catch(e) { return false; }
+}
+
 async function sbFetch(path, options = {}) {
-  const headers = {
+  const _buildHeaders = () => ({
     'apikey': SUPABASE_ANON_KEY,
     'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
-  if (authSession?.access_token) {
-    headers['Authorization'] = 'Bearer ' + authSession.access_token;
+    ...(options.headers || {}),
+    ...(authSession?.access_token ? { 'Authorization': 'Bearer ' + authSession.access_token } : {})
+  });
+  let res = await fetch(SUPABASE_URL + path, { ...options, headers: _buildHeaders() });
+  if (res.status === 401 && authSession?.refresh_token) {
+    const refreshed = await sbRefreshSession();
+    if (refreshed) {
+      res = await fetch(SUPABASE_URL + path, { ...options, headers: _buildHeaders() });
+    }
   }
-  const res = await fetch(SUPABASE_URL + path, { ...options, headers });
   if (!res.ok) {
     const txt = await res.text();
     throw new Error('Supabase ' + res.status + ': ' + txt);
@@ -7344,7 +7365,8 @@ async function sbPushSchoolFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) non mises à jour — vérifier migration DB (colonne ordre)`, 'warn');
-  } catch(e) { console.error('Ordre familles non persisté :', e); if(!e.message.includes('401'))showToast('⚠ Ordre familles non sauvegardé : '+e.message,'warn'); }
+    else showToast('✅ Ordre familles sauvegardé', 'ok');
+  } catch(e) { console.error('Ordre familles non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles non sauvegardé : '+e.message,'warn'); }
 }
 
 async function sbPushSchoolBandOrder() {
@@ -7367,7 +7389,8 @@ async function sbPushSchoolBandFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) band non mises à jour — vérifier migration DB`, 'warn');
-  } catch(e) { console.error('Ordre familles band non persisté :', e); showToast('⚠ Ordre familles band non sauvegardé : ' + e.message, 'warn'); }
+    else showToast('✅ Ordre familles band sauvegardé', 'ok');
+  } catch(e) { console.error('Ordre familles band non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles band non sauvegardé : '+e.message,'warn'); }
 }
 
 async function sbPushSchoolSoundFamOrder() {
@@ -7384,7 +7407,8 @@ async function sbPushSchoolSoundFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) son non mises à jour — vérifier migration DB`, 'warn');
-  } catch(e) { console.error('Ordre familles son non persisté :', e); showToast('⚠ Ordre familles son non sauvegardé : ' + e.message, 'warn'); }
+    else showToast('✅ Ordre familles son sauvegardé', 'ok');
+  } catch(e) { console.error('Ordre familles son non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles son non sauvegardé : '+e.message,'warn'); }
 }
 
 async function sbPublishBand(bandId) {
@@ -7427,7 +7451,8 @@ async function sbPushSchoolMetroFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) métro non mises à jour`, 'warn');
-  } catch(e) { console.error('Ordre familles métro non persisté :', e); showToast('⚠ Ordre familles métro non sauvegardé : ' + e.message, 'warn'); }
+    else showToast('✅ Ordre familles métro sauvegardé', 'ok');
+  } catch(e) { console.error('Ordre familles métro non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles métro non sauvegardé : '+e.message,'warn'); }
 }
 
 async function sbPushSchoolMetroOrder() {
