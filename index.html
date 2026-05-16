@@ -798,7 +798,7 @@ body.view-circle .hdivider{display:none}
 body.view-step #step-rows-wrap{display:flex}
 body.view-step #rhythm-canvas{display:none!important}
 body.view-step #step-rows-wrap .layer-row2{display:flex!important;border-left:3px solid var(--cs,#aaa)}
-body.view-step .btn-mod-circle{display:none!important}
+body.view-step #step-rows-wrap .btn-layer-toggle{display:none!important}
 body.view-step .btn-steps-toggle{display:none!important}
 .view-name-lbl{font-size:10px;color:#C8961A;font-weight:700;min-width:34px;text-align:center;flex-shrink:0;line-height:1;align-self:center}
 body.dark-mode .view-name-lbl{color:#C8961A}
@@ -1058,7 +1058,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.1</span>
+      <span class="app-version">v3.13.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6392,10 +6392,11 @@ function _isStepView(){return viewShape==='linear'&&viewCycle==='layer';}
 function _moveRow2ToStepView(toStep){
   const wrap=document.getElementById('step-rows-wrap');if(!wrap)return;
   if(toStep){
-    LAYERS.forEach((_,li)=>{
+    while(wrap.firstChild) wrap.removeChild(wrap.firstChild);
+    LAYERS.forEach((layer,li)=>{
       const layerDiv=document.getElementById('layer-div-'+li);if(!layerDiv)return;
       const row2=layerDiv.querySelector(':scope > .layer-row2');
-      if(row2){row2.dataset.layerLi=li;wrap.appendChild(row2);}
+      if(row2){row2.dataset.layerLi=li;if(layer.cls)row2.classList.add(layer.cls);wrap.appendChild(row2);}
     });
   } else {
     Array.from(wrap.querySelectorAll('.layer-row2')).forEach(row2=>{
