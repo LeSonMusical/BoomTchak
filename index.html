@@ -794,11 +794,8 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
-#circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
-.circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
-.circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
-body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
-body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+.view-name-lbl{font-size:10px;color:#C8961A;font-weight:700;min-width:34px;text-align:center;flex-shrink:0;line-height:1;align-self:center}
+body.dark-mode .view-name-lbl{color:#C8961A}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
@@ -1055,7 +1052,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.30</span>
+      <span class="app-version">v3.13.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1290,11 +1287,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
-    <div id="circle-mode-toggle">
-      <button id="btn-circle-cycle" class="circle-mode-btn" title="1 tour = 1 cycle du pattern">↺ Pattern</button>
-      <button id="btn-circle-measure" class="circle-mode-btn active" title="1 tour = 1 mesure">↺ Mesure</button>
-      <button id="btn-circle-linear" class="circle-mode-btn" title="Vue linéaire — 1 cycle complet (PPCM de tous les patterns)">↺ Cycle</button>
-    </div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
   <div class="hdivider"></div>
@@ -2451,7 +2443,7 @@ let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33,viewShape:'circle',viewCycle:'common'};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
@@ -4358,12 +4350,24 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnI);
 
-  const btnView=document.createElement('button');
-  btnView.id='btn-view';btnView.className='btn-view';
-  btnView.textContent=circleView?'⊞':'◎';
-  btnView.title=circleView?'Vue linéaire':'Vue circulaire';
-  btnView.addEventListener('click',()=>setView(!circleView));
-  bar.appendChild(btnView);
+  const btnShape=document.createElement('button');
+  btnShape.id='btn-view-shape';btnShape.className='btn-view';
+  btnShape.textContent=viewShape==='circle'?'◎':'━';
+  btnShape.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';
+  btnShape.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle',null));
+  bar.appendChild(btnShape);
+
+  const btnCycleV=document.createElement('button');
+  btnCycleV.id='btn-view-cycle';btnCycleV.className='btn-view';
+  btnCycleV.textContent=viewCycle==='common'?'│':'☰';
+  btnCycleV.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';
+  btnCycleV.addEventListener('click',()=>setView(null,viewCycle==='common'?'layer':'common'));
+  bar.appendChild(btnCycleV);
+
+  const lblView=document.createElement('span');
+  lblView.id='view-name-lbl';lblView.className='view-name-lbl';
+  lblView.textContent=getViewName();
+  bar.appendChild(lblView);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
@@ -6369,8 +6373,31 @@ function playMetroClick(atTime,type){
 // MODULE CIRCLE — Vue circulaire (canvas)
 // ═══════════════════════════════════════════════════════════════════════════
 
+let viewShape = 'circle'; // 'linear' | 'circle'
+let viewCycle = 'common'; // 'layer' | 'common'
 let circleView = false;
-let circleModeView = 'measure'; // 'cycle' | 'measure'
+let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear'
+
+function getViewName(){
+  if(viewShape==='linear'&&viewCycle==='layer')  return'Pas';
+  if(viewShape==='linear'&&viewCycle==='common') return'Cycle';
+  if(viewShape==='circle'&&viewCycle==='layer')  return'Pattern';
+  return'Mesure';
+}
+function _applyViewState(){
+  if(viewShape==='linear'&&viewCycle==='layer'){circleView=false;}
+  else if(viewShape==='linear'&&viewCycle==='common'){circleView=true;circleModeView='linear';}
+  else if(viewShape==='circle'&&viewCycle==='layer'){circleView=true;circleModeView='cycle';}
+  else{circleView=true;circleModeView='measure';}
+}
+function _updateViewButtons(){
+  const bs=document.getElementById('btn-view-shape');
+  const bc=document.getElementById('btn-view-cycle');
+  const lv=document.getElementById('view-name-lbl');
+  if(bs){bs.textContent=viewShape==='circle'?'◎':'━';bs.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';}
+  if(bc){bc.textContent=viewCycle==='common'?'│':'☰';bc.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';}
+  if(lv)lv.textContent=getViewName();
+}
 const flashStep = [-1,-1,-1];
 const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
 
@@ -6397,9 +6424,7 @@ function resizeCanvas(){
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    const toggleEl2=document.getElementById('circle-mode-toggle');
-    const toggleH2=toggleEl2?(toggleEl2.offsetHeight+4):0;
-    wrap.style.height=(canvH+toggleH2)+'px';
+    wrap.style.height=canvH+'px';
     drawCircles(); return;
   }
   const dotR = 10;
@@ -6426,9 +6451,7 @@ function resizeCanvas(){
   } else {
     wrap.style.width  = '100%';
   }
-  const toggleEl = document.getElementById('circle-mode-toggle');
-  const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
-  wrap.style.height = (physH + toggleH) + 'px';
+  wrap.style.height = physH + 'px';
   drawCircles();
 }
 
@@ -6645,7 +6668,7 @@ function drawCircles(){
       ctx.fillRect(bx-bw,by,bw,bh);
       ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
       ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';document.body.classList.add('circle-linear');resizeCanvas();setupCircleModeToggle();}};
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>setView('linear','common')};
     } else { _circleBadge=null; }
   } else { _circleBadge=null; }
 }
@@ -6877,26 +6900,32 @@ function setupCanvasInteraction(){
   },{passive:true});
 }
 
-function setView(circle){
-  circleView = circle;
-  document.body.classList.toggle('view-circle', circle);
-  if(!circle) document.body.classList.remove('circle-linear');
-  else document.body.classList.toggle('circle-linear', circleModeView==='linear');
-  document.getElementById('btn-view').textContent = circle ? '⊞' : '◎';
-  document.getElementById('btn-view').title = circle ? 'Vue linéaire' : 'Vue circulaire';
+// setView(shape, cycle) — shape: 'linear'|'circle'|null, cycle: 'layer'|'common'|null
+// null = conserver la valeur actuelle ; true/false acceptés pour rétrocompat (= circleView ancien)
+function setView(shape, cycle){
+  if(shape===true){shape='circle';cycle=cycle??'common';}
+  else if(shape===false){shape='linear';cycle=cycle??'layer';}
+  if(shape!==null&&shape!==undefined) viewShape=shape;
+  if(cycle!==null&&cycle!==undefined) viewCycle=cycle;
+  _applyViewState(); // met à jour circleView + circleModeView
+  prefs.viewShape=viewShape; prefs.viewCycle=viewCycle;
+  localStorage.setItem('btk_prefs',JSON.stringify(prefs));
+
+  document.body.classList.toggle('view-circle', circleView);
+  document.body.classList.toggle('circle-linear', circleView && circleModeView==='linear');
+  _updateViewButtons();
 
   cancelAnimationFrame(visualRafID);
   visualRafID = null;
 
-  // Sync visibilité cercle et layers-wrap selon layersOuverts
   const cv=document.getElementById('circle-view');
   const lw=document.getElementById('layers-wrap');
-  if(cv)cv.style.display=(circle&&layersOuverts)?'flex':'none';
+  if(cv)cv.style.display=(circleView&&layersOuverts)?'flex':'none';
   if(lw)lw.style.display=layersOuverts?'':'none';
 
-  if(circle){
+  if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); setupCircleModeToggle(); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
@@ -6911,26 +6940,7 @@ function visualLoopCircle(){
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
-function setupCircleModeToggle(){
-  const btnCycle   = document.getElementById('btn-circle-cycle');
-  const btnMeasure = document.getElementById('btn-circle-measure');
-  const btnLinear  = document.getElementById('btn-circle-linear');
-  if(!btnCycle || !btnMeasure) return;
-  // Évite les doublons d'écouteurs si appelé plusieurs fois
-  const fresh  = btnCycle.cloneNode(true);
-  const freshM = btnMeasure.cloneNode(true);
-  const freshL = btnLinear ? btnLinear.cloneNode(true) : null;
-  btnCycle.parentNode.replaceChild(fresh, btnCycle);
-  btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
-  if(freshL && btnLinear) btnLinear.parentNode.replaceChild(freshL, btnLinear);
-  fresh.classList.toggle('active',  circleModeView==='cycle');
-  freshM.classList.toggle('active', circleModeView==='measure');
-  if(freshL) freshL.classList.toggle('active', circleModeView==='linear');
-  const allBtns=[fresh,freshM,freshL].filter(Boolean);
-  fresh.addEventListener('click', ()=>{ circleModeView='cycle';   document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
-  freshM.addEventListener('click',()=>{ circleModeView='measure'; document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
-  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; document.body.classList.add('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
-}
+function setupCircleModeToggle(){} // no-op — supprimé, logique dans setView
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MODULE SUPABASE — Auth Google + Synchronisation base école
@@ -10052,6 +10062,10 @@ function loadFromStorage(){
     const sp=localStorage.getItem('btk_prefs');
     if(sp)prefs=Object.assign(prefs,JSON.parse(sp));
   }catch(e){}
+  // Restaurer la vue depuis les prefs
+  viewShape=prefs.viewShape||'circle';
+  viewCycle=prefs.viewCycle||'common';
+  _applyViewState();
   // Normaliser metroPresets dès le démarrage (familles_ids depuis .famille)
   rebuildMetroPresets();
 }
@@ -11188,7 +11202,7 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
-setView(true);                                                 // Vue circulaire par défaut
+setView(viewShape, viewCycle);                                 // Vue restaurée depuis prefs (défaut : Mesure)
 </script>
 </body>
 </html>
