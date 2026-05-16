@@ -833,11 +833,15 @@ body.step-seq #layers{display:flex;flex-direction:column;gap:0}
 body.step-seq .layer{display:contents}
 /* Zone haut : step rows (order:0) */
 body.step-seq .layer-row2{order:0;display:flex!important;border-left:3px solid var(--cs);margin-bottom:2px}
-/* Zone bas : contrôles + mod panels — même order → DOM order les groupe par layer */
-body.step-seq .layer-row1{order:1;margin-top:4px;border-left:3px solid var(--cs)}
-body.step-seq .layer-mod-panel{order:1;border-left:3px solid var(--cs)}
+/* Zone milieu : barre info globale (order:1) */
+#step-seq-global{display:none;width:100%;box-sizing:border-box;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:5px 8px;font-size:9px;border-top:2px solid #e0d090;border-bottom:1px solid rgba(224,208,144,.35);background:rgba(224,208,144,.06)}
+body.step-seq #step-seq-global{order:1;display:flex!important}
+body.dark-mode #step-seq-global{border-top-color:#786840;border-bottom-color:rgba(120,104,64,.35);background:rgba(120,104,64,.07)}
+/* Zone bas : contrôles + mod panels (order:2) — même order → DOM order les groupe par layer */
+body.step-seq .layer-row1{order:2;margin-top:4px;border-left:3px solid var(--cs)}
+body.step-seq .layer-mod-panel{order:2;border-left:3px solid var(--cs)}
 /* Strip info gauche en step-seq (nb pas, unité, durée) */
-.step-seq-info{display:none;width:58px;flex-shrink:0;padding:4px 4px 3px;font-size:9px;line-height:1.3;align-self:stretch;box-sizing:border-box}
+.step-seq-info{display:none;width:70px;flex-shrink:0;padding:4px 4px 3px;font-size:9px;line-height:1.4;align-self:stretch;box-sizing:border-box}
 body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
 
 /* ─── RÉGLAGES / THÈME ─── */
@@ -1070,7 +1074,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.0</span>
+      <span class="app-version">v3.13.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4836,6 +4840,10 @@ function buildLayers(){
     attachLayerObserver(li);
     attachModPanelObserver(li);
   });
+  // Barre info globale step-seq (insérée après les layers, order:1 via CSS)
+  const globalDiv=document.createElement('div');globalDiv.id='step-seq-global';
+  cont.appendChild(globalDiv);
+  updateStepSeqGlobal();
 }
 
 function findPatternBySeq(arr){
@@ -6653,7 +6661,7 @@ function drawCircles(){
 
 // ── Polymétrie ───────────────────────────────────────────────────────────────
 function gcd(a,b){return b===0?a:gcd(b,a%b);}
-function lcm(a,b){return Math.round(a*b/gcd(a,b));}
+function lcm(a,b){return a===0||b===0?0:Math.abs(a)/gcd(Math.abs(a),Math.abs(b))*Math.abs(b);}
 function getPolymetricInfo(){
   const mSteps=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
   const lens=LAYERS.map((_,li)=>state[li].pattern.length).filter(n=>n>0);
@@ -6932,6 +6940,7 @@ function _applyView(){
   } else {
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
+    setTimeout(()=>updateStepSeqGlobal(),0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
 }
@@ -6957,24 +6966,103 @@ function updateViewModeBar(){
   });
 }
 
+// ── Fractions Unicode lisibles (demi, tiers, quarts…) ──
+function _fracStr(num,den){
+  if(den===1)return ''+num;
+  const MAP={[1*10+2]:'½',[1*10+3]:'⅓',[2*10+3]:'⅔',[1*10+4]:'¼',[3*10+4]:'¾',[1*10+6]:'⅙',[5*10+6]:'⅚',[1*10+8]:'⅛',[3*10+8]:'⅜',[5*10+8]:'⅝',[7*10+8]:'⅞'};
+  return MAP[num*10+den]||(num+'/'+den);
+}
+// ── Durée en temps : retourne {whole, num, den} réduits ──
+function _layerDurFrac(li){
+  const s=state[li];
+  const n=s.pattern.length;
+  const _pc=s.pendingClear,_pd=s.pendingDouble,_ph=s.pendingHalf;
+  const dbl=_pc?false:(_pd?true:s.doubleOn), hlf=_pc?false:(_ph?true:s.halfOn), trn=s.ternOn;
+  const fbs=currentSig?(currentSig.felBeatSteps||2):2;
+  let num,den;
+  if(!trn){num=n*(hlf?2:1);den=fbs*(dbl?2:hlf?1:1);}
+  else{num=2*n*(hlf?2:1);den=3*fbs*(dbl?2:hlf?1:1);}
+  const g2=gcd(num,den);return{num:num/g2,den:den/g2,raw_num:num,raw_den:den};
+}
 // ── updateStepSeqInfo(li) : met à jour le strip info gauche de chaque step row ──
 function updateStepSeqInfo(li){
   const el=document.getElementById('step-seq-info-'+li);
   if(!el) return;
   const n=state[li].pattern.length;
-  const dbl=state[li].doubleOn,hlf=state[li].halfOn,trn=state[li].ternOn;
-  const _pd=state[li].pendingDouble,_ph=state[li].pendingHalf,_pc=state[li].pendingClear;
-  const eff_dbl=_pc?false:(_pd?true:dbl), eff_hlf=_pc?false:(_ph?true:hlf);
-  const unit=eff_dbl&&trn?'1/16T':eff_hlf&&trn?'1/4T':eff_dbl?'1/16':eff_hlf?'1/4':trn?'1/8T':'1/8';
-  const fbs=currentSig?(currentSig.felBeatSteps||2):2;
-  let numD,denD;
-  if(!trn){numD=n*(eff_hlf?2:1);denD=fbs*(eff_dbl?2:eff_hlf?1:1);}
-  else{numD=2*n*(eff_hlf?2:1);denD=3*fbs*(eff_dbl?2:eff_hlf?1:1);}
-  const g2=gcd(numD,denD);numD/=g2;denD/=g2;
-  const whole=Math.floor(numD/denD),rem=numD%denD;
-  const durStr=rem===0?whole+' tps':whole===0?rem+'/'+denD+' tps':whole+'+'+rem+'/'+denD+' tps';
+  const s=state[li];
+  const _pc=s.pendingClear,_pd=s.pendingDouble,_ph=s.pendingHalf;
+  const dbl=_pc?false:(_pd?true:s.doubleOn), hlf=_pc?false:(_ph?true:s.halfOn), trn=s.ternOn;
+  const unit=dbl&&trn?'1/16T':hlf&&trn?'1/4T':dbl?'1/16':hlf?'1/4':trn?'1/8T':'1/8';
+  const {num,den}=_layerDurFrac(li);
+  const whole=Math.floor(num/den),rem=num%den;
+  const durPart=rem===0?whole:whole===0?_fracStr(rem,den):whole+'+'+_fracStr(rem,den);
+  const durStr=durPart+' tps';
   const col=CIRCLE_COLORS[li];
-  el.innerHTML=`<span style="font-weight:700;color:${col.fill}">${n}p ${unit}</span><span style="color:#888;font-size:8px">${durStr}</span>`;
+  el.innerHTML=`<span style="font-weight:700;color:${col.fill}">${n} pas</span>`+
+    `<span style="color:${col.fill};opacity:.8">en ${unit}</span>`+
+    `<span style="color:#888;font-size:8px">= ${durStr}</span>`;
+  updateStepSeqGlobal();
+}
+
+// ── updateStepSeqGlobal() : barre info globale step-seq (signature, rapport, cycle, phénomène) ──
+function updateStepSeqGlobal(){
+  const el=document.getElementById('step-seq-global');
+  if(!el) return;
+  if(!document.body.classList.contains('step-seq')){el.innerHTML='';return;}
+  if(!state||!state[0]||!state[0].pattern) return;
+  // Durées par layer en fractions de beats (raw, non réduites pour le calcul PPCM)
+  const fracs=LAYERS.map((_,li)=>{
+    const f=_layerDurFrac(li);
+    // Utiliser raw num/den (non réduits entre eux) pour éviter les faux PPCM
+    // mais _layerDurFrac retourne déjà réduits — on repart de raw_num/raw_den si dispo
+    return{num:f.num,den:f.den};
+  });
+  // Dénominateur commun des 3 fractions
+  const D=lcm(fracs[0].den,lcm(fracs[1].den,fracs[2].den));
+  // Numérateurs mis à l'échelle du dénominateur commun
+  const N=fracs.map(f=>f.num*(D/f.den));
+  // Rapport simplifié
+  const gAll=gcd(N[0],gcd(N[1],N[2]));
+  const ratio=N.map(v=>v/gAll);
+  // PPCM des numérateurs → longueur du cycle en temps (felt beats)
+  const L=lcm(N[0],lcm(N[1],N[2]));
+  // cycle = L/D temps (fraction entière)
+  const gLD=gcd(L,D);
+  const cycTpsNr=L/gLD, cycTpsDr=D/gLD;
+  const cycTpsStr=cycTpsDr===1?cycTpsNr+'':_fracStr(cycTpsNr,cycTpsDr);
+  // Cycle en mesures = (L/D) / beatsPerMeasure
+  const bpm_val=currentSig?(currentSig.beatsPerMeasure||4):4;
+  const cycMesNumRaw=cycTpsNr, cycMesDenRaw=cycTpsDr*bpm_val;
+  const gM=gcd(cycMesNumRaw,cycMesDenRaw);
+  const cycMesNr=cycMesNumRaw/gM, cycMesDr=cycMesDenRaw/gM;
+  const cycMesStr=cycMesDr===1?cycMesNr+'':_fracStr(cycMesNr,cycMesDr);
+  // Phénomène : détection basée sur le rapport simplifié
+  const allSame=ratio[0]===ratio[1]&&ratio[1]===ratio[2];
+  let pheno='';
+  if(!allSame){
+    // Polyrythmie = éléments du rapport premiers entre eux (ex 2:3, 3:4)
+    // Polymétrie  = l'un est multiple d'un autre (ex 1:2, 2:4)
+    // Poly mixte  = mélange des deux
+    const g01=gcd(ratio[0],ratio[1]),g12=gcd(ratio[1],ratio[2]),g02=gcd(ratio[0],ratio[2]);
+    const hasCoprime=g01===1||g12===1||g02===1;
+    const hasMultiple=ratio.some((v,i)=>ratio.some((w,j)=>i!==j&&w%v===0&&w!==v));
+    if(hasCoprime&&hasMultiple) pheno='Poly mixte';
+    else if(hasCoprime) pheno='Polyrythmie';
+    else pheno='Polymétrie';
+  }
+  // Couleurs layers pour le rapport
+  const cols=LAYERS.map((_,li)=>CIRCLE_COLORS[li].fill);
+  const ratioHtml=ratio.map((v,i)=>`<b style="color:${cols[i]}">${v}</b>`).join('<span style="color:#aaa">:</span>');
+  // Signature
+  const sigLabel=currentSig?computeSigLabel():'';
+  // Assemblage HTML
+  let html='';
+  if(sigLabel) html+=`<span title="Signature">${sigLabel}</span><span style="color:rgba(224,208,144,.5)">|</span>`;
+  html+=`<span title="Rapport durées">${ratioHtml}</span>`;
+  html+=`<span style="color:rgba(224,208,144,.5)">|</span>`;
+  html+=`<span title="Longueur du cycle">${cycMesStr} mes. · ${cycTpsStr} tps</span>`;
+  if(pheno) html+=`<span style="color:rgba(224,208,144,.5)">|</span><span style="font-style:italic;color:#d4c87a">${pheno}</span>`;
+  el.innerHTML=html;
 }
 
 function visualLoopCircle(){
