@@ -69,11 +69,11 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(107,95,165,.12)}
 .spm-display{font-size:9px;color:#888;white-space:nowrap;flex-shrink:0;cursor:default;letter-spacing:-.01em}
-.temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:36px;-webkit-appearance:none;appearance:none;background:transparent}
+.temps-slider{flex:1;min-width:40px;cursor:pointer;accent-color:#6B5FA5;padding:0;height:20px;-webkit-appearance:none;appearance:none;background:transparent}
 .temps-slider::-webkit-slider-runnable-track{height:2px;background:#c8c0e0;border-radius:2px}
-.temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);margin-top:-9px}
+.temps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-6px}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
-.temps-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.temps-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 3px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
 .btn-metro-main.on{color:#4a3d8a}
@@ -93,14 +93,14 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-on{font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid #b0a8d8;background:#efecf8;color:#6B5FA5;cursor:pointer;font-weight:600;transition:background .12s}
 .btn-metro-on.on{background:#6B5FA5;color:#fff;border-color:#4a3d8a}
 .metro-subdiv-sel{font-size:9px;padding:1px 3px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;cursor:pointer}
-.tap-tempo-row{padding:.35rem .5rem;display:flex;align-items:center;gap:6px;margin-top:.1rem;margin-bottom:.1rem}
-.tap-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0;white-space:nowrap;align-self:center}
+.tap-tempo-row{padding:.35rem .5rem .35rem .5rem;margin-left:4px;display:flex;align-items:center;gap:4px;margin-top:.1rem;margin-bottom:.1rem}
+.tap-left{flex:1;display:flex;align-items:center;gap:4px}
+.tap-right{flex:1;display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.tap-n-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0}
+.tap-lbl{font-size:9px;font-weight:600;color:#888;text-transform:uppercase;flex-shrink:0;margin-right:2px}
 .tap-fois-lbl{font-size:9px;color:#888;flex-shrink:0}
 .tap-n-input{width:32px;font-size:11px;text-align:center;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;padding:2px 3px;flex-shrink:0}
-.tap-info-r{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px}
-.tap-info-top{font-size:8px;color:#888;white-space:nowrap;letter-spacing:.02em}
-.tap-info-bot{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#4a3d8a}
-.btn-tap-tempo{flex:1;padding:10px 4px;font-size:15px;font-weight:800;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent;text-align:center}
+.btn-tap-tempo{flex:0 0 33%;padding:5px 4px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid #6B5FA5;background:#efecf8;color:#4a3d8a;cursor:pointer;letter-spacing:.04em;transition:background .1s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent;text-align:center}
 .btn-tap-tempo:active{background:#c8c0e0;transform:scale(.97)}
 .tap-count{font-size:10px;font-weight:700;color:#6B5FA5;min-width:26px;text-align:right;flex-shrink:0}
 /* ── L1 : grille 3 colonnes ── */
@@ -131,9 +131,6 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .mpv-P{background:#6B5FA5;color:#fff}
 .mpv-p{background:#c4bde8;color:#6B5FA5}
 .mpv-dot{background:#e8e5f0;color:transparent}
-.mpv-A-off{background:#b8b8c0;color:#6a6a78}
-.mpv-P-off{background:#c8c8d0;color:#7a7a85}
-.mpv-p-off{background:#d8d8e0;color:#9898a5}
 .mpv-save-btn{font-size:15px;padding:1px 5px;border:none;background:transparent;color:#1D9E75;cursor:pointer;flex-shrink:0;line-height:1.3;transition:all .15s}
 .mpv-save-btn.dirty{color:#c00;font-size:12px;font-weight:700}
 /* ── Vol + Tempo (ligne 1 metro) ── */
@@ -350,7 +347,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo.active{background:#f5f2fb;color:#998fc8;border-color:#c8c0e0}
 #btn-tempo.metro-on,#btn-tempo.active.metro-on{background:#efecf8;color:#4a3d8a;border-color:#6B5FA5;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
-.drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:8px 20px;border-radius:20px;pointer-events:none;z-index:9999;display:none;text-align:center;line-height:1.4}
+.drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:6px 18px;border-radius:20px;pointer-events:none;z-index:9999;display:none}
 .sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:none;border-color:var(--cs);color:var(--cb)}
 .sound-ctrls-actions .btn-sec-ico{opacity:.5}
 .sound-ctrls-actions .btn-sec-ico:hover{opacity:1}
@@ -406,13 +403,12 @@ body.dark-mode .enc-related{border-top-color:#333}
 .bottom-left{flex:1;display:flex;align-items:center;justify-content:center}
 .bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
 .bottom-right{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-.btn-rec-box{height:44px;background:#fff;border:2px solid #D85A30;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
+.btn-rec-box{height:44px;min-width:130px;background:#fff;border:2px solid #c0bdb7;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
 body.rec-active .btn-rec-box{display:flex}
 body.rec-active #btn-jouer{display:none}
 body.rec-active .play-drawer-close{display:none}
-.btn-cap-single{flex:1;border:none;background:#c0392b;font-size:11px;font-weight:700;color:#fff;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.btn-cap-single{flex:1;border:none;background:transparent;font-size:11px;font-weight:700;color:#D85A30;cursor:pointer;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:4px}
 body.rec-tapped .btn-cap-single{display:none}
-.step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-cap-ann{display:none;flex:1;border:none;border-right:1px solid rgba(255,255,255,.25);background:#c0392b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;min-width:44px}
 .btn-cap-val{display:none;flex:2;border:none;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;padding:0 10px}
 body.rec-tapped .btn-cap-ann,body.rec-tapped .btn-cap-val{display:flex}
@@ -441,8 +437,6 @@ body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;co
 .play-thumb.flash{animation:thumbflash .18s ease-out}
 .play-thumb-l{background:#7B5EA7}
 .play-thumb-r{background:#C8961A}
-.play-thumb.rec-thumb-fort{box-shadow:0 0 0 4px rgba(255,255,255,.35) inset,0 2px 10px rgba(0,0,0,.35)}
-.play-thumb.rec-thumb-doux{opacity:.48;filter:saturate(.55)}
 @keyframes thumbflash{0%{filter:brightness(1)}50%{filter:brightness(2.2) saturate(1.5)}100%{filter:brightness(1)}}
 
 /* ─── MODE TX ─── */
@@ -535,14 +529,14 @@ body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 .pm-fam-ren-btn,.pm-fam-del-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;padding:0 2px;flex-shrink:0;line-height:1;}
 .pm-fam-ren-btn:hover,.pm-fam-del-btn:hover{opacity:1;}
 .pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;border-left:3px solid transparent;}
-.pm-drag-handle{font-size:14px;line-height:1;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:2px;padding:6px 8px;margin:-6px -4px -6px 0;}
+.pm-drag-handle{font-size:12px;line-height:1;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:2px;}
 .pm-sheet.pm-reorder-on .pm-drag-handle,.pm-sheet.pm-reorder-on .pm-fam-drag{color:var(--pm-ac,#4a3d8a);}
 .pm-sheet.pm-reorder-on .pm-item.pm-reorder{border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging,.pm-item.pm-dragging{opacity:.4;}
 .pm-reorder.pm-drag-over,.pm-item.pm-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
-.pm-fam-drag{cursor:grab;font-size:14px;color:#bbb;flex-shrink:0;touch-action:none;padding:6px 8px;line-height:1;user-select:none;margin-left:auto;}
+.pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
@@ -641,7 +635,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .lib-list{flex:1;overflow-y:auto;padding:6px 0;overscroll-behavior:contain}
 /* ─── MOD PANEL ─── */
 /* mod panel — base = serré (2 lignes, 240–399 px) */
-.layer-mod-panel{display:grid;grid-template-columns:1.45fr 1fr;grid-template-areas:"lecture recsize" "transf clip";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
+.layer-mod-panel{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"lecture recsize" "transf clip";align-items:center;gap:3px 8px;padding:4px 6px 5px;border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none!important}
 .mod-grp-lecture{grid-area:lecture;display:flex;flex-wrap:wrap;align-items:center;gap:3px}
 .mod-grp-transf{grid-area:transf;display:flex;flex-wrap:wrap;align-items:center;gap:3px;justify-self:start}
@@ -653,7 +647,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .layer-mod-panel.lmp-large .mod-grp-clip{justify-self:end}
 .layer-mod-panel.lmp-large .mod-grp-recsize{justify-self:end}
 /* étroit <240 px : 3 lignes, transf et clip pleine largeur */
-.layer-mod-panel.lmp-narrow{grid-template-columns:1.45fr 1fr;grid-template-areas:"lecture recsize" "transf transf" "clip clip"}
+.layer-mod-panel.lmp-narrow{grid-template-columns:1fr 1fr;grid-template-areas:"lecture recsize" "transf transf" "clip clip"}
 .layer-mod-panel.lmp-narrow .mod-grp-transf{justify-self:start}
 .layer-mod-panel.lmp-narrow .mod-grp-clip{justify-self:start}
 .mod-transf{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
@@ -668,10 +662,10 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
 .btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
-.mod-grp-clip .btn-mod{min-width:32px;text-align:center;font-size:16px;padding:1px 4px}
-/* Replace = violet encadré ; Overdub = discret sans cadre — spécificité .rec-ctrl-btn.rec-ctrl-mode pour l'emporter sur .rec-ctrl-btn */
-.rec-ctrl-btn.rec-ctrl-mode{border:1.5px solid #7B5EA7;border-radius:4px;background:rgba(123,94,167,.18);font-size:10px;margin-top:12px;padding:6px 8px;color:#ddd}
-.rec-ctrl-btn.rec-ctrl-mode.rec-ctrl-ovr{border-color:transparent;background:transparent;color:#888}
+.mod-grp-clip .btn-mod{min-width:26px;text-align:center}
+/* Replace = violet (plus visible, remplace les steps) ; Overdub = neutre */
+.rec-ctrl-mode{border:1px solid #7B5EA7;border-radius:0;background:rgba(123,94,167,.18);font-size:10px;margin-top:16px;padding:7px 10px;color:#ddd}
+.rec-ctrl-mode.rec-ctrl-ovr{border-color:#666;background:rgba(255,255,255,.06);color:#aaa}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
@@ -786,7 +780,7 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0;position:relative}
+#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
@@ -794,15 +788,11 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
-body.view-step #circle-view{padding-bottom:10px}
-#step-rows-wrap{display:none;flex-direction:column;width:100%;gap:2px;padding:6px 0}
-body.view-step #step-rows-wrap{display:flex}
-body.view-step #rhythm-canvas{display:none!important}
-body.view-step #step-rows-wrap .layer-row2{display:flex!important;padding-left:20px}
-body.view-step #step-rows-wrap .btn-layer-toggle{display:none!important}
-body.view-step .btn-steps-toggle{display:none!important}
-body.view-circle #layers-wrap{border-left:3px solid #C8961A}
-#view-desc-lbl{position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;color:#C8961A;pointer-events:none;white-space:nowrap;z-index:2;letter-spacing:.01em}
+#circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
+.circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
+.circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
+body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
@@ -822,7 +812,6 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #section-groove{order:3;width:100%;flex-shrink:0}
   body.view-circle #circle-view{order:4;flex:0 0 auto;align-self:flex-start}
   body.view-circle #layers-wrap{order:4;flex:1;min-width:0;display:block;padding-left:.75rem}
-  body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
   body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
@@ -907,17 +896,11 @@ body.dark-mode .btn-tap-tempo{background:#252330;color:#a89fd0;border-color:#4a3
 body.dark-mode .btn-tap-tempo:active{background:#3a3448}
 body.dark-mode .tap-n-input{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .tap-count{color:#a89fd0}
-body.dark-mode .tap-info-top{color:#555}
-body.dark-mode .tap-info-bot{color:#a89fd0}
 body.dark-mode .tap-tempo-row{border-top-color:rgba(58,52,72,.9)}
 body.dark-mode .mpv-label{color:#d0c0ff}
 body.dark-mode .mpv-beats-val{color:#d0c0ff}
 body.dark-mode .mpv-sel,body.dark-mode .mpv-sel-sm{color:#d0c0ff;border-color:rgba(176,168,216,.4)}
 body.dark-mode .mpv-word-btn{color:#a89fd0;border-color:rgba(168,159,208,.4)}
-body.dark-mode .mpv-dot{background:#251f35}
-body.dark-mode .mpv-A-off{background:#383648;color:#6a6880}
-body.dark-mode .mpv-P-off{background:#383648;color:#6a6880}
-body.dark-mode .mpv-p-off{background:#2e2c3a;color:#585670}
 body.dark-mode .instr-sel{background:var(--cl);color:var(--cb);border-color:rgba(255,255,255,.15)}
 body.dark-mode .sound-edit-row{background:rgba(0,0,0,.15)}
 body.dark-mode .step{background:#2a2a28;border-color:rgba(255,255,255,.12)}
@@ -941,7 +924,7 @@ body.dark-mode .encyclo-bkey{color:#e0ddd8}
 body.dark-mode .encyclo-bval{color:#888}
 body.dark-mode .encyclo-vide{color:#555}
 body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
-body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#D85A30}
+body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#555}
 body.dark-mode .btn-cap-val{background:#1a8a66}
 body.dark-mode .btn-cap-ann{background:#a0302b}
 body.dark-mode .btn-rec.armed{background:rgba(0,0,0,.3)}
@@ -1059,7 +1042,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.7</span>
+      <span class="app-version">v3.12.13</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1185,13 +1168,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-sign" style="display:none">
   <div class="metro-bloc">
     <div class="metro-3col">
-      <!-- Col 1 : Signature — partage l'espace disponible -->
-      <div class="metro-3col-eq" style="flex:1;align-items:center;padding-right:4px;min-width:0;overflow:hidden">
+      <!-- Col 1 : Signature — taille auto (juste le texte) -->
+      <div class="metro-3col-eq" style="flex:0 0 auto;align-items:center;padding-right:4px">
         <span class="metro-3col-lbl">Signature</span>
-        <span class="sig-edit-val" id="sig-unit-display" style="overflow:hidden;text-overflow:ellipsis">4/4</span>
+        <span class="sig-edit-val" id="sig-unit-display">4/4</span>
       </div>
-      <!-- Col 2 : Divisions — taille fixe (flex-shrink:0) -->
-      <div class="metro-3col-eq" style="flex:0 0 auto">
+      <!-- Col 2 : Divisions -->
+      <div class="metro-3col-eq">
         <span class="metro-3col-lbl">Divisions</span>
         <div class="mpv-beats-ctrl" style="gap:4px">
           <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
@@ -1199,19 +1182,19 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 3 : Unité — partage l'espace disponible -->
-      <div class="metro-3col-eq" style="flex:1;min-width:0">
+      <!-- Col 3 : Unité (rétrécie pour ne pas empiéter sur Swing) -->
+      <div class="metro-3col-eq" style="flex:0.65">
         <span class="metro-3col-lbl">Unité</span>
-        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0;max-width:100%">
-          <option value="4">♩</option>
-          <option value="8">♪</option>
-          <option value="2">♩♩</option>
-          <option value="1">○</option>
-          <option value="16">♬</option>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">
+          <option value="4">♩ noire</option>
+          <option value="8">♪ croche</option>
+          <option value="2">♩♩ blanche</option>
+          <option value="1">○ ronde</option>
+          <option value="16">♬ dbl-croche</option>
         </select>
       </div>
-      <!-- Col 4 : Swing — fixe 1/3 à droite -->
-      <div class="metro-3col-sw" style="flex:0 0 33%;max-width:33%">
+      <!-- Col 4 : Swing -->
+      <div class="metro-3col-sw">
         <span class="metro-3col-lbl">Swing</span>
         <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
         <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
@@ -1255,16 +1238,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-tap" style="display:none">
   <div class="metro-bloc">
     <div class="tap-tempo-row">
-      <span class="tap-lbl">Tap Tempo</span>
-      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap</button>
-      <div class="tap-info-r">
-        <span class="tap-info-top">tempo défini après</span>
-        <div class="tap-info-bot">
-          <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
-          <span class="tap-fois-lbl">Tap</span>
-          <span class="tap-count" id="tap-count"></span>
-        </div>
-      </div>
+      <span class="tap-lbl">Tap tempo</span>
+      <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
+      <span class="tap-fois-lbl">fois</span>
+      <button class="btn-tap-tempo" id="btn-tap-tempo">Tap 4</button>
+      <span class="tap-count" id="tap-count"></span>
     </div>
   </div><!-- /metro-bloc tap -->
   </div><!-- /metro-sub-tap -->
@@ -1294,8 +1272,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
-    <div id="view-desc-lbl"></div>
-    <div id="step-rows-wrap"></div>
+    <div id="circle-mode-toggle">
+      <button id="btn-circle-cycle" class="circle-mode-btn" title="1 tour = 1 cycle du pattern">↺ Pattern</button>
+      <button id="btn-circle-measure" class="circle-mode-btn active" title="1 tour = 1 mesure">↺ Mesure</button>
+      <button id="btn-circle-linear" class="circle-mode-btn" title="Vue linéaire — 1 cycle complet (PPCM de tous les patterns)">↺ Cycle</button>
+    </div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
   <div class="hdivider"></div>
@@ -1419,7 +1400,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>
     </button>
     <div class="btn-rec-box" id="btn-rec-box">
-      <button class="btn-cap-single" id="btn-capture"><span class="hand">🤚</span>Capture<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span></button>
+      <button class="btn-cap-single" id="btn-capture">Capture</button>
       <button class="btn-cap-ann" id="btn-jouer-ann">✗</button>
       <button class="btn-cap-val" id="btn-jouer-val">✓ Valider</button>
     </div>
@@ -2051,7 +2032,7 @@ let state=LAYERS.map(()=>({
   pendingHalf:false, pendingDouble:false, pendingClear:false,
   nextSpeedDir:'double',
   wrapped:false,
-  recArmed:false, recording:false, recMode:'overdub', originalPattern:null, prevPattern:null, recBuffer:null,
+  recArmed:false, recording:false, recMode:'replace', originalPattern:null, recBuffer:null,
 }));
 
 function defaultSoundState(soundPresetId,soundId,pitch){return{soundPresetId,soundId,pitch,env:0.3,vol:0.5,atk:0.0};}
@@ -2178,7 +2159,6 @@ function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
   setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
@@ -2235,13 +2215,11 @@ function previewMetroPreset(id) {
   };
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(false); _editingMetroPresetId = null;
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
   const ni = document.getElementById('tap-n-input'); if (ni) ni.value = _tapN;
-  const tb = document.getElementById('btn-tap-tempo');
-  if (tb) tb.textContent = 'Tap ' + _tapN;
+  const tb = document.getElementById('btn-tap-tempo'); if (tb) tb.textContent = 'Tap ' + _tapN;
   _tapTimes = [];
   const tc = document.getElementById('tap-count'); if (tc) tc.textContent = '';
   LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
@@ -2283,11 +2261,11 @@ function _applyDefaultsFromUnit() {
   const unit = us ? parseInt(us.value) : 4;
   const beats = bv ? (parseInt(bv.textContent) || 4) : 4;
   let fbs;
-  if (unit === 2 || unit === 1) fbs = 4; // blanche/ronde → battement=blanche (4 croches)
-  else if (unit === 16) fbs = 1; // dbl-croche → battement=croche (1 croche)
-  else if (unit === 8 && beats % 3 === 0) fbs = 3; // noire pointée (6/8, 9/8, 12/8…)
-  else fbs = 2; // noire (unité 4 ou croche binaire)
-  const sub = (fbs === 3) ? 3 : 2;
+  if (unit === 2) fbs = 4; // blanche → battement=blanche (4 croches)
+  else if (unit === 8 && (beats === 6 || beats === 9 || beats === 12)) fbs = 3; // noire pointée
+  else if (unit === 8) fbs = 1; // croche
+  else fbs = 2; // noire (unité 4, 1, 16)
+  const sub = (fbs === 3) ? 3 : (fbs === 1) ? 1 : 2;
   const batSel = document.getElementById('battue-sel');
   if (batSel && batSel.value !== String(fbs)) batSel.value = String(fbs);
   const subSel = document.getElementById('mpv-subdiv-sel');
@@ -2314,12 +2292,12 @@ function buildSigFromControls() {
     const btn = document.getElementById('sig-sel-btn');
     if (btn) btn.textContent = match.label || match.id;
   } else {
-  // Sig custom : subdivision indépendante de stepsPerBeat (felBeatSteps) ; pas d'effet sur vitesse layers
+  // Sig custom : stepsPerBeat = subdivision (1 step = 1 croche) ; felBeatSteps hérité de la battue
     currentSig = {
       ...currentSig,
       id: '_custom', label: `${beats}/${unit}`,
       beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: curFel, beatSteps: curFel, felBeatSteps: curFel,
+      stepsPerBeat: sub, beatSteps: sub, felBeatSteps: curFel,
       beatSym: symFromFelBeatSteps(curFel),
       metroPattern: generateMetroPattern(beats, sub),
     };
@@ -2327,7 +2305,6 @@ function buildSigFromControls() {
     if (btn) btn.textContent = currentSig.label;
   }
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
   setMetroDirty(true); updateMetroSaveBtn();
   updateBeatDisplay();
   _tapN = currentSig.beatsPerMeasure;
@@ -2417,14 +2394,11 @@ function renderMetroPatternViz() {
   if (!mp || !mp.length) { wrap.innerHTML = ''; return; }
   const SYM = { A: '^', P: '>', p: '-', '.': '' };
   const CLS = { A: 'mpv-A', P: 'mpv-P', p: 'mpv-p', '.': 'mpv-dot' };
-  const MUTED = { A: 'mpv-A-off', P: 'mpv-P-off', p: 'mpv-p-off' };
-  const active = { A: metro.accentOn, P: metro.tempsOn, p: metro.subdivOn };
   const sub = currentSig?.subdivision || 2;
   wrap.innerHTML = mp.map((v, i) => {
     const sep = (i > 0 && i % sub === 0)
       ? `<span style="width:1px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;flex-shrink:0;align-self:center"></span>` : '';
-    const cls = (v === '.') ? 'mpv-dot' : (active[v] === false ? MUTED[v] : CLS[v]) || 'mpv-dot';
-    return `${sep}<span class="mpv-step ${cls}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
+    return `${sep}<span class="mpv-step ${CLS[v] || 'mpv-dot'}" data-idx="${i}">${SYM[v] ?? ''}</span>`;
   }).join('');
   updateSigDisplays();
   updateMetroSaveBtn();
@@ -2440,19 +2414,11 @@ let metroBeatPos=0, metroStepPos=0, metroNextBeatTime=0, metroStartTime=0;
 let _tapTimes=[], _tapN=4; // tap tempo : historique + nombre de temps cible
 let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBeatTime)
 
-// Recalibrate metroStartTime so highlightMetroStep() stays in phase with the audio schedule.
-// Call whenever metroNextBeatTime is rescaled (tempo/battue change) or metroStepPos resets.
-function _syncMetroStartTime(spm) {
-  if (!playing || !ac) return;
-  const stepSec = (60 / spm) * ((currentSig.stepsPerBeat || 2) / (currentSig.subdivision || 2));
-  metroStartTime = metroNextBeatTime - metroStepPos * stepSec;
-}
-
 let playing=false, ac=null, latencyMs=0;
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33,viewShape:'circle',viewCycle:'common'};
+let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33};
 let schedTimerID=null, visualRafID=null;
 const STEP_W=22;
 const LOOKAHEAD=0.1;
@@ -2491,7 +2457,6 @@ function scheduler(){
         if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
         if(recLayers.includes(li)&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
-          state[li].prevPattern=[...state[li].pattern]; // garde la prise précédente pour ↺ Reprendre
           state[li].pattern=[...state[li].recBuffer];
           state[li].recBuffer=null;
           _recDomUpdateLi=li;
@@ -2569,9 +2534,7 @@ function playConga(isRight){
   // En mode rec : joue le son du layer ciblé par ce pouce
   const recLi=_getRecLiForThumb(isRight);
   if(recLi>=0&&(state[recLi].recArmed||state[recLi].recording)){
-    // 1 layer en rec : pouce droit = son doux (x), pouce gauche = son fort (X)
-    const velMult=(recLayers.length===1&&isRight)?prefs.softVel:1.0;
-    playSound(soundState[recLi],a.currentTime,velMult);
+    playSound(soundState[recLi],a.currentTime);
   } else {
     playSound(soundStateThumb[isRight?1:0],a.currentTime);
   }
@@ -2600,8 +2563,6 @@ function _updateThumbColors(){
   const sR=document.getElementById('play-thumb-r-sub');
   if(recLayers.length===0){
     lL.style.background='';lR.style.background='';
-    lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
-    lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
     if(nL)nL.textContent='';if(nR)nR.textContent='';
     if(sL)sL.textContent='main gauche';if(sR)sR.textContent='main droite';
     return;
@@ -2613,12 +2574,9 @@ function _updateThumbColors(){
     if(nL)nL.textContent=name;if(nR)nR.textContent=name;
     // 1 layer : gauche = fort (X), droite = doux (x)
     if(sL)sL.textContent='fort';if(sR)sR.textContent='doux';
-    lL.classList.add('rec-thumb-fort');lR.classList.add('rec-thumb-doux');
   } else {
     lL.style.background=_LAYER_REC_COLORS[sorted[0]];
     lR.style.background=_LAYER_REC_COLORS[sorted[1]];
-    lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
-    lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
     if(nL)nL.textContent=LAYERS[sorted[0]].label;
     if(nR)nR.textContent=LAYERS[sorted[1]].label;
     if(sL)sL.textContent='';if(sR)sR.textContent='';
@@ -2640,9 +2598,8 @@ function startRec(li){
   if(recLayers.length>=2)stopRec(recLayers[0],true);
   // Mémoriser l'état du volet jouer uniquement pour le 1er layer
   if(recLayers.length===0)_recPrevJouerOpen=jouerOpen;
-  // Sauvegarder le pattern original pour Cancel ; restaurer le dernier mode utilisé
+  // Sauvegarder le pattern original pour Cancel
   state[li].originalPattern=[...state[li].pattern];
-  state[li].recMode=prefs.recMode||'overdub';
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
   state[li].recArmed=true;
@@ -2705,7 +2662,6 @@ function stopRec(li,validate){
     setLayerDirty(li,true);
   }
   state[li].originalPattern=null;
-  state[li].prevPattern=null;
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
   state[li].recBuffer=null;
@@ -3172,51 +3128,51 @@ function openPresetModal(cfg){
     });
     // Appui long sur un item → réorganisation éphémère (glisser sans rebuild DOM, relâcher = sortie)
     const _addLongPress=(el,itemId)=>{
-      let _lt=null,_sx=0,_sy=0,_pid=null;
-      el.addEventListener('pointerdown',e=>{
-        if(e.pointerType==='mouse')return;
-        _pid=e.pointerId;_sx=e.clientX;_sy=e.clientY;
+      let _lt=null,_lx=0,_ly=0,_dragging=false;
+      el.addEventListener('touchstart',e=>{
+        if(e.touches.length>1)return;
+        const t=e.touches[0];_lx=t.clientX;_ly=t.clientY;
         el.classList.add('pm-pressing');
         _lt=setTimeout(()=>{
-          _lt=null;
-          el.classList.remove('pm-pressing');
+          _lt=null;el.classList.remove('pm-pressing');
+          _dragging=true;
           reorderMode=true;manageMode=false;paletteTarget=null;
           modeManage.classList.toggle('active',false);
           sheet.classList.add('pm-reorder-on');
           _reorderDragSrcId=itemId;
           el.classList.add('pm-dragging');
-          try{el.setPointerCapture(_pid);}catch(_){}
-          const _onMove=ev=>{
-            if(ev.pointerId!==_pid)return;
-            const under=document.elementFromPoint(ev.clientX,ev.clientY);
-            const tgt=under?.closest('[data-pm-id]');
-            itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
-            if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
-          };
-          const _onEnd=ev=>{
-            if(ev.pointerId!==_pid)return;
+          el.style.pointerEvents='none';
+          const onEnd=()=>{
+            document.removeEventListener('touchend',onEnd,true);
+            document.removeEventListener('touchcancel',onEnd,true);
+            _dragging=false;
             el.classList.remove('pm-dragging');
+            el.style.pointerEvents='';
             const over=itemsWrap.querySelector('.pm-drag-over');
             itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
             const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
             _reorderDragSrcId=null;reorderMode=false;sheet.classList.remove('pm-reorder-on');
-            el.removeEventListener('pointermove',_onMove);
-            el.removeEventListener('pointerup',_onEnd);
-            el.removeEventListener('pointercancel',_onEnd);
             if(tgtPmId&&tgtPmId!==itemId){pmDrop(srcId,tgtPmId);buildFamCol();}
             else{buildFamCol();buildItems();}
           };
-          el.addEventListener('pointermove',_onMove);
-          el.addEventListener('pointerup',_onEnd);
-          el.addEventListener('pointercancel',_onEnd);
+          document.addEventListener('touchend',onEnd,true);
+          document.addEventListener('touchcancel',onEnd,true);
         },450);
-      });
-      el.addEventListener('pointermove',e=>{
-        if(e.pointerId!==_pid)return;
-        if(_lt&&Math.hypot(e.clientX-_sx,e.clientY-_sy)>12){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
-      });
-      const _pc=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
-      el.addEventListener('pointerup',_pc);el.addEventListener('pointercancel',_pc);
+      },{passive:true});
+      el.addEventListener('touchmove',e=>{
+        const t=e.touches[0];
+        if(_lt&&Math.hypot(t.clientX-_lx,t.clientY-_ly)>10){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
+        if(_dragging){
+          e.preventDefault();
+          const under=document.elementFromPoint(t.clientX,t.clientY);
+          const tgt=under?.closest('[data-pm-id]');
+          itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+          if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
+        }
+      },{passive:false});
+      const _c=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');};
+      el.addEventListener('touchend',_c,{passive:true});
+      el.addEventListener('touchcancel',_c,{passive:true});
     };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
@@ -3461,16 +3417,12 @@ function openPresetModal(cfg){
       else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
       saveToStorage();sbPushSchoolBandFamOrder();buildFamCol();return;
     }
-    // Reordonner uniquement le sous-ensemble typé pour que les rangs groove/pattern soient indépendants
-    const typeOk=f=>cfg.type==='groove'?(!f.type||f.type==='groove'||f.type==='both'):(!f.type||f.type==='pattern'||f.type==='both');
-    const subset=packCours.familles.filter(typeOk);
-    const others=packCours.familles.filter(f=>!typeOk(f));
-    const si=subset.findIndex(f=>f.id===srcId);
+    const fams=packCours.familles;
+    const si=fams.findIndex(f=>f.id===srcId);
     if(si<0)return;
-    const[moved]=subset.splice(si,1);
-    if(tgtId==='__end__'){subset.push(moved);}
-    else{const ti=subset.findIndex(f=>f.id===tgtId);if(ti<0){subset.splice(si,0,moved);}else{subset.splice(ti,0,moved);}}
-    packCours.familles=[...subset,...others];
+    const[moved]=fams.splice(si,1);
+    if(tgtId==='__end__'){fams.push(moved);}
+    else{const ti=fams.findIndex(f=>f.id===tgtId);if(ti<0){fams.splice(si,0,moved);return;}fams.splice(ti,0,moved);}
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
@@ -3593,10 +3545,14 @@ function openPresetModal(cfg){
       const isMx=authProfile?.role==='mx';
       const bfams=packCours.soundFamilles||[];
       if(manageMode||reorderMode){
-        famCol.style.touchAction='';
+        famCol.style.touchAction=reorderMode?'none':'';
         bfams.forEach(f=>{
           const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-          if(reorderMode){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
+          if(reorderMode){
+            row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
+            const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';
+            drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
+          }
           const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
           nameEl.addEventListener('click',()=>_setFam(f.id));row.appendChild(nameEl);
           if(manageMode){
@@ -3607,33 +3563,25 @@ function openPresetModal(cfg){
             row.appendChild(renBtn);row.appendChild(delBtn);
           }
           if(reorderMode){
-            const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
-            drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
             row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
             row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
             row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
             row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-            {let _frpid=null;
-            drag.addEventListener('pointerdown',e=>{
-              if(e.pointerType==='mouse')return;
-              _frpid=e.pointerId;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');
-              try{drag.setPointerCapture(_frpid);}catch(_){}
-            });
-            drag.addEventListener('pointermove',e=>{
-              if(e.pointerId!==_frpid)return;
-              const el=document.elementFromPoint(e.clientX,e.clientY);
+            row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
+            row.addEventListener('touchmove',e=>{
+              e.preventDefault();if(!_famDragSrcId)return;
+              const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
               const tgt=el?.closest('.pm-fam-manage-row');
               famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
               if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
-            });
-            const _frEnd=e=>{
-              if(e.pointerId!==_frpid)return;
-              _frpid=null;row.classList.remove('pm-fam-dragging');
+            },{passive:false});
+            row.addEventListener('touchend',e=>{
+              row.classList.remove('pm-fam-dragging');
               const over=famCol.querySelector('.pm-fam-drag-over');
               famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
-              if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;
-            };
-            drag.addEventListener('pointerup',_frEnd);drag.addEventListener('pointercancel',_frEnd);}
+              if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
+              _famDragSrcId=null;
+            },{passive:true});
           }
           famCol.appendChild(row);
         });
@@ -3678,10 +3626,17 @@ function openPresetModal(cfg){
 
     if((manageMode||reorderMode)&&(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band')){
       const isMx=authProfile?.role==='mx';
-      famCol.style.touchAction='';
+      // Bloquer le scroll du container en mode réordonner (sinon le touch scroll prend la main)
+      famCol.style.touchAction=reorderMode?'none':'';
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-        if(reorderMode){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
+        // Poignée drag : mode réordonner seulement (MX ou non, la persistance est gatée côté sbPushSchoolFamOrder)
+        if(reorderMode){
+          row.setAttribute('draggable','true');row.dataset.famId=f.id;row.style.touchAction='none';
+          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
+          drag.addEventListener('mousedown',e=>e.stopPropagation());
+          row.appendChild(drag);
+        }
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
         nameEl.addEventListener('click',()=>_setFam(f.id));
         row.appendChild(nameEl);
@@ -3699,35 +3654,28 @@ function openPresetModal(cfg){
           delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
           row.appendChild(renBtn);row.appendChild(delBtn);
         }
-        // Poignée drag à droite + events pointer sur la poignée uniquement (scroll libre sur le reste de la row)
+        // Drag HTML5 : mode réordonner seulement
         if(reorderMode){
-          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
-          drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
           row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
           row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
           row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-          {let _frpid=null;
-          drag.addEventListener('pointerdown',e=>{
-            if(e.pointerType==='mouse')return;
-            _frpid=e.pointerId;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');
-            try{drag.setPointerCapture(_frpid);}catch(_){}
-          });
-          drag.addEventListener('pointermove',e=>{
-            if(e.pointerId!==_frpid)return;
-            const el=document.elementFromPoint(e.clientX,e.clientY);
+          // Touch drag
+          row.addEventListener('touchstart',e=>{e.preventDefault();_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');},{passive:false});
+          row.addEventListener('touchmove',e=>{
+            e.preventDefault();if(!_famDragSrcId)return;
+            const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
             const tgt=el?.closest('.pm-fam-manage-row');
             famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
             if(tgt&&tgt.dataset.famId!==_famDragSrcId)tgt.classList.add('pm-fam-drag-over');
-          });
-          const _frEnd=e=>{
-            if(e.pointerId!==_frpid)return;
-            _frpid=null;row.classList.remove('pm-fam-dragging');
+          },{passive:false});
+          row.addEventListener('touchend',e=>{
+            row.classList.remove('pm-fam-dragging');
             const over=famCol.querySelector('.pm-fam-drag-over');
             famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
-            if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;
-          };
-          drag.addEventListener('pointerup',_frEnd);drag.addEventListener('pointercancel',_frEnd);}
+            if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);
+            _famDragSrcId=null;
+          },{passive:true});
         }
         famCol.appendChild(row);
       });
@@ -4125,10 +4073,10 @@ function openPresetModal(cfg){
     const items=getFilteredItems();
 
     if(reorderMode){
-      // Mode réordonner : poignée ≡ à droite, scroll autorisé (pointer capture gère le drag)
-      itemsWrap.style.overflowY='auto';
+      // Mode réordonner : poignée ≡ à droite, touch-action none pour éviter scroll parasite
+      itemsWrap.style.touchAction='none';itemsWrap.style.overflowY='auto';
       items.forEach(item=>{
-        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');
+        const div=document.createElement('div');div.className='pm-item pm-reorder';div.dataset.id=item.id;div.setAttribute('draggable','true');div.style.touchAction='none';
         const name=document.createElement('span');name.style.flex='1';name.textContent=cfg.type==='sig'?(item.label||item.id):(item.nom||'').replace(/^● modifié /,'');
         const handle=document.createElement('span');handle.className='pm-drag-handle';handle.textContent='⠿';
         div.appendChild(name);div.appendChild(handle);
@@ -4137,28 +4085,21 @@ function openPresetModal(cfg){
         div.addEventListener('dragend',()=>{div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));_reorderDragSrcId=null;});
         div.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(item.id!==_reorderDragSrcId)div.classList.add('pm-drag-over');});
         div.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId&&_reorderDragSrcId!==item.id)pmDrop(_reorderDragSrcId,item.id);});
-        // Drag tactile : pointer capture sur la poignée — scroll libre sur le nom
-        {let _rpid=null;
-        handle.addEventListener('pointerdown',e=>{
-          if(e.pointerType==='mouse')return;
-          _rpid=e.pointerId;_reorderDragSrcId=item.id;div.classList.add('pm-dragging');
-          try{handle.setPointerCapture(_rpid);}catch(_){}
-        });
-        handle.addEventListener('pointermove',e=>{
-          if(e.pointerId!==_rpid)return;
-          const el=document.elementFromPoint(e.clientX,e.clientY);
+        // Drag tactile — sur le div entier (touch-action:none déjà défini)
+        div.addEventListener('touchstart',e=>{e.preventDefault();_reorderDragSrcId=item.id;div.classList.add('pm-dragging');},{passive:false});
+        div.addEventListener('touchmove',e=>{
+          e.preventDefault();if(!_reorderDragSrcId)return;
+          const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);
           const tgt=el?.closest('.pm-reorder');
           itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
           if(tgt&&tgt.dataset.id!==_reorderDragSrcId)tgt.classList.add('pm-drag-over');
-        });
-        const _rEnd=e=>{
-          if(e.pointerId!==_rpid)return;
-          _rpid=null;div.classList.remove('pm-dragging');
-          const over=itemsWrap.querySelector('.pm-drag-over');
-          itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
-          if(over&&_reorderDragSrcId&&over.dataset.id!==item.id)pmDrop(_reorderDragSrcId,over.dataset.id);_reorderDragSrcId=null;
-        };
-        handle.addEventListener('pointerup',_rEnd);handle.addEventListener('pointercancel',_rEnd);}
+        },{passive:false});
+        div.addEventListener('touchend',e=>{
+          e.preventDefault();const over=itemsWrap.querySelector('.pm-drag-over');
+          div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
+          if(over&&_reorderDragSrcId&&over.dataset.id!==_reorderDragSrcId)pmDrop(_reorderDragSrcId,over.dataset.id);
+          _reorderDragSrcId=null;
+        },{passive:false});
         itemsWrap.appendChild(div);
       });
       // Zone de dépôt en fin de liste
@@ -4359,37 +4300,41 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnI);
 
-  const btnShape=document.createElement('button');
-  btnShape.id='btn-view-shape';btnShape.className='btn-view';
-  btnShape.textContent=viewShape==='circle'?'◎':'☰';
-  btnShape.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';
-  btnShape.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle',null));
-  bar.appendChild(btnShape);
-
-  const btnCycleV=document.createElement('button');
-  btnCycleV.id='btn-view-cycle';btnCycleV.className='btn-view';
-  btnCycleV.textContent=viewCycle==='common'?'⊙':'⊛';
-  btnCycleV.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';
-  btnCycleV.addEventListener('click',()=>setView(null,viewCycle==='common'?'layer':'common'));
-  bar.appendChild(btnCycleV);
+  const btnView=document.createElement('button');
+  btnView.id='btn-view';btnView.className='btn-view';
+  btnView.textContent=circleView?'⊞':'◎';
+  btnView.title=circleView?'Vue linéaire':'Vue circulaire';
+  btnView.addEventListener('click',()=>setView(!circleView));
+  bar.appendChild(btnView);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
   btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-  const _toggleLayersOuverts=()=>{
+  btnVolet.addEventListener('click',()=>{
     layersOuverts=!layersOuverts;
     const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
     if(lw)lw.style.display=layersOuverts?'':'none';
-    if(cv)cv.style.display=layersOuverts?'flex':'none'; // toutes les 4 vues utilisent circle-view
+    if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(hd)hd.style.display=layersOuverts?'':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
-  };
-  btnVolet.addEventListener('click',_toggleLayersOuverts);
+  });
   bar.appendChild(btnVolet);
-  bar.addEventListener('click',e=>{ if(e.target===bar||e.target===lbl)_toggleLayersOuverts(); });
+  bar.addEventListener('click',e=>{
+    if(e.target===bar||e.target===lbl){
+      layersOuverts=!layersOuverts;
+      const lw=document.getElementById('layers-wrap');
+      const cv=document.getElementById('circle-view');
+      const hd=document.querySelector('.hdivider');
+      if(lw)lw.style.display=layersOuverts?'':'none';
+      if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
+      if(hd)hd.style.display=layersOuverts?'':'none';
+      btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
+      btnVolet.classList.toggle('open',layersOuverts);
+    }
+  });
   cont.appendChild(bar);
 }
 
@@ -4397,9 +4342,6 @@ function buildGrooveSection(){
 const layerObservers=[];
 function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
-  // En vue Pas : vider #step-rows-wrap AVANT la reconstruction pour éviter les IDs dupliqués
-  // (#steps-low etc. seraient présents à la fois dans step-rows-wrap ET dans les nouveaux layer-div)
-  if(_isStepView()){const srw=document.getElementById('step-rows-wrap');if(srw)while(srw.firstChild)srw.removeChild(srw.firstChild);}
   const cont=document.getElementById('layers');if(!cont)return;
   cont.innerHTML='';
 
@@ -4437,7 +4379,7 @@ function buildLayers(){
     // Bouton rec ⏺ (dans row1, à droite du i)
     const bRec=document.createElement('button');bRec.className='btn-rec';bRec.id='btn-rec-'+li;bRec.textContent='⏺';bRec.title='Enregistrer depuis les boutons Jouer';
     bRec.addEventListener('click',()=>{
-      if(state[li].recArmed||state[li].recording)stopRec(li,true); // OFF = valider la prise
+      if(state[li].recArmed||state[li].recording)stopRec(li,false);
       else startRec(li);
     });
 
@@ -4547,7 +4489,6 @@ function buildLayers(){
     // — Vitesse cyclique = → ×2 → /2 → = —
     const bSpeed=document.createElement('button');bSpeed.className='btn-mod';bSpeed.id='mod-speed-'+li;bSpeed.title='Vitesse : tap pour cycler = → ×2 → = → /2 → = … (appliqué au prochain cycle)';
     let bTern; // déclaré ici, initialisé après (guard dans updateSpeedBtns)
-    let _updateStepUnitLbl; // forward déclaration (const serait en TDZ lors du 1er appel updateSpeedBtns)
     const updateSpeedBtns=()=>{
       let nextHalf=state[li].halfOn, nextDbl=state[li].doubleOn;
       if(state[li].pendingClear){nextHalf=false;nextDbl=false;}
@@ -4557,7 +4498,6 @@ function buildLayers(){
       else if(nextHalf){bSpeed.textContent='/2';bSpeed.classList.add('on');}
       else{bSpeed.textContent='=';bSpeed.classList.remove('on');}
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
-      if(_updateStepUnitLbl)_updateStepUnitLbl();
     };
     updateSpeedBtns();
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); };
@@ -4594,13 +4534,6 @@ function buildLayers(){
       state[li].ternOn=!state[li].ternOn;
       updateSpeedBtns(); buildStepsDOM(li,state[li].wrapped); _speedMark();
     });
-    // — Indicateur unité de step (1/8, 1/16, 1/4, 1/8T…) —
-    const stepUnitLbl=document.createElement('span');stepUnitLbl.className='step-unit-lbl';stepUnitLbl.id='step-unit-lbl-'+li;
-    _updateStepUnitLbl=()=>{
-      const d=state[li].doubleOn,h=state[li].halfOn,t=state[li].ternOn;
-      stepUnitLbl.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
-    };
-    _updateStepUnitLbl();
 
     // — Shift ◀ [n] ▶ —
     const bShL=document.createElement('button');bShL.className='btn-mod btn-mod-sm';bShL.textContent='◀';bShL.title='Décaler gauche';
@@ -4751,9 +4684,9 @@ function buildLayers(){
     });
 
     // — Copier/Coller/Effacer —
-    const bCopy=document.createElement('button');bCopy.className='btn-mod';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-mod';bCopy.textContent='⎘';bCopy.title='Copier le pattern';
     bCopy.addEventListener('click',()=>{ patClipboard=[...state[li].pattern]; showToast('Pattern copié','info'); });
-    const bPaste=document.createElement('button');bPaste.className='btn-mod';bPaste.textContent='⇩';bPaste.title='Coller le pattern copié';
+    const bPaste=document.createElement('button');bPaste.className='btn-mod';bPaste.textContent='⎘↓';bPaste.title='Coller le pattern copié';
     bPaste.addEventListener('click',()=>{
       if(!patClipboard)return;
       state[li].pattern=[...patClipboard];
@@ -4776,11 +4709,7 @@ function buildLayers(){
     const grLecture=document.createElement('div');grLecture.className='mod-grp-lecture';
     grLecture.appendChild(bShL);grLecture.appendChild(shNum);grLecture.appendChild(bShR);
     grLecture.appendChild(mkSep());
-    // Groupe vitesse+tern+unité en nowrap pour que l'unité reste toujours à droite de T
-    const _speedGrp=document.createElement('span');
-    _speedGrp.style.cssText='display:inline-flex;align-items:center;gap:3px;flex-shrink:0;overflow:visible';
-    _speedGrp.appendChild(bSpeed);_speedGrp.appendChild(bTern);_speedGrp.appendChild(stepUnitLbl);
-    grLecture.appendChild(_speedGrp);
+    grLecture.appendChild(bSpeed);grLecture.appendChild(bTern);
     modPanel.appendChild(grLecture);
 
     // Zone Transf (centre paysage / ligne 2 gauche portrait)
@@ -4795,30 +4724,9 @@ function buildLayers(){
     grClip.appendChild(bCopy);grClip.appendChild(bPaste);grClip.appendChild(bClear);
     modPanel.appendChild(grClip);
 
-    // Sélecteur ×/÷ de longueur (menu : −, ×2, /2, ×3, /3)
-    const selStep=document.createElement('select');
-    selStep.className='mpv-sel mpv-sel-sm';
-    selStep.style.cssText='font-size:10px;min-width:38px;padding:1px 2px;cursor:pointer;color:var(--cc);border-color:var(--cs)';
-    selStep.title='Multiplier ou diviser le nombre de pas';
-    ['.','×2','/2','×3','/3'].forEach(v=>{
-      const o=document.createElement('option');o.value=v;o.textContent=v;selStep.appendChild(o);
-    });
-    selStep.addEventListener('change',()=>{
-      const v=selStep.value;selStep.value='.';if(v==='.')return;
-      const cur=state[li].pattern.length;
-      let tgt=cur;
-      if(v==='×2'){state[li].pattern=[...state[li].pattern,...state[li].pattern];_reszMark();return;}
-      else if(v==='×3'){state[li].pattern=[...state[li].pattern,...state[li].pattern,...state[li].pattern];_reszMark();return;}
-      else if(v==='/2')tgt=Math.max(1,Math.floor(cur/2));
-      else if(v==='/3')tgt=Math.max(1,Math.floor(cur/3));
-      if(tgt>cur)for(let i=cur;i<tgt;i++)state[li].pattern.push('.');
-      else state[li].pattern=state[li].pattern.slice(0,tgt);
-      _reszMark();
-    });
-
-    // Zone Size — [select ×/÷][−][N][+]
+    // Zone Size (− N + taille) — ligne 1 droite en portrait
     const grRecSize=document.createElement('div');grRecSize.className='mod-grp-recsize';
-    grRecSize.appendChild(selStep);grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
+    grRecSize.appendChild(bMinus);grRecSize.appendChild(nPas);grRecSize.appendChild(bPlus);
     modPanel.appendChild(grRecSize);
 
     layerDiv.appendChild(modPanel);
@@ -4840,12 +4748,6 @@ function buildLayers(){
     attachLayerObserver(li);
     attachModPanelObserver(li);
   });
-  // Toutes vues : garantir que #layers-wrap est après #circle-view (synchrone = pas de flash)
-  _setupStepViewDOM();
-  if(_isStepView()){
-    _moveRow2ToStepView(true); // synchrone → le vide et le nouveau contenu arrivent dans la même frame
-    requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
-  }
 }
 
 function findPatternBySeq(arr){
@@ -6273,7 +6175,7 @@ function updateSwingDisplay(){
   const n=document.getElementById('swing-name');
   if(n) n.textContent=getSwingName(mpc);
   const sl=document.getElementById('swing-slider');
-  if(sl) sl.value=Math.round(Math.sqrt(Math.max(0,swingVal))*100);
+  if(sl) sl.value=Math.round(swingVal*100);
 }
 function getAudioOffsetName(ms){
   if(ms<-50)return'Avance forte';
@@ -6375,68 +6277,8 @@ function playMetroClick(atTime,type){
 // MODULE CIRCLE — Vue circulaire (canvas)
 // ═══════════════════════════════════════════════════════════════════════════
 
-let viewShape = 'circle'; // 'linear' | 'circle'
-let viewCycle = 'common'; // 'layer' | 'common'
 let circleView = false;
-let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear'
-
-function getViewName(){
-  if(viewShape==='linear'&&viewCycle==='layer')  return'Step Sequencer';
-  if(viewShape==='linear'&&viewCycle==='common') return'Cycle';
-  if(viewShape==='circle'&&viewCycle==='layer')  return'Pattern';
-  return'Mesure';
-}
-function _applyViewState(){
-  if(viewShape==='linear'&&viewCycle==='layer'){circleView=false;}
-  else if(viewShape==='linear'&&viewCycle==='common'){circleView=true;circleModeView='linear';}
-  else if(viewShape==='circle'&&viewCycle==='layer'){circleView=true;circleModeView='cycle';}
-  else{circleView=true;circleModeView='measure';}
-}
-function _isStepView(){return viewShape==='linear'&&viewCycle==='layer';}
-function _moveRow2ToStepView(toStep){
-  const wrap=document.getElementById('step-rows-wrap');if(!wrap)return;
-  if(toStep){
-    while(wrap.firstChild) wrap.removeChild(wrap.firstChild);
-    LAYERS.forEach((layer,li)=>{
-      const layerDiv=document.getElementById('layer-div-'+li);if(!layerDiv)return;
-      const row2=layerDiv.querySelector(':scope > .layer-row2');
-      if(row2){row2.dataset.layerLi=li;if(layer.cls)row2.classList.add(layer.cls);wrap.appendChild(row2);}
-    });
-  } else {
-    Array.from(wrap.querySelectorAll('.layer-row2')).forEach(row2=>{
-      const li=parseInt(row2.dataset.layerLi??'0');
-      const layerDiv=document.getElementById('layer-div-'+li);if(!layerDiv)return;
-      const modPanel=layerDiv.querySelector('.layer-mod-panel');
-      if(modPanel)layerDiv.insertBefore(row2,modPanel);else layerDiv.appendChild(row2);
-    });
-  }
-}
-let _srwResizeObs = null;
-// Garantit que #layers-wrap est toujours après #circle-view dans le DOM
-// → le flow CSS flex positionne les volets mod juste sous le canvas/step-rows quelle que soit la vue
-function _setupStepViewDOM(){
-  const cv=document.getElementById('circle-view');
-  const lw=document.getElementById('layers-wrap');
-  if(cv&&lw&&cv.nextSibling!==lw) cv.after(lw);
-}
-// Observe #step-rows-wrap : relance checkWrap quand la largeur change (rotation, resize)
-function _watchStepRowsWrap(){
-  const srw=document.getElementById('step-rows-wrap');if(!srw)return;
-  if(_srwResizeObs){_srwResizeObs.disconnect();_srwResizeObs=null;}
-  _srwResizeObs=new ResizeObserver(()=>{if(_isStepView())LAYERS.forEach((_,li)=>checkWrap(li));});
-  _srwResizeObs.observe(srw);
-}
-function _updateViewButtons(){
-  const bs=document.getElementById('btn-view-shape');
-  const bc=document.getElementById('btn-view-cycle');
-  const vd=document.getElementById('view-desc-lbl');
-  if(bs){bs.textContent=viewShape==='circle'?'◎':'☰';bs.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';}
-  if(bc){bc.textContent=viewCycle==='common'?'⊙':'⊛';bc.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';}
-  if(vd){
-    const n=getViewName();
-    vd.textContent=n==='Pattern'?'1 tour = 1 pattern':n==='Mesure'?'1 tour = 1 mesure':n;
-  }
-}
+let circleModeView = 'measure'; // 'cycle' | 'measure'
 const flashStep = [-1,-1,-1];
 const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
 
@@ -6451,7 +6293,6 @@ function getStepAngle(li, si, n){
 }
 
 function resizeCanvas(){
-  if(_isStepView()) return; // vue Pas : pas de canvas
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   const wrap = document.getElementById('circle-view');
   const frame = wrap.closest('.frame');
@@ -6464,7 +6305,9 @@ function resizeCanvas(){
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    wrap.style.height=canvH+'px';
+    const toggleEl2=document.getElementById('circle-mode-toggle');
+    const toggleH2=toggleEl2?(toggleEl2.offsetHeight+4):0;
+    wrap.style.height=(canvH+toggleH2)+'px';
     drawCircles(); return;
   }
   const dotR = 10;
@@ -6491,7 +6334,9 @@ function resizeCanvas(){
   } else {
     wrap.style.width  = '100%';
   }
-  wrap.style.height = physH + 'px';
+  const toggleEl = document.getElementById('circle-mode-toggle');
+  const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
+  wrap.style.height = (physH + toggleH) + 'px';
   drawCircles();
 }
 
@@ -6708,7 +6553,7 @@ function drawCircles(){
       ctx.fillRect(bx-bw,by,bw,bh);
       ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
       ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>setView('linear','common')};
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';document.body.classList.add('circle-linear');resizeCanvas();setupCircleModeToggle();}};
     } else { _circleBadge=null; }
   } else { _circleBadge=null; }
 }
@@ -6840,8 +6685,8 @@ function drawLinear(){
       ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
       ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
     });
-    // Aiguille dorée — décalée de +½ step (DENOM/2=3u) pour coïncider avec le centre du cercle
-    const nx=marginX+((cycElU+DENOM/2)%totalU)/totalU*(W-2*marginX);
+    // Aiguille dorée
+    const nx=marginX+cycElU/totalU*(W-2*marginX);
     ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
     ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
   }
@@ -6940,48 +6785,26 @@ function setupCanvasInteraction(){
   },{passive:true});
 }
 
-// setView(shape, cycle) — shape: 'linear'|'circle'|null, cycle: 'layer'|'common'|null
-// null = conserver la valeur actuelle ; true/false acceptés pour rétrocompat (= circleView ancien)
-function setView(shape, cycle){
-  if(shape===true){shape='circle';cycle=cycle??'common';}
-  else if(shape===false){shape='linear';cycle=cycle??'layer';}
-  if(shape!==null&&shape!==undefined) viewShape=shape;
-  if(cycle!==null&&cycle!==undefined) viewCycle=cycle;
-  _applyViewState(); // met à jour circleView + circleModeView
-  prefs.viewShape=viewShape; prefs.viewCycle=viewCycle;
-  localStorage.setItem('btk_prefs',JSON.stringify(prefs));
-
-  const stepView=_isStepView();
-  // #layers-wrap toujours après #circle-view dans le DOM (toutes vues) → positionnement correct
-  _setupStepViewDOM();
-  if(!stepView){
-    _moveRow2ToStepView(false);
-    if(_srwResizeObs){_srwResizeObs.disconnect();_srwResizeObs=null;}
-  }
-
-  // Toutes les vues utilisent le layout view-circle (canvas/step-rows en haut, mod en bas)
-  document.body.classList.add('view-circle');
-  document.body.classList.toggle('view-step', stepView);
-  document.body.classList.toggle('circle-linear', (circleView && circleModeView==='linear') || stepView);
-  _updateViewButtons();
+function setView(circle){
+  circleView = circle;
+  document.body.classList.toggle('view-circle', circle);
+  if(!circle) document.body.classList.remove('circle-linear');
+  else document.body.classList.toggle('circle-linear', circleModeView==='linear');
+  document.getElementById('btn-view').textContent = circle ? '⊞' : '◎';
+  document.getElementById('btn-view').title = circle ? 'Vue linéaire' : 'Vue circulaire';
 
   cancelAnimationFrame(visualRafID);
   visualRafID = null;
 
+  // Sync visibilité cercle et layers-wrap selon layersOuverts
   const cv=document.getElementById('circle-view');
   const lw=document.getElementById('layers-wrap');
-  if(cv)cv.style.display=layersOuverts?'flex':'none';
+  if(cv)cv.style.display=(circle&&layersOuverts)?'flex':'none';
   if(lw)lw.style.display=layersOuverts?'':'none';
 
-  if(stepView){
-    LAYERS.forEach((_,li)=>buildStepsDOM(li,false));
-    _moveRow2ToStepView(true); // synchrone — les step rows apparaissent dans la même frame
-    // checkWrap en rAF pour avoir les vraies dimensions après layout
-    requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
-    if(playing) visualRafID = requestAnimationFrame(visualLoop);
-  } else if(circleView){
+  if(circle){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); setupCircleModeToggle(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
@@ -6996,7 +6819,26 @@ function visualLoopCircle(){
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
-function setupCircleModeToggle(){} // no-op — supprimé, logique dans setView
+function setupCircleModeToggle(){
+  const btnCycle   = document.getElementById('btn-circle-cycle');
+  const btnMeasure = document.getElementById('btn-circle-measure');
+  const btnLinear  = document.getElementById('btn-circle-linear');
+  if(!btnCycle || !btnMeasure) return;
+  // Évite les doublons d'écouteurs si appelé plusieurs fois
+  const fresh  = btnCycle.cloneNode(true);
+  const freshM = btnMeasure.cloneNode(true);
+  const freshL = btnLinear ? btnLinear.cloneNode(true) : null;
+  btnCycle.parentNode.replaceChild(fresh, btnCycle);
+  btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
+  if(freshL && btnLinear) btnLinear.parentNode.replaceChild(freshL, btnLinear);
+  fresh.classList.toggle('active',  circleModeView==='cycle');
+  freshM.classList.toggle('active', circleModeView==='measure');
+  if(freshL) freshL.classList.toggle('active', circleModeView==='linear');
+  const allBtns=[fresh,freshM,freshL].filter(Boolean);
+  fresh.addEventListener('click', ()=>{ circleModeView='cycle';   document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
+  freshM.addEventListener('click',()=>{ circleModeView='measure'; document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
+  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; document.body.classList.add('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MODULE SUPABASE — Auth Google + Synchronisation base école
@@ -7011,37 +6853,16 @@ let authSession = null;   // { access_token, refresh_token }
 let authProfile = null;   // { id, email, role, display_name }
 
 // ── API helper ───────────────────────────────────────────────────────────────
-async function sbRefreshSession() {
-  if (!authSession?.refresh_token) return false;
-  try {
-    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: authSession.refresh_token })
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (!data.access_token) return false;
-    authSession = { access_token: data.access_token, refresh_token: data.refresh_token || authSession.refresh_token };
-    localStorage.setItem('sb_session', JSON.stringify(authSession));
-    return true;
-  } catch(e) { return false; }
-}
-
 async function sbFetch(path, options = {}) {
-  const _buildHeaders = () => ({
+  const headers = {
     'apikey': SUPABASE_ANON_KEY,
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
-    ...(authSession?.access_token ? { 'Authorization': 'Bearer ' + authSession.access_token } : {})
-  });
-  let res = await fetch(SUPABASE_URL + path, { ...options, headers: _buildHeaders() });
-  if (res.status === 401 && authSession?.refresh_token) {
-    const refreshed = await sbRefreshSession();
-    if (refreshed) {
-      res = await fetch(SUPABASE_URL + path, { ...options, headers: _buildHeaders() });
-    }
+    ...(options.headers || {})
+  };
+  if (authSession?.access_token) {
+    headers['Authorization'] = 'Bearer ' + authSession.access_token;
   }
+  const res = await fetch(SUPABASE_URL + path, { ...options, headers });
   if (!res.ok) {
     const txt = await res.text();
     throw new Error('Supabase ' + res.status + ': ' + txt);
@@ -7273,8 +7094,6 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     packCours.familles = packCours.familles.filter(x => x.id !== f.id);
     packCours.familles.push({ id: f.id, nom: f.nom, category: f.category||'rytm', source: 'school', ordre: f.ordre ?? 0, type: f.type || 'both' });
   });
-  // Trier par ordre après le merge pour que l'ordre drag-drop MX soit restauré après sync
-  packCours.familles.sort((a, b) => (a.ordre ?? 9999) - (b.ordre ?? 9999));
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
@@ -7431,8 +7250,7 @@ async function sbPushSchoolFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) non mises à jour — vérifier migration DB (colonne ordre)`, 'warn');
-    else showToast('✅ Ordre familles sauvegardé', 'ok');
-  } catch(e) { console.error('Ordre familles non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles non sauvegardé : '+e.message,'warn'); }
+  } catch(e) { console.error('Ordre familles non persisté :', e); showToast('⚠ Ordre familles non sauvegardé : ' + e.message, 'warn'); }
 }
 
 async function sbPushSchoolBandOrder() {
@@ -7455,8 +7273,7 @@ async function sbPushSchoolBandFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) band non mises à jour — vérifier migration DB`, 'warn');
-    else showToast('✅ Ordre familles band sauvegardé', 'ok');
-  } catch(e) { console.error('Ordre familles band non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles band non sauvegardé : '+e.message,'warn'); }
+  } catch(e) { console.error('Ordre familles band non persisté :', e); showToast('⚠ Ordre familles band non sauvegardé : ' + e.message, 'warn'); }
 }
 
 async function sbPushSchoolSoundFamOrder() {
@@ -7473,8 +7290,7 @@ async function sbPushSchoolSoundFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) son non mises à jour — vérifier migration DB`, 'warn');
-    else showToast('✅ Ordre familles son sauvegardé', 'ok');
-  } catch(e) { console.error('Ordre familles son non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles son non sauvegardé : '+e.message,'warn'); }
+  } catch(e) { console.error('Ordre familles son non persisté :', e); showToast('⚠ Ordre familles son non sauvegardé : ' + e.message, 'warn'); }
 }
 
 async function sbPublishBand(bandId) {
@@ -7517,8 +7333,7 @@ async function sbPushSchoolMetroFamOrder() {
     ));
     const missed = results.filter(r => !r || !r.length).length;
     if (missed) showToast(`⚠ ${missed} famille(s) métro non mises à jour`, 'warn');
-    else showToast('✅ Ordre familles métro sauvegardé', 'ok');
-  } catch(e) { console.error('Ordre familles métro non persisté :', e); showToast(e.message.includes('401')?'🔑 Session expirée — reconnectez-vous pour sauvegarder':'⚠ Ordre familles métro non sauvegardé : '+e.message,'warn'); }
+  } catch(e) { console.error('Ordre familles métro non persisté :', e); showToast('⚠ Ordre familles métro non sauvegardé : ' + e.message, 'warn'); }
 }
 
 async function sbPushSchoolMetroOrder() {
@@ -10118,10 +9933,6 @@ function loadFromStorage(){
     const sp=localStorage.getItem('btk_prefs');
     if(sp)prefs=Object.assign(prefs,JSON.parse(sp));
   }catch(e){}
-  // Restaurer la vue depuis les prefs
-  viewShape=prefs.viewShape||'circle';
-  viewCycle=prefs.viewCycle||'common';
-  _applyViewState();
   // Normaliser metroPresets dès le démarrage (familles_ids depuis .famille)
   rebuildMetroPresets();
 }
@@ -10468,7 +10279,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const newSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&newSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);_syncMetroStartTime(newSpm);}
+        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
       }
     }
     _lastBpmPos=newPos;
@@ -10486,11 +10297,10 @@ function attachEvents(){
   // ── Swing slider (MPC 50-75%) ──
   const _swSlider=document.getElementById('swing-slider');
   _swSlider?.addEventListener('input',e=>{
-    const t=parseInt(e.target.value)/100;
-    swingVal=t*t; // quadratique : plus de précision sur les petites valeurs (MPC 50–67%)
+    swingVal=parseInt(e.target.value)/100;
     updateSwingDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
-    const _mpc=50+swingVal*25;_dragOverlay.show('<span style="font-size:20px;font-weight:900">'+_mpc.toFixed(1)+'%</span><br><span style="font-size:11px;font-weight:400;opacity:.85">'+getSwingName(_mpc)+'</span>');
+    const _mpc=50+swingVal*25;_dragOverlay.show(_mpc.toFixed(0)+'% · '+getSwingName(_mpc));
   });
   _swSlider?.addEventListener('pointerup',()=>_dragOverlay.hide());
   _swSlider?.addEventListener('pointercancel',()=>_dragOverlay.hide());
@@ -10534,7 +10344,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const nSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&nSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);_syncMetroStartTime(nSpm);}
+        if(oldSpm>0&&nSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);
       }
     }
     _lastBpmPos=newPos;
@@ -10556,7 +10366,7 @@ function attachEvents(){
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const nSpm=posToSPM(newPos)*globalSpeedMult;
-        if(oldSpm>0&&nSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);_syncMetroStartTime(nSpm);}
+        if(oldSpm>0&&nSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/nSpm);
       }
     }
     _lastBpmPos=newPos;
@@ -10610,20 +10420,6 @@ function attachEvents(){
     buildSigFromControls();
   });
   // ── L1 : Selects unité et subdivision ──
-  (()=>{
-    const unitSel=document.getElementById('mpv-unit-sel');
-    const unitCol=unitSel?.closest('.metro-3col-eq');
-    const UNIT_FULL={4:'♩ noire',8:'♪ croche',2:'♩♩ blanche',1:'○ ronde',16:'♬ dbl-croche'};
-    const UNIT_SHORT={4:'♩',8:'♪',2:'♩♩',1:'○',16:'♬'};
-    function _refreshUnitLabels(w){
-      const labels=w>=78?UNIT_FULL:UNIT_SHORT;
-      Array.from(unitSel.options).forEach(o=>{ o.textContent=labels[parseInt(o.value)]??o.textContent; });
-    }
-    if(unitCol&&unitSel){
-      new ResizeObserver(entries=>_refreshUnitLabels(entries[0].contentRect.width)).observe(unitCol);
-      _refreshUnitLabels(unitCol.offsetWidth);
-    }
-  })();
   document.getElementById('mpv-unit-sel').addEventListener('change', () => {
     _applyDefaultsFromUnit();
     buildSigFromControls();
@@ -10633,17 +10429,14 @@ function attachEvents(){
   document.getElementById('mpv-tog-A').addEventListener('click', function() {
     metro.accentOn = !metro.accentOn;
     this.classList.toggle('on', metro.accentOn);
-    renderMetroPatternViz();
   });
   document.getElementById('mpv-tog-P').addEventListener('click', function() {
     metro.tempsOn = !metro.tempsOn;
     this.classList.toggle('on', metro.tempsOn);
-    renderMetroPatternViz();
   });
   document.getElementById('mpv-tog-p').addEventListener('click', function() {
     metro.subdivOn = !metro.subdivOn;
     this.classList.toggle('on', metro.subdivOn);
-    renderMetroPatternViz();
   });
   // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
   document.getElementById('metro-pattern-viz').addEventListener('click', e => {
@@ -10980,13 +10773,13 @@ function attachEvents(){
   updateSmenuTheme();
 
   document.getElementById('bpm').addEventListener('input',function(){
-    // Rescale metroNextBeatTime + recalibre metroStartTime pour garder le visuel en phase
+    // Rescale metroNextBeatTime pour éviter le décalage métro au changement de tempo
     if(playing && ac){
       const now=ac.currentTime;
       if(metroNextBeatTime>now){
         const oldSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
         const newSpm=posToSPM(parseInt(this.value))*globalSpeedMult;
-        if(oldSpm>0&&newSpm>0){metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);_syncMetroStartTime(newSpm);}
+        if(oldSpm>0&&newSpm>0) metroNextBeatTime=now+(metroNextBeatTime-now)*(oldSpm/newSpm);
       }
     }
     _lastBpmPos=parseInt(this.value);
@@ -11058,11 +10851,9 @@ function attachEvents(){
 
   // ── Rec : Reprendre / Valider / Annuler / Mode ──
   document.getElementById('rec-ctrl-reprendre').addEventListener('click',()=>{
-    // Annule la dernière prise (prevPattern si dispo, sinon originalPattern), reste en rec
+    // Effacer la prise courante et repartir de zéro (originalPattern), rester en rec
     recLayers.forEach(li=>{
-      const target=state[li].prevPattern||state[li].originalPattern;
-      if(target) state[li].pattern=[...target];
-      state[li].prevPattern=null; // une seule annulation possible
+      state[li].pattern=[...state[li].originalPattern];
       state[li].recBuffer=null;
       state[li].hasEverTapped=false;
       buildStepsDOM(li,state[li].wrapped);
@@ -11075,7 +10866,6 @@ function attachEvents(){
     if(recLayers.length===0)return;
     const refMode=state[recLayers[0]].recMode==='overdub'?'replace':'overdub';
     recLayers.forEach(li=>{state[li].recMode=refMode;});
-    prefs.recMode=refMode; localStorage.setItem('btk_prefs',JSON.stringify(prefs)); // mémoriser le dernier mode
     const isOvr=refMode==='overdub';
     const btn=document.getElementById('rec-ctrl-mode');
     btn.innerHTML='<span style="font-size:8px;opacity:.65;font-weight:400;display:block">mode</span>'+(isOvr?'Overdub':'Replace');
@@ -11232,33 +11022,19 @@ function start(){
 // Overlay glisser (tempo / volume)
 const _dragOverlay=(()=>{
   const el=document.createElement('div');el.className='drag-value-overlay';document.body.appendChild(el);
-  return{show(txt){el.innerHTML=txt;el.style.display='block';},hide(){el.style.display='none';}};
+  return{show(txt){el.textContent=txt;el.style.display='block';},hide(){el.style.display='none';}};
 })();
 
 // Lancer l'application
 start();
 attachEvents();
-// Maintenir l'AudioContext actif après retour (iOS/Firefox suspend AC en arrière-plan)
-function _resumeAfterBackground(){
-  if(!ac)return;
-  ac.resume().then(()=>{
-    if(!playing)return;
-    // Resync nextStepTime pour éviter un burst de steps accumulés pendant la mise en veille
-    const now=ac.currentTime;
-    LAYERS.forEach((_,li)=>{ if(state[li].nextStepTime<now) state[li].nextStepTime=now+0.05; });
-    if(metroNextBeatTime<now) metroNextBeatTime=now+0.05;
-    // Redémarrer le scheduler si la chaîne setTimeout est morte (Firefox iOS)
-    if(!schedTimerID) schedTimerID=setTimeout(scheduler,SCHED_MS);
-  });
-}
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden) _resumeAfterBackground(); });
-window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
-window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
+// Maintenir l'AudioContext actif après retour sur la page (iOS suspend AC en arrière-plan)
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && ac) ac.resume(); });
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
-setView(viewShape, viewCycle);                                 // Vue restaurée depuis prefs (défaut : Mesure)
+setView(true);                                                 // Vue circulaire par défaut
 </script>
 </body>
 </html>
