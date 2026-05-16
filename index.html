@@ -783,12 +783,10 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 #circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
-body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
-.btn-mod-circle{display:none!important}                   /* bouton mod dans row1 : caché en vue linéaire */
-body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
-#circle-mode-toggle{display:flex;gap:3px;margin-bottom:4px}
+/* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px}
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -801,6 +799,7 @@ body.view-circle #circle-view{width:100%;order:3}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
+body.view-circle #view-mode-bar{order:3;width:100%}
 body.view-circle #layers-wrap{order:4;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
@@ -816,7 +815,23 @@ body.view-circle #section-encyclo{order:5}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
   body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
+  /* view-mode-bar suit section-groove dans le flex-wrap */
+  body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
 }
+
+/* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
+/* Principe : display:contents sur .layer → enfants deviennent fils directs de #layers
+   CSS variables (--cs,--cl…) héritées normalement. Pas de déplacement DOM. */
+body.step-seq #layers{display:flex;flex-direction:column;gap:0}
+body.step-seq .layer{display:contents}
+/* Zone haut : step rows (order:0) */
+body.step-seq .layer-row2{order:0;display:flex!important;border-left:3px solid var(--cs);margin-bottom:2px}
+/* Zone bas : contrôles + mod panels — même order → DOM order les groupe par layer */
+body.step-seq .layer-row1{order:1;margin-top:4px;border-left:3px solid var(--cs)}
+body.step-seq .layer-mod-panel{order:1;border-left:3px solid var(--cs)}
+/* Strip info gauche en step-seq (nb pas, unité, durée) */
+.step-seq-info{display:none;width:58px;flex-shrink:0;padding:4px 4px 3px;font-size:9px;line-height:1.3;align-self:stretch;box-sizing:border-box}
+body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
 
 /* ─── RÉGLAGES / THÈME ─── */
 .theme-toggle{display:flex;gap:3px}
@@ -1042,7 +1057,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.13</span>
+      <span class="app-version">v3.13.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1255,6 +1270,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Section Groove -->
   <div id="section-groove"></div>
+  <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
+  <div id="view-mode-bar" style="display:none"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Modal : sauvegarde preset métronome -->
@@ -1270,13 +1287,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       </div>
     </div>
   </div>
-  <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
+  <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
-    <div id="circle-mode-toggle">
-      <button id="btn-circle-cycle" class="circle-mode-btn" title="1 tour = 1 cycle du pattern">↺ Pattern</button>
-      <button id="btn-circle-measure" class="circle-mode-btn active" title="1 tour = 1 mesure">↺ Mesure</button>
-      <button id="btn-circle-linear" class="circle-mode-btn" title="Vue linéaire — 1 cycle complet (PPCM de tous les patterns)">↺ Cycle</button>
-    </div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
   <div class="hdivider"></div>
@@ -2186,6 +2198,7 @@ function changeSig(id) {
   renderMetroPatternViz();
   buildSigSelector();
   if(circleView) drawCircles(); // maj cercle mesure sans play (signature affecte positions dots)
+  LAYERS.forEach((_,li)=>updateStepSeqInfo(li));
   if (!_suppressGrooveDirty) {
     const groove = getGroove(currentGrooveId);
     if (groove && id !== (groove.signature || '4/4')) {
@@ -4302,9 +4315,9 @@ function buildGrooveSection(){
 
   const btnView=document.createElement('button');
   btnView.id='btn-view';btnView.className='btn-view';
-  btnView.textContent=circleView?'⊞':'◎';
-  btnView.title=circleView?'Vue linéaire':'Vue circulaire';
-  btnView.addEventListener('click',()=>setView(!circleView));
+  btnView.textContent=viewShape==='circle'?'◎':'☰';
+  btnView.title=viewShape==='circle'?'Vue circulaire':'Vue linéaire';
+  btnView.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle'));
   bar.appendChild(btnView);
 
   const btnVolet=document.createElement('button');
@@ -4320,6 +4333,7 @@ function buildGrooveSection(){
     if(hd)hd.style.display=layersOuverts?'':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
+    updateViewModeBar();
   });
   bar.appendChild(btnVolet);
   bar.addEventListener('click',e=>{
@@ -4333,6 +4347,7 @@ function buildGrooveSection(){
       if(hd)hd.style.display=layersOuverts?'':'none';
       btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
       btnVolet.classList.toggle('open',layersOuverts);
+      updateViewModeBar();
     }
   });
   cont.appendChild(bar);
@@ -4356,7 +4371,7 @@ function buildLayers(){
     }
     refreshLayerClass();
 
-    // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][steps ▼/▶] ──────────
+    // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][⏺][mod▶] ──────────
     const row1=document.createElement('div');row1.className='layer-row1';
 
     // ●/○ mute
@@ -4448,37 +4463,19 @@ function buildLayers(){
     // i info + rec
     row1.appendChild(btnI);
     row1.appendChild(bRec);
-    // steps ▼/▶ toggle (row1) + mod ▶ ghost dans row1 pour vue circulaire
-    const row2=document.createElement('div');row2.className='layer-row2';
-    const btnToggle=document.createElement('button');
-    btnToggle.className='btn-layer-toggle btn-steps-toggle';
-    let stepsOpen=true;btnToggle.textContent='steps ▼';
-    // Bouton mod circulaire dans row1 (caché en vue linéaire via CSS)
-    const btnModCircle=document.createElement('button');btnModCircle.className='btn-layer-toggle btn-mod-circle';
-    btnModCircle.style.cssText='font-size:10px;opacity:.55;flex-shrink:0;align-self:flex-start';
-    btnModCircle.textContent='mod ▶';
-    // Bouton mod linéaire dans row2 (caché en vue circulaire via row2)
+    // Bouton mod dans row1 (unique, visible dans toutes les vues)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
     btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
     btnMod.textContent='mod ▶';
-    const syncModText=(txt)=>{btnMod.textContent=txt;btnModCircle.textContent=txt;};
-    btnToggle.addEventListener('click',()=>{
-      stepsOpen=!stepsOpen;
-      row2.classList.toggle('collapsed',!stepsOpen);
-      btnToggle.textContent=stepsOpen?'steps ▼':'steps ▶';
-      // mod panel suit le volet steps
-      const mp=layerDiv.querySelector('.layer-mod-panel');
-      if(mp&&!stepsOpen){ mp.classList.add('hidden'); syncModText('mod ▶'); }
-    });
-    row1.appendChild(btnToggle);
-    row1.appendChild(btnModCircle);
+    row1.appendChild(btnMod);
     layerDiv.appendChild(row1);
 
-    // ── Ligne 2 : grille steps + mod ──────────────────────────────────────────
+    // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
+    const row2=document.createElement('div');row2.className='layer-row2';
+    const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
+    row2.appendChild(seqInfo);
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
-    row2.appendChild(btnMod);
-
     layerDiv.appendChild(row2);
 
     // ── Panneau mod (transformations) ────────────────────────────────────────
@@ -4498,6 +4495,7 @@ function buildLayers(){
       else if(nextHalf){bSpeed.textContent='/2';bSpeed.classList.add('on');}
       else{bSpeed.textContent='=';bSpeed.classList.remove('on');}
       if(bTern)bTern.classList.toggle('on',state[li].ternOn);
+      updateStepSeqInfo(li);
     };
     updateSpeedBtns();
     const _speedMark=()=>{ grooveDirty=true; updateGrooveSaveBtn(); };
@@ -4731,14 +4729,12 @@ function buildLayers(){
 
     layerDiv.appendChild(modPanel);
 
-    // toggle mod panel via les deux boutons (linéaire + circulaire)
-    const onToggleMod=()=>{
+    // toggle mod panel
+    btnMod.addEventListener('click',()=>{
       const open=modPanel.classList.toggle('hidden');
-      syncModText(open?'mod ▶':'mod ▼');
+      btnMod.textContent=open?'mod ▶':'mod ▼';
       if(!open) updateSwapBtn();
-    };
-    btnMod.addEventListener('click',onToggleMod);
-    btnModCircle.addEventListener('click',onToggleMod);
+    });
 
     cont.appendChild(layerDiv);
 
@@ -4798,6 +4794,7 @@ function buildStepsDOM(li,wrap){
   });
   state[li].wrapped=wrap;
   if(circleView) drawCircles();
+  updateStepSeqInfo(li);
 }
 
 function onStepClick(li,si,el){
@@ -6278,7 +6275,11 @@ function playMetroClick(atTime,type){
 // ═══════════════════════════════════════════════════════════════════════════
 
 let circleView = false;
-let circleModeView = 'measure'; // 'cycle' | 'measure'
+let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
+// ── Variables de vue (2 boutons indépendants) ─────────────────────────────
+let viewShape = 'circle';        // 'circle' | 'linear'
+let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
+let viewCycleLinear = 'cycle';   // 'pattern' | 'cycle'    (état mémorisé en mode ☰)
 const flashStep = [-1,-1,-1];
 const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
 
@@ -6553,7 +6554,7 @@ function drawCircles(){
       ctx.fillRect(bx-bw,by,bw,bh);
       ctx.fillStyle=isDarkB?'#C89040':'#8B5E00';
       ctx.fillText(bdText,bx-4,by+2);
-      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{circleModeView='linear';document.body.classList.add('circle-linear');resizeCanvas();setupCircleModeToggle();}};
+      _circleBadge={x:bx-bw,y:by,w:bw,h:bh,action:()=>{viewShape='linear';viewCycleLinear='cycle';_applyView();}};
     } else { _circleBadge=null; }
   } else { _circleBadge=null; }
 }
@@ -6785,31 +6786,103 @@ function setupCanvasInteraction(){
   },{passive:true});
 }
 
-function setView(circle){
-  circleView = circle;
-  document.body.classList.toggle('view-circle', circle);
-  if(!circle) document.body.classList.remove('circle-linear');
-  else document.body.classList.toggle('circle-linear', circleModeView==='linear');
-  document.getElementById('btn-view').textContent = circle ? '⊞' : '◎';
-  document.getElementById('btn-view').title = circle ? 'Vue linéaire' : 'Vue circulaire';
+// ── setView(shape) : change la forme (◎/☰), préserve l'état cycle mémorisé ──
+function setView(shape){
+  if(shape !== undefined) viewShape = shape;
+  _applyView();
+}
+
+// ── setViewCycle(cycle) : change le sous-mode, indépendant de la forme ──
+function setViewCycle(cycle){
+  if(viewShape === 'circle') viewCycleCircle = cycle;
+  else viewCycleLinear = cycle;
+  _applyView();
+}
+
+// ── _applyView() : applique viewShape + viewCycle* au DOM ─────────────────
+function _applyView(){
+  const isCircle    = viewShape === 'circle';
+  const isStepSeq   = viewShape === 'linear' && viewCycleLinear === 'pattern';
+  const isLinearCyc = viewShape === 'linear' && viewCycleLinear === 'cycle';
+
+  // circleModeView : utilisé par drawCircles / drawLinear
+  if(isCircle)    circleModeView = viewCycleCircle === 'pattern' ? 'cycle' : 'measure';
+  else if(isLinearCyc) circleModeView = 'linear';
+
+  // circleView : true si un canvas est affiché
+  circleView = isCircle || isLinearCyc;
+
+  // Classes body
+  document.body.classList.toggle('view-circle', circleView);
+  document.body.classList.toggle('circle-linear', isLinearCyc);
+  document.body.classList.toggle('step-seq', isStepSeq);
+
+  // btn-view
+  const btnV = document.getElementById('btn-view');
+  if(btnV){ btnV.textContent = isCircle ? '◎' : '☰'; btnV.title = isCircle ? 'Vue circulaire' : 'Vue linéaire'; }
+
+  // Barre de sous-mode
+  updateViewModeBar();
 
   cancelAnimationFrame(visualRafID);
   visualRafID = null;
 
-  // Sync visibilité cercle et layers-wrap selon layersOuverts
-  const cv=document.getElementById('circle-view');
-  const lw=document.getElementById('layers-wrap');
-  if(cv)cv.style.display=(circle&&layersOuverts)?'flex':'none';
-  if(lw)lw.style.display=layersOuverts?'':'none';
+  // Visibilité canvas / layers
+  const cv = document.getElementById('circle-view');
+  const lw = document.getElementById('layers-wrap');
+  if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
+  if(lw) lw.style.display = layersOuverts ? '' : 'none';
 
-  if(circle){
+  if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); setupCircleModeToggle(); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
-    LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
+    // Linéaire (step-seq ou fallback)
+    LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
+}
+
+// ── updateViewModeBar() : reconstruit les 2 boutons contextuels ──────────
+function updateViewModeBar(){
+  const bar = document.getElementById('view-mode-bar');
+  if(!bar) return;
+  if(!layersOuverts){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  bar.innerHTML='';
+  const isCircle = viewShape === 'circle';
+  const opts = isCircle
+    ? [['pattern','↺ Pattern'],['measure','↺ Mesure']]
+    : [['pattern','↺ Pattern'],['cycle','↺ Cycle']];
+  const curCycle = isCircle ? viewCycleCircle : viewCycleLinear;
+  opts.forEach(([val,label])=>{
+    const btn=document.createElement('button');
+    btn.className='circle-mode-btn'+(curCycle===val?' active':'');
+    btn.textContent=label;
+    btn.addEventListener('click',()=>setViewCycle(val));
+    bar.appendChild(btn);
+  });
+}
+
+// ── updateStepSeqInfo(li) : met à jour le strip info gauche de chaque step row ──
+function updateStepSeqInfo(li){
+  const el=document.getElementById('step-seq-info-'+li);
+  if(!el) return;
+  const n=state[li].pattern.length;
+  const dbl=state[li].doubleOn,hlf=state[li].halfOn,trn=state[li].ternOn;
+  const _pd=state[li].pendingDouble,_ph=state[li].pendingHalf,_pc=state[li].pendingClear;
+  const eff_dbl=_pc?false:(_pd?true:dbl), eff_hlf=_pc?false:(_ph?true:hlf);
+  const unit=eff_dbl&&trn?'1/16T':eff_hlf&&trn?'1/4T':eff_dbl?'1/16':eff_hlf?'1/4':trn?'1/8T':'1/8';
+  const fbs=currentSig?(currentSig.felBeatSteps||2):2;
+  let numD,denD;
+  if(!trn){numD=n*(eff_hlf?2:1);denD=fbs*(eff_dbl?2:eff_hlf?1:1);}
+  else{numD=2*n*(eff_hlf?2:1);denD=3*fbs*(eff_dbl?2:eff_hlf?1:1);}
+  const g2=gcd(numD,denD);numD/=g2;denD/=g2;
+  const whole=Math.floor(numD/denD),rem=numD%denD;
+  const durStr=rem===0?whole+' tps':whole===0?rem+'/'+denD+' tps':whole+'+'+rem+'/'+denD+' tps';
+  const col=CIRCLE_COLORS[li];
+  el.innerHTML=`<span style="font-weight:700;color:${col.fill}">${n}p ${unit}</span><span style="color:#888;font-size:8px">${durStr}</span>`;
 }
 
 function visualLoopCircle(){
@@ -6817,27 +6890,6 @@ function visualLoopCircle(){
   drawCircles();
   highlightMetroStep();
   visualRafID = requestAnimationFrame(visualLoopCircle);
-}
-
-function setupCircleModeToggle(){
-  const btnCycle   = document.getElementById('btn-circle-cycle');
-  const btnMeasure = document.getElementById('btn-circle-measure');
-  const btnLinear  = document.getElementById('btn-circle-linear');
-  if(!btnCycle || !btnMeasure) return;
-  // Évite les doublons d'écouteurs si appelé plusieurs fois
-  const fresh  = btnCycle.cloneNode(true);
-  const freshM = btnMeasure.cloneNode(true);
-  const freshL = btnLinear ? btnLinear.cloneNode(true) : null;
-  btnCycle.parentNode.replaceChild(fresh, btnCycle);
-  btnMeasure.parentNode.replaceChild(freshM, btnMeasure);
-  if(freshL && btnLinear) btnLinear.parentNode.replaceChild(freshL, btnLinear);
-  fresh.classList.toggle('active',  circleModeView==='cycle');
-  freshM.classList.toggle('active', circleModeView==='measure');
-  if(freshL) freshL.classList.toggle('active', circleModeView==='linear');
-  const allBtns=[fresh,freshM,freshL].filter(Boolean);
-  fresh.addEventListener('click', ()=>{ circleModeView='cycle';   document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); fresh.classList.add('active');  resizeCanvas(); });
-  freshM.addEventListener('click',()=>{ circleModeView='measure'; document.body.classList.remove('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshM.classList.add('active'); resizeCanvas(); });
-  if(freshL) freshL.addEventListener('click',()=>{ circleModeView='linear'; document.body.classList.add('circle-linear'); _circleBadge=null; allBtns.forEach(b=>b.classList.remove('active')); freshL.classList.add('active'); resizeCanvas(); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -11034,7 +11086,7 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && ac) ac
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
-setView(true);                                                 // Vue circulaire par défaut
+setView('circle');                                             // Vue circulaire par défaut
 </script>
 </body>
 </html>
