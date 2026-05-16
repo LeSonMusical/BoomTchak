@@ -675,9 +675,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 /* Replace mode : step passé sans note → effacé visuellement */
 .step.rec-past{opacity:.18 !important}
-/* Overdub mode : note tapée cette session → halo pulsant */
-@keyframes rec-new-pulse{0%,100%{box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}50%{box-shadow:0 0 0 1.5px rgba(255,255,255,.15)}}
-.step.rec-new{animation:rec-new-pulse .9s ease-in-out infinite}
+/* Overdub mode : note tapée cette session → clignotement */
+@keyframes rec-ovr-new{0%,100%{opacity:1}50%{opacity:.25}}
+.step.rec-new{animation:rec-ovr-new .65s ease-in-out infinite}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:6px}
@@ -685,7 +685,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rec-ctrl{flex:1.5;min-width:68px;display:none;flex-direction:column;gap:4px;align-items:stretch;justify-content:center}
 .play-btns.rec-mode .rec-ctrl{display:flex}
 .rec-ctrl-btn{padding:5px 3px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center;background:transparent;color:#ccc}
-.rec-ctrl-reprendre{border-color:transparent;color:#999}.rec-ctrl-reprendre .rec-reprendre-icon{color:#D85A30}
+.rec-ctrl-reprendre{border-color:rgba(216,90,48,.45);color:#999;border-radius:5px}.rec-ctrl-reprendre:active{background:rgba(216,90,48,.15);border-color:#D85A30}.rec-ctrl-reprendre .rec-reprendre-icon{color:#D85A30}
 .play-thumb-layer-name{display:block;font-size:9px;font-weight:700;min-height:12px;line-height:1.3;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
 /* ── Items bibliothèque — layout 2 lignes ── */
 .lib-item{display:flex;align-items:stretch;gap:0;padding:5px 8px 5px 0;border-bottom:1px solid #f0ede8;transition:background .1s}
@@ -1092,7 +1092,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.9</span>
+      <span class="app-version">v3.13.10</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3001,6 +3001,8 @@ let currentEncycloId = 'poumtchak';
 // ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
+  // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
+  if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
   grooveDirty=false; updateGrooveSaveBtn();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
@@ -7026,6 +7028,26 @@ function _toggleMetroPanel(){
   wrap.style.display=hidden?'':'none';
   const btnT=document.getElementById('btn-tempo');
   if(btnT) btnT.classList.toggle('active',hidden);
+  _ribSigMetroOpen=false;
+}
+// Ouverture rapide du volet Métro sur le sous-volet Unit uniquement (depuis barre info sig)
+// N'affecte PAS btn-tempo.active — indépendant du toggle standard
+let _ribSigMetroOpen=false;
+function _openMetroUnitFromSig(){
+  const wrap=document.getElementById('temps-wrap'); if(!wrap) return;
+  const isVisible=wrap.style.display!=='none';
+  if(isVisible&&_ribSigMetroOpen){wrap.style.display='none';_ribSigMetroOpen=false;return;}
+  wrap.style.display='';
+  _ribSigMetroOpen=true;
+  // Afficher uniquement le sous-volet Unit (metro-sub-sign), masquer les autres
+  [['metro-sub-temps','btn-metro-volet-temps'],['metro-sub-sign','btn-metro-volet-sign'],
+   ['metro-sub-tap','btn-metro-volet-tap'],['metro-sub-vol','btn-metro-volet-vol'],
+   ['metro-sub-pat','btn-metro-volet-pat']].forEach(([sid,bid])=>{
+    const s=document.getElementById(sid),b=document.getElementById(bid);
+    const show=sid==='metro-sub-sign';
+    if(s)s.style.display=show?'block':'none';
+    if(b)b.classList.toggle('open',show);
+  });
 }
 function updateRhythmInfoBar(){
   const el=document.getElementById('rhythm-info-bar');
@@ -7091,7 +7113,7 @@ function updateRhythmInfoBar(){
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
   const sigEl=el.querySelector('.rib-sig');
-  if(sigEl) sigEl.addEventListener('click',_toggleMetroPanel);
+  if(sigEl) sigEl.addEventListener('click',_openMetroUnitFromSig);
 }
 
 function visualLoopCircle(){
@@ -10539,6 +10561,7 @@ function attachEvents(){
     const open = sub.style.display === 'none';
     sub.style.display = open ? 'block' : 'none';
     btn.classList.toggle('open', open);
+    _ribSigMetroOpen = false; // quitter le mode sig-rapide si l'utilisateur navigue
   }
   document.getElementById('btn-metro-volet-temps').addEventListener('click', () => {
     _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
