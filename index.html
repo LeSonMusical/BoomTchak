@@ -673,6 +673,11 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rec-ctrl-btn.rec-ctrl-mode{border:1.5px solid #7B5EA7;border-radius:4px;background:rgba(123,94,167,.18);font-size:10px;margin-top:12px;padding:6px 8px;color:#ddd}
 .rec-ctrl-btn.rec-ctrl-mode.rec-ctrl-ovr{border-color:transparent;background:transparent;color:#888}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
+/* Replace mode : step passé sans note → effacé visuellement */
+.step.rec-past{opacity:.18 !important}
+/* Overdub mode : note tapée cette session → halo pulsant */
+@keyframes rec-new-pulse{0%,100%{box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}50%{box-shadow:0 0 0 1.5px rgba(255,255,255,.15)}}
+.step.rec-new{animation:rec-new-pulse .9s ease-in-out infinite}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:6px}
@@ -680,7 +685,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rec-ctrl{flex:1.5;min-width:68px;display:none;flex-direction:column;gap:4px;align-items:stretch;justify-content:center}
 .play-btns.rec-mode .rec-ctrl{display:flex}
 .rec-ctrl-btn{padding:5px 3px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center;background:transparent;color:#ccc}
-.rec-ctrl-reprendre{border-color:#D85A30;color:#D85A30}
+.rec-ctrl-reprendre{border-color:transparent;color:#999}.rec-ctrl-reprendre .rec-reprendre-icon{color:#D85A30}
 .play-thumb-layer-name{display:block;font-size:9px;font-weight:700;min-height:12px;line-height:1.3;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
 /* ── Items bibliothèque — layout 2 lignes ── */
 .lib-item{display:flex;align-items:stretch;gap:0;padding:5px 8px 5px 0;border-bottom:1px solid #f0ede8;transition:background .1s}
@@ -1087,7 +1092,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.8</span>
+      <span class="app-version">v3.13.9</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1337,7 +1342,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="play-btns" id="play-btns">
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <div class="rec-ctrl" id="rec-ctrl">
-      <button class="rec-ctrl-btn rec-ctrl-reprendre" id="rec-ctrl-reprendre" title="Effacer la prise et recommencer">↺ Reprendre</button>
+      <button class="rec-ctrl-btn rec-ctrl-reprendre" id="rec-ctrl-reprendre" title="Effacer la prise et recommencer"><span class="rec-reprendre-icon">↺</span> Reprendre</button>
       <button class="rec-ctrl-btn rec-ctrl-mode" id="rec-ctrl-mode"><span style="font-size:8px;opacity:.65;font-weight:400;display:block">mode</span>Replace</button>
     </div>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
@@ -2574,7 +2579,13 @@ function visualLoop(){
     const elapsed=now-state[li].startTime;
     const si=Math.floor(elapsed/beatSec)%state[li].pattern.length;
     const div=document.getElementById('steps-'+layer.id);if(!div)return;
-    div.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('cur',i===si));
+    const isReplaceRec=state[li].recording&&state[li].recMode==='replace';
+    const buf=isReplaceRec?state[li].recBuffer:null;
+    div.querySelectorAll('.step').forEach((s,i)=>{
+      s.classList.toggle('cur',i===si);
+      if(isReplaceRec) s.classList.toggle('rec-past',i<si&&(!buf||buf[i]==='.'));
+      else s.classList.remove('rec-past');
+    });
   });
   highlightMetroStep();
   visualRafID=requestAnimationFrame(visualLoop);
@@ -2674,6 +2685,7 @@ function startRec(li){
   state[li].recMode=prefs.recMode||'overdub';
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
+  state[li].recNewSteps=new Set();
   state[li].recArmed=true;
   state[li].recording=playing;
   recLayers.push(li);
@@ -2710,6 +2722,8 @@ function recTap(tapTime,isRight){
   const note=(recLayers.length===1&&isRight)?'x':'X';
   if(state[li].recMode==='overdub'){
     if(state[li].pattern[si]==='.') state[li].pattern[si]=note;
+    if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
+    state[li].recNewSteps.add(si);
   } else {
     // RPL : accumule dans le buffer + feedback immédiat dans le pattern courant
     if(!state[li].recBuffer) state[li].recBuffer=Array(n).fill('.');
@@ -2738,6 +2752,7 @@ function stopRec(li,validate){
   state[li].lastCommitted=null;
   state[li].hasEverTapped=false;
   state[li].recBuffer=null;
+  state[li].recNewSteps=new Set();
   state[li].recArmed=false;
   state[li].recording=false;
   recLayers=recLayers.filter(x=>x!==li);
@@ -4901,7 +4916,8 @@ function buildStepsDOM(li,wrap){
       div.appendChild(br);
     }
     const s=document.createElement('div');
-    s.className='step'+(p==='X'?' on':p==='x'?' soft':'');
+    const isNew=state[li].recNewSteps?.has(si)&&state[li].recording;
+    s.className='step'+(p==='X'?' on':p==='x'?' soft':'')+(isNew?' rec-new':'');
     s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
@@ -4929,6 +4945,8 @@ let _pspLi = -1, _pspBtn = null, _pspContext = 'pattern', _pspGrooveId = null;
 let _pspSoundKey = null, _pspSoundSs = null, _pspBandId = null;
 // familles sélectionnées pour le nouveau pattern/groove/band/soundPreset (dans le popover)
 let _pspNewFamIds = [];
+// sauvegarde des familles "écraser" quand on ouvre le formulaire "nouveau" (évite la perte de tags)
+let _pspOverwriteFamIds = [];
 
 function saveLayerPattern(li, btn){
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
@@ -11143,7 +11161,7 @@ function attachEvents(){
     recLayers.forEach(li=>{
       const target=state[li].prevPattern||state[li].originalPattern;
       if(target) state[li].pattern=[...target];
-      state[li].prevPattern=null; // une seule annulation possible
+      state[li].prevPattern=null;
       state[li].recBuffer=null;
       state[li].hasEverTapped=false;
       buildStepsDOM(li,state[li].wrapped);
@@ -11151,6 +11169,8 @@ function attachEvents(){
     });
     _updateGarderEff();
     if(circleView)drawCircles();
+    // Si transport arrêté → lancer la lecture en rec
+    if(!playing) startPlay();
   });
   document.getElementById('rec-ctrl-mode').addEventListener('click',()=>{
     if(recLayers.length===0)return;
@@ -11203,11 +11223,16 @@ function attachEvents(){
     document.getElementById('psp-new-toggle').textContent =
       nowHidden ? '＋ Sauvegarder comme nouveau ▶' : '＋ Sauvegarder comme nouveau ▼';
     if(!nowHidden){
-      // Partir avec familles vides pour un nouvel item
+      // Partir avec familles vides pour un nouvel item — sauvegarder les familles "écraser"
+      _pspOverwriteFamIds = [..._pspNewFamIds];
       _pspNewFamIds = [];
       buildPspFamTags(); buildPspFamSel();
       const inp = document.getElementById('psp-name-input');
       setTimeout(()=>{ inp.focus(); inp.select(); }, 60);
+    } else {
+      // Retour au formulaire "écraser" → restaurer les familles
+      _pspNewFamIds = [..._pspOverwriteFamIds];
+      buildPspFamTags(); buildPspFamSel();
     }
   });
   document.getElementById('psp-fam-sel').addEventListener('change', e=>{
