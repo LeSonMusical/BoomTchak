@@ -1059,7 +1059,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.4</span>
+      <span class="app-version">v3.13.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4838,7 +4838,11 @@ function buildLayers(){
     attachModPanelObserver(li);
   });
   // Vue Pas : déplacer les step rows dans la zone du haut
-  if(_isStepView()) setTimeout(()=>_moveRow2ToStepView(true),0);
+  if(_isStepView()) setTimeout(()=>{
+    _moveRow2ToStepView(true);
+    _setupStepViewDOM(true);
+    requestAnimationFrame(()=>LAYERS.forEach((_,li)=>checkWrap(li)));
+  },0);
 }
 
 function findPatternBySeq(arr){
@@ -6404,6 +6408,23 @@ function _moveRow2ToStepView(toStep){
     });
   }
 }
+let _srwResizeObs = null;
+// Déplace #layers-wrap physiquement après #circle-view en step view
+// (garantit que le DOM flow = circle-view PUIS layers-wrap, sans trick CSS order)
+function _setupStepViewDOM(toStep){
+  const cv=document.getElementById('circle-view');
+  const lw=document.getElementById('layers-wrap');
+  if(!cv||!lw) return;
+  if(toStep){if(cv.nextSibling!==lw) cv.after(lw);}
+  else       {if(lw.nextSibling !==cv) cv.before(lw);}
+}
+// Observe #step-rows-wrap : relance checkWrap quand la largeur change (rotation, resize)
+function _watchStepRowsWrap(){
+  const srw=document.getElementById('step-rows-wrap');if(!srw)return;
+  if(_srwResizeObs){_srwResizeObs.disconnect();_srwResizeObs=null;}
+  _srwResizeObs=new ResizeObserver(()=>{if(_isStepView())LAYERS.forEach((_,li)=>checkWrap(li));});
+  _srwResizeObs.observe(srw);
+}
 function _updateViewButtons(){
   const bs=document.getElementById('btn-view-shape');
   const bc=document.getElementById('btn-view-cycle');
@@ -6930,8 +6951,12 @@ function setView(shape, cycle){
   localStorage.setItem('btk_prefs',JSON.stringify(prefs));
 
   const stepView=_isStepView();
-  // Quitter la vue Pas → remettre row2 dans les layer divs avant de reconstruire
-  if(!stepView) _moveRow2ToStepView(false);
+  // Quitter la vue Pas → remettre row2 dans les layer divs + restaurer DOM order
+  if(!stepView){
+    _moveRow2ToStepView(false);
+    _setupStepViewDOM(false);
+    if(_srwResizeObs){_srwResizeObs.disconnect();_srwResizeObs=null;}
+  }
 
   // Toutes les vues utilisent le layout view-circle (canvas/step-rows en haut, mod en bas)
   document.body.classList.add('view-circle');
@@ -6948,8 +6973,14 @@ function setView(shape, cycle){
   if(lw)lw.style.display=layersOuverts?'':'none';
 
   if(stepView){
-    LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
-    setTimeout(()=>_moveRow2ToStepView(true), 0);
+    LAYERS.forEach((_,li)=>buildStepsDOM(li,false));
+    // 1) déplacer row2 dans #step-rows-wrap + repositionner #layers-wrap après #circle-view dans le DOM
+    // 2) une fois le DOM peint, checkWrap avec la vraie largeur du conteneur + activer le ResizeObserver
+    setTimeout(()=>{
+      _moveRow2ToStepView(true);
+      _setupStepViewDOM(true);
+      requestAnimationFrame(()=>{LAYERS.forEach((_,li)=>checkWrap(li));_watchStepRowsWrap();});
+    },0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   } else if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
