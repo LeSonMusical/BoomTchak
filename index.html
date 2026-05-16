@@ -794,6 +794,12 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
+#step-rows-wrap{display:none;flex-direction:column;width:100%;gap:1px;padding:4px 0}
+body.view-step #step-rows-wrap{display:flex}
+body.view-step #rhythm-canvas{display:none!important}
+body.view-step #step-rows-wrap .layer-row2{display:flex!important;border-left:3px solid var(--cs,#aaa)}
+body.view-step .btn-mod-circle{display:none!important}
+body.view-step .btn-steps-toggle{display:none!important}
 .view-name-lbl{font-size:10px;color:#C8961A;font-weight:700;min-width:34px;text-align:center;flex-shrink:0;line-height:1;align-self:center}
 body.dark-mode .view-name-lbl{color:#C8961A}
 
@@ -1052,7 +1058,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.0</span>
+      <span class="app-version">v3.13.1</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1287,6 +1293,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
+    <div id="step-rows-wrap"></div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
   <div class="hdivider"></div>
@@ -4372,31 +4379,20 @@ function buildGrooveSection(){
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
   btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-  btnVolet.addEventListener('click',()=>{
+  const _toggleLayersOuverts=()=>{
     layersOuverts=!layersOuverts;
     const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
     if(lw)lw.style.display=layersOuverts?'':'none';
-    if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
+    if(cv)cv.style.display=layersOuverts?'flex':'none'; // toutes les 4 vues utilisent circle-view
     if(hd)hd.style.display=layersOuverts?'':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
-  });
+  };
+  btnVolet.addEventListener('click',_toggleLayersOuverts);
   bar.appendChild(btnVolet);
-  bar.addEventListener('click',e=>{
-    if(e.target===bar||e.target===lbl){
-      layersOuverts=!layersOuverts;
-      const lw=document.getElementById('layers-wrap');
-      const cv=document.getElementById('circle-view');
-      const hd=document.querySelector('.hdivider');
-      if(lw)lw.style.display=layersOuverts?'':'none';
-      if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-      if(hd)hd.style.display=layersOuverts?'':'none';
-      btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-      btnVolet.classList.toggle('open',layersOuverts);
-    }
-  });
+  bar.addEventListener('click',e=>{ if(e.target===bar||e.target===lbl)_toggleLayersOuverts(); });
   cont.appendChild(bar);
 }
 
@@ -4844,6 +4840,8 @@ function buildLayers(){
     attachLayerObserver(li);
     attachModPanelObserver(li);
   });
+  // Vue Pas : déplacer les step rows dans la zone du haut
+  if(_isStepView()) setTimeout(()=>_moveRow2ToStepView(true),0);
 }
 
 function findPatternBySeq(arr){
@@ -6390,6 +6388,24 @@ function _applyViewState(){
   else if(viewShape==='circle'&&viewCycle==='layer'){circleView=true;circleModeView='cycle';}
   else{circleView=true;circleModeView='measure';}
 }
+function _isStepView(){return viewShape==='linear'&&viewCycle==='layer';}
+function _moveRow2ToStepView(toStep){
+  const wrap=document.getElementById('step-rows-wrap');if(!wrap)return;
+  if(toStep){
+    LAYERS.forEach((_,li)=>{
+      const layerDiv=document.getElementById('layer-div-'+li);if(!layerDiv)return;
+      const row2=layerDiv.querySelector(':scope > .layer-row2');
+      if(row2){row2.dataset.layerLi=li;wrap.appendChild(row2);}
+    });
+  } else {
+    Array.from(wrap.querySelectorAll('.layer-row2')).forEach(row2=>{
+      const li=parseInt(row2.dataset.layerLi??'0');
+      const layerDiv=document.getElementById('layer-div-'+li);if(!layerDiv)return;
+      const modPanel=layerDiv.querySelector('.layer-mod-panel');
+      if(modPanel)layerDiv.insertBefore(row2,modPanel);else layerDiv.appendChild(row2);
+    });
+  }
+}
 function _updateViewButtons(){
   const bs=document.getElementById('btn-view-shape');
   const bc=document.getElementById('btn-view-cycle');
@@ -6412,6 +6428,7 @@ function getStepAngle(li, si, n){
 }
 
 function resizeCanvas(){
+  if(_isStepView()) return; // vue Pas : pas de canvas
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
   const wrap = document.getElementById('circle-view');
   const frame = wrap.closest('.frame');
@@ -6911,7 +6928,13 @@ function setView(shape, cycle){
   prefs.viewShape=viewShape; prefs.viewCycle=viewCycle;
   localStorage.setItem('btk_prefs',JSON.stringify(prefs));
 
-  document.body.classList.toggle('view-circle', circleView);
+  const stepView=_isStepView();
+  // Quitter la vue Pas → remettre row2 dans les layer divs avant de reconstruire
+  if(!stepView) _moveRow2ToStepView(false);
+
+  // Toutes les vues utilisent le layout view-circle (canvas/step-rows en haut, mod en bas)
+  document.body.classList.add('view-circle');
+  document.body.classList.toggle('view-step', stepView);
   document.body.classList.toggle('circle-linear', circleView && circleModeView==='linear');
   _updateViewButtons();
 
@@ -6920,10 +6943,14 @@ function setView(shape, cycle){
 
   const cv=document.getElementById('circle-view');
   const lw=document.getElementById('layers-wrap');
-  if(cv)cv.style.display=(circleView&&layersOuverts)?'flex':'none';
+  if(cv)cv.style.display=layersOuverts?'flex':'none';
   if(lw)lw.style.display=layersOuverts?'':'none';
 
-  if(circleView){
+  if(stepView){
+    LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>checkWrap(li),0); });
+    setTimeout(()=>_moveRow2ToStepView(true), 0);
+    if(playing) visualRafID = requestAnimationFrame(visualLoop);
+  } else if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
     setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
