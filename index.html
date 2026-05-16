@@ -665,9 +665,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
-.btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
-.btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
+.btn-rec{width:18px;height:18px;min-width:18px;border-radius:50%;border:none;padding:0;background:var(--cs);opacity:.22;cursor:pointer;flex-shrink:0;font-size:0}
+.btn-rec.armed{opacity:1;background:var(--cl);box-shadow:0 0 0 1.5px var(--cs)}
+.btn-rec.recording{opacity:1;background:#c0392b;box-shadow:none;animation:rec-blink .65s step-end infinite}
 .mod-grp-clip .btn-mod{min-width:32px;text-align:center;font-size:16px;padding:1px 4px}
 /* Replace = violet encadré ; Overdub = discret sans cadre — spécificité .rec-ctrl-btn.rec-ctrl-mode pour l'emporter sur .rec-ctrl-btn */
 .rec-ctrl-btn.rec-ctrl-mode{border:1.5px solid #7B5EA7;border-radius:4px;background:rgba(123,94,167,.18);font-size:10px;margin-top:12px;padding:6px 8px;color:#ddd}
@@ -829,11 +829,11 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (dans #layers, toutes vues) ─── */
 /* Vues circulaire/linéaire : premier enfant de #layers → au-dessus des volets */
 /* Step-seq : order:1 → entre les step rows (0) et les contrôles (1, après par DOM) */
-#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:4px 6px;font-size:9px;border-top:1px solid rgba(224,208,144,.28);box-sizing:border-box}
-#rhythm-info-bar .rib-sep{color:rgba(224,208,144,.4);margin:0 1px}
+#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
+#rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 body.step-seq #rhythm-info-bar{order:1}
-body.dark-mode #rhythm-info-bar{border-top-color:rgba(120,104,64,.35)}
-body.dark-mode #rhythm-info-bar .rib-sep{color:rgba(120,104,64,.5)}
+body.dark-mode #rhythm-info-bar{color:#666}
+body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* Principe : display:contents sur .layer → enfants deviennent fils directs de #layers
@@ -951,9 +951,8 @@ body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
-body.dark-mode .btn-rec{background:#2a2a28;border-color:rgba(255,255,255,.12)}
-body.dark-mode .btn-rec.armed{background:rgba(216,90,48,.2);border-color:#D85A30}
-body.dark-mode .btn-rec.recording{background:#D85A30;border-color:#c0391b}
+body.dark-mode .btn-rec{opacity:.3}
+body.dark-mode .btn-rec.recording{background:#D85A30}
 body.dark-mode .hdivider{background:#333330}
 body.dark-mode .encyclo-wrap{color:#c0bdb7;border-left-color:#444}
 body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
@@ -964,7 +963,6 @@ body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
 body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#D85A30}
 body.dark-mode .btn-cap-val{background:#1a8a66}
 body.dark-mode .btn-cap-ann{background:#a0302b}
-body.dark-mode .btn-rec.armed{background:rgba(0,0,0,.3)}
 body.dark-mode .btn-rec.recording{background:#c0392b}
 body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#444}
 body.dark-mode .btn-play-main:hover{background:#333330}
@@ -1079,7 +1077,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.3</span>
+      <span class="app-version">v3.13.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2601,9 +2599,8 @@ function playConga(isRight){
 function updateRecBtn(li){
   const btn=document.getElementById('btn-rec-'+li);if(!btn)return;
   btn.classList.remove('armed','recording');
-  if(state[li].recording){btn.classList.add('recording');btn.textContent='●';}
-  else if(state[li].recArmed){btn.classList.add('armed');btn.textContent='●';}
-  else{btn.textContent='⏺';}
+  if(state[li].recording) btn.classList.add('recording');
+  else if(state[li].recArmed) btn.classList.add('armed');
 }
 function _getRecLiForThumb(isRight){
   // Retourne le li du layer ciblé par ce pouce (gauche=petit index, droite=grand index)
@@ -7045,7 +7042,7 @@ function updateRhythmInfoBar(){
     const g01=gcd(ratio[0],ratio[1]),g12=gcd(ratio[1],ratio[2]),g02=gcd(ratio[0],ratio[2]);
     const allCoprime=g01===1&&g12===1&&g02===1;
     const hasMultiple=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&b%a===0&&b!==a));
-    polyLabel=allCoprime?'Polyrythmie':hasMultiple?'Poly mixte':'Polyrythmie';
+    polyLabel=allCoprime?'Polyrythmie':hasMultiple?'Polymétrie':'Polyrythmie';
   }
   const infoLabel=[timeChar,polyLabel].filter(Boolean).join(' · ');
   // ── Assemblage des sections ──
@@ -7055,7 +7052,7 @@ function updateRhythmInfoBar(){
   const parts=[];
   if(sigLabel) parts.push(`<span title="Signature">${sigLabel}</span>`);
   parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
-  if(infoLabel) parts.push(`<span title="Caractère rythmique" style="font-style:italic;color:#d4c87a">${infoLabel}</span>`);
+  if(infoLabel) parts.push(`<span title="Caractère rythmique" style="font-style:italic">${infoLabel}</span>`);
   if(isSig) parts.push(`<span title="Rapport des durées">${ratioHtml}</span>`);
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
