@@ -77,11 +77,105 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.12.13** (session 2026-05-15)
+**v3.13.7** (session 2026-05-16)
+
+---
+
+## BUG CRITIQUE OUVERT — Step Sequencer view (v3.13.x)
+
+### Symptômes rapportés par Lamberio
+1. Au changement de groove, les step rows n'apparaissent pas, ou apparaissent puis disparaissent immédiatement
+2. L'espace alloué aux step rows est fixe (ne s'adapte pas au nombre de pas × largeur dispo × nb de lignes wrap)
+3. Chevauchement ou espace trop grand entre la zone step (haut) et les volets layer.mod (bas)
+
+### Architecture concernée
+- **Vue "Step Sequencer"** : `viewShape='linear'`, `viewCycle='layer'` → `_isStepView()=true`
+- `#circle-view` (haut) contient `#step-rows-wrap` (les 3 `.layer-row2` physiquement déplacées)
+- `#layers-wrap` (bas) contient les 3 `#layer-div-*` avec `.layer-row1` + `.layer-mod-panel`
+- `.layer-row2` éléments déplacés physiquement par `_moveRow2ToStepView(true/false)`
+
+### Fonctions clés
+- `_moveRow2ToStepView(toStep)` — déplace les `.layer-row2` entre `#step-rows-wrap` et `#layer-div-*`
+- `_setupStepViewDOM()` — garantit que `#layers-wrap` est après `#circle-view` dans le DOM
+- `_watchStepRowsWrap()` — ResizeObserver sur `#step-rows-wrap` → relance `checkWrap`
+- `checkWrap(li)` — calcule si les steps doivent wrapper sur 2 lignes ; appelle `buildStepsDOM(li, shouldWrap)`
+- `buildStepsDOM(li, wrap)` — reconstruit `#steps-low/high/noise` (innerHTML)
+- `buildLayers()` — reconstruit TOUT le DOM des layers (`cont.innerHTML=''`)
+- `applyGroove(id)` → appelle `buildLayers()` en fin
+
+### Ce qui a été tenté (sessions v3.13.x — sans succès complet)
+- Vider `#step-rows-wrap` en début de `buildLayers` pour éviter IDs dupliqués
+- `_moveRow2ToStepView` synchrone (hors setTimeout) pour éviter flash
+- `_setupStepViewDOM` appelé à chaque `setView` et `buildLayers`
+- `requestAnimationFrame` pour `checkWrap` (dimensions correctes après layout)
+- ResizeObserver sur `#step-rows-wrap`
+
+### Hypothèse principale non résolue
+Le problème central est la **coexistence de deux systèmes de layout** :
+1. Le DOM flow CSS (`#circle-view` flex-colonne, `#layers-wrap` en dessous)
+2. Le déplacement physique des `.layer-row2` entre deux endroits du DOM
+
+Ces deux systèmes interagissent de façon imprévisible à chaque `buildLayers()` (appelé au changement de groove, rebuild, etc.)
+
+### Piste recommandée pour la prochaine session
+**Refactorer l'approche entièrement** :
+- Ne PLUS déplacer physiquement les `.layer-row2` éléments
+- À la place : créer un conteneur dédié `#step-seq-view` DANS `#layers-wrap` (ou à côté) qui **CLONE** les step rows, ou afficher les steps directement dans les layer-divs avec un layout CSS adapté
+- Ou : garder les `.layer-row2` dans leurs `#layer-div-*` et utiliser un layout CSS pur (flex/grid) qui les affiche EN HAUT avec les volets mod EN BAS, sans déplacement DOM
+
+---
+
+## PROMPT DE REPRISE — Nouvelle session
+
+```
+BoomTchak v3.13.7 — Bug step sequencer view à régler en priorité.
+
+Contexte :
+- App single-file index.html (~10600 lignes), vanilla JS
+- 4 vues sélectionnables via 2 boutons : forme (◎ circulaire / ☰ linéaire) + cycle (⊙ commun / ⊛ par layer)
+- Vue "Step Sequencer" = linéaire + multiple (viewShape='linear', viewCycle='layer')
+
+Problème persistant en vue Step Sequencer :
+1. Au changement de groove, les step rows n'apparaissent pas ou disparaissent immédiatement
+2. L'espace entre la zone step (haut) et les volets layer.mod (bas) ne s'adapte pas au nombre de lignes réel
+
+Architecture actuelle (cassée) :
+- #circle-view (haut) contient #step-rows-wrap
+- #layers-wrap (bas) contient les #layer-div-* avec mod panels
+- Les .layer-row2 (step buttons) sont physiquement déplacées entre #layer-div-* et #step-rows-wrap
+  via _moveRow2ToStepView(). Cette approche crée des conflits d'IDs et des races conditions.
+
+Demande :
+AVANT de toucher au code, proposer une architecture alternative qui :
+- évite tout déplacement DOM des .layer-row2
+- affiche les 3 lignes de step EN HAUT (dans #circle-view ou équivalent)
+- affiche les 3 volets mod EN BAS (dans #layers-wrap ou équivalent)
+- s'adapte dynamiquement au nombre de pas (8/12/16/24/32) et à la largeur dispo
+- fonctionne correctement au changement de groove (buildLayers est appelé)
+
+Soumettre l'architecture à Lamberio AVANT de coder.
+
+Fichiers à lire impérativement avant toute modification :
+- CLAUDE.md (section BUG CRITIQUE OUVERT)
+- BoomTchak_v3_bible.md
+- index.html lignes 4398-4848 (buildLayers, buildStepsDOM, checkWrap)
+- index.html lignes 6389-6420 (_moveRow2ToStepView, _setupStepViewDOM)
+- index.html lignes 6920-6995 (setView)
+```
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.13.7 | Fix step view IDs dupliqués dans buildLayers + _moveRow2ToStepView synchrone — MAIS problème layout step view persistant (voir BUG_STEP_VIEW ci-dessous) |
+| v3.13.6 | _setupStepViewDOM() sans argument appelée à chaque setView ; 'Pas' → 'Step Sequencer' ; 'Cycle' reste 'Cycle' |
+| v3.13.5 | Fix timing checkWrap (avant: avail=0 car display:none) ; _watchStepRowsWrap ResizeObserver ; _setupStepViewDOM déplace #layers-wrap après #circle-view |
+| v3.13.4 | Step view : padding-bottom 10px ; step rows décalées droite (padding-left:20px) ; barre jaune étendue à #layers-wrap ; label vue en haut à droite (⊙/⊛ pour cycle) |
+| v3.13.3 | Vue Pas : circle-linear en step view ; padding-bottom:0 ; ◎/☰ pour forme ; ⊙/⊛ pour cycle ; suppression label vue dans groove-bar |
+| v3.13.2 | Fix vue Pas : 6 layers→3 (clear wrap avant move) ; couleurs LAYERS[li].cls sur row2 ; .btn-layer-toggle caché dans step-rows-wrap |
+| v3.13.1 | Vue Pas : step rows dans #step-rows-wrap (#circle-view haut) + volets mod en bas (_moveRow2ToStepView) |
+| v3.13.0 | Refactor 4 vues → 2 boutons indépendants (◎/━ forme + │/☰ cycle) + viewShape/viewCycle ; setView() réécrit |
+| v3.12.30 | Fix famille order DB : sbRefreshSession() + auto-retry 401 + toasts succès/erreur |
+| v3.12.29 | Poignées drag (⠿) déplacées à droite des noms familles ; drag uniquement via handle |
 | v3.12.13 | Toggle ⏺ layer quand rec actif = valider les notes (stopRec true) au lieu d'annuler ; Replace = mode par défaut et encadré violet ; Overdub = discret (rec-ctrl-ovr) |
 | v3.12.12 | Bouton Garder supprimé (redondant) ; Effacer → ↺ Reprendre orange : revient à originalPattern + remet hasEverTapped=false |
 | v3.12.11 | Transport rec-prêt : point rouge 7px absolu (top-right) sans impact sur taille bouton ; retrait icône ⏺ du bouton Capture |
