@@ -786,7 +786,7 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
+#circle-view{display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0;position:relative}
 body.view-circle #circle-view{display:flex}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile en circle */
@@ -794,13 +794,15 @@ body.view-circle .btn-steps-toggle{display:none!important} /* steps ▼ inutile 
 body.view-circle .btn-mod-circle{display:inline-block!important} /* visible seulement en vue circulaire */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
-body.view-step #circle-view{padding-bottom:0}
-#step-rows-wrap{display:none;flex-direction:column;width:100%;gap:1px;padding:4px 0}
+body.view-step #circle-view{padding-bottom:10px}
+#step-rows-wrap{display:none;flex-direction:column;width:100%;gap:2px;padding:6px 0}
 body.view-step #step-rows-wrap{display:flex}
 body.view-step #rhythm-canvas{display:none!important}
-body.view-step #step-rows-wrap .layer-row2{display:flex!important;border-left:3px solid var(--cs,#aaa)}
+body.view-step #step-rows-wrap .layer-row2{display:flex!important;padding-left:20px}
 body.view-step #step-rows-wrap .btn-layer-toggle{display:none!important}
 body.view-step .btn-steps-toggle{display:none!important}
+body.view-circle #layers-wrap{border-left:3px solid #C8961A}
+#view-desc-lbl{position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;color:#C8961A;pointer-events:none;white-space:nowrap;z-index:2;letter-spacing:.01em}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
@@ -1057,7 +1059,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.3</span>
+      <span class="app-version">v3.13.4</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1292,6 +1294,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Vue circulaire (remplace layers-wrap en mode circle) -->
   <div id="circle-view">
+    <div id="view-desc-lbl"></div>
     <div id="step-rows-wrap"></div>
     <canvas id="rhythm-canvas"></canvas>
   </div>
@@ -6404,8 +6407,13 @@ function _moveRow2ToStepView(toStep){
 function _updateViewButtons(){
   const bs=document.getElementById('btn-view-shape');
   const bc=document.getElementById('btn-view-cycle');
+  const vd=document.getElementById('view-desc-lbl');
   if(bs){bs.textContent=viewShape==='circle'?'◎':'☰';bs.title=viewShape==='circle'?'Passer en vue linéaire':'Passer en vue circulaire';}
   if(bc){bc.textContent=viewCycle==='common'?'⊙':'⊛';bc.title=viewCycle==='common'?'Passer en cycles par layer':'Passer en cycle commun';}
+  if(vd){
+    const n=getViewName();
+    vd.textContent=n==='Pattern'?'1 tour = 1 pattern':n==='Mesure'?'1 tour = 1 mesure':n;
+  }
 }
 const flashStep = [-1,-1,-1];
 const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
