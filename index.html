@@ -793,8 +793,7 @@ body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
 #view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #e0d090;padding-left:4px}
-/* En linear.cycle la view-mode-bar est redondante avec le bouton ⊙/⊛ principal */
-body.circle-linear #view-mode-bar{display:none!important}
+
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -835,6 +834,11 @@ body.view-circle #section-encyclo{order:5}
 /* Step-seq : order:1 → entre les step rows (0) et les contrôles (1, après par DOM) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
+/* Signature : violet clair, cliquable → toggle Metro */
+#rhythm-info-bar .rib-sig{color:#8B72C8;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
+#rhythm-info-bar .rib-sig:hover{color:#6B5FA5}
+/* Phénomène : jaune Groove */
+#rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic}
 body.step-seq #rhythm-info-bar{order:1}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
@@ -1083,7 +1087,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.5</span>
+      <span class="app-version">v3.13.6</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -6724,7 +6728,7 @@ function drawLinear(){
   for(let m=0;m<=numMeasures;m++){
     const x=marginX+uW*m*measU; if(x>W-marginX+2) break;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
-    ctx.strokeStyle=m===0?(isDark?'#9080C0':'#7060B0'):(isDark?'#484440':'#d5d0c8');
+    ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
     ctx.lineWidth=m===0?1.5:0.75; ctx.stroke();
     if(m>0){
       ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
@@ -7014,6 +7018,13 @@ function updateStepSeqInfo(li){
 }
 
 // ── updateRhythmInfoBar() : barre info rythmique globale (toutes vues) ──
+function _toggleMetroPanel(){
+  const wrap=document.getElementById('temps-wrap'); if(!wrap) return;
+  const hidden=wrap.style.display==='none';
+  wrap.style.display=hidden?'':'none';
+  const btnT=document.getElementById('btn-tempo');
+  if(btnT) btnT.classList.toggle('active',hidden);
+}
 function updateRhythmInfoBar(){
   const el=document.getElementById('rhythm-info-bar');
   if(!el) return;
@@ -7057,12 +7068,14 @@ function updateRhythmInfoBar(){
   const cols=LAYERS.map((_,li)=>CIRCLE_COLORS[li].fill);
   const ratioHtml=ratio.map((v,i)=>`<b style="color:${cols[i]}">${v}</b>`).join('<span style="color:#aaa;margin:0 1px">:</span>');
   const parts=[];
-  if(sigLabel) parts.push(`<span title="Signature">${sigLabel}</span>`);
+  if(sigLabel) parts.push(`<span class="rib-sig" title="Signature — cliquer pour ouvrir/fermer le volet Métro">${sigLabel}</span>`);
   parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
-  if(infoLabel) parts.push(`<span title="Caractère rythmique" style="font-style:italic">${infoLabel}</span>`);
+  if(infoLabel) parts.push(`<span class="rib-pheno" title="Caractère rythmique">${infoLabel}</span>`);
   if(isSig) parts.push(`<span title="Rapport des durées">${ratioHtml}</span>`);
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
+  const sigEl=el.querySelector('.rib-sig');
+  if(sigEl) sigEl.addEventListener('click',_toggleMetroPanel);
 }
 
 function visualLoopCircle(){
