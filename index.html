@@ -665,9 +665,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sep{width:1px;background:var(--cs);align-self:stretch;margin:0 1px;flex-shrink:0}
 .shift-num{min-width:14px;text-align:center;font-size:10px;color:var(--cb);font-weight:600;flex-shrink:0}
 .mod-group{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex-shrink:0}
-.btn-rec{width:18px;height:18px;min-width:18px;border-radius:50%;border:none;padding:0;background:var(--cs);opacity:.22;cursor:pointer;flex-shrink:0;font-size:0}
-.btn-rec.armed{opacity:1;background:var(--cl);box-shadow:0 0 0 1.5px var(--cs)}
-.btn-rec.recording{opacity:1;background:#c0392b;box-shadow:none;animation:rec-blink .65s step-end infinite}
+.btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
+.btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
+.btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 .mod-grp-clip .btn-mod{min-width:32px;text-align:center;font-size:16px;padding:1px 4px}
 /* Replace = violet encadré ; Overdub = discret sans cadre — spécificité .rec-ctrl-btn.rec-ctrl-mode pour l'emporter sur .rec-ctrl-btn */
 .rec-ctrl-btn.rec-ctrl-mode{border:1.5px solid #7B5EA7;border-radius:4px;background:rgba(123,94,167,.18);font-size:10px;margin-top:12px;padding:6px 8px;color:#ddd}
@@ -792,20 +792,24 @@ body.view-circle .layer-row2{display:none!important}   /* grille steps masquée 
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
-#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px}
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #e0d090;padding-left:4px}
+/* En linear.cycle la view-mode-bar est redondante avec le bouton ⊙/⊛ principal */
+body.circle-linear #view-mode-bar{display:none!important}
 .circle-mode-btn{font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+body.dark-mode #view-mode-bar{border-left-color:#4a4020}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
-body.view-circle #circle-view{width:100%;order:3}
+/* canvas : barre groove + width ajustée pour margin-left:4px */
+body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #e0d090}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
-body.view-circle #view-mode-bar{order:3;width:100%}
+body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px)}
 body.view-circle #layers-wrap{order:4;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
@@ -820,10 +824,10 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
-  body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
+  body.view-circle.circle-linear #circle-view{flex:0 0 calc(100% - 4px);width:calc(100% - 4px)}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
   /* view-mode-bar suit section-groove dans le flex-wrap */
-  body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
+  body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px);flex-shrink:0}
 }
 
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (dans #layers, toutes vues) ─── */
@@ -891,6 +895,7 @@ body.dark-mode .encyclo-bar select{background:#2a2a28!important;color:#e0ddd8!im
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
 body.dark-mode #layers{border-left-color:#4a4020}
+body.dark-mode.view-circle #circle-view{border-left-color:#4a4020}
 body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
@@ -951,8 +956,9 @@ body.dark-mode .beat-sep-line{background:rgba(255,255,255,.09)}
 body.dark-mode .layer-mod-panel{background:rgba(0,0,0,.25);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
-body.dark-mode .btn-rec{opacity:.3}
-body.dark-mode .btn-rec.recording{background:#D85A30}
+body.dark-mode .btn-rec{background:#2a2a28;border-color:rgba(255,255,255,.12)}
+body.dark-mode .btn-rec.armed{background:rgba(216,90,48,.2);border-color:#D85A30}
+body.dark-mode .btn-rec.recording{background:#D85A30;border-color:#c0391b}
 body.dark-mode .hdivider{background:#333330}
 body.dark-mode .encyclo-wrap{color:#c0bdb7;border-left-color:#444}
 body.dark-mode .encyclo-chapo{color:#c0bdb7;border-bottom-color:#333330}
@@ -1077,7 +1083,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.4</span>
+      <span class="app-version">v3.13.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2599,8 +2605,9 @@ function playConga(isRight){
 function updateRecBtn(li){
   const btn=document.getElementById('btn-rec-'+li);if(!btn)return;
   btn.classList.remove('armed','recording');
-  if(state[li].recording) btn.classList.add('recording');
-  else if(state[li].recArmed) btn.classList.add('armed');
+  if(state[li].recording){btn.classList.add('recording');btn.textContent='●';}
+  else if(state[li].recArmed){btn.classList.add('armed');btn.textContent='●';}
+  else{btn.textContent='⏺';}
 }
 function _getRecLiForThumb(isRight){
   // Retourne le li du layer ciblé par ce pouce (gauche=petit index, droite=grand index)
