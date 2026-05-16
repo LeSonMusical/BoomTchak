@@ -826,11 +826,14 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
 }
 
-/* ─── BARRE INFO RYTHMIQUE GLOBALE (toutes vues, quand volet Groove ouvert) ─── */
-#rhythm-info-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:5px 8px;font-size:9px;border-top:2px solid #e0d090;border-bottom:1px solid rgba(224,208,144,.35);background:rgba(224,208,144,.06);box-sizing:border-box}
-#rhythm-info-bar .rib-sep{color:rgba(224,208,144,.55);margin:0 2px}
-body.dark-mode #rhythm-info-bar{border-top-color:#786840;border-bottom-color:rgba(120,104,64,.35);background:rgba(120,104,64,.07)}
-body.dark-mode #rhythm-info-bar .rib-sep{color:rgba(120,104,64,.7)}
+/* ─── BARRE INFO RYTHMIQUE GLOBALE (dans #layers, toutes vues) ─── */
+/* Vues circulaire/linéaire : premier enfant de #layers → au-dessus des volets */
+/* Step-seq : order:1 → entre les step rows (0) et les contrôles (1, après par DOM) */
+#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:4px 6px;font-size:9px;border-top:1px solid rgba(224,208,144,.28);box-sizing:border-box}
+#rhythm-info-bar .rib-sep{color:rgba(224,208,144,.4);margin:0 1px}
+body.step-seq #rhythm-info-bar{order:1}
+body.dark-mode #rhythm-info-bar{border-top-color:rgba(120,104,64,.35)}
+body.dark-mode #rhythm-info-bar .rib-sep{color:rgba(120,104,64,.5)}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* Principe : display:contents sur .layer → enfants deviennent fils directs de #layers
@@ -1076,7 +1079,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.2</span>
+      <span class="app-version">v3.13.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1296,9 +1299,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
   <div id="view-mode-bar" style="display:none"></div>
-  <!-- Barre info rythmique globale (sig, cycle, métrie, rapport) -->
-  <div id="rhythm-info-bar" style="display:none"></div>
-  <!-- Layers (3 couches rythmiques) -->
+  <!-- Layers (3 couches rythmiques) — #rhythm-info-bar injecté en tête par buildLayers -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Modal : sauvegarde preset métronome -->
   <div class="mpv-modal-overlay" id="modal-metro-save" style="display:none">
@@ -4394,11 +4395,9 @@ function buildGrooveSection(){
     const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
-    const rib=document.getElementById('rhythm-info-bar');
     if(lw)lw.style.display=layersOuverts?'':'none';
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(hd)hd.style.display=layersOuverts?'':'none';
-    if(rib)rib.style.display=layersOuverts?'flex':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
     updateViewModeBar();
@@ -4410,11 +4409,9 @@ function buildGrooveSection(){
       const lw=document.getElementById('layers-wrap');
       const cv=document.getElementById('circle-view');
       const hd=document.querySelector('.hdivider');
-      const rib=document.getElementById('rhythm-info-bar');
       if(lw)lw.style.display=layersOuverts?'':'none';
       if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
       if(hd)hd.style.display=layersOuverts?'':'none';
-      if(rib)rib.style.display=layersOuverts?'flex':'none';
       btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
       btnVolet.classList.toggle('open',layersOuverts);
       updateViewModeBar();
@@ -4429,6 +4426,9 @@ function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
   const cont=document.getElementById('layers');if(!cont)return;
   cont.innerHTML='';
+  // Barre info rythmique (premier enfant → au-dessus des volets en vues circulaire/linéaire)
+  const ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
+  cont.appendChild(ribDiv);
 
   LAYERS.forEach((layer,li)=>{
     const layerDiv=document.createElement('div');
@@ -7013,7 +7013,7 @@ function updateStepSeqInfo(li){
 function updateRhythmInfoBar(){
   const el=document.getElementById('rhythm-info-bar');
   if(!el) return;
-  if(!state||!state[0]||!state[0].pattern||!layersOuverts){el.style.display='none';return;}
+  if(!state||!state[0]||!state[0].pattern){el.style.display='none';return;}
   // Durées par layer en fractions de temps (felt beats)
   const fracs=LAYERS.map((_,li)=>_layerDurFrac(li));
   // Dénominateur commun → numérateurs entiers
