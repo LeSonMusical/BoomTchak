@@ -535,14 +535,14 @@ body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 .pm-fam-ren-btn,.pm-fam-del-btn{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;padding:0 2px;flex-shrink:0;line-height:1;}
 .pm-fam-ren-btn:hover,.pm-fam-del-btn:hover{opacity:1;}
 .pm-item.pm-reorder{display:flex;align-items:center;gap:8px;padding:10px 10px;cursor:default;border-bottom:1px solid #f0ede8;border-left:3px solid transparent;}
-.pm-drag-handle{font-size:12px;line-height:1;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:2px;}
+.pm-drag-handle{font-size:14px;line-height:1;color:#bbb;cursor:grab;touch-action:none;flex-shrink:0;user-select:none;letter-spacing:2px;padding:6px 8px;margin:-6px -4px -6px 0;}
 .pm-sheet.pm-reorder-on .pm-drag-handle,.pm-sheet.pm-reorder-on .pm-fam-drag{color:var(--pm-ac,#4a3d8a);}
 .pm-sheet.pm-reorder-on .pm-item.pm-reorder{border-left:3px solid var(--pm-ac,#4a3d8a);}
 .pm-item-new{color:var(--pm-ac,#4a3d8a);opacity:.7;border-top:1px dashed #ccc;margin-top:4px;text-align:right;}
 .pm-item-new:hover{opacity:1;background:var(--pm-bg2,#f5f3f0);}
 .pm-reorder.pm-dragging,.pm-item.pm-dragging{opacity:.4;}
 .pm-reorder.pm-drag-over,.pm-item.pm-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
-.pm-fam-drag{cursor:grab;font-size:11px;color:#bbb;flex-shrink:0;touch-action:none;padding:0 2px;line-height:1;user-select:none;}
+.pm-fam-drag{cursor:grab;font-size:14px;color:#bbb;flex-shrink:0;touch-action:none;padding:6px 8px;line-height:1;user-select:none;margin-left:auto;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
@@ -1055,7 +1055,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.12.28</span>
+      <span class="app-version">v3.12.29</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3595,11 +3595,7 @@ function openPresetModal(cfg){
         famCol.style.touchAction='';
         bfams.forEach(f=>{
           const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-          if(reorderMode){
-            row.setAttribute('draggable','true');row.dataset.famId=f.id;
-            const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';
-            drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
-          }
+          if(reorderMode){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
           const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
           nameEl.addEventListener('click',()=>_setFam(f.id));row.appendChild(nameEl);
           if(manageMode){
@@ -3610,20 +3606,20 @@ function openPresetModal(cfg){
             row.appendChild(renBtn);row.appendChild(delBtn);
           }
           if(reorderMode){
+            const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
+            drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
             row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
             row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
             row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
             row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-            {let _frt=null,_frpid=null,_frd=false,_frx=0,_fry=0;
-            row.addEventListener('pointerdown',e=>{
+            {let _frpid=null;
+            drag.addEventListener('pointerdown',e=>{
               if(e.pointerType==='mouse')return;
-              _frpid=e.pointerId;_frx=e.clientX;_fry=e.clientY;_frd=false;
-              _frt=setTimeout(()=>{_frt=null;_frd=true;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');try{row.setPointerCapture(_frpid);}catch(_){}},150);
+              _frpid=e.pointerId;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');
+              try{drag.setPointerCapture(_frpid);}catch(_){}
             });
-            row.addEventListener('pointermove',e=>{
+            drag.addEventListener('pointermove',e=>{
               if(e.pointerId!==_frpid)return;
-              if(_frt&&Math.hypot(e.clientX-_frx,e.clientY-_fry)>12){clearTimeout(_frt);_frt=null;}
-              if(!_frd)return;
               const el=document.elementFromPoint(e.clientX,e.clientY);
               const tgt=el?.closest('.pm-fam-manage-row');
               famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
@@ -3631,11 +3627,12 @@ function openPresetModal(cfg){
             });
             const _frEnd=e=>{
               if(e.pointerId!==_frpid)return;
-              if(_frt){clearTimeout(_frt);_frt=null;}
-              row.classList.remove('pm-fam-dragging');
-              if(_frd){_frd=false;const over=famCol.querySelector('.pm-fam-drag-over');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;}
+              _frpid=null;row.classList.remove('pm-fam-dragging');
+              const over=famCol.querySelector('.pm-fam-drag-over');
+              famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+              if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;
             };
-            row.addEventListener('pointerup',_frEnd);row.addEventListener('pointercancel',_frEnd);}
+            drag.addEventListener('pointerup',_frEnd);drag.addEventListener('pointercancel',_frEnd);}
           }
           famCol.appendChild(row);
         });
@@ -3683,13 +3680,7 @@ function openPresetModal(cfg){
       famCol.style.touchAction='';
       getFams().forEach(f=>{
         const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-        // Poignée drag : mode réordonner seulement (MX ou non, la persistance est gatée côté sbPushSchoolFamOrder)
-        if(reorderMode){
-          row.setAttribute('draggable','true');row.dataset.famId=f.id;
-          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
-          drag.addEventListener('mousedown',e=>e.stopPropagation());
-          row.appendChild(drag);
-        }
+        if(reorderMode){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
         const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
         nameEl.addEventListener('click',()=>_setFam(f.id));
         row.appendChild(nameEl);
@@ -3707,23 +3698,22 @@ function openPresetModal(cfg){
           delBtn.addEventListener('click',e=>{e.stopPropagation();pmDeleteFam(f);});
           row.appendChild(renBtn);row.appendChild(delBtn);
         }
-        // Drag HTML5 : mode réordonner seulement
+        // Poignée drag à droite + events pointer sur la poignée uniquement (scroll libre sur le reste de la row)
         if(reorderMode){
+          const drag=document.createElement('span');drag.className='pm-fam-drag';drag.textContent='⠿';drag.title='Déplacer';
+          drag.addEventListener('mousedown',e=>e.stopPropagation());row.appendChild(drag);
           row.addEventListener('dragstart',e=>{_famDragSrcId=f.id;e.dataTransfer.effectAllowed='move';setTimeout(()=>row.classList.add('pm-fam-dragging'),0);});
           row.addEventListener('dragend',()=>{row.classList.remove('pm-fam-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));_famDragSrcId=null;});
           row.addEventListener('dragover',e=>{e.preventDefault();famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(f.id!==_famDragSrcId)row.classList.add('pm-fam-drag-over');});
           row.addEventListener('drop',e=>{e.preventDefault();if(_famDragSrcId&&_famDragSrcId!==f.id)pmDropFam(_famDragSrcId,f.id);});
-          // Touch drag : court appui (150ms) + pointer capture — scroll libre si pas de drag
-          {let _frt=null,_frpid=null,_frd=false,_frx=0,_fry=0;
-          row.addEventListener('pointerdown',e=>{
+          {let _frpid=null;
+          drag.addEventListener('pointerdown',e=>{
             if(e.pointerType==='mouse')return;
-            _frpid=e.pointerId;_frx=e.clientX;_fry=e.clientY;_frd=false;
-            _frt=setTimeout(()=>{_frt=null;_frd=true;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');try{row.setPointerCapture(_frpid);}catch(_){}},150);
+            _frpid=e.pointerId;_famDragSrcId=f.id;row.classList.add('pm-fam-dragging');
+            try{drag.setPointerCapture(_frpid);}catch(_){}
           });
-          row.addEventListener('pointermove',e=>{
+          drag.addEventListener('pointermove',e=>{
             if(e.pointerId!==_frpid)return;
-            if(_frt&&Math.hypot(e.clientX-_frx,e.clientY-_fry)>12){clearTimeout(_frt);_frt=null;}
-            if(!_frd)return;
             const el=document.elementFromPoint(e.clientX,e.clientY);
             const tgt=el?.closest('.pm-fam-manage-row');
             famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
@@ -3731,11 +3721,12 @@ function openPresetModal(cfg){
           });
           const _frEnd=e=>{
             if(e.pointerId!==_frpid)return;
-            if(_frt){clearTimeout(_frt);_frt=null;}
-            row.classList.remove('pm-fam-dragging');
-            if(_frd){_frd=false;const over=famCol.querySelector('.pm-fam-drag-over');famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;}
+            _frpid=null;row.classList.remove('pm-fam-dragging');
+            const over=famCol.querySelector('.pm-fam-drag-over');
+            famCol.querySelectorAll('.pm-fam-drag-over').forEach(el=>el.classList.remove('pm-fam-drag-over'));
+            if(over&&_famDragSrcId&&over.dataset.famId!==_famDragSrcId)pmDropFam(_famDragSrcId,over.dataset.famId);_famDragSrcId=null;
           };
-          row.addEventListener('pointerup',_frEnd);row.addEventListener('pointercancel',_frEnd);}
+          drag.addEventListener('pointerup',_frEnd);drag.addEventListener('pointercancel',_frEnd);}
         }
         famCol.appendChild(row);
       });
@@ -4145,17 +4136,15 @@ function openPresetModal(cfg){
         div.addEventListener('dragend',()=>{div.classList.remove('pm-dragging');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));_reorderDragSrcId=null;});
         div.addEventListener('dragover',e=>{e.preventDefault();itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(item.id!==_reorderDragSrcId)div.classList.add('pm-drag-over');});
         div.addEventListener('drop',e=>{e.preventDefault();if(_reorderDragSrcId&&_reorderDragSrcId!==item.id)pmDrop(_reorderDragSrcId,item.id);});
-        // Drag tactile : court appui (150ms) + pointer capture — scroll libre si pas de drag
-        {let _rt=null,_rpid=null,_rd=false,_rx=0,_ry=0;
-        div.addEventListener('pointerdown',e=>{
+        // Drag tactile : pointer capture sur la poignée — scroll libre sur le nom
+        {let _rpid=null;
+        handle.addEventListener('pointerdown',e=>{
           if(e.pointerType==='mouse')return;
-          _rpid=e.pointerId;_rx=e.clientX;_ry=e.clientY;_rd=false;
-          _rt=setTimeout(()=>{_rt=null;_rd=true;_reorderDragSrcId=item.id;div.classList.add('pm-dragging');try{div.setPointerCapture(_rpid);}catch(_){}},150);
+          _rpid=e.pointerId;_reorderDragSrcId=item.id;div.classList.add('pm-dragging');
+          try{handle.setPointerCapture(_rpid);}catch(_){}
         });
-        div.addEventListener('pointermove',e=>{
+        handle.addEventListener('pointermove',e=>{
           if(e.pointerId!==_rpid)return;
-          if(_rt&&Math.hypot(e.clientX-_rx,e.clientY-_ry)>12){clearTimeout(_rt);_rt=null;}
-          if(!_rd)return;
           const el=document.elementFromPoint(e.clientX,e.clientY);
           const tgt=el?.closest('.pm-reorder');
           itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
@@ -4163,11 +4152,12 @@ function openPresetModal(cfg){
         });
         const _rEnd=e=>{
           if(e.pointerId!==_rpid)return;
-          if(_rt){clearTimeout(_rt);_rt=null;}
-          div.classList.remove('pm-dragging');
-          if(_rd){_rd=false;const over=itemsWrap.querySelector('.pm-drag-over');itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));if(over&&_reorderDragSrcId&&over.dataset.id!==item.id)pmDrop(_reorderDragSrcId,over.dataset.id);_reorderDragSrcId=null;}
+          _rpid=null;div.classList.remove('pm-dragging');
+          const over=itemsWrap.querySelector('.pm-drag-over');
+          itemsWrap.querySelectorAll('.pm-drag-over').forEach(el=>el.classList.remove('pm-drag-over'));
+          if(over&&_reorderDragSrcId&&over.dataset.id!==item.id)pmDrop(_reorderDragSrcId,over.dataset.id);_reorderDragSrcId=null;
         };
-        div.addEventListener('pointerup',_rEnd);div.addEventListener('pointercancel',_rEnd);}
+        handle.addEventListener('pointerup',_rEnd);handle.addEventListener('pointercancel',_rEnd);}
         itemsWrap.appendChild(div);
       });
       // Zone de dépôt en fin de liste
