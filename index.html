@@ -1095,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.13</span>
+      <span class="app-version">v3.13.14</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -10664,14 +10664,15 @@ function attachEvents(){
   // ── Sélecteur battue (select) ──
   document.getElementById('battue-sel').addEventListener('change',function(){
     const next=parseInt(this.value);
-    // Garder le BPM ressenti constant : recalculer SPM
-    const curFeltBpm=parseInt(document.getElementById('beat-val-input').value)||100;
+    // Garder le SPM (vitesse de croche) constant : la battue est une unité d'affichage.
+    // NE PAS recalculer depuis le BPM affiché, sinon on change la vitesse de lecture.
+    const currentSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
     currentSig.felBeatSteps=next;
     if(!packCours.metroPresets) packCours.metroPresets=[];
     let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
     if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
     if(pci>=0) packCours.metroPresets[pci].felBeatSteps=next;
-    const newSpm=curFeltBpm*next;
+    const newSpm=currentSpm; // spm inchangé ; spmToPos recalcule la position pour afficher newSpm/next en BPM
     const newPos=spmToPos(newSpm);
     const sl=document.getElementById('bpm');
     if(playing&&ac){

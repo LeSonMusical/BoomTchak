@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.10.23
+> Mis à jour au fil du développement — v3.13.14
 
 ---
 
@@ -363,6 +363,114 @@ LAYERS.forEach((_, li) => {
 });
 ```
 → Garantit que le nouveau groove repart toujours au début d'une mesure, en phase avec le métronome.
+
+### Formule métronome — règles invariantes (v3.13.14)
+
+**Règle fondamentale** : changer la battue (`felBeatSteps`) est un changement d'unité d'affichage — cela NE CHANGE PAS le spm ni la vitesse de lecture des layers ni du métronome.
+
+#### Nombre de steps du métro.pattern
+```
+nb_steps = beatsPerMeasure × subdivision
+```
+- `beatsPerMeasure` : nombre de temps affiché dans le contrôle "nb de temps" de l'UI
+- `subdivision` : nombre de subdivisions par temps
+- **Indépendant** de `felBeatSteps` (battue)
+
+Exemple : 6/8 (beatsPerMeasure=2) avec subdivision=4 → 8 steps.  
+Si l'utilisateur définit manuellement beats=6 (traitement des 6 croches comme beats) et subdivision=4 → 24 steps.
+
+#### Durée d'un step métro
+```
+stepSec = (60 / spm) × (stepsPerBeat / subdivision)
+        = 60 / (bpm_ressenti × subdivision)          [quand stepsPerBeat = felBeatSteps]
+```
+**Indépendant de `felBeatSteps`** — le ratio `stepsPerBeat/fbs` annule toujours.
+
+#### Durée d'une mesure (vue circulaire mode Mesure)
+```
+measureSec = (60/spm) × stepsPerBeat × beatsPerMeasure
+```
+
+#### Invariant battue (fixé v3.13.14)
+Le listener `battue-sel` garde le **spm constant** (croche rate inchangée) ; c'est le **BPM affiché** qui change proportionnellement.
+```
+// CORRECT (v3.13.14+)
+newSpm = posToSPM(_lastBpmPos) × globalSpeedMult   // spm inchangé
+newPos = spmToPos(newSpm)                            // affichage BPM = spm/new_fbs
+
+// INCORRECT (bug pré-v3.13.14)
+// newSpm = curFeltBpm × next    ← changeait spm, accélérait/ralentissait tout
+```
+
+---
+
+## 8b. Détection des phénomènes poly (barre info rythmique, v3.13.13+)
+
+### Principe — unité de référence : la croche (1/8)
+
+Toute comparaison se fait en croches. Chaque layer a une durée de cycle en croches :
+
+```javascript
+function _cycleInCrochesFrac(li) {
+  // n = longueur du pattern, dbl/hlf/trn = modifiers du layer
+  // Sans ternaire : n×(hlf?2:1) / (dbl?2:1)
+  // Avec ternaire : 2×n×(hlf?2:1) / (3×(dbl?2:1))
+}
+```
+
+### Ratio des cycles
+
+```javascript
+const Dc  = lcm(cf[0].den, lcm(cf[1].den, cf[2].den));  // dénominateur commun
+const Nc  = cf.map(f => f.num × (Dc/f.den));             // numérateurs entiers
+const gca = gcd(Nc[0], gcd(Nc[1], Nc[2]));
+const ratioC = Nc.map(v => v/gca);                        // rapport réduit [a, b, c]
+```
+
+### Ratio significatif
+Condition : ∃ paire (a, b) telle que `a%b ≠ 0` ET `b%a ≠ 0` (aucun ne divise l'autre).
+```javascript
+hasSignificantRatio = ratioC.some((a,i) => ratioC.some((b,j) => i!==j && a%b!==0 && b%a!==0));
+```
+
+### Hémiole vs Polymétrie
+
+```javascript
+const LcmNc          = lcm(Nc[0], lcm(Nc[1], Nc[2]));      // PPCM des cycles
+const measureCroches = felBeatSteps × beatsPerMeasure;       // mesure en croches
+const measureNcUnits = measureCroches × Dc;                  // mesure en unités Nc
+
+isHemiole    = hasSignificantRatio && (measureNcUnits % LcmNc === 0);
+isPolymetrie = hasSignificantRatio && !isHemiole;
+```
+
+| Condition | Phénomène | Explication |
+|-----------|-----------|-------------|
+| `measureNcUnits % LcmNc === 0` | **Hémiole** | Le PPCM des cycles divise la mesure → les couches se resynchronisent à l'intérieur d'une mesure |
+| sinon | **Polymétrie** | Le PPCM déborde la barre → pas de resync à la barline |
+
+**Exemples** :
+- A=3 pas 1/8, B=2 pas 1/8, mesure 6/8 (6 croches) : PPCM=6, 6%6=0 → **Hémiole 3:2** ✓
+- A=3 pas 1/8, B=2 pas 1/8, mesure 4/4 (8 croches) : PPCM=6, 8%6≠0 → **Polymétrie 3:2** ✓
+- A=3 pas 1/8, B=2 pas 1/8, mesure 7/8 (7 croches) : PPCM=6, 7%6≠0 → **Polymétrie 3:2** ✓
+
+### Simplification primitive (col. 3 de la barre info)
+Supprimer les valeurs multiples d'une autre valeur plus petite dans l'ensemble :
+```javascript
+const uniqueC = [...new Set(ratioC)];
+const primC   = uniqueC.filter(v => !uniqueC.some(u => u!==v && v%u===0)).sort((a,b)=>a-b);
+const col3ratio = primC.join(':');   // ex: [3,3,7]→"3:7" ; [3,6,7]→"3:7" ; [3,7,9]→"3:7"
+```
+
+### Polyrythmie
+Coexistence de layers ternaires et binaires (mix ternOn) :
+```javascript
+hasTernMix = !ternAll && !ternNone;  // certains ternaires, d'autres non
+```
+Ce phénomène est **indépendant** de l'hémiole/polymétrie : les deux peuvent coexister.
+
+### Colonne 4 (détail par layer)
+Affichée uniquement si `hasSignificantRatio`. Montre `ratioC[li]` pour chaque layer avec la couleur `CIRCLE_COLORS[li].fill`. Apporte l'attribution par couche que la col. 3 simplifie.
 
 ---
 
