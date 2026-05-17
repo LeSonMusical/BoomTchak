@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.2</span>
+      <span class="app-version">v3.14.3</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2119,7 +2119,7 @@ function generateMetroPattern(nbDivisions, subdivision, beatUnit) {
   const groupSize  = isCompound ? 3 : 1;
   const pat = [];
   for (let d = 0; d < nbDivisions; d++) {
-    const divMark = d === 0 ? 'A' : (groupSize > 1 && d % groupSize === 0) ? 'P' : 'p';
+    const divMark = d === 0 ? 'A' : (isCompound ? (d % groupSize === 0 ? 'P' : 'p') : 'P');
     for (let s = 0; s < subdivision; s++) pat.push(s === 0 ? divMark : 'p');
   }
   return pat;
@@ -2364,9 +2364,7 @@ function _applyDefaultsFromUnit() {
   else equiv = 2;                                   // noire
   const batSel = document.getElementById('battue-sel');
   if (batSel && batSel.value !== String(equiv)) batSel.value = String(equiv);
-  const _defSubApply = _defaultSubdiv(nbDiv, unit);
-  const subSel = document.getElementById('mpv-subdiv-sel');
-  if (subSel && subSel.value !== String(_defSubApply)) subSel.value = String(_defSubApply);
+  // La subdivision reste inchangée — l'utilisateur la contrôle indépendamment
 }
 
 // Construit un currentSig custom depuis les contrôles L1 (sans sauvegarder, sans chercher de preset).
@@ -2392,7 +2390,7 @@ function buildSigFromControls() {
   }
   currentSig = {
     ...currentSig,
-    id: '_custom', label: `${nbDiv}/${unit}`,
+    id: '_custom',
     nbDivisions: nbDiv, beatUnit: unit, subdivision: sub,
     equivalence: curEquiv,
     beatSym: symFromFelBeatSteps(curEquiv),
