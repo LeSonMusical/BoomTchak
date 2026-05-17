@@ -854,12 +854,12 @@ body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
 body.step-seq #layers{display:flex;flex-direction:column;gap:0}
 body.step-seq .layer{display:contents}
 /* Zone haut : step rows (order:0) */
-body.step-seq .layer-row2{order:0;display:flex!important;border-left:3px solid var(--cs);margin-bottom:2px}
+body.step-seq .layer-row2{order:0;display:flex!important;align-items:center;border-left:3px solid var(--cs);margin-bottom:2px}
 /* Zone bas : contrôles + mod panels (order:1) — même order → DOM order les groupe par layer */
 body.step-seq .layer-row1{order:1;margin-top:4px;border-left:3px solid var(--cs)}
 body.step-seq .layer-mod-panel{order:1;border-left:3px solid var(--cs)}
 /* Strip info gauche en step-seq (nb pas, unité, durée) */
-.step-seq-info{display:none;width:70px;flex-shrink:0;padding:4px 4px 3px;font-size:9px;line-height:1.4;align-self:stretch;box-sizing:border-box}
+.step-seq-info{display:none;width:54px;flex-shrink:0;padding:2px 3px 2px;font-size:9px;line-height:1.4;align-self:center;box-sizing:border-box}
 body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
 
 /* ─── RÉGLAGES / THÈME ─── */
@@ -1092,7 +1092,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.11</span>
+      <span class="app-version">v3.13.12</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2370,8 +2370,11 @@ function buildSigFromControls() {
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
   if (tb) tb.textContent = 'Tap ' + _tapN;
+  LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
   renderMetroPatternViz();
   buildSigSelector();
+  if(circleView) drawCircles(); else if(playing) {} // maj canvas si vue circulaire
+  LAYERS.forEach((_,li)=>updateStepSeqInfo(li));
   updateRhythmInfoBar();
 }
 
@@ -3519,6 +3522,8 @@ function openPresetModal(cfg){
     if(tgtId==='__end__'){subset.push(moved);}
     else{const ti=subset.findIndex(f=>f.id===tgtId);if(ti<0){subset.splice(si,0,moved);}else{subset.splice(ti,0,moved);}}
     packCours.familles=[...subset,...others];
+    // Mettre à jour le champ ordre local (miroir de la position dans le tableau)
+    packCours.familles.filter(f=>f.source==='school').forEach((f,idx)=>{f.ordre=idx;});
     saveToStorage();rebuildAllFamFilters();
     sbPushSchoolFamOrder();
     buildFamCol();
@@ -8015,11 +8020,15 @@ async function sbPushTeacherFamilles(familleIds) {
 
 async function sbSaveFamille(fam) {
   if (!authSession || authProfile?.role !== 'mx') return;
+  // Calculer l'ordre courant de la famille dans packCours.familles
+  const ordreVal = typeof fam.ordre === 'number' ? fam.ordre
+    : packCours.familles.findIndex(f2 => f2.id === fam.id);
   try {
     await sbFetch('/rest/v1/familles', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ id: fam.id, nom: fam.nom, category: fam.category||'rytm', scope: 'school', owner_id: authProfile.id }),
+      body: JSON.stringify({ id: fam.id, nom: fam.nom, scope: 'school', owner_id: authProfile.id,
+        ordre: ordreVal >= 0 ? ordreVal : 0, type: fam.type || 'both' }),
     });
   } catch(e) { console.error('Sauvegarde famille échouée :', e); }
 }
@@ -9000,6 +9009,7 @@ function buildPublishSection() {
         fam.localDirty = false;
         fam.source = 'school';
         saveToStorage(); buildPublishSection();
+        sbPushSchoolFamOrder(); // resync tous les ordres après publication d'une nouvelle famille
         showToast('Famille publiée en DB', 'info');
       }
     });
