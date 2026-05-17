@@ -77,7 +77,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.13.7** (session 2026-05-16)
+**v3.13.16** (session 2026-05-17)
 
 ---
 
@@ -166,6 +166,10 @@ Fichiers à lire impérativement avant toute modification :
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.13.16 | Fix metro bug : battue-sel met maintenant à jour stepsPerBeat en même temps que felBeatSteps (sauf aksak où stepsPerBeat≠fbs intentionnel) → stepSec = beat_duration/subdivision correct |
+| v3.13.15 | Revert v3.13.14 (battue-sel : BPM restait constant → SPM ne changeait pas) + corr. encyclopédie + bible §8 |
+| v3.13.14 | (REVERT) Fix battue-sel incorrectement implémenté : SPM constant au lieu de BPM |
+| v3.13.13 | Barre rhythmInfo 4 colonnes : _cycleInCrochesFrac, Hémiole/Polymétrie/Polyrythmie, ratio primitif, col4 par layer ; bible §8b poly |
 | v3.13.7 | Fix step view IDs dupliqués dans buildLayers + _moveRow2ToStepView synchrone — MAIS problème layout step view persistant (voir BUG_STEP_VIEW ci-dessous) |
 | v3.13.6 | _setupStepViewDOM() sans argument appelée à chaque setView ; 'Pas' → 'Step Sequencer' ; 'Cycle' reste 'Cycle' |
 | v3.13.5 | Fix timing checkWrap (avant: avail=0 car display:none) ; _watchStepRowsWrap ResizeObserver ; _setupStepViewDOM déplace #layers-wrap après #circle-view |

@@ -1095,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.15</span>
+      <span class="app-version">v3.13.16</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -10667,11 +10667,17 @@ function attachEvents(){
     // Garder le BPM ressenti constant : changer la battue change le SPM (et donc la vitesse).
     // 100 BPM ♩ → SPM=200 ; 100 BPM ♩. → SPM=300. C'est le comportement attendu.
     const curFeltBpm=parseInt(document.getElementById('beat-val-input').value)||100;
+    const oldFbs=currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
     currentSig.felBeatSteps=next;
+    // Mettre à jour stepsPerBeat seulement si c'était égal à oldFbs (préserver aksak : stepsPerBeat=1 ≠ fbs=2)
+    if(currentSig.stepsPerBeat===oldFbs) currentSig.stepsPerBeat=next;
     if(!packCours.metroPresets) packCours.metroPresets=[];
     let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
     if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
-    if(pci>=0) packCours.metroPresets[pci].felBeatSteps=next;
+    if(pci>=0){
+      if(packCours.metroPresets[pci].stepsPerBeat===oldFbs) packCours.metroPresets[pci].stepsPerBeat=next;
+      packCours.metroPresets[pci].felBeatSteps=next;
+    }
     const newSpm=curFeltBpm*next;
     const newPos=spmToPos(newSpm);
     const sl=document.getElementById('bpm');
