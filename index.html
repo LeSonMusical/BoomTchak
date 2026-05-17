@@ -1095,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.17</span>
+      <span class="app-version">v3.14.0</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2103,28 +2103,50 @@ let soundStateThumb=[
 const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
 
 // ── Presets métronome ─────────────────────────────────────────────────────
-// stepsPerBeat = subdivision : steps par temps (BPM↔SPM, séparateurs visuels)
-// metroPattern : 'A'=accent fort (temps 1), 'P'=accent temps, 'p'=subdivision
+// nbDivisions : nombre de divisions (pas de métro) par mesure
+// equivalence : nb de croches = 1 BPM ressenti (♪=1, ♩=2, ♩.=3, ♩♩=4)
+// subdivision : nb de steps par division (1=pas de subdivisions)
+// stepSec = (60/spm) × (8/beatUnit) / subdivision
+// metroPattern : 'A'=accent fort (1er temps), 'P'=accent division, 'p'=subdivision, '.'=silence
 
-function generateMetroPattern(beatsPerMeasure, subdivision) {
+function generateMetroPattern(nbDivisions, subdivision, beatUnit) {
+  const isCompound = beatUnit === 8 && nbDivisions % 3 === 0 && nbDivisions >= 6;
+  const groupSize  = isCompound ? 3 : 1;
   const pat = [];
-  for (let b = 0; b < beatsPerMeasure; b++)
-    for (let s = 0; s < subdivision; s++)
-      pat.push(b === 0 && s === 0 ? 'A' : s === 0 ? 'P' : 'p');
+  for (let d = 0; d < nbDivisions; d++) {
+    const divMark = d === 0 ? 'A' : (groupSize > 1 && d % groupSize === 0) ? 'P' : 'p';
+    for (let s = 0; s < subdivision; s++) pat.push(s === 0 ? divMark : 'p');
+  }
   return pat;
 }
 
-function beatSymFromUnit(beatUnit, subdivision) {
+function beatSymFromUnit(beatUnit, equivalence) {
   if (beatUnit === 2) return '𝅗𝅥';
-  if (beatUnit === 8 && subdivision >= 3) return '♩.';
+  if (equivalence >= 3) return '♩.';
   if (beatUnit === 8) return '♪';
   return '♩';
 }
-function familleFromUnit(beatUnit, subdivision) {
+function familleFromUnit(beatUnit, equivalence) {
   if (beatUnit === 2) return 'breve';
-  if (beatUnit === 8 && subdivision >= 3) return 'ternaire';
+  if (equivalence >= 3) return 'ternaire';
   if (beatUnit === 8) return 'aksak';
   return 'binaire';
+}
+// Normalise un sig (ancien format felBeatSteps/beatsPerMeasure → nouveau format)
+function _normalizeSig(s) {
+  if (!s) return s;
+  if (s.equivalence === undefined)
+    s.equivalence = s.felBeatSteps || s.stepsPerBeat || 2;
+  if (s.nbDivisions === undefined) {
+    const isOldCompound = (s.beatUnit === 8) && (s.stepsPerBeat || 1) >= 3;
+    s.nbDivisions = isOldCompound
+      ? (s.beatsPerMeasure || 4) * (s.stepsPerBeat || 3)
+      : (s.beatsPerMeasure || 4);
+  }
+  const expectedLen = s.nbDivisions * (s.subdivision || 1);
+  if (!Array.isArray(s.metroPattern) || s.metroPattern.length !== expectedLen)
+    s.metroPattern = generateMetroPattern(s.nbDivisions, s.subdivision || 1, s.beatUnit || 4);
+  return s;
 }
 
 const SIG_FAMILLES=[
@@ -2135,48 +2157,43 @@ const SIG_FAMILLES=[
 ];
 
 const METRO_PRESETS_DEFAULT = [
-  {id:'2/4',  label:'2/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:2,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
-  {id:'3/4',  label:'3/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:3,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
-  {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:4,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
-  {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:5,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
-  {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  beatsPerMeasure:7,  beatUnit:4, subdivision:2, stepUnit:8, stepsPerBeat:2, beatSteps:2, felBeatSteps:2},
-  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:2,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
-  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', beatsPerMeasure:3,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
-  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', beatsPerMeasure:4,  beatUnit:8, subdivision:3, stepUnit:8, stepsPerBeat:3, beatSteps:3, felBeatSteps:3},
-  {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  beatsPerMeasure:7,  beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
-  {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:11, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
-  {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  beatsPerMeasure:13, beatUnit:8, subdivision:1, stepUnit:8, stepsPerBeat:1, beatSteps:1, felBeatSteps:2},
-  {id:'2/2',  label:'2/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:2,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
-  {id:'3/2',  label:'3/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:3,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
-  {id:'4/2',  label:'4/2',  famille:'breve',    beatSym:'𝅗𝅥',  beatsPerMeasure:4,  beatUnit:2, subdivision:4, stepUnit:8, stepsPerBeat:4, beatSteps:4, felBeatSteps:4},
-].map(p => ({...p, metroPattern: generateMetroPattern(p.beatsPerMeasure, p.subdivision)}));
+  {id:'2/4',  label:'2/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:2,  beatUnit:4, subdivision:1, equivalence:2},
+  {id:'3/4',  label:'3/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:3,  beatUnit:4, subdivision:1, equivalence:2},
+  {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:4,  beatUnit:4, subdivision:1, equivalence:2},
+  {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:5,  beatUnit:4, subdivision:1, equivalence:2},
+  {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:7,  beatUnit:4, subdivision:1, equivalence:2},
+  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', nbDivisions:6,  beatUnit:8, subdivision:1, equivalence:3},
+  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', nbDivisions:9,  beatUnit:8, subdivision:1, equivalence:3},
+  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', nbDivisions:12, beatUnit:8, subdivision:1, equivalence:3},
+  {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  nbDivisions:7,  beatUnit:8, subdivision:1, equivalence:2},
+  {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  nbDivisions:11, beatUnit:8, subdivision:1, equivalence:2},
+  {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  nbDivisions:13, beatUnit:8, subdivision:1, equivalence:2},
+  {id:'2/2',  label:'2/2',  famille:'breve',    beatSym:'𝅗𝅥',  nbDivisions:2,  beatUnit:2, subdivision:1, equivalence:4},
+  {id:'3/2',  label:'3/2',  famille:'breve',    beatSym:'𝅗𝅥',  nbDivisions:3,  beatUnit:2, subdivision:1, equivalence:4},
+  {id:'4/2',  label:'4/2',  famille:'breve',    beatSym:'𝅗𝅥',  nbDivisions:4,  beatUnit:2, subdivision:1, equivalence:4},
+].map(p => ({...p, metroPattern: generateMetroPattern(p.nbDivisions, p.subdivision, p.beatUnit)}));
 
 // Runtime : presets par défaut + presets personnalisés (DB/local, via packCours.metroPresets)
 let metroPresets = METRO_PRESETS_DEFAULT.slice();
 
-// Symbole de note pour un felBeatSteps donné (nb de croches = 1 battue)
+// Symbole de note pour une équivalence donnée (nb de croches = 1 BPM ressenti)
 function symFromFelBeatSteps(n){
   return {1:'♪', 2:'♩', 3:'♩.', 4:'♩♩', 6:'♩♩♩'}[n] || '♩';
 }
-// Options de battue valides pour un preset (toujours 1,2,3,4 croches)
-function felBeatOptions(){ return [1,2,3,4]; }
 
 function rebuildMetroPresets() {
   const normalize = p => {
+    p = _normalizeSig({...p}); // conversion ancien format si nécessaire
     const famIds = p.familles_ids?.length ? p.familles_ids
                  : p.famille ? [p.famille] : [];
-    const fam = p.famille || famIds[0] || familleFromUnit(p.beatUnit || 4, p.subdivision || 2);
-    const sPerBeat = p.stepsPerBeat || p.subdivision;
+    const equiv = p.equivalence || 2;
+    const fam = p.famille || famIds[0] || familleFromUnit(p.beatUnit || 4, equiv);
     return {
       ...p,
-      stepsPerBeat:  sPerBeat,
-      beatSteps:     p.beatSteps    || p.subdivision,
-      beatSym:       p.beatSym      || beatSymFromUnit(p.beatUnit || 4, p.subdivision || 2),
-      famille:       fam,
-      familles_ids:  famIds,
-      metroPattern:  Array.isArray(p.metroPattern) ? p.metroPattern
-                     : generateMetroPattern(p.beatsPerMeasure, p.subdivision),
-      felBeatSteps:  p.felBeatSteps || sPerBeat,
+      equivalence:  equiv,
+      beatSym:      p.beatSym || beatSymFromUnit(p.beatUnit || 4, equiv),
+      famille:      fam,
+      familles_ids: famIds,
     };
   };
   // Presets DB (tous : base, school, teacher) — teacher apparaît en bas dans le modal
@@ -2192,14 +2209,12 @@ function rebuildMetroPresets() {
 function getSigFallback(presetId) {
   if (presetId) {
     const found = metroPresets.find(p => p.id === presetId);
-    if (found) return found;
-    // Preset supprimé de DB mais encore dans les défauts JS
+    if (found) return _normalizeSig({...found});
     const def = METRO_PRESETS_DEFAULT.find(p => p.id === presetId);
-    if (def) return {...def, source: 'base',
-      stepsPerBeat: def.subdivision, beatSteps: def.subdivision,
-      beatSym: def.beatSym || beatSymFromUnit(def.beatUnit||4, def.subdivision||2)};
+    if (def) return _normalizeSig({...def, source: 'base'});
   }
-  return metroPresets.find(p => p.id === '4/4') || METRO_PRESETS_DEFAULT[2] || metroPresets[0];
+  const fb = metroPresets.find(p => p.id === '4/4') || METRO_PRESETS_DEFAULT[2] || metroPresets[0];
+  return _normalizeSig({...fb});
 }
 
 function buildSigSelector() {
@@ -2214,22 +2229,21 @@ function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
+  if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
     const oldPos = parseInt(slider.value);
-    // Calculer l'ancien SPM avec felBeatSteps de l'ANCIENNE signature (currentSig est déjà mis à jour)
-    const oldSPM = Math.max(1, Math.round(posToBPM(oldPos) * (oldSig.felBeatSteps || oldSig.stepsPerBeat || 2)));
-    const oldFel = oldSig.felBeatSteps || oldSig.stepsPerBeat;
-    const newFel = currentSig.felBeatSteps || currentSig.stepsPerBeat;
-    const oldBPM = oldSPM / oldFel;
-    const newPos = spmToPos(Math.round(oldBPM * newFel));
+    const oldEq = oldSig.equivalence || 2;
+    const newEq = currentSig.equivalence || 2;
+    const oldBPM = Math.max(1, Math.round(posToBPM(oldPos) * oldEq)) / oldEq;
+    const newPos = spmToPos(Math.round(oldBPM * newEq));
     slider.value = newPos;
     _lastBpmPos = newPos;
   }
   updateBeatDisplay();
-  _tapN = currentSig.beatsPerMeasure;
+  const feltBeats = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
+  _tapN = feltBeats;
   const ni = document.getElementById('tap-n-input');
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
@@ -2259,24 +2273,18 @@ function previewMetroPreset(id) {
   const raw = (packCours.metroPresets || []).find(x => x.id === id)
            || metroPresets.find(x => x.id === id);
   if (!raw) return;
-  const sub = raw.subdivision || 2;
-  const bu  = raw.beatUnit || 4;
-  const preset = {
+  const preset = _normalizeSig({
     ...raw,
-    stepsPerBeat: raw.stepsPerBeat || sub,
-    beatSteps:    raw.beatSteps    || sub,
-    beatSym:      raw.beatSym      || beatSymFromUnit(bu, sub),
-    famille:      raw.famille      || familleFromUnit(bu, sub),
-    metroPattern: Array.isArray(raw.metroPattern)
-                  ? raw.metroPattern
-                  : generateMetroPattern(raw.beatsPerMeasure, sub),
-  };
+    beatSym:  raw.beatSym  || beatSymFromUnit(raw.beatUnit || 4, raw.equivalence || 2),
+    famille:  raw.famille  || familleFromUnit(raw.beatUnit || 4, raw.equivalence || 2),
+  });
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
   if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(false); _editingMetroPresetId = null;
   updateBeatDisplay();
-  _tapN = currentSig.beatsPerMeasure;
+  const _ftBeats = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
+  _tapN = _ftBeats;
   const ni = document.getElementById('tap-n-input'); if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
   if (tb) tb.textContent = 'Tap ' + _tapN;
@@ -2304,9 +2312,9 @@ function syncMetroControls(sig) {
   const s = sig || currentSig;
   if (!s) return;
   const bv = document.getElementById('mpv-beats-val');
-  if (bv) bv.textContent = s.beatsPerMeasure;
+  if (bv) bv.textContent = s.nbDivisions;
   const br = document.getElementById('mpv-beats-range');
-  if (br) br.value = s.beatsPerMeasure;
+  if (br) br.value = s.nbDivisions;
   const us = document.getElementById('mpv-unit-sel');
   if (us) us.value = String(s.beatUnit);
   const ss = document.getElementById('mpv-subdiv-sel');
@@ -2314,74 +2322,52 @@ function syncMetroControls(sig) {
   updateSigDisplays();
 }
 
-// Applique pulsation (fbs) et subdivision par défaut selon l'unité et le nombre de temps sélectionnés
+// Applique équivalence (battue) par défaut selon l'unité et le nombre de divisions
 function _applyDefaultsFromUnit() {
   const us = document.getElementById('mpv-unit-sel');
   const bv = document.getElementById('mpv-beats-val');
-  const unit = us ? parseInt(us.value) : 4;
-  const beats = bv ? (parseInt(bv.textContent) || 4) : 4;
-  let fbs;
-  if (unit === 2 || unit === 1) fbs = 4; // blanche/ronde → battement=blanche (4 croches)
-  else if (unit === 16) fbs = 1; // dbl-croche → battement=croche (1 croche)
-  else if (unit === 8 && beats % 3 === 0 && beats >= 6) fbs = 3; // noire pointée composée (6/8, 9/8, 12/8…)
-  else if (unit === 8) fbs = 1; // croche simple (2/8, 3/8, 5/8, 7/8…)
-  else fbs = 2; // noire (unité 4)
-  const sub = fbs; // par défaut : 1 step = 1 croche (sub = nb de croches par battement)
+  const unit  = us ? parseInt(us.value) : 4;
+  const nbDiv = bv ? (parseInt(bv.textContent) || 4) : 4;
+  let equiv;
+  if (unit === 2 || unit === 1) equiv = 4;        // blanche/ronde → 4 croches
+  else if (unit === 16) equiv = 1;                  // dbl-croche
+  else if (unit === 8 && nbDiv % 3 === 0 && nbDiv >= 6) equiv = 3; // composé (6/8, 9/8…)
+  else if (unit === 8) equiv = 1;                   // croche simple
+  else equiv = 2;                                   // noire
   const batSel = document.getElementById('battue-sel');
-  if (batSel && batSel.value !== String(fbs)) batSel.value = String(fbs);
+  if (batSel && batSel.value !== String(equiv)) batSel.value = String(equiv);
+  // subdivision = 1 par défaut
   const subSel = document.getElementById('mpv-subdiv-sel');
-  if (subSel && subSel.value !== String(sub)) subSel.value = String(sub);
+  if (subSel && subSel.value !== '1') subSel.value = '1';
 }
 
-// Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
-// Règle subdivision : ne change que stepSec = battement/subdivision (SPM interne du metro.pattern).
-// Ne change PAS le SPM global (posToSPM = bpm × felBeatSteps), ni la signature, ni les layers.
+// Construit un currentSig custom depuis les contrôles L1 (sans sauvegarder, sans chercher de preset).
+// Ne change PAS le SPM global (posToSPM = bpm × equivalence), ni les layers.
 function buildSigFromControls() {
-  const beats = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
+  const nbDiv = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
   const us = document.getElementById('mpv-unit-sel');
   const unit = us ? parseInt(us.value) : 4;
   const ss = document.getElementById('mpv-subdiv-sel');
-  const sub = ss ? parseInt(ss.value) : 2;
-  // Hériter felBeatSteps depuis battue-sel (en priorité) ou currentSig
+  const sub = ss ? parseInt(ss.value) : 1;
   const batSel = document.getElementById('battue-sel');
-  const curFel = batSel ? (parseInt(batSel.value) || 2) : (currentSig.felBeatSteps || currentSig.stepsPerBeat || 2);
-  const match = metroPresets.find(p =>
-    p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
-  );
-  if (match) {
-    // Copie du preset (évite mutation de référence)
-    // La pulsation (curFel) est toujours préservée — subdivision ne change pas le SPM global.
-    // Exception aksak : stepsPerBeat < felBeatSteps intentionnellement (pas touché).
-    const isAksak = match.stepsPerBeat < match.felBeatSteps;
-    currentSig = {
-      ...match,
-      stepsPerBeat: isAksak ? match.stepsPerBeat : curFel,
-      felBeatSteps: curFel,
-      beatSteps:    isAksak ? match.beatSteps    : curFel,
-      beatSym:      symFromFelBeatSteps(curFel),
-      subdivision:  sub,
-      metroPattern: generateMetroPattern(beats, sub),
-    };
-    const btn = document.getElementById('sig-sel-btn');
-    if (btn) btn.textContent = match.label || match.id;
-  } else {
-  // Sig custom : stepsPerBeat = curFel → stepSec = battement/subdivision
-    currentSig = {
-      ...currentSig,
-      id: '_custom', label: `${beats}/${unit}`,
-      beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: curFel, beatSteps: curFel, felBeatSteps: curFel,
-      beatSym: symFromFelBeatSteps(curFel),
-      metroPattern: generateMetroPattern(beats, sub),
-    };
-    const btn = document.getElementById('sig-sel-btn');
-    if (btn) btn.textContent = currentSig.label;
-  }
+  const curEquiv = batSel ? (parseInt(batSel.value) || 2) : (currentSig.equivalence || 2);
+  currentSig = {
+    ...currentSig,
+    id: '_custom', label: `${nbDiv}/${unit}`,
+    nbDivisions: nbDiv, beatUnit: unit, subdivision: sub,
+    equivalence: curEquiv,
+    beatSym: symFromFelBeatSteps(curEquiv),
+    famille: familleFromUnit(unit, curEquiv),
+    metroPattern: generateMetroPattern(nbDiv, sub, unit),
+  };
+  const btn = document.getElementById('sig-sel-btn');
+  if (btn) btn.textContent = currentSig.label;
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime; // step 0 du nouveau metro commence au prochain beat déjà planifié
+  if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(true); updateMetroSaveBtn();
   updateBeatDisplay();
-  _tapN = currentSig.beatsPerMeasure;
+  const _ftB = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
+  _tapN = _ftB;
   const ni = document.getElementById('tap-n-input');
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
@@ -2404,7 +2390,7 @@ function highlightMetroStep() {
   // Calcul temps-réel (comme les layers) pour éviter le décalage du lookahead
   const now = ac ? ac.currentTime : 0;
   const spm = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
-  const stepSec = (60/spm)*(currentSig?.stepsPerBeat||2)/(currentSig?.subdivision||2);
+  const stepSec = (60/spm)*(8/(currentSig?.beatUnit||4))/(currentSig?.subdivision||1);
   const curStep = Math.floor((now - metroStartTime) / stepSec) % mpv.length;
   if (curStep === _lastMetroVizStep) return;
   _lastMetroVizStep = curStep;
@@ -2428,25 +2414,25 @@ function setMetroDirty(isDirty) {
 }
 function updateMetroSaveBtn() { setDirtyUI('sig-sel-btn', 'btn-metro-save', metroDirty); }
 
-// ^ accent fort, > temps, « subdiv, gris silence
-// Calcule un label de type "2+3/8" si le pattern contient plusieurs accents non-équirépartis
+// ^ accent fort, > temps, - subdiv, gris silence
+// Calcule un label "2+3/8" si les accents A/P sont non-équirépartis dans le metro.pattern
 function computeSigLabel() {
-  const mp = currentSig?.metroPattern;
+  const mp  = currentSig?.metroPattern;
   const unit = currentSig?.beatUnit || 4;
-  const beats = currentSig?.beatsPerMeasure || 4;
-  const sub = currentSig?.subdivision || 1;
-  if (!mp || !mp.length) return `${beats}/${unit}`;
-  const aPos = mp.reduce((acc, v, i) => { if (v === 'A') acc.push(i); return acc; }, []);
-  if (aPos.length <= 1) return `${beats}/${unit}`;
+  const nbDiv = currentSig?.nbDivisions || 4;
+  const sub  = currentSig?.subdivision || 1;
+  if (!mp || !mp.length) return `${nbDiv}/${unit}`;
+  // Positions des marqueurs de division (A ou P) = chaque début de groupe de `sub` steps
+  const divPos = mp.reduce((acc, v, i) => { if ((v === 'A' || v === 'P') && i % sub === 0) acc.push(i); return acc; }, []);
+  if (divPos.length <= 1) return `${nbDiv}/${unit}`;
   const groups = [];
-  for (let i = 0; i < aPos.length; i++) {
-    const next = aPos[i + 1] ?? mp.length;
-    groups.push(next - aPos[i]);
+  for (let i = 0; i < divPos.length; i++) {
+    const next = divPos[i + 1] ?? mp.length;
+    groups.push(Math.round((next - divPos[i]) / sub)); // en unités de division
   }
   const allEqual = groups.every(g => g === groups[0]);
-  if (allEqual) return `${beats}/${unit}`;
-  // Diviser par subdivision pour obtenir les groupes en unités de battue (ex: 3+4/8 et non 6+8/8)
-  return groups.map(g => Math.round(g / sub)).join('+') + `/${unit}`;
+  if (allEqual) return `${nbDiv}/${unit}`;
+  return groups.join('+') + `/${unit}`;
 }
 
 function _sigFracHtml(lbl) {
@@ -2485,7 +2471,7 @@ function renderMetroPatternViz() {
   updateMetroSaveBtn();
 }
 
-let currentSig = metroPresets.find(p => p.id === '4/4') || metroPresets[0];
+let currentSig = _normalizeSig({...(metroPresets.find(p => p.id === '4/4') || metroPresets[0])});
 
 // ── État métronome ────────────────────────────────────────────────────────
 let metro={accentOn:true, tempsOn:true, subdivOn:false, subdivDiv:2, muted:true, volume:80};
@@ -2499,7 +2485,7 @@ let _lastBpmPos=400; // dernière position du slider (pour rescaler metroNextBea
 // Call whenever metroNextBeatTime is rescaled (tempo/battue change) or metroStepPos resets.
 function _syncMetroStartTime(spm) {
   if (!playing || !ac) return;
-  const stepSec = (60 / spm) * ((currentSig.stepsPerBeat || 2) / (currentSig.subdivision || 2));
+  const stepSec = (60 / spm) * (8 / (currentSig.beatUnit || 4)) / (currentSig.subdivision || 1);
   metroStartTime = metroNextBeatTime - metroStepPos * stepSec;
 }
 
@@ -2568,8 +2554,8 @@ function scheduler(){
   {
     const nowM=getAC().currentTime;
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    // Durée d'un step métro = durée du temps / subdivision (indépendant du groove)
-    const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
+    // Durée d'un step métro = (60/spm) × (8/beatUnit) / subdivision
+    const stepSec=(60/spmNow)*(8/(currentSig.beatUnit||4))/(currentSig.subdivision||1);
     const mp=currentSig.metroPattern;
     while(metroNextBeatTime<nowM+LOOKAHEAD){
       if(!metro.muted){
@@ -2577,14 +2563,13 @@ function scheduler(){
         if(level==='A'&&metro.accentOn) playMetroClick(metroNextBeatTime,'accent');
         else if(level==='P'&&metro.tempsOn) playMetroClick(metroNextBeatTime,'beat');
         else if(level==='p'&&metro.subdivOn){
-          // Swing des subdivisions : aligne avec le décalage des steps impairs des layers
           const swOffM=(swingVal>0&&metroStepPos%2===1)?swingVal*0.5*(60/spmNow):0;
           playMetroClick(metroNextBeatTime+swOffM,'subdiv');
         }
       }
       metroNextBeatTime+=stepSec;
       metroStepPos=(metroStepPos+1)%mp.length;
-      metroBeatPos=Math.floor(metroStepPos/currentSig.stepsPerBeat); // alias dérivé
+      metroBeatPos=Math.floor(metroStepPos/(currentSig.subdivision||1));
     }
   }
   schedTimerID=setTimeout(scheduler,SCHED_MS);
@@ -3097,22 +3082,21 @@ function applyGroove(grooveId){
     }
     if (m.metroPattern && m.metroPattern.length > 0 && currentSig) {
       // Metro était dirty au save — restaurer le pattern embarqué + tous les params sig
-      currentSig = {
+      currentSig = _normalizeSig({
         ...currentSig,
-        felBeatSteps: m.felBeatSteps || currentSig.felBeatSteps,
-        beatsPerMeasure: m.beatsPerMeasure || currentSig.beatsPerMeasure,
+        equivalence: m.equivalence || m.felBeatSteps || currentSig.equivalence,
+        nbDivisions: m.nbDivisions || m.beatsPerMeasure || currentSig.nbDivisions,
         beatUnit: m.beatUnit || currentSig.beatUnit,
         subdivision: m.subdivision || currentSig.subdivision,
         metroPattern: [...m.metroPattern],
         _embedded: true,
-      };
+      });
       syncMetroControls();
       renderMetroPatternViz();
       updateBeatDisplay();
-      // metro_embed restauré depuis groove sauvegardé : pas de dirty (état déjà capturé)
       metroDirty=false;
-    } else if (m.felBeatSteps !== undefined && currentSig) {
-      currentSig = { ...currentSig, felBeatSteps: m.felBeatSteps };
+    } else if ((m.equivalence !== undefined || m.felBeatSteps !== undefined) && currentSig) {
+      currentSig = { ...currentSig, equivalence: m.equivalence || m.felBeatSteps || currentSig.equivalence };
       updateBeatDisplay();
     }
   }
@@ -3126,7 +3110,7 @@ function applyGroove(grooveId){
     clearTimeout(schedTimerID);
     const now=getAC().currentTime;
     const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const stepSec=(60/spmNow)*(currentSig.stepsPerBeat||2)/(currentSig.subdivision||2);
+    const stepSec=(60/spmNow)*(8/(currentSig.beatUnit||4))/(currentSig.subdivision||1);
     // Sync au prochain temps 1 (pos 0 du metroPattern) pour que le groove démarre sur le 1er temps
     const mpLen=Math.max(1,(currentSig.metroPattern||[]).length);
     const stepsLeft=(mpLen-metroStepPos%mpLen)%mpLen;
@@ -3926,7 +3910,7 @@ function openPresetModal(cfg){
     }
     if(cfg.type==='sig'){
       item.familles_ids=(item.familles_ids||[]).filter(id=>id!==famId);
-      item.famille=item.familles_ids[0]||familleFromUnit(item.beatUnit||4,item.subdivision||2);
+      item.famille=item.familles_ids[0]||familleFromUnit(item.beatUnit||4,item.equivalence||2);
       const cp=(packCours.metroPresets||[]).find(p=>p.id===item.id);
       if(cp){cp.familles_ids=(cp.familles_ids||[]).filter(id=>id!==famId);}
       if(authProfile?.role==='mx'){
@@ -4910,10 +4894,10 @@ function buildStepsDOM(li,wrap){
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
 
-  // Séparateurs de temps : beatSteps (steps par temps) × facteur de vitesse de la couche
-  // ×2 → step 2× plus court → 2× plus de steps par temps → sepInterval ×2
-  // /2 → step 2× plus long  → 2× moins de steps par temps → sepInterval ×0.5
-  // T  → vitesse ×3/2        → 3/2 plus de steps par temps → sepInterval ×1.5
+  // Séparateurs de temps : equivalence (croches par battue) × facteur de vitesse de la couche
+  // ×2 → step 2× plus court → 2× plus de steps par battue → sepInterval ×2
+  // /2 → step 2× plus long  → 2× moins de steps par battue → sepInterval ×0.5
+  // T  → vitesse ×3/2        → 3/2 plus de steps par battue → sepInterval ×1.5
   let _hA=state[li]?state[li].halfOn:false, _dA=state[li]?state[li].doubleOn:false;
   if(state[li]?.pendingClear){_hA=false;_dA=false;}
   if(state[li]?.pendingHalf){_hA=true;_dA=false;}
@@ -4921,7 +4905,8 @@ function buildStepsDOM(li,wrap){
   const _halfA=_hA, _dblA=_dA;
   const _ternA = state[li] && state[li].ternOn;
   const _sm    = (_dblA ? 2 : _halfA ? 0.5 : 1) * (_ternA ? 1.5 : 1);
-  const sepInterval = Math.max(1, Math.round((currentSig ? currentSig.beatSteps : 2) * _sm));
+  const _equiv  = currentSig ? (currentSig.equivalence||currentSig.felBeatSteps||currentSig.stepsPerBeat||2) : 2;
+  const sepInterval = Math.max(1, Math.round(_equiv * _sm));
   const sw = window.innerWidth < 600 ? 20 : 22;
   const stepPitch = sw + 2; // px par step (largeur + gap flex)
 
@@ -5437,14 +5422,13 @@ function saveGroove(){
   });
   const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
   if(bpmVal>0){ if(!groove.tempo)groove.tempo={}; groove.tempo.defaut=bpmVal; }
-  // Embarquer les paramètres metro courants (swing, battue, signature, pattern dirty)
+  // Embarquer les paramètres metro courants (swing, équivalence, signature, pattern dirty)
   groove.metro = {
     swing: swingVal,
-    felBeatSteps: currentSig.felBeatSteps || currentSig.stepsPerBeat || 2,
-    beatsPerMeasure: currentSig.beatsPerMeasure,
+    equivalence: currentSig.equivalence || currentSig.felBeatSteps || 2,
+    nbDivisions: currentSig.nbDivisions || currentSig.beatsPerMeasure,
     beatUnit: currentSig.beatUnit || 4,
-    subdivision: currentSig.subdivision || 2,
-    // Pattern embarqué ssi metro dirty — comme séquence embarquée pour les layers
+    subdivision: currentSig.subdivision || 1,
     metroPattern: metroDirty ? [...(currentSig.metroPattern||[])] : null,
   };
   // Embarquer les paramètres band courants si dirty (analogie groove.metro)
@@ -6295,12 +6279,12 @@ function bpmToPos(bpm){
   return Math.round(800+(b-180)/(_BPM_MAX-180)*200);
 }
 function posToSPM(pos){
-  const fel=currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
-  return Math.max(1,Math.round(posToBPM(pos)*fel));
+  const eq=currentSig?.equivalence||currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
+  return Math.max(1,Math.round(posToBPM(pos)*eq));
 }
 function spmToPos(spm){
-  const fel=currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
-  return bpmToPos(Math.round((spm||40)/fel));
+  const eq=currentSig?.equivalence||currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
+  return bpmToPos(Math.round((spm||40)/eq));
 }
 
 function updateSpmDisplay(){
@@ -6373,12 +6357,12 @@ function recalibrateStartTimes(){
 function updateBeatDisplay(){
   const pos=parseInt(document.getElementById('bpm').value);
   const spm=posToSPM(pos)*globalSpeedMult;
-  const felBeat=currentSig.felBeatSteps||currentSig.stepsPerBeat;
-  const bpm=Math.round(spm/felBeat);
-  const sym=symFromFelBeatSteps(felBeat);
+  const equiv=currentSig.equivalence||currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
+  const bpm=Math.round(spm/equiv);
+  const sym=symFromFelBeatSteps(equiv);
   // Section bar : select battue + input BPM
   const batSel=document.getElementById('battue-sel');
-  if(batSel) batSel.value=felBeat;
+  if(batSel) batSel.value=equiv;
   const beatInp=document.getElementById('beat-val-input');
   if(beatInp&&document.activeElement!==beatInp) beatInp.value=bpm;
   // Bouton tempo top-bar : texte + mini-track
@@ -6411,7 +6395,7 @@ function setMetroGlobal(on){
 }
 function getMetroBeatSec(){
   const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-  return(60/spm)*currentSig.stepsPerBeat;
+  return(60/spm)*(8/(currentSig.beatUnit||4));
 }
 function playMetroClick(atTime,type){
   const a=getAC();
@@ -6516,8 +6500,7 @@ function drawCircles(){
   let fracMeasure = 0;
   if(playing && circleModeView === 'measure'){
     const spm = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
-    const stepsPerMeasure = currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
-    const measureSec = (60/spm) * stepsPerMeasure;
+    const measureSec = (60/spm) * (currentSig.nbDivisions||currentSig.beatsPerMeasure||4) * (8/(currentSig.beatUnit||4));
     const el = now - state[0].startTime;
     fracMeasure = el < 0 ? 0 : ((el % measureSec) + measureSec) % measureSec / measureSec;
   }
@@ -6554,7 +6537,7 @@ function drawCircles(){
     let currentRepM = 0; // répétition courante dans la mesure (pour isPlaying)
     if(circleModeView === 'measure'){
       const spmM = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
-      const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+      const measureSecM = (60/spmM) * (currentSig.nbDivisions||currentSig.beatsPerMeasure||4) * (8/(currentSig.beatUnit||4));
       const patSecM = getBeatSec(li) * n;
       const maxRep = Math.ceil(measureSecM / patSecM);
       if(playing){
@@ -6617,13 +6600,14 @@ function drawCircles(){
     }
   });
 
-  // Marqueurs de beats (mode mesure uniquement)
+  // Marqueurs de beats/divisions (mode mesure uniquement)
   if(circleModeView === 'measure'){
     const rInner = radii[0] - dotR - 3;
     const rOuter = radii[2] + dotR + 5;
     const isDarkB = document.body.classList.contains('dark-mode');
-    for(let b=0; b<currentSig.beatsPerMeasure; b++){
-      const a = -Math.PI/2 + 2*Math.PI * b / currentSig.beatsPerMeasure;
+    const nbDiv = currentSig.nbDivisions || currentSig.beatsPerMeasure || 4;
+    for(let b=0; b<nbDiv; b++){
+      const a = -Math.PI/2 + 2*Math.PI * b / nbDiv;
       ctx.beginPath();
       ctx.moveTo(cx + rInner*Math.cos(a), cy + rInner*Math.sin(a));
       ctx.lineTo(cx + rOuter*Math.cos(a), cy + rOuter*Math.sin(a));
@@ -6631,11 +6615,11 @@ function drawCircles(){
       ctx.lineWidth = b===0 ? 1.5 : 0.75;
       ctx.stroke();
     }
-    // Numéros des temps en bordure extérieure
+    // Numéros des divisions en bordure extérieure
     const rLabel = Math.min(rOuter + 9, H/2 - 3);
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    for(let b=0; b<currentSig.beatsPerMeasure; b++){
-      const a = -Math.PI/2 + 2*Math.PI * b / currentSig.beatsPerMeasure;
+    for(let b=0; b<nbDiv; b++){
+      const a = -Math.PI/2 + 2*Math.PI * b / nbDiv;
       ctx.font = b===0 ? 'bold 9px sans-serif' : '8px sans-serif';
       ctx.fillStyle = b===0 ? (isDarkB?'#9080C0':'#7060B0') : (isDarkB?'#555':'#aaa');
       ctx.fillText(String(b+1), cx + rLabel*Math.cos(a), cy + rLabel*Math.sin(a));
@@ -6644,7 +6628,7 @@ function drawCircles(){
   // Labels nb de pas + durée (en fraction) dans le strip gauche — modes Pattern ET Mesure
   {
     const isDark2 = document.body.classList.contains('dark-mode');
-    const fbs = currentSig.felBeatSteps || 2;
+    const fbs = currentSig.equivalence || currentSig.felBeatSteps || 2;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     [0,1,2].forEach(li=>{
       const n = state[li].pattern.length;
@@ -6703,7 +6687,7 @@ function drawCircles(){
 function gcd(a,b){return b===0?a:gcd(b,a%b);}
 function lcm(a,b){return a===0||b===0?0:Math.abs(a)/gcd(Math.abs(a),Math.abs(b))*Math.abs(b);}
 function getPolymetricInfo(){
-  const mSteps=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+  const mSteps=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
   const lens=LAYERS.map((_,li)=>state[li].pattern.length).filter(n=>n>0);
   if(!lens.length) return{mSteps,lcmSteps:mSteps,isPolymetric:false,ratio:''};
   let totalLcm=mSteps; const polyLens=[];
@@ -6724,7 +6708,7 @@ function drawLinear(){
   const W=cv.width, H=cv.height;
   const isDark=document.body.classList.contains('dark-mode');
   ctx.clearRect(0,0,W,H);
-  const mSteps=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+  const mSteps=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
   // Unités de temps : multiples de 6 (PPCM de 1,2,3 → gère ×2 /2 T)
   // 1 croche normale = 6 unités
   // doubleOn → step = 3 u ; halfOn → step = 12 u ; ternOn → step = 4 u
@@ -6839,7 +6823,7 @@ function circleHitTest(x, y){
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   if(circleModeView==='linear'){
     // Recalcul des positions identiques à drawLinear()
-    const mStepsL=(currentSig.stepsPerBeat||2)*(currentSig.beatsPerMeasure||4);
+    const mStepsL=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
     const DENOM=6;
     const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
     const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
@@ -6874,7 +6858,7 @@ function circleHitTest(x, y){
     const pts = [];
     if(circleModeView === 'measure'){
       const spmM = posToSPM(parseInt(document.getElementById('bpm').value)) * globalSpeedMult;
-      const measureSecM = (60/spmM) * currentSig.stepsPerBeat * currentSig.beatsPerMeasure;
+      const measureSecM = (60/spmM) * (currentSig.nbDivisions||currentSig.beatsPerMeasure||4) * (8/(currentSig.beatUnit||4));
       const maxRep = Math.ceil(measureSecM / (getBeatSec(li) * n));
       for(let rep=0; rep<maxRep; rep++)
         for(let si=0; si<n; si++){
@@ -7018,7 +7002,7 @@ function _layerDurFrac(li){
   const n=s.pattern.length;
   const _pc=s.pendingClear,_pd=s.pendingDouble,_ph=s.pendingHalf;
   const dbl=_pc?false:(_pd?true:s.doubleOn), hlf=_pc?false:(_ph?true:s.halfOn), trn=s.ternOn;
-  const fbs=currentSig?(currentSig.felBeatSteps||2):2;
+  const fbs=currentSig?(currentSig.equivalence||currentSig.felBeatSteps||2):2;
   let num,den;
   if(!trn){num=n*(hlf?2:1);den=fbs*(dbl?2:hlf?1:1);}
   else{num=2*n*(hlf?2:1);den=3*fbs*(dbl?2:hlf?1:1);}
@@ -7095,9 +7079,8 @@ function updateRhythmInfoBar(){
   // ── Ratio significatif : ∃ paire a,b où a%b≠0 ET b%a≠0 ──
   const hasSignificantRatio=ratioC.some((a,i)=>ratioC.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
   // ── Mesure en croches → comparaison avec PPCM ──
-  const fbs=currentSig?(currentSig.felBeatSteps||currentSig.stepsPerBeat||2):2;
-  const bpm_val=currentSig?(currentSig.beatsPerMeasure||4):4;
-  const measureCroches=fbs*bpm_val;
+  const fbs=currentSig?(currentSig.equivalence||currentSig.felBeatSteps||2):2;
+  const measureCroches=currentSig?(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):8;
   const measureNcUnits=measureCroches*Dc;
   const LcmNc=lcm(Nc[0],lcm(Nc[1],Nc[2]));
   // ── Hémiole : le PPCM des cycles divise la mesure (resync intra-mesure) ──
@@ -7461,10 +7444,13 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   if (Array.isArray(mpRows)) {
     if (!packCours.metroPresets) packCours.metroPresets = [];
     mpRows.forEach(row => {
+      const _nb = row.nb_divisions ?? row.beats_per_measure;
       const preset = {
-        id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
-        beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
-        metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+        id: row.id, label: row.label,
+        nbDivisions: _nb, beatUnit: row.beat_unit,
+        subdivision: row.subdivision || 1,
+        equivalence: row.equivalence ?? row.fel_beat_steps ?? undefined,
+        metroPattern: row.metro_pattern || generateMetroPattern(_nb, row.subdivision || 1, row.beat_unit || 4),
         familles_ids: row.familles_ids || [],
         ordre: row.ordre ?? 0,
         source: row.source || 'school', approved: true, ownerId: row.owner_id,
@@ -7472,8 +7458,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
       const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
       if (idx >= 0) {
         const ex = packCours.metroPresets[idx];
-        if (ex.source === 'teacher' && ex.localStatus) return; // proposition TX en attente
-        packCours.metroPresets[idx] = { ...preset, felBeatSteps: preset.felBeatSteps ?? ex.felBeatSteps };
+        if (ex.source === 'teacher' && ex.localStatus) return;
+        packCours.metroPresets[idx] = { ...preset, equivalence: preset.equivalence ?? ex.equivalence ?? ex.felBeatSteps };
       } else packCours.metroPresets.push(preset);
     });
     rebuildMetroPresets();
@@ -7818,8 +7804,9 @@ async function _seedBaseMetroPresets() {
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(METRO_PRESETS_DEFAULT.map((p, i) => ({
         id: p.id, label: p.label,
-        beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
-        subdivision: p.subdivision, step_unit: p.stepUnit || 8,
+        nb_divisions: p.nbDivisions, beat_unit: p.beatUnit,
+        subdivision: p.subdivision,
+        equivalence: p.equivalence,
         metro_pattern: p.metroPattern,
         familles_ids: [p.famille],
         ordre: i,
@@ -7833,21 +7820,22 @@ async function _syncMetroPresetsOnly(rows) {
   if (!Array.isArray(rows)) return;
   if (!packCours.metroPresets) packCours.metroPresets = [];
   rows.forEach(row => {
+    const _nb = row.nb_divisions ?? row.beats_per_measure;
     const preset = {
-      id: row.id, label: row.label, beatsPerMeasure: row.beats_per_measure,
-      beatUnit: row.beat_unit, subdivision: row.subdivision, stepUnit: row.step_unit || 8,
-      metroPattern: row.metro_pattern || generateMetroPattern(row.beats_per_measure, row.subdivision),
+      id: row.id, label: row.label,
+      nbDivisions: _nb, beatUnit: row.beat_unit,
+      subdivision: row.subdivision || 1,
+      equivalence: row.equivalence ?? row.fel_beat_steps ?? undefined,
+      metroPattern: row.metro_pattern || generateMetroPattern(_nb, row.subdivision || 1, row.beat_unit || 4),
       familles_ids: row.familles_ids || [],
       ordre: row.ordre ?? 0,
-      felBeatSteps: row.fel_beat_steps ?? undefined,
       source: row.source || 'school', approved: true, ownerId: row.owner_id,
     };
     const idx = packCours.metroPresets.findIndex(p => p.id === row.id);
     if (idx >= 0) {
       const ex = packCours.metroPresets[idx];
-      // Ne pas écraser une proposition TX en attente
       if (ex.source === 'teacher' && ex.localStatus) return;
-      packCours.metroPresets[idx] = { ...preset, felBeatSteps: preset.felBeatSteps ?? ex.felBeatSteps };
+      packCours.metroPresets[idx] = { ...preset, equivalence: preset.equivalence ?? ex.equivalence ?? ex.felBeatSteps };
     } else packCours.metroPresets.push(preset);
   });
   saveToStorage(); rebuildMetroPresets(); buildSigSelector(); _pmRefresh?.();
@@ -7885,8 +7873,9 @@ async function sbSaveMetroPreset(presetId) {
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         id: p.id, label: p.label,
-        beats_per_measure: p.beatsPerMeasure, beat_unit: p.beatUnit,
-        subdivision: p.subdivision, step_unit: p.stepUnit || 8,
+        nb_divisions: p.nbDivisions || p.beatsPerMeasure, beat_unit: p.beatUnit,
+        subdivision: p.subdivision || 1,
+        equivalence: p.equivalence || p.felBeatSteps,
         metro_pattern: p.metroPattern,
         familles_ids: p.familles_ids || (p.famille ? [p.famille] : []),
         scope: isMX ? 'school' : 'teacher',
@@ -8469,8 +8458,9 @@ function buildApprobationsSection() {
       if (!packCours.metroPresets.find(x => x.id === mp.id)) {
         packCours.metroPresets.push({
           id: mp.id, label: mp.label,
-          beatsPerMeasure: mp.beats_per_measure, beatUnit: mp.beat_unit,
-          subdivision: mp.subdivision, stepUnit: mp.step_unit || 8,
+          nbDivisions: mp.nb_divisions ?? mp.beats_per_measure,
+          beatUnit: mp.beat_unit, subdivision: mp.subdivision || 1,
+          equivalence: mp.equivalence ?? mp.fel_beat_steps,
           metroPattern: mp.metro_pattern, source: 'teacher',
         });
       }
@@ -8783,7 +8773,7 @@ function buildPublishSection() {
     html += `<div style="font-size:10px;font-weight:600;color:#666;margin-top:6px;margin-bottom:4px">🎼 Presets métro</div>`;
     teacherMetroPres.forEach(p => {
       const isSubmitted = p.localStatus === 'submitted';
-      const desc = `${p.beatsPerMeasure}/${p.beatUnit} · subdiv ${p.subdivision}`;
+      const desc = `${p.nbDivisions||p.beatsPerMeasure}/${p.beatUnit} · subdiv ${p.subdivision}`;
       const badge = isSubmitted
         ? `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#e8f0fe;color:#3a56a6;flex-shrink:0">⏳ En attente</span>`
         : `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#d4f5e6;color:#0F6E56;flex-shrink:0">Nouveau</span>`;
@@ -10369,7 +10359,8 @@ function exportMidi(){
 
   const spm=posToSPM(parseInt(document.getElementById('bpm').value));
   const sig=currentSig;
-  const bpm=spm/sig.stepsPerBeat;
+  const equiv=sig.equivalence||sig.felBeatSteps||sig.stepsPerBeat||2;
+  const bpm=spm/equiv;
   const uspb=Math.round(60000000/bpm); // microsecondes par battement
 
   const trackBytes=[];
@@ -10377,9 +10368,9 @@ function exportMidi(){
 
   if(includeTempo)wr(0,0xFF,0x51,0x03,(uspb>>16)&0xFF,(uspb>>8)&0xFF,uspb&0xFF);
   if(includeSig){
-    // dd = log2(dénominateur) : noire=2, croche=3
-    const dd=sig.stepsPerBeat===1?3:2;
-    wr(0,0xFF,0x58,0x04,sig.beatsPerMeasure,dd,24,8);
+    const nbDiv=sig.nbDivisions||sig.beatsPerMeasure||4;
+    const dd=Math.round(Math.log2(sig.beatUnit||4)); // log2(4)=2 noire, log2(8)=3 croche
+    wr(0,0xFF,0x58,0x04,nbDiv,dd,24,8);
   }
 
   // Collecter tous les events note, triés par tick
@@ -10674,23 +10665,15 @@ function attachEvents(){
     inp.addEventListener('blur',_commit,{once:true});
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur();}if(e.key==='Escape'){inp.replaceWith(valEl);}});
   });
-  // ── Sélecteur battue (select) ──
+  // ── Sélecteur battue / équivalence (select) ──
   document.getElementById('battue-sel').addEventListener('change',function(){
     const next=parseInt(this.value);
-    // Garder le BPM ressenti constant : changer la battue change le SPM (et donc la vitesse).
-    // 100 BPM ♩ → SPM=200 ; 100 BPM ♩. → SPM=300. C'est le comportement attendu.
     const curFeltBpm=parseInt(document.getElementById('beat-val-input').value)||100;
-    const oldFbs=currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
-    currentSig.felBeatSteps=next;
-    // Mettre à jour stepsPerBeat seulement si c'était égal à oldFbs (préserver aksak : stepsPerBeat=1 ≠ fbs=2)
-    if(currentSig.stepsPerBeat===oldFbs) currentSig.stepsPerBeat=next;
+    currentSig.equivalence=next;
     if(!packCours.metroPresets) packCours.metroPresets=[];
     let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
     if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
-    if(pci>=0){
-      if(packCours.metroPresets[pci].stepsPerBeat===oldFbs) packCours.metroPresets[pci].stepsPerBeat=next;
-      packCours.metroPresets[pci].felBeatSteps=next;
-    }
+    if(pci>=0) packCours.metroPresets[pci].equivalence=next;
     const newSpm=curFeltBpm*next;
     const newPos=spmToPos(newSpm);
     const sl=document.getElementById('bpm');
@@ -10710,10 +10693,10 @@ function attachEvents(){
   });
   // ── Saisie manuelle BPM ressenti (beat-val-input) ──
   document.getElementById('beat-val-input').addEventListener('change',function(){
-    const felBeat=currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
+    const equiv=currentSig.equivalence||currentSig.felBeatSteps||2;
     const v=Math.max(20,Math.min(300,parseInt(this.value)||100));
     this.value=v;
-    const newSpm=v*felBeat;
+    const newSpm=v*equiv;
     const newPos=spmToPos(newSpm);
     const sl=document.getElementById('bpm');
     if(playing && ac){
@@ -10848,9 +10831,9 @@ function attachEvents(){
     const orig = metroPresets.find(p => p.id === currentSig?.id);
     if (orig?.metroPattern) {
       currentSig.metroPattern = [...orig.metroPattern];
-      if (orig.felBeatSteps) currentSig.felBeatSteps = orig.felBeatSteps;
+      if (orig.equivalence) currentSig.equivalence = orig.equivalence;
     } else if (currentSig) {
-      currentSig.metroPattern = generateMetroPattern(currentSig.beatsPerMeasure, currentSig.subdivision);
+      currentSig.metroPattern = generateMetroPattern(currentSig.nbDivisions || currentSig.beatsPerMeasure || 4, currentSig.subdivision || 1, currentSig.beatUnit || 4);
     }
     setMetroDirty(false);
     document.getElementById('modal-metro-save').style.display = 'none';
@@ -10865,20 +10848,19 @@ function attachEvents(){
     const s = currentSig;
     const pat = s?.metroPattern || [];
     if (!pat.length) { showToast('Pattern vide', 'warn'); return; }
-    const beats = s?.beatsPerMeasure || 4;
+    const nbDiv = s?.nbDivisions || s?.beatsPerMeasure || 4;
     const unit  = s?.beatUnit || 4;
-    const sub   = s?.subdivision || 2;
-    const label = document.getElementById('modal-metro-name').value.trim() || s?.label || s?.id || `${beats}/${unit}`;
-    // Nouveau preset (TX ou MX)
+    const sub   = s?.subdivision || 1;
+    const label = document.getElementById('modal-metro-name').value.trim() || s?.label || s?.id || `${nbDiv}/${unit}`;
+    const equiv = s?.equivalence || s?.felBeatSteps || 2;
     const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
     const preset = {
       id, label,
-      beatsPerMeasure: beats, beatUnit: unit, subdivision: sub, stepUnit: 8,
-      stepsPerBeat: sub, beatSteps: sub,
-      beatSym: beatSymFromUnit(unit, sub),
-      famille: familleFromUnit(unit, sub),
+      nbDivisions: nbDiv, beatUnit: unit, subdivision: sub,
+      equivalence: equiv,
+      beatSym: beatSymFromUnit(unit, equiv),
+      famille: familleFromUnit(unit, equiv),
       familles_ids: s?.familles_ids || (s?.famille ? [s.famille] : []),
-      felBeatSteps: s?.felBeatSteps || sub,
       metroPattern: [...pat],
       source: 'teacher', localStatus: 'draft',
     };
@@ -10909,7 +10891,7 @@ function attachEvents(){
     if (pci >= 0) {
       packCours.metroPresets[pci].label = label;
       packCours.metroPresets[pci].metroPattern = [...pat];
-      if (s.felBeatSteps) packCours.metroPresets[pci].felBeatSteps = s.felBeatSteps;
+      if (s.equivalence) packCours.metroPresets[pci].equivalence = s.equivalence;
       if (!isMX) {
         // TX : marque comme proposition (source teacher, draft) — pas de push DB direct
         packCours.metroPresets[pci].source = 'teacher';
@@ -10945,7 +10927,7 @@ function attachEvents(){
     let _tapSilenceTimer=null;  // timer auto-reset après silence
     let _tapLaunchTimer=null;   // timer lancement 1 temps après Nth tap
 
-    _tapN=currentSig.beatsPerMeasure;
+    _tapN=Math.max(2,Math.round((currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4))/(currentSig.equivalence||2)));
     tapNInput.value=_tapN;
     tapBtn.textContent='Tap '+_tapN;
 
@@ -11007,8 +10989,9 @@ function attachEvents(){
         const intervals=[];
         for(let i=1;i<recent.length;i++) intervals.push(recent[i]-recent[i-1]);
         const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
-        const spm=Math.round((60000/avgMs)*currentSig.stepsPerBeat);
-        document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*(currentSig?.stepsPerBeat||2),Math.min(_BPM_MAX*(currentSig?.stepsPerBeat||2),spm)));
+        const equiv=currentSig.equivalence||currentSig.felBeatSteps||currentSig.stepsPerBeat||2;
+        const spm=Math.round((60000/avgMs)*equiv);
+        document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*equiv,Math.min(_BPM_MAX*equiv,spm)));
         updateBeatDisplay();
         _tapCalculated=true;
         tapCount.textContent='▶';
