@@ -1095,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.16</span>
+      <span class="app-version">v3.13.17</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1261,7 +1261,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-bloc">
     <div class="metro-ctrl-row">
       <button class="mpv-word-btn on" id="mpv-tog-A">^ Accent</button>
-      <button class="mpv-word-btn on" id="mpv-tog-P">&gt; Battement</button>
+      <button class="mpv-word-btn on" id="mpv-tog-P">&gt; Pulsation</button>
       <button class="mpv-word-btn" id="mpv-tog-p">- Subdiv</button>
       <div class="mpv-subdiv-row">
         <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
@@ -2314,7 +2314,7 @@ function syncMetroControls(sig) {
   updateSigDisplays();
 }
 
-// Applique battement et subdivision par défaut selon l'unité et le nombre de temps sélectionnés
+// Applique pulsation (fbs) et subdivision par défaut selon l'unité et le nombre de temps sélectionnés
 function _applyDefaultsFromUnit() {
   const us = document.getElementById('mpv-unit-sel');
   const bv = document.getElementById('mpv-beats-val');
@@ -2323,9 +2323,10 @@ function _applyDefaultsFromUnit() {
   let fbs;
   if (unit === 2 || unit === 1) fbs = 4; // blanche/ronde → battement=blanche (4 croches)
   else if (unit === 16) fbs = 1; // dbl-croche → battement=croche (1 croche)
-  else if (unit === 8 && beats % 3 === 0) fbs = 3; // noire pointée (6/8, 9/8, 12/8…)
-  else fbs = 2; // noire (unité 4 ou croche binaire)
-  const sub = (fbs === 3) ? 3 : 2;
+  else if (unit === 8 && beats % 3 === 0 && beats >= 6) fbs = 3; // noire pointée composée (6/8, 9/8, 12/8…)
+  else if (unit === 8) fbs = 1; // croche simple (2/8, 3/8, 5/8, 7/8…)
+  else fbs = 2; // noire (unité 4)
+  const sub = fbs; // par défaut : 1 step = 1 croche (sub = nb de croches par battement)
   const batSel = document.getElementById('battue-sel');
   if (batSel && batSel.value !== String(fbs)) batSel.value = String(fbs);
   const subSel = document.getElementById('mpv-subdiv-sel');
@@ -2333,8 +2334,8 @@ function _applyDefaultsFromUnit() {
 }
 
 // Construit un currentSig depuis les contrôles L1 (sans sauvegarder)
-// Règle : les contrôles unité/nb-temps sont cosmétiques — ils changent le label et le métro.pattern
-// mais NE changent PAS stepsPerBeat/felBeatSteps ni le tempo de lecture des layers.
+// Règle subdivision : ne change que stepSec = battement/subdivision (SPM interne du metro.pattern).
+// Ne change PAS le SPM global (posToSPM = bpm × felBeatSteps), ni la signature, ni les layers.
 function buildSigFromControls() {
   const beats = parseInt(document.getElementById('mpv-beats-val')?.textContent) || 4;
   const us = document.getElementById('mpv-unit-sel');
@@ -2348,11 +2349,23 @@ function buildSigFromControls() {
     p.beatsPerMeasure === beats && p.beatUnit === unit && p.subdivision === sub
   );
   if (match) {
-    currentSig = match;
+    // Copie du preset (évite mutation de référence)
+    // La pulsation (curFel) est toujours préservée — subdivision ne change pas le SPM global.
+    // Exception aksak : stepsPerBeat < felBeatSteps intentionnellement (pas touché).
+    const isAksak = match.stepsPerBeat < match.felBeatSteps;
+    currentSig = {
+      ...match,
+      stepsPerBeat: isAksak ? match.stepsPerBeat : curFel,
+      felBeatSteps: curFel,
+      beatSteps:    isAksak ? match.beatSteps    : curFel,
+      beatSym:      symFromFelBeatSteps(curFel),
+      subdivision:  sub,
+      metroPattern: generateMetroPattern(beats, sub),
+    };
     const btn = document.getElementById('sig-sel-btn');
     if (btn) btn.textContent = match.label || match.id;
   } else {
-  // Sig custom : subdivision indépendante de stepsPerBeat (felBeatSteps) ; pas d'effet sur vitesse layers
+  // Sig custom : stepsPerBeat = curFel → stepSec = battement/subdivision
     currentSig = {
       ...currentSig,
       id: '_custom', label: `${beats}/${unit}`,
