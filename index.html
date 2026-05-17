@@ -844,9 +844,12 @@ body.view-circle #section-encyclo{order:5}
 #rhythm-info-bar .rib-sig:hover{color:#6B5FA5}
 /* Phénomène : jaune Groove */
 #rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic}
+#rhythm-info-bar .rib-col4{font-weight:600}
+#rhythm-info-bar .rib-col4-sep{color:#aaa;margin:0 1px}
 body.step-seq #rhythm-info-bar{order:1}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
+body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* Principe : display:contents sur .layer → enfants deviennent fils directs de #layers
@@ -1092,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.12</span>
+      <span class="app-version">v3.13.13</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -7056,71 +7059,79 @@ function _openMetroUnitFromSig(){
     if(b)b.classList.toggle('open',show);
   });
 }
+// ── Durée du cycle en croches (1/8) par layer ──
+function _cycleInCrochesFrac(li){
+  const s=state[li],n=s.pattern.length;
+  const _pc=s.pendingClear,_pd=s.pendingDouble,_ph=s.pendingHalf;
+  const dbl=_pc?false:(_pd?true:s.doubleOn), hlf=_pc?false:(_ph?true:s.halfOn), trn=s.ternOn;
+  let num,den;
+  if(!trn){num=n*(hlf?2:1);den=dbl?2:1;}
+  else{num=2*n*(hlf?2:1);den=3*(dbl?2:1);}
+  const g=gcd(Math.abs(num),Math.abs(den));return{num:num/g,den:den/g};
+}
 function updateRhythmInfoBar(){
   const el=document.getElementById('rhythm-info-bar');
-  if(!el) return;
+  if(!el)return;
   if(!state||!state[0]||!state[0].pattern){el.style.display='none';return;}
-  // Durées par layer en fractions de temps (felt beats)
-  const fracs=LAYERS.map((_,li)=>_layerDurFrac(li));
-  // Dénominateur commun → numérateurs entiers
-  const D=lcm(fracs[0].den,lcm(fracs[1].den,fracs[2].den));
-  const N=fracs.map(f=>f.num*(D/f.den));
-  // Rapport simplifié
-  const gAll=gcd(N[0],gcd(N[1],N[2]));
-  const ratio=N.map(v=>v/gAll);
-  // PPCM → longueur du cycle en temps
-  const L=lcm(N[0],lcm(N[1],N[2]));
-  const gLD=gcd(L,D); const cycTpsNr=L/gLD, cycTpsDr=D/gLD;
-  const cycTpsStr=cycTpsDr===1?cycTpsNr+'':_fracStr(cycTpsNr,cycTpsDr);
-  // Cycle en mesures
+  // ── Cycles en croches par layer ──
+  const cf=LAYERS.map((_,li)=>_cycleInCrochesFrac(li));
+  const Dc=lcm(cf[0].den,lcm(cf[1].den,cf[2].den));
+  const Nc=cf.map(f=>f.num*(Dc/f.den));
+  const gcAll=gcd(Nc[0],gcd(Nc[1],Nc[2]));
+  const ratioC=Nc.map(v=>v/gcAll);
+  // ── Ratio significatif : ∃ paire a,b où a%b≠0 ET b%a≠0 ──
+  const hasSignificantRatio=ratioC.some((a,i)=>ratioC.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
+  // ── Mesure en croches → comparaison avec PPCM ──
+  const fbs=currentSig?(currentSig.felBeatSteps||currentSig.stepsPerBeat||2):2;
   const bpm_val=currentSig?(currentSig.beatsPerMeasure||4):4;
-  const gM=gcd(cycTpsNr,cycTpsDr*bpm_val);
-  const cycMesNr=cycTpsNr/gM, cycMesDr=(cycTpsDr*bpm_val)/gM;
+  const measureCroches=fbs*bpm_val;
+  const measureNcUnits=measureCroches*Dc;
+  const LcmNc=lcm(Nc[0],lcm(Nc[1],Nc[2]));
+  // ── Hémiole : le PPCM des cycles divise la mesure (resync intra-mesure) ──
+  const isHemiole=hasSignificantRatio&&measureNcUnits>0&&LcmNc>0&&measureNcUnits%LcmNc===0;
+  const isPolymetrie=hasSignificantRatio&&!isHemiole;
+  // ── Primitives : supprimer valeurs multiples d'une autre plus petite ──
+  const uniqueC=[...new Set(ratioC)];
+  const primC=uniqueC.filter(v=>!uniqueC.some(u=>u!==v&&v%u===0)).sort((a,b)=>a-b);
+  const col3ratio=primC.join(':');
+  // ── Durée du cycle en mesures et en temps ──
+  const gM=gcd(LcmNc,Dc*measureCroches);
+  const cycMesNr=LcmNc/gM, cycMesDr=(Dc*measureCroches)/gM;
   const cycMesStr=cycMesDr===1?cycMesNr+'':_fracStr(cycMesNr,cycMesDr);
-  // ── Infos globales (section 3) ──
+  const gT=gcd(LcmNc,Dc*fbs);
+  const cycTpsNr=LcmNc/gT, cycTpsDr=(Dc*fbs)/gT;
+  const cycTpsStr=cycTpsDr===1?cycTpsNr+'':_fracStr(cycTpsNr,cycTpsDr);
+  // ── Caractères additionnels ──
   const sigLabel=currentSig?computeSigLabel():'';
   const isAsym=sigLabel.includes('+');
   const ternFlags=LAYERS.map((_,li)=>!!state[li].ternOn);
   const ternAll=ternFlags.every(Boolean);
   const ternNone=ternFlags.every(t=>!t);
-  const ternCount=ternFlags.filter(Boolean).length;
-  // Signature asymétrique (mètre irrégulier)
-  const timeChar=isAsym?'Asymétrique':(ternAll?'Ternaire':'');
-  // Polymétrie : longueurs de cycles différentes, indépendamment du ternaire
-  // → compare les durées de cycle sans effet ternaire (pure longueur + vitesse)
-  function _pureLenFrac(li){
-    const s=state[li],n=s.pattern.length;
-    const dbl=s.doubleOn,hlf=s.halfOn;
-    const fbs=currentSig?(currentSig.felBeatSteps||2):2;
-    const num=n*(hlf?2:1),den=fbs*(dbl?2:hlf?1:1);
-    const g=gcd(num,den);return{num:num/g,den:den/g};
-  }
-  const pf=LAYERS.map((_,li)=>_pureLenFrac(li));
-  const Dp=lcm(pf[0].den,lcm(pf[1].den,pf[2].den));
-  const Np=pf.map(f=>f.num*(Dp/f.den));
-  const gp=gcd(Np[0],gcd(Np[1],Np[2]));
-  const pureRatio=Np.map(v=>v/gp);
-  const hasLenPoly=pureRatio.some((a,i)=>pureRatio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
-  // Polyrythmie : divisions du temps différentes (mix ternaire/binaire)
-  const hasTernMix=!ternAll&&!ternNone; // certains ternaires, d'autres non
-  // Rapport lisible (valeurs uniques)
-  const ratioStr=[...new Set(ratio)].join(':');
-  const isSig=ratio.some((a,i)=>ratio.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
-  let polyLabel='';
-  if(hasTernMix&&hasLenPoly) polyLabel=`Poly ${ratioStr}`;
-  else if(hasTernMix) polyLabel=`Polyrythmie ${ratioStr}`;
-  else if(hasLenPoly) polyLabel=`Polymétrie ${ratioStr}`;
-  const infoLabel=[timeChar,polyLabel].filter(Boolean).join(' · ');
-  // ── Assemblage (3 colonnes : sig | cycle | phénomène) ──
+  const hasTernMix=!ternAll&&!ternNone;
+  // ── Labels phénomène (col 3) ──
+  const phenoParts=[];
+  if(isAsym)phenoParts.push('Asymétrique');
+  else if(ternAll)phenoParts.push('Ternaire');
+  if(hasTernMix)phenoParts.push('Polyrythmie');
+  if(isHemiole)phenoParts.push('Hémiole '+col3ratio);
+  else if(isPolymetrie)phenoParts.push('Polymétrie '+col3ratio);
+  const phenoLabel=phenoParts.join(' · ');
+  // ── Col 4 : détail par layer avec couleurs (si ratio significatif) ──
+  const showCol4=hasSignificantRatio;
+  // ── Assemblage ──
   const sep='<span class="rib-sep">|</span>';
   const parts=[];
-  if(sigLabel) parts.push(`<span class="rib-sig" title="Signature — cliquer pour ouvrir/fermer le volet Métro">${sigLabel}</span>`);
+  if(sigLabel)parts.push(`<span class="rib-sig" title="Signature — cliquer pour ouvrir/fermer le volet Métro">${sigLabel}</span>`);
   parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
-  if(infoLabel) parts.push(`<span class="rib-pheno" title="Caractère rythmique">${infoLabel}</span>`);
+  if(phenoLabel)parts.push(`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`);
+  if(showCol4){
+    const col4spans=LAYERS.map((_,li)=>`<span style="color:${CIRCLE_COLORS[li].fill}">${ratioC[li]}</span>`).join('<span class="rib-col4-sep">:</span>');
+    parts.push(`<span class="rib-col4" title="Rapport par couche">${col4spans}</span>`);
+  }
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
   const sigEl=el.querySelector('.rib-sig');
-  if(sigEl) sigEl.addEventListener('click',_openMetroUnitFromSig);
+  if(sigEl)sigEl.addEventListener('click',_openMetroUnitFromSig);
 }
 
 function visualLoopCircle(){
