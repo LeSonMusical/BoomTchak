@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.1</span>
+      <span class="app-version">v3.14.2</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2125,6 +2125,24 @@ function generateMetroPattern(nbDivisions, subdivision, beatUnit) {
   return pat;
 }
 
+// Extrait les marks de division depuis un pattern complet (positions 0, sub, 2×sub…)
+function _extractDivMarks(pattern, subdivision) {
+  const marks = [];
+  const sub = Math.max(1, subdivision);
+  for (let d = 0; d * sub < pattern.length; d++) marks.push(pattern[d * sub] || 'p');
+  return marks;
+}
+// Reconstruit un pattern complet depuis les marks de division avec une nouvelle subdivision
+function _rebuildPatternFromDivMarks(divMarks, newSub) {
+  const pat = [];
+  for (const mark of divMarks) { pat.push(mark); for (let s = 1; s < newSub; s++) pat.push('p'); }
+  return pat;
+}
+// Retourne la subdivision par défaut pour une signature (2 sauf mesures composées → 1)
+function _defaultSubdiv(nbDivisions, beatUnit) {
+  return (beatUnit === 8 && nbDivisions % 3 === 0 && nbDivisions >= 6) ? 1 : 2;
+}
+
 function beatSymFromUnit(beatUnit, equivalence) {
   if (beatUnit === 2) return '𝅗𝅥';
   if (equivalence >= 3) return '♩.';
@@ -2234,7 +2252,10 @@ function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
   // Toujours réinitialiser au pattern par défaut au changement de signature
-  currentSig.metroPattern = generateMetroPattern(currentSig.nbDivisions, currentSig.subdivision || 1, currentSig.beatUnit || 4);
+  // subdiv par défaut : 2 sauf mesures composées (3N/8) → 1
+  const _defSub = _defaultSubdiv(currentSig.nbDivisions, currentSig.beatUnit || 4);
+  currentSig.subdivision = _defSub;
+  currentSig.metroPattern = generateMetroPattern(currentSig.nbDivisions, _defSub, currentSig.beatUnit || 4);
   metroStepPos = 0; metroBeatPos = 0;
   if (playing && ac) metroStartTime = metroNextBeatTime;
   setMetroDirty(false); _editingMetroPresetId = null;
@@ -2343,9 +2364,9 @@ function _applyDefaultsFromUnit() {
   else equiv = 2;                                   // noire
   const batSel = document.getElementById('battue-sel');
   if (batSel && batSel.value !== String(equiv)) batSel.value = String(equiv);
-  // subdivision = 1 par défaut
+  const _defSubApply = _defaultSubdiv(nbDiv, unit);
   const subSel = document.getElementById('mpv-subdiv-sel');
-  if (subSel && subSel.value !== '1') subSel.value = '1';
+  if (subSel && subSel.value !== String(_defSubApply)) subSel.value = String(_defSubApply);
 }
 
 // Construit un currentSig custom depuis les contrôles L1 (sans sauvegarder, sans chercher de preset).
@@ -2358,6 +2379,17 @@ function buildSigFromControls() {
   const sub = ss ? parseInt(ss.value) : 1;
   const batSel = document.getElementById('battue-sel');
   const curEquiv = batSel ? (parseInt(batSel.value) || 2) : (currentSig.equivalence || 2);
+  // Si seulement la subdivision change : préserver les marks de division, insérer des '-' entre eux
+  const _oldSub = currentSig.subdivision || 1;
+  const _oldNb  = currentSig.nbDivisions;
+  const _oldUnit = currentSig.beatUnit || 4;
+  let _newPat;
+  if (sub !== _oldSub && nbDiv === _oldNb && unit === _oldUnit && currentSig.metroPattern?.length) {
+    const _divMarks = _extractDivMarks(currentSig.metroPattern, _oldSub);
+    _newPat = _rebuildPatternFromDivMarks(_divMarks, sub);
+  } else {
+    _newPat = generateMetroPattern(nbDiv, sub, unit);
+  }
   currentSig = {
     ...currentSig,
     id: '_custom', label: `${nbDiv}/${unit}`,
@@ -2365,7 +2397,7 @@ function buildSigFromControls() {
     equivalence: curEquiv,
     beatSym: symFromFelBeatSteps(curEquiv),
     famille: familleFromUnit(unit, curEquiv),
-    metroPattern: generateMetroPattern(nbDiv, sub, unit),
+    metroPattern: _newPat,
   };
   const btn = document.getElementById('sig-sel-btn');
   if (btn) btn.textContent = currentSig.label;
