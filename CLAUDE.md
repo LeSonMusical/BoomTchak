@@ -77,7 +77,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.13.16** (session 2026-05-17)
+**v3.14.0** (session 2026-05-17)
 
 ---
 
@@ -166,6 +166,7 @@ Fichiers à lire impérativement avant toute modification :
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.14.0 | Refonte architecture métronome/signature : `beatsPerMeasure`→`nbDivisions`, `felBeatSteps`→`equivalence`, `stepSec=(60/spm)×(8/beatUnit)/subdivision`, `generateMetroPattern` refondu (mesures composées 6/8 9/8 12/8), `_normalizeSig()` rétrocompat, `buildSigFromControls` toujours `id:'_custom'`, migration DB v3.14.0 |
 | v3.13.16 | Fix metro bug : battue-sel met maintenant à jour stepsPerBeat en même temps que felBeatSteps (sauf aksak où stepsPerBeat≠fbs intentionnel) → stepSec = beat_duration/subdivision correct |
 | v3.13.15 | Revert v3.13.14 (battue-sel : BPM restait constant → SPM ne changeait pas) + corr. encyclopédie + bible §8 |
 | v3.13.14 | (REVERT) Fix battue-sel incorrectement implémenté : SPM constant au lieu de BPM |
