@@ -1095,7 +1095,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.13.14</span>
+      <span class="app-version">v3.13.15</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1657,7 +1657,7 @@ const ENCYCLO = {
       ["Équivalences rythmiques","Le même groove peut s'écrire dans des signatures différentes sans changer le son. La clave son 3:2 = E(5,16) = 5 frappes sur 16 croches. On peut l'écrire en 4/4 sur 2 mesures (16 croches) ou en 16/16 sur 1 mesure. Notation différente, rythme identique."],
       ["Hémiole (3 contre 2)","L'hémiole superpose 2 groupes de 3 et 3 groupes de 2. En 6/8 (2 temps de 3 croches), jouer 3 notes sur 2 temps crée une sensation en 3/4. C'est la tension fondamentale de nombreuses musiques latinos, africaines et ibériques — la clave cubaine en est l'exemple le plus connu."],
       ["Syncope","Accent placé sur un temps normalement faible, ou prolongation d'un temps faible vers un temps fort. La syncope déplace la pulsation ressentie. Le reggae est fondamentalement syncopé : l'accent lourd est sur le 3e temps, pas le 1er — l'inverse de la pop occidentale."],
-      ["Dans BoomTchak — battue ♪/♩/♩.","Le réglage 'Battue' (♪ croche, ♩ noire, ♩. noire pointée, ♩♩ blanche) définit le temps ressenti. Le slider BPM encode ce BPM ressenti. Changer la battue ne change pas la vitesse de lecture des couches — seulement l'unité de compte. Exemple : 120 BPM ♩ en 4/4 = même groove qu'en 7/8 aksak à 240 BPM ♪ (même vitesse de croche, comptage différent)."]
+      ["Dans BoomTchak — battue ♪/♩/♩.","Le réglage 'Battue' (♪ croche, ♩ noire, ♩. noire pointée, ♩♩ blanche) définit le temps ressenti. Le slider BPM encode ce BPM ressenti. Changer la battue au même BPM change le SPM et donc la vitesse de lecture. Exemple : 100 BPM ♩ = 200 SPM ; 100 BPM ♩. = 300 SPM (groove 50% plus rapide). Pour garder la même vitesse en changeant de battue, ajuster le BPM en conséquence."]
     ]
   },
   misc_mesure:{
@@ -10664,15 +10664,15 @@ function attachEvents(){
   // ── Sélecteur battue (select) ──
   document.getElementById('battue-sel').addEventListener('change',function(){
     const next=parseInt(this.value);
-    // Garder le SPM (vitesse de croche) constant : la battue est une unité d'affichage.
-    // NE PAS recalculer depuis le BPM affiché, sinon on change la vitesse de lecture.
-    const currentSpm=posToSPM(_lastBpmPos)*globalSpeedMult;
+    // Garder le BPM ressenti constant : changer la battue change le SPM (et donc la vitesse).
+    // 100 BPM ♩ → SPM=200 ; 100 BPM ♩. → SPM=300. C'est le comportement attendu.
+    const curFeltBpm=parseInt(document.getElementById('beat-val-input').value)||100;
     currentSig.felBeatSteps=next;
     if(!packCours.metroPresets) packCours.metroPresets=[];
     let pci=packCours.metroPresets.findIndex(x=>x.id===currentSig.id);
     if(pci<0){const def=metroPresets.find(x=>x.id===currentSig.id);if(def){packCours.metroPresets.push({...def});pci=packCours.metroPresets.length-1;}}
     if(pci>=0) packCours.metroPresets[pci].felBeatSteps=next;
-    const newSpm=currentSpm; // spm inchangé ; spmToPos recalcule la position pour afficher newSpm/next en BPM
+    const newSpm=curFeltBpm*next;
     const newPos=spmToPos(newSpm);
     const sl=document.getElementById('bpm');
     if(playing&&ac){

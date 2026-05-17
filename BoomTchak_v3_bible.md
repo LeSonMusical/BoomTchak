@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.13.14
+> Mis à jour au fil du développement — v3.13.15
 
 ---
 
@@ -364,9 +364,16 @@ LAYERS.forEach((_, li) => {
 ```
 → Garantit que le nouveau groove repart toujours au début d'une mesure, en phase avec le métronome.
 
-### Formule métronome — règles invariantes (v3.13.14)
+### Formule métronome — règles invariantes (v3.13.15)
 
-**Règle fondamentale** : changer la battue (`felBeatSteps`) est un changement d'unité d'affichage — cela NE CHANGE PAS le spm ni la vitesse de lecture des layers ni du métronome.
+#### Comportement de la battue
+Changer la battue (`felBeatSteps`) **change le SPM** et donc la vitesse de lecture.
+Le BPM affiché reste constant, mais le SPM (croches/min) change :
+```
+100 BPM ♩  → SPM = 100 × 2 = 200 croches/min
+100 BPM ♩. → SPM = 100 × 3 = 300 croches/min   ← groove 50% plus rapide
+```
+C'est le comportement attendu et correct (`battue-sel` : `newSpm = curFeltBpm × next`).
 
 #### Nombre de steps du métro.pattern
 ```
@@ -374,32 +381,22 @@ nb_steps = beatsPerMeasure × subdivision
 ```
 - `beatsPerMeasure` : nombre de temps affiché dans le contrôle "nb de temps" de l'UI
 - `subdivision` : nombre de subdivisions par temps
-- **Indépendant** de `felBeatSteps` (battue)
+- **Indépendant de `felBeatSteps`** (la formule n'inclut pas fbs)
 
-Exemple : 6/8 (beatsPerMeasure=2) avec subdivision=4 → 8 steps.  
-Si l'utilisateur définit manuellement beats=6 (traitement des 6 croches comme beats) et subdivision=4 → 24 steps.
+Exemple : 6/8 (beatsPerMeasure=2) avec subdivision=4 → 8 steps.
 
 #### Durée d'un step métro
 ```
 stepSec = (60 / spm) × (stepsPerBeat / subdivision)
-        = 60 / (bpm_ressenti × subdivision)          [quand stepsPerBeat = felBeatSteps]
 ```
-**Indépendant de `felBeatSteps`** — le ratio `stepsPerBeat/fbs` annule toujours.
+Pour les presets standards : `stepsPerBeat = subdivision` → `stepSec = 60/spm = 1 croche`.  
+Pour une sig custom depuis `buildSigFromControls` : `stepsPerBeat = curFel` → `stepSec = (curFel/subdivision) croches`.
+
+La formule n'inclut pas `felBeatSteps` explicitement — mais `spm = bpm_ressenti × felBeatSteps`.
 
 #### Durée d'une mesure (vue circulaire mode Mesure)
 ```
 measureSec = (60/spm) × stepsPerBeat × beatsPerMeasure
-```
-
-#### Invariant battue (fixé v3.13.14)
-Le listener `battue-sel` garde le **spm constant** (croche rate inchangée) ; c'est le **BPM affiché** qui change proportionnellement.
-```
-// CORRECT (v3.13.14+)
-newSpm = posToSPM(_lastBpmPos) × globalSpeedMult   // spm inchangé
-newPos = spmToPos(newSpm)                            // affichage BPM = spm/new_fbs
-
-// INCORRECT (bug pré-v3.13.14)
-// newSpm = curFeltBpm × next    ← changeait spm, accélérait/ralentissait tout
 ```
 
 ---
