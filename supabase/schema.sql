@@ -520,3 +520,48 @@ alter table public.familles add column if not exists type text not null default 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- SEED INITIAL — Exécuter seed_school_pool.sql après ce schéma
 -- ═══════════════════════════════════════════════════════════════════════════
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.14.0 — Refonte métronome : nbDivisions + equivalence
+-- beats_per_measure → nb_divisions (toujours = total divisions/croches par mesure)
+-- fel_beat_steps → equivalence (nb croches = 1 BPM ressenti)
+-- Suppression step_unit (toujours 8, redondant)
+-- subdivision : toujours 1 par défaut (les anciens presets avec sub>1 sont normalisés)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+DO $$
+BEGIN
+  -- 1. Renommer beats_per_measure → nb_divisions (si pas encore fait)
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='metro_presets' AND column_name='beats_per_measure') THEN
+    ALTER TABLE public.metro_presets RENAME COLUMN beats_per_measure TO nb_divisions;
+  END IF;
+
+  -- 2. Ajouter colonne equivalence si elle n'existe pas
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='metro_presets' AND column_name='equivalence') THEN
+    ALTER TABLE public.metro_presets ADD COLUMN equivalence int DEFAULT 2;
+  END IF;
+
+  -- 3. Renommer fel_beat_steps → equivalence (si pas encore fait)
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='metro_presets' AND column_name='fel_beat_steps') THEN
+    UPDATE public.metro_presets SET equivalence = COALESCE(equivalence, fel_beat_steps);
+    ALTER TABLE public.metro_presets DROP COLUMN IF EXISTS fel_beat_steps;
+  END IF;
+
+  -- 4. Normaliser les presets composés (beat_unit=8, old sub=3) :
+  --    nb_divisions = old_nb_divisions × 3, subdivision = 1, pattern regeneré (metro_pattern = NULL)
+  UPDATE public.metro_presets
+  SET nb_divisions = nb_divisions * subdivision,
+      subdivision  = 1,
+      metro_pattern = NULL
+  WHERE beat_unit = 8 AND subdivision >= 3;
+
+  -- 5. Normaliser les autres presets avec sub > 1 : reset subdivision = 1
+  UPDATE public.metro_presets
+  SET subdivision  = 1,
+      metro_pattern = NULL
+  WHERE subdivision > 1;
+
+  -- 6. metro_pattern NULL → sera régénéré par JS au prochain chargement
+  -- (generateMetroPattern utilise nb_divisions, subdivision, beat_unit)
+
+END $$;
