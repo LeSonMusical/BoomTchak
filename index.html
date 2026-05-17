@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.4</span>
+      <span class="app-version">v3.14.5</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2173,9 +2173,6 @@ const METRO_PRESETS_DEFAULT = [
   {id:'4/4',  label:'4/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:4,  beatUnit:4, subdivision:1, equivalence:2},
   {id:'5/4',  label:'5/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:5,  beatUnit:4, subdivision:1, equivalence:2},
   {id:'7/4',  label:'7/4',  famille:'binaire',  beatSym:'♩',  nbDivisions:7,  beatUnit:4, subdivision:1, equivalence:2},
-  {id:'6/8',  label:'6/8',  famille:'ternaire', beatSym:'♩.', nbDivisions:6,  beatUnit:8, subdivision:1, equivalence:3},
-  {id:'9/8',  label:'9/8',  famille:'ternaire', beatSym:'♩.', nbDivisions:9,  beatUnit:8, subdivision:1, equivalence:3},
-  {id:'12/8', label:'12/8', famille:'ternaire', beatSym:'♩.', nbDivisions:12, beatUnit:8, subdivision:1, equivalence:3},
   {id:'7/8',  label:'7/8',  famille:'aksak',    beatSym:'♪',  nbDivisions:7,  beatUnit:8, subdivision:1, equivalence:2},
   {id:'11/8', label:'11/8', famille:'aksak',    beatSym:'♪',  nbDivisions:11, beatUnit:8, subdivision:1, equivalence:2},
   {id:'13/8', label:'13/8', famille:'aksak',    beatSym:'♪',  nbDivisions:13, beatUnit:8, subdivision:1, equivalence:2},
@@ -2192,6 +2189,9 @@ function symFromFelBeatSteps(n){
   return {1:'♪', 2:'♩', 3:'♩.', 4:'♩♩', 6:'♩♩♩'}[n] || '♩';
 }
 
+// IDs de presets supprimés — filtrés au runtime pour purger les caches localStorage/DB
+const _DELETED_PRESET_IDS = new Set(['6/8','9/8','12/8','3/8']);
+
 function rebuildMetroPresets() {
   const normalize = p => {
     p = _normalizeSig({...p}); // conversion ancien format si nécessaire
@@ -2207,6 +2207,9 @@ function rebuildMetroPresets() {
       familles_ids: famIds,
     };
   };
+  // Purger les presets supprimés du cache local
+  if (packCours.metroPresets)
+    packCours.metroPresets = packCours.metroPresets.filter(p => !_DELETED_PRESET_IDS.has(p.id));
   // Presets DB (tous : base, school, teacher) — teacher apparaît en bas dans le modal
   const dbPresets = (packCours.metroPresets || []).map(normalize);
   const dbIds = new Set(dbPresets.map(p => p.id));
@@ -2223,6 +2226,14 @@ function getSigFallback(presetId) {
     if (found) return _normalizeSig({...found});
     const def = METRO_PRESETS_DEFAULT.find(p => p.id === presetId);
     if (def) return _normalizeSig({...def, source: 'base'});
+    // Synthétiser depuis l'ID si format N/M (ex: grooves sauvegardés avec une sig supprimée)
+    const m = presetId.match(/^(\d+)\/(\d+)$/);
+    if (m) {
+      const nbDiv = parseInt(m[1]), beatUnit = parseInt(m[2]);
+      const equiv = _defaultSubdiv(nbDiv, beatUnit) === 1 ? 3 : (beatUnit === 2 ? 4 : beatUnit === 8 ? 1 : 2);
+      const defSub = _defaultSubdiv(nbDiv, beatUnit);
+      return _normalizeSig({id: presetId, label: presetId, nbDivisions: nbDiv, beatUnit, subdivision: defSub, equivalence: equiv, source: '_synth'});
+    }
   }
   const fb = metroPresets.find(p => p.id === '4/4') || METRO_PRESETS_DEFAULT[2] || metroPresets[0];
   return _normalizeSig({...fb});

@@ -565,3 +565,11 @@ BEGIN
   -- (generateMetroPattern utilise nb_divisions, subdivision, beat_unit)
 
 END $$;
+
+-- MIGRATION v3.14.5 — Suppression presets métro 6/8, 9/8, 12/8, 3/8
+-- Ces presets avaient un statut corrompu (impossible à publier) et sont supprimés.
+-- Les grooves sauvegardés avec ces signatures se voient synthétiser un sig par défaut au runtime.
+DO $$
+BEGIN
+  DELETE FROM public.metro_presets WHERE id IN ('6/8', '9/8', '12/8', '3/8');
+END $$;
