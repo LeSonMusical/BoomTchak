@@ -70,14 +70,14 @@ Merger vers : `main` après chaque session
 - Déploiement : GitHub Pages (fichier statique `index.html`)
 
 ## Fichiers de référence
-- `index.html` — application complète (~9000 lignes)
+- `index.html` — application complète (~10700 lignes)
 - `BoomTchak_Explain.md` — référence complète (pédagogie + UX + technique + roadmap)
 - `BoomTchak_v3_bible.md` — référence technique v3 (DB, RLS, workflows TX/MX)
-- `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.7.0)
+- `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.14.6)
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.14.0** (session 2026-05-17)
+**v3.14.6** (session 2026-05-18)
 
 ---
 
@@ -125,19 +125,84 @@ Ces deux systèmes interagissent de façon imprévisible à chaque `buildLayers(
 
 ---
 
-## PROMPT DE REPRISE — Nouvelle session
+## CHANTIER SUIVANT — Investigation architecture familles (session 2026-05-18)
+
+### Diagnostic Lamberio
+> "J'ai l'impression que suite à un changement de structure de la DB concernant les familles, tu as empilé l'ancienne méthode (il n'y avait qu'une seule table de famille partagée par band, Groove, pattern) avec une nouvelle (chaque type d'item a ses propres familles et les familles ont un ordre/rang). Il faut investiguer ce point en profondeur car je crois qu'il explique notamment qu'on perde l'ordre des familles, certains tags familles ou que d'autres apparaissent deux fois."
+
+### Hypothèses à vérifier (identifiées session 2026-05-18)
+
+**H1 — Seed sans `ordre`** : `seed_school_pool.sql` insère les familles sans colonne `ordre` → toutes ont `ordre=0` après le seed initial → tri inutile → l'ordre MX est perdu après tout rechargement depuis DB.
+
+**H2 — `PTK_DEFAULT.familles` sans `ordre`/`type`** : Les 7 familles hardcodées en JS (`fam_base`, `fam_euclidien`, etc.) n'ont ni `ordre` ni `type`. Quand `loadFromStorage` est appelé sur un localStorage ancien (avant v3.10.20), les familles réinstallées depuis PTK_DEFAULT n'ont pas ces champs → `getFams()` filtre mal par type.
+
+**H3 — `sbMergeSchoolData` efface les familles JS si DB vide** : Ligne 7519 supprime TOUTES les familles `source:'school'` de `packCours.familles`, puis les remplace par les données DB. Si la DB ne contient pas encore les familles (seed non exécuté), le résultat est `packCours.familles = []` → les patterns n'ont plus de famille assignée.
+
+**H4 — `getMetroFamilles()` fallback fragile** : Si `packCours.metroFamilles` est vide (DB non seedée ou `sbMergeSchoolData` n'a pas trouvé de lignes), la fonction tombe sur `SIG_FAMILLES` (IDs : 'binaire', 'ternaire', 'aksak', 'breve'). Ces IDs DOIVENT correspondre exactement à ceux en DB `metro_familles`. Si `_seedBaseMetroPresets()` a échoué ou n'a pas été déclenché, les IDs DB sont différents → associations orphelines.
+
+**H5 — Doublon potentiel `familles` vs `familles_ids`** : PTK_DEFAULT patterns utilisent `familles: ['fam_base']` (champ JS). DB stocke `familles_ids text[]`. `sbMergeSchoolData` mappe `familles: p.familles_ids || []` → cohérent après sync. Mais si un pattern PTK_DEFAULT est traité AVANT la sync (ex: affiché en mode offline), le champ `familles` vient de PTK_DEFAULT. La question est : y a-t-il des endroits où `familles_ids` ET `familles` coexistent sur le même objet, créant un doublon ?
+
+### Prompt d'investigation à copier-coller
 
 ```
-BoomTchak v3.13.7 — Bug step sequencer view à régler en priorité.
+BoomTchak v3.14.6 — Investigation architecture familles (perte d'ordre, doublons, orphelins)
 
 Contexte :
-- App single-file index.html (~10600 lignes), vanilla JS
-- 4 vues sélectionnables via 2 boutons : forme (◎ circulaire / ☰ linéaire) + cycle (⊙ commun / ⊛ par layer)
-- Vue "Step Sequencer" = linéaire + multiple (viewShape='linear', viewCycle='layer')
+- App single-file index.html (~10700 lignes), vanilla JS, Supabase
+- Version courante v3.14.6
 
-Problème persistant en vue Step Sequencer :
+Problème signalé par Lamberio :
+L'ancienne architecture (une seule table `familles` partagée par tous les types) a été
+progressivement remplacée par une architecture à 4 tables séparées :
+  - `familles`       : patterns + grooves (avec colonne `type`: 'pattern'|'groove'|'both')
+  - `metro_familles` : presets métronome
+  - `band_familles`  : bands
+  - `sound_familles` : sons
+
+Mais les deux systèmes semblent coexister dans le code, causant :
+  - Perte de l'ordre des familles après sync DB
+  - Tags familles manquants sur certains items
+  - Possibles doublons dans la liste de familles
+
+Fichiers à lire IMPÉRATIVEMENT avant tout :
+  - CLAUDE.md (section CHANTIER SUIVANT)
+  - BoomTchak_v3_bible.md §4 et §10
+  - index.html lignes 1716-1853 (PTK_DEFAULT)
+  - index.html lignes 3340-3375 (getFams dans openPresetModal)
+  - index.html lignes 5742-5747 (getFamille, getBandFamille, getMetroFamilles)
+  - index.html lignes 7496-7580 (sbMergeSchoolData — merge des familles)
+  - index.html lignes 7699-7715 (sbPushSchoolFamOrder)
+  - index.html lignes 10285-10360 (loadFromStorage — fallbacks PTK_DEFAULT)
+  - supabase/seed_school_pool.sql (structure du seed familles)
+  - supabase/schema.sql (colonnes `ordre`, `type` sur `familles`)
+
+Questions à investiguer :
+1. Le seed `seed_school_pool.sql` insère-t-il les familles avec `ordre` ? Si non, comment l'ordre est-il censé être persisté après le 1er chargement MX ?
+2. `PTK_DEFAULT.familles` a-t-il les champs `ordre` et `type` ? Si non, est-ce un bug quand `loadFromStorage` tombe sur le fallback ligne 10337 ?
+3. Y a-t-il des chemins d'exécution où `packCours.familles` peut contenir deux fois la même famille (ex: une version PTK sans `ordre` + une version DB avec `ordre`) ?
+4. `getFams()` line 3342-3343 filtre par `!f.type || f.type==='groove'` — les familles PTK sans `type` passent TOUJOURS (condition `!f.type` est vraie) → elles apparaissent dans TOUS les modals (groove ET pattern) même si elles devraient être filtrées. Est-ce intentionnel ?
+5. `getMetroFamilles()` ligne 5747 : dans quels cas `packCours.metroFamilles` est-il vide au runtime ? Les IDs 'binaire','ternaire','aksak','breve' (SIG_FAMILLES) correspondent-ils exactement aux IDs dans la table `metro_familles` DB ?
+6. Y a-t-il des items (patterns/grooves) en DB ou en PTK_DEFAULT qui référencent des familles IDs qui n'existent plus, causant des tags orphelins dans l'UI ?
+
+Livrable attendu :
+Un diagnostic complet avec pour chaque problème identifié :
+  - La localisation précise (fichier + numéro de ligne)
+  - L'impact visible pour l'utilisateur
+  - Une proposition de correction (avec complexité estimée)
+
+NE PAS CODER — diagnostic seulement. Soumettre à Lamberio avant toute modification.
+```
+
+## PROMPT DE REPRISE — Bug Step Sequencer (toujours ouvert)
+
+```
+BoomTchak v3.14.6 — Bug step sequencer view (non résolu depuis v3.13.x)
+
+Vue "Step Sequencer" = linéaire + multiple (viewShape='linear', viewCycle='layer')
+
+Problème persistant :
 1. Au changement de groove, les step rows n'apparaissent pas ou disparaissent immédiatement
-2. L'espace entre la zone step (haut) et les volets layer.mod (bas) ne s'adapte pas au nombre de lignes réel
+2. L'espace entre la zone step (haut) et les volets layer.mod (bas) ne s'adapte pas
 
 Architecture actuelle (cassée) :
 - #circle-view (haut) contient #step-rows-wrap
@@ -145,27 +210,27 @@ Architecture actuelle (cassée) :
 - Les .layer-row2 (step buttons) sont physiquement déplacées entre #layer-div-* et #step-rows-wrap
   via _moveRow2ToStepView(). Cette approche crée des conflits d'IDs et des races conditions.
 
-Demande :
-AVANT de toucher au code, proposer une architecture alternative qui :
-- évite tout déplacement DOM des .layer-row2
-- affiche les 3 lignes de step EN HAUT (dans #circle-view ou équivalent)
-- affiche les 3 volets mod EN BAS (dans #layers-wrap ou équivalent)
-- s'adapte dynamiquement au nombre de pas (8/12/16/24/32) et à la largeur dispo
-- fonctionne correctement au changement de groove (buildLayers est appelé)
+Piste recommandée : refactorer sans déplacement DOM physique — CSS pur (flex/grid).
 
-Soumettre l'architecture à Lamberio AVANT de coder.
-
-Fichiers à lire impérativement avant toute modification :
+Fichiers à lire avant toute modification :
 - CLAUDE.md (section BUG CRITIQUE OUVERT)
 - BoomTchak_v3_bible.md
 - index.html lignes 4398-4848 (buildLayers, buildStepsDOM, checkWrap)
 - index.html lignes 6389-6420 (_moveRow2ToStepView, _setupStepViewDOM)
 - index.html lignes 6920-6995 (setView)
+
+AVANT de coder : soumettre une architecture alternative à Lamberio.
 ```
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.14.6 | Suppression `source:'base'` metro presets → `'school'` partout ; condition seeding `metroPres.length===0` ; migration SQL UPDATE metro_presets SET source='school' WHERE source='base' |
+| v3.14.5 | Suppression presets métro 6/8, 9/8, 12/8, 3/8 (statut corrompu) + migration SQL DELETE ; `_DELETED_PRESET_IDS` Set pour purge cache |
+| v3.14.4 | Modal sauvegarde preset métronome unifié avec `#psp-box` (même UX que groove/pattern/band/son) ; `openMetroSavePop`, `pspDoOverwriteMetro`, `pspDoSaveNewMetro` ; dispatcher `pspDoOverwrite`/`pspDoSaveNew` étendu |
+| v3.14.3 | Fix `generateMetroPattern` (non-composé : tous d>0 → 'P' pas 'p') ; fix `buildSigFromControls` (label preset conservé, pas écrasé) ; fix `_applyDefaultsFromUnit` (subdivision jamais changée) |
+| v3.14.2 | Règles défaut métro.pattern : non-composé subdiv=2 (^−>−…), composé 3N/8 subdiv=1 (^>−>−…) ; `_defaultSubdiv()` ; `changeSig` réinitialise toujours le pattern ; `buildSigFromControls` préserve marques division via `_extractDivMarks`+`_rebuildPatternFromDivMarks` |
+| v3.14.1 | Redesign volet Métro : boutons ^/>/− (remplace labels texte) ; layout gauche=boutons droite=subdivisions+select ; `changeSig()` reset pattern systématique |
 | v3.14.0 | Refonte architecture métronome/signature : `beatsPerMeasure`→`nbDivisions`, `felBeatSteps`→`equivalence`, `stepSec=(60/spm)×(8/beatUnit)/subdivision`, `generateMetroPattern` refondu (mesures composées 6/8 9/8 12/8), `_normalizeSig()` rétrocompat, `buildSigFromControls` toujours `id:'_custom'`, migration DB v3.14.0 |
 | v3.13.16 | Fix metro bug : battue-sel met maintenant à jour stepsPerBeat en même temps que felBeatSteps (sauf aksak où stepsPerBeat≠fbs intentionnel) → stepSec = beat_duration/subdivision correct |
 | v3.13.15 | Revert v3.13.14 (battue-sel : BPM restait constant → SPM ne changeait pas) + corr. encyclopédie + bible §8 |

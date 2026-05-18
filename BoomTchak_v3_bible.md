@@ -1,7 +1,7 @@
 # BoomTchak v3 — Bible technique
 
 > Document de référence : architecture, règles métier, workflows TX/MX, état DB.
-> Mis à jour au fil du développement — v3.13.15
+> Mis à jour au fil du développement — v3.14.6
 
 ---
 
@@ -314,89 +314,95 @@ TX crée → local seulement (jamais en Supabase)
 
 ---
 
-## 8. Architecture tempo — SPM vs BPM (ajouté v3.4.33)
+## 8. Architecture tempo — Formules v3.14+ (refonte 2026-05-17)
 
-### Principe
-Le slider `#bpm` (id historique) stocke des **SPM** (Steps Per Minute = vitesse de la croche ♪).
-Le **BPM** musical est une valeur **dérivée** et affichée uniquement :
+### Variables clés de `currentSig`
 
-```
-BPM = SPM / currentSig.stepsPerBeat
-```
+| Variable | Signification | Ancienne variable |
+|----------|---------------|-------------------|
+| `equivalence` | Nb de croches par battue ressentie (1=♪, 2=♩, 3=♩., 4=♩♩, 6=♩♩♩) | `felBeatSteps` |
+| `nbDivisions` | Nb de divisions (temps) dans la mesure | `beatsPerMeasure` |
+| `beatUnit` | Unité de temps (2=blanche, 4=noire, 8=croche) | — |
+| `subdivision` | Nb de steps métronome par division | `subdivision` |
+| `metroPattern` | Tableau de chars (`'A'`/`'P'`/`'p'`) — pattern du métronome | — |
 
-### `SIGNATURES` — champ `stepsPerBeat`
-| Signature | stepsPerBeat | Exemple |
-|-----------|--------------|---------|
-| 4/4, 2/4, 3/4 | 2 | ♩ = SPM/2 |
-| 6/8, 9/8, 12/8 | 3 | ♩. = SPM/3 |
-| 2/2 | 4 | 𝅗𝅥 = SPM/4 |
+### Formules fondamentales
 
-### Affichage barre tempo
-- `#beat-display` : BPM musical (`♩= 104`)
-- `#spm-display` : SPM brut (`♪208`)
-
-### Préférence `sigChangeLock` (localStorage `btk_prefs`)
-| Valeur | Comportement sur changement de métrique |
-|--------|----------------------------------------|
-| `'spm'` | SPM constant — BPM change (croche garde sa vitesse) |
-| `'bpm'` | BPM constant — recalcule SPM = `oldBPM × newSig.stepsPerBeat` |
-
-Défaut : `'bpm'` (musicalement correct — la pulsation reste stable).
-
-### Calcul dans le moteur audio
 ```javascript
-getBeatSec(li)    = (60 / spm) / mult * ternFactor   // durée d'un step couche (avec mult et ternFactor)
-getMetroBeatSec() = (60 / spm) * currentSig.stepsPerBeat  // beat métronome (sans mult ni ternFactor)
+spm = bpm_ressenti × equivalence              // croches/min (Steps Per Minute)
+stepSec_metro = (60/spm) × (8/beatUnit) / subdivision
+getBeatSec(li) = (60/spm) / mult × ternFactor  // durée d'un step layer
 ```
-où `spm` est la valeur brute du slider (Steps Per Minute).
+
+Exemples `stepSec_metro` :
+- 4/4 (beatUnit=4, sub=2) → `(60/spm) × 2/2 = 60/spm` = 1 croche
+- 3/2 (beatUnit=2, sub=2) → `(60/spm) × 4/2` = 1 blanche / subdiv
+- 6/8 composé (beatUnit=8, sub=1) → `(60/spm) × 1/1 = 60/spm` = 1 croche
+
+### Caractères du métro.pattern
+
+| Char | Niveau | Bouton UI | Volume |
+|------|--------|-----------|--------|
+| `'A'` | Accent fort (temps 1 de chaque groupe) | `^` | fort |
+| `'P'` | Pulsation (début de chaque division) | `>` | moyen |
+| `'p'` | Subdivision (steps intermédiaires) | `-` | léger |
+
+### Pattern par défaut — règles v3.14.2+
+
+```javascript
+function _defaultSubdiv(nbDivisions, beatUnit) {
+  // Mesure composée : 3N/8 avec N≥2 (ex: 6/8, 9/8, 12/8)
+  return (beatUnit === 8 && nbDivisions % 3 === 0 && nbDivisions >= 6) ? 1 : 2;
+}
+```
+
+- **Signature non composée (N/4, N/2)** : subdiv=2 → `A, -, P, -, A, -, P, -, …`
+- **Signature composée (3N/8)** : subdiv=1 → `A, P, -, P, -, A, P, -, P, -, …`
+
+`generateMetroPattern(nbDivisions, subdivision, beatUnit)` :
+- d=0 : toujours `'A'`
+- d>0, composé : `'P'` si `d % groupSize === 0`, sinon `'p'` (groupSize = 3 pour 3N/8)
+- d>0, non composé : toujours `'P'`
+
+### Règle changement de signature — v3.14.2+
+`changeSig(id)` réinitialise TOUJOURS le métro.pattern au défaut calculé par `_defaultSubdiv`.
+Le nom du preset (`label`) est conservé — il n'est jamais écrasé.
+
+### Règle changement de subdivision — v3.14.2+
+`buildSigFromControls` préserve les marques de division via :
+```javascript
+const _divMarks = _extractDivMarks(currentSig.metroPattern, _oldSub);
+_newPat = _rebuildPatternFromDivMarks(_divMarks, newSub);
+```
+→ Les positions `^`/`>`/`-` sur les divisions sont conservées, seules les subdivisions entre elles changent.
+
+### Préférence sigChangeLock
+| Valeur | Comportement sur changement de signature |
+|--------|------------------------------------------|
+| `'bpm'` (défaut) | BPM ressenti constant → `newSpm = bpm × newEquivalence` |
+| `'spm'` | SPM constant → BPM change |
+
+### Sources des presets métronome (v3.14.6+)
+
+| Source | Signification |
+|--------|---------------|
+| `'school'` | Preset du pool commun (créé par MX ou seeded) |
+| `'teacher'` | Preset personnel TX |
+| ~~`'base'`~~ | **Supprimé v3.14.6** — tous les presets ont maintenant `source:'school'` |
+
+Seeding initial (MX, 1 seule fois) : condition `metroPres.length === 0` → `_seedBaseMetroPresets()` → insère avec `source:'school'`.
 
 ### Resync groove sur changement en lecture (v3.4.47)
 Quand `applyGroove()` est appelé pendant la lecture, toutes les couches sont réalignées sur le
-**prochain temps 1** du métronome (fin de la mesure en cours) :
+**prochain temps 1** du métronome :
 ```javascript
-const beatsLeft = (currentSig.beatsPerMeasure - metroBeatPos) % currentSig.beatsPerMeasure;
+const beatsLeft = (currentSig.nbDivisions - metroBeatPos) % currentSig.nbDivisions;
 const syncTime  = Math.max(now, metroNextBeatTime + beatsLeft * beatSec);
 LAYERS.forEach((_, li) => {
   state[li].stepPos = 0;
   state[li].nextStepTime = syncTime;
   state[li].startTime    = syncTime;
 });
-```
-→ Garantit que le nouveau groove repart toujours au début d'une mesure, en phase avec le métronome.
-
-### Formule métronome — règles invariantes (v3.13.15)
-
-#### Comportement de la battue
-Changer la battue (`felBeatSteps`) **change le SPM** et donc la vitesse de lecture.
-Le BPM affiché reste constant, mais le SPM (croches/min) change :
-```
-100 BPM ♩  → SPM = 100 × 2 = 200 croches/min
-100 BPM ♩. → SPM = 100 × 3 = 300 croches/min   ← groove 50% plus rapide
-```
-C'est le comportement attendu et correct (`battue-sel` : `newSpm = curFeltBpm × next`).
-
-#### Nombre de steps du métro.pattern
-```
-nb_steps = beatsPerMeasure × subdivision
-```
-- `beatsPerMeasure` : nombre de temps affiché dans le contrôle "nb de temps" de l'UI
-- `subdivision` : nombre de subdivisions par temps
-- **Indépendant de `felBeatSteps`** (la formule n'inclut pas fbs)
-
-Exemple : 6/8 (beatsPerMeasure=2) avec subdivision=4 → 8 steps.
-
-#### Durée d'un step métro
-```
-stepSec = (60 / spm) × (stepsPerBeat / subdivision)
-```
-Pour les presets standards : `stepsPerBeat = subdivision` → `stepSec = 60/spm = 1 croche`.  
-Pour une sig custom depuis `buildSigFromControls` : `stepsPerBeat = curFel` → `stepSec = (curFel/subdivision) croches`.
-
-La formule n'inclut pas `felBeatSteps` explicitement — mais `spm = bpm_ressenti × felBeatSteps`.
-
-#### Durée d'une mesure (vue circulaire mode Mesure)
-```
-measureSec = (60/spm) × stepsPerBeat × beatsPerMeasure
 ```
 
 ---
@@ -689,34 +695,52 @@ Valider le modèle avec Lamberio avant tout codage.
 
 ---
 
-## 16. Architecture volet métronome (v3.10+)
+## 16. Architecture volet métronome (v3.14+)
 
 ### Sous-volets (5 boutons toggle indépendants)
 | Volet | ID | Contenu |
 |-------|----|---------|
-| **Tempo** | `metro-sub-tempo` | 2 colonnes : BPM (slider large + −/+) + Battement (select felBeatSteps + input BPM) |
-| **Unit** | `metro-sub-unit` | 4 colonnes : Signature (flex auto) + Divisions (< N >) + Unité (flex 0.65, select beatUnit) + Swing (slider MPC, overlay drag) |
+| **Tempo** | `metro-sub-tempo` | 2 colonnes : BPM (slider large + −/+) + Battement (select equivalence + input BPM) |
+| **Unit** | `metro-sub-unit` | 4 colonnes : Signature (flex auto) + Divisions (< N >) + Unité (flex 0.65, select beatUnit) + Swing |
 | **Tap** | `metro-sub-tap` | Bouton tap-tempo ; calcule la moyenne des intervalles |
 | **Vol** | `metro-sub-vol` | Slider volume métronome (classe `temps-slider`) |
-| **Métro** | `metro-sub-pat` | ctrl-row accents (^/>/−) + select subdivision + pattern viz |
+| **Métro** | `metro-sub-pat` | Gauche : boutons `^`/`>`/`-` (toggle accents) · Droite : "subdivisions :" + select ×1/×2/×3/×4 · Pattern viz en dessous |
 
-### Fonctions clés (v3.10.8+)
+### Boutons accent (v3.14.1)
+| Bouton | ID | Char édité | Effet |
+|--------|----|------------|-------|
+| `^` | `mpv-tog-A` | `'A'` | Active/désactive les accents forts (temps 1) |
+| `>` | `mpv-tog-P` | `'P'` | Active/désactive les pulsations (temps N) |
+| `-` | `mpv-tog-p` | `'p'` | Active/désactive les subdivisions |
+
+### Règles d'édition du pattern (v3.14.1+)
+- `changeSig(id)` → reset complet du pattern (pas d'héritage)
+- Changement de subdivision (`mpv-subdiv-sel`) → préserve les `^`/`>` sur les divisions via `_extractDivMarks`/`_rebuildPatternFromDivMarks`
+- Changement d'unité (`mpv-unit-sel`) → ne change PAS la subdivision (l'utilisateur contrôle indépendamment)
+
+### Sauvegarde preset métronome (v3.14.4+)
+Utilise le même popover `#psp-box` que les autres types. Contexte `_pspContext = 'metro'`.
+Fonctions : `openMetroSavePop(btn)` → `pspDoOverwriteMetro()` / `pspDoSaveNewMetro()`.
+Nouveau preset créé avec `source:'teacher'`, `localStatus:'draft'`.
+
+### Fonctions clés
 
 | Fonction | Rôle |
 |----------|------|
+| `generateMetroPattern(nbDiv, sub, beatUnit)` | Génère le pattern par défaut selon les règles v3.14.2 |
+| `_defaultSubdiv(nbDiv, beatUnit)` | Retourne 1 (composé 3N/8) ou 2 (tous les autres) |
+| `_extractDivMarks(pattern, sub)` | Extrait les chars aux positions division (0, sub, 2×sub…) |
+| `_rebuildPatternFromDivMarks(marks, newSub)` | Reconstruit le pattern avec les marques conservées |
 | `computeSigLabel()` | Lit les positions 'A' dans metroPattern → génère "2+3/8" ou "4/4" |
 | `updateSigDisplays()` | Synchronise `sig-unit-display` et `mpv-sig-label` via `computeSigLabel()` |
-| `_applyDefaultsFromUnit()` | Auto-sync felBeatSteps et subdivision depuis l'unité sélectionnée |
+| `_applyDefaultsFromUnit()` | Auto-sync equivalence depuis l'unité — NE change PAS la subdivision |
 | `getSwingName(mpcPct)` | Retourne le nom du style de swing pour un % MPC donné (50–75%) |
-| `updateSwingDisplay()` | Synchronise `swing-display` (%) et `swing-name` (style) depuis `swingVal` |
 | `syncMetroControls(sig)` | Synchronise tous les contrôles du volet depuis `currentSig` |
 
 ### Formule swing (v3.10.11)
 ```js
-// Steps impairs d'un layer (si % 2 === 1) :
-const swOff = swingVal * 0.5 * getBeatSec(li);
-// Steps impairs du métro :
-const swOffM = swingVal * 0.5 * (60 / spmNow);
+const swOff  = swingVal * 0.5 * getBeatSec(li);    // steps impairs d'un layer
+const swOffM = swingVal * 0.5 * (60 / spmNow);     // steps impairs du métro
 ```
 Affichage MPC = `50 + swingVal × 25` % → plage 50% (straight) à 75% (dotted shuffle).
 
@@ -823,3 +847,10 @@ body.drawer-open         /* volet Jouer ouvert : padding-bottom scroll */
 | v3.10.24 | Fix modal preset famFilter (famille du preset courant prioritaire) ; swing overlay %·nom ; sbMergeSchoolData inclut type famille ; sbSyncPublicPool re-applique groove après sync ; drawCircles clamp el<0→0 (sync image-son groove change) |
 | v3.11.1–11 | Rec Capture phase 1 : ⏺ par layer, modes OVR/RPL, quantisation recTap, thumbs colorés, layout circulaire corrigé, mod panel adaptatif |
 | v3.12.1–13 | Rec Capture UX finale : bottom-bar Capture→Valider/Annuler ; forte/douce X/x ; Replace par défaut encadré ; toggle ⏺ = valider ; ↺ Reprendre ; transport point rouge rec-prêt |
+| v3.14.0 | Refonte architecture métro : `beatsPerMeasure`→`nbDivisions`, `felBeatSteps`→`equivalence`, `stepSec=(60/spm)×(8/beatUnit)/subdivision` ; `_normalizeSig()` rétrocompat ; migration DB |
+| v3.14.1 | Volet Métro : boutons `^`/`>`/`-` ; layout gauche=boutons droite=subdivisions+select |
+| v3.14.2 | Règles pattern défaut : non-composé subdiv=2, composé 3N/8 subdiv=1 ; `_defaultSubdiv()` ; `changeSig` reset systématique ; `_extractDivMarks`+`_rebuildPatternFromDivMarks` |
+| v3.14.3 | Fix `generateMetroPattern` (non-composé d>0 → 'P' pas 'p') ; fix label preset conservé ; fix `_applyDefaultsFromUnit` ne change plus subdivision |
+| v3.14.4 | Modal sauvegarde preset métronome unifié avec `#psp-box` (même UX que tous les autres types) |
+| v3.14.5 | Suppression presets 6/8, 9/8, 12/8, 3/8 + migration SQL DELETE ; `_DELETED_PRESET_IDS` pour purge cache |
+| v3.14.6 | **Suppression `source:'base'`** : tous les presets métronome → `source:'school'` ; condition seeding `metroPres.length===0` ; migration SQL UPDATE |
