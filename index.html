@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.9</span>
+      <span class="app-version">v3.14.10</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3257,55 +3257,60 @@ function openPresetModal(cfg){
       modeManage.classList.toggle('active',manageMode);
       buildFamCol();buildItems();
     });
-    // Appui long sur un item → réorganisation dans le même geste (setPointerCapture dès pointerdown)
+    // Appui long sur un item → réorganisation dans le même geste
+    // setPointerCapture dans le timer (pas dans pointerdown) pour éviter pointercancel immédiat mobile
     const _addLongPress=(el,itemId)=>{
-      let _lt=null,_sx=0,_sy=0,_pid=null,_active=false;
+      let _lt=null,_sx=0,_sy=0,_pid=null;
       el.addEventListener('pointerdown',e=>{
         if(e.pointerType==='mouse')return;
-        _pid=e.pointerId;_sx=e.clientX;_sy=e.clientY;_active=false;
+        _pid=e.pointerId;_sx=e.clientX;_sy=e.clientY;
         el.classList.add('pm-pressing');
-        try{el.setPointerCapture(_pid);}catch(_){}
         _lt=setTimeout(()=>{
           _lt=null;
           el.classList.remove('pm-pressing');
-          _active=true;
           reorderMode=true;manageMode=false;paletteTarget=null;
           modeManage.classList.toggle('active',false);
           sheet.classList.add('pm-reorder-on');
           _reorderDragSrcId=itemId;
-          el.classList.add('pm-dragging');
+          buildFamCol();buildItems(); // rebuild pour montrer les drag handles
+          // Retrouver le nouvel élément après rebuild et capturer le pointer
+          const newEl=itemsWrap.querySelector('[data-pm-id="'+itemId+'"]');
+          if(newEl&&_pid!==null){
+            newEl.classList.add('pm-dragging');
+            try{newEl.setPointerCapture(_pid);}catch(_){}
+            const _onMove=ev=>{
+              if(ev.pointerId!==_pid)return;
+              const under=document.elementFromPoint(ev.clientX,ev.clientY);
+              const tgt=under?.closest('[data-pm-id]');
+              itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+              if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
+            };
+            const _onEnd=ev=>{
+              if(ev.pointerId!==_pid)return;
+              newEl.classList.remove('pm-dragging');
+              const over=itemsWrap.querySelector('.pm-drag-over');
+              itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
+              const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
+              _reorderDragSrcId=null;reorderMode=false;
+              sheet.classList.remove('pm-reorder-on');
+              newEl.removeEventListener('pointermove',_onMove);
+              newEl.removeEventListener('pointerup',_onEnd);
+              newEl.removeEventListener('pointercancel',_onEnd);
+              if(tgtPmId&&tgtPmId!==itemId){pmDrop(srcId,tgtPmId);buildFamCol();}
+              else{buildFamCol();buildItems();}
+            };
+            newEl.addEventListener('pointermove',_onMove);
+            newEl.addEventListener('pointerup',_onEnd);
+            newEl.addEventListener('pointercancel',_onEnd);
+          }
         },450);
       });
       el.addEventListener('pointermove',e=>{
-        if(e.pointerId!==_pid)return;
-        if(_lt){
-          if(Math.hypot(e.clientX-_sx,e.clientY-_sy)>12){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
-          return;
-        }
-        if(!_active)return;
-        const under=document.elementFromPoint(e.clientX,e.clientY);
-        const tgt=under?.closest('[data-pm-id]');
-        itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
-        if(tgt&&tgt.dataset.pmId!==itemId)tgt.classList.add('pm-drag-over');
+        if(e.pointerId!==_pid||!_lt)return;
+        if(Math.hypot(e.clientX-_sx,e.clientY-_sy)>12){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
       });
-      const _end=e=>{
-        if(e.pointerId!==_pid)return;
-        if(_lt){clearTimeout(_lt);_lt=null;}
-        el.classList.remove('pm-pressing');
-        if(_active){
-          el.classList.remove('pm-dragging');
-          const over=itemsWrap.querySelector('.pm-drag-over');
-          itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
-          const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
-          _reorderDragSrcId=null;reorderMode=false;_active=false;
-          sheet.classList.remove('pm-reorder-on');
-          if(tgtPmId&&tgtPmId!==itemId){pmDrop(srcId,tgtPmId);buildFamCol();}
-          else{buildFamCol();buildItems();}
-        }
-        _pid=null;
-      };
-      el.addEventListener('pointerup',_end);
-      el.addEventListener('pointercancel',_end);
+      const _pc=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');_pid=null;};
+      el.addEventListener('pointerup',_pc);el.addEventListener('pointercancel',_pc);
     };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
@@ -3850,10 +3855,10 @@ function openPresetModal(cfg){
             if(e.button!==0||e.pointerType==='mouse')return;
             _fpid=e.pointerId;_fsx=e.clientX;_fsy=e.clientY;_factive=false;
             b.classList.add('pm-pressing');
-            try{b.setPointerCapture(_fpid);}catch(_){}
             _flt=setTimeout(()=>{
               _flt=null;b.classList.remove('pm-pressing');
               _factive=true;b.classList.add('pm-dragging');
+              try{b.setPointerCapture(_fpid);}catch(_){} // après 450ms : pas de pointercancel immédiat
             },450);
           });
           b.addEventListener('pointermove',e=>{
