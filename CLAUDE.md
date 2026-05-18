@@ -71,58 +71,12 @@ Merger vers : `main` après chaque session
 
 ## Fichiers de référence
 - `index.html` — application complète (~10700 lignes)
-- `BoomTchak_Explain.md` — référence complète (pédagogie + UX + technique + roadmap)
 - `BoomTchak_v3_bible.md` — référence technique v3 (DB, RLS, workflows TX/MX)
 - `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.14.6)
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
 **v3.14.6** (session 2026-05-18)
-
----
-
-## BUG CRITIQUE OUVERT — Step Sequencer view (v3.13.x)
-
-### Symptômes rapportés par Lamberio
-1. Au changement de groove, les step rows n'apparaissent pas, ou apparaissent puis disparaissent immédiatement
-2. L'espace alloué aux step rows est fixe (ne s'adapte pas au nombre de pas × largeur dispo × nb de lignes wrap)
-3. Chevauchement ou espace trop grand entre la zone step (haut) et les volets layer.mod (bas)
-
-### Architecture concernée
-- **Vue "Step Sequencer"** : `viewShape='linear'`, `viewCycle='layer'` → `_isStepView()=true`
-- `#circle-view` (haut) contient `#step-rows-wrap` (les 3 `.layer-row2` physiquement déplacées)
-- `#layers-wrap` (bas) contient les 3 `#layer-div-*` avec `.layer-row1` + `.layer-mod-panel`
-- `.layer-row2` éléments déplacés physiquement par `_moveRow2ToStepView(true/false)`
-
-### Fonctions clés
-- `_moveRow2ToStepView(toStep)` — déplace les `.layer-row2` entre `#step-rows-wrap` et `#layer-div-*`
-- `_setupStepViewDOM()` — garantit que `#layers-wrap` est après `#circle-view` dans le DOM
-- `_watchStepRowsWrap()` — ResizeObserver sur `#step-rows-wrap` → relance `checkWrap`
-- `checkWrap(li)` — calcule si les steps doivent wrapper sur 2 lignes ; appelle `buildStepsDOM(li, shouldWrap)`
-- `buildStepsDOM(li, wrap)` — reconstruit `#steps-low/high/noise` (innerHTML)
-- `buildLayers()` — reconstruit TOUT le DOM des layers (`cont.innerHTML=''`)
-- `applyGroove(id)` → appelle `buildLayers()` en fin
-
-### Ce qui a été tenté (sessions v3.13.x — sans succès complet)
-- Vider `#step-rows-wrap` en début de `buildLayers` pour éviter IDs dupliqués
-- `_moveRow2ToStepView` synchrone (hors setTimeout) pour éviter flash
-- `_setupStepViewDOM` appelé à chaque `setView` et `buildLayers`
-- `requestAnimationFrame` pour `checkWrap` (dimensions correctes après layout)
-- ResizeObserver sur `#step-rows-wrap`
-
-### Hypothèse principale non résolue
-Le problème central est la **coexistence de deux systèmes de layout** :
-1. Le DOM flow CSS (`#circle-view` flex-colonne, `#layers-wrap` en dessous)
-2. Le déplacement physique des `.layer-row2` entre deux endroits du DOM
-
-Ces deux systèmes interagissent de façon imprévisible à chaque `buildLayers()` (appelé au changement de groove, rebuild, etc.)
-
-### Piste recommandée pour la prochaine session
-**Refactorer l'approche entièrement** :
-- Ne PLUS déplacer physiquement les `.layer-row2` éléments
-- À la place : créer un conteneur dédié `#step-seq-view` DANS `#layers-wrap` (ou à côté) qui **CLONE** les step rows, ou afficher les steps directement dans les layer-divs avec un layout CSS adapté
-- Ou : garder les `.layer-row2` dans leurs `#layer-div-*` et utiliser un layout CSS pur (flex/grid) qui les affiche EN HAUT avec les volets mod EN BAS, sans déplacement DOM
-
 ---
 
 ## CHANTIER SUIVANT — Investigation architecture familles (session 2026-05-18)
@@ -162,7 +116,7 @@ progressivement remplacée par une architecture à 4 tables séparées :
 Mais les deux systèmes semblent coexister dans le code, causant :
   - Perte de l'ordre des familles après sync DB
   - Tags familles manquants sur certains items
-  - Possibles doublons dans la liste de familles
+  - Possibles doublons dans la liste de tags
 
 Fichiers à lire IMPÉRATIVEMENT avant tout :
   - CLAUDE.md (section CHANTIER SUIVANT)
@@ -193,33 +147,7 @@ Un diagnostic complet avec pour chaque problème identifié :
 NE PAS CODER — diagnostic seulement. Soumettre à Lamberio avant toute modification.
 ```
 
-## PROMPT DE REPRISE — Bug Step Sequencer (toujours ouvert)
 
-```
-BoomTchak v3.14.6 — Bug step sequencer view (non résolu depuis v3.13.x)
-
-Vue "Step Sequencer" = linéaire + multiple (viewShape='linear', viewCycle='layer')
-
-Problème persistant :
-1. Au changement de groove, les step rows n'apparaissent pas ou disparaissent immédiatement
-2. L'espace entre la zone step (haut) et les volets layer.mod (bas) ne s'adapte pas
-
-Architecture actuelle (cassée) :
-- #circle-view (haut) contient #step-rows-wrap
-- #layers-wrap (bas) contient les #layer-div-* avec mod panels
-- Les .layer-row2 (step buttons) sont physiquement déplacées entre #layer-div-* et #step-rows-wrap
-  via _moveRow2ToStepView(). Cette approche crée des conflits d'IDs et des races conditions.
-
-Piste recommandée : refactorer sans déplacement DOM physique — CSS pur (flex/grid).
-
-Fichiers à lire avant toute modification :
-- CLAUDE.md (section BUG CRITIQUE OUVERT)
-- BoomTchak_v3_bible.md
-- index.html lignes 4398-4848 (buildLayers, buildStepsDOM, checkWrap)
-- index.html lignes 6389-6420 (_moveRow2ToStepView, _setupStepViewDOM)
-- index.html lignes 6920-6995 (setView)
-
-AVANT de coder : soumettre une architecture alternative à Lamberio.
 ```
 
 ## Historique récent
