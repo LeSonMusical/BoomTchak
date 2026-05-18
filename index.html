@@ -490,10 +490,10 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-close:hover{border-color:#999;color:#333;}
 .pm-body{display:flex;flex:1;overflow:hidden;}
 .pm-fam-col{width:32%;border-right:1px solid #e0ddd8;overflow-y:auto;flex-shrink:0;touch-action:pan-y;overscroll-behavior:contain;}
-.pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;touch-action:none;}
+.pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;}
 .pm-fam-btn.active{font-weight:600;color:var(--pm-ac,#4a3d8a);background:var(--pm-bg2,#f5f3f0);border-left:2px solid var(--pm-ac,#4a3d8a);padding-left:8px;}
 .pm-items{overflow-y:auto;flex:1;touch-action:pan-y;overscroll-behavior:contain;}
-.pm-item{display:block;width:100%;text-align:left;padding:10px 14px;font-size:12px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#1a1a18;touch-action:none;}
+.pm-item{display:block;width:100%;text-align:left;padding:10px 14px;font-size:12px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#1a1a18;}
 .pm-item:hover,.pm-item:active{background:var(--pm-bg2,#f5f3f0);}
 .pm-item.pm-cur{font-weight:700;color:var(--pm-ac,#4a3d8a);}
 .pm-empty{padding:18px;text-align:center;color:#888;font-size:12px;}
@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.12</span>
+      <span class="app-version">v3.14.13</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3264,11 +3264,13 @@ function openPresetModal(cfg){
     });
     modeReorder.addEventListener('click',_toggleReorder);
     // Appui long sur un item → réorganisation dans le même geste
-    // setPointerCapture dans le timer (pas dans pointerdown) pour éviter pointercancel immédiat mobile
+    // preventDefault dans pointerdown bloque le scroll browser → pas de pointercancel parasite
+    // pointerup court → el.click() simulé ; pointercancel (scroll) → nettoyage sans sélection
     const _addLongPress=(el,itemId)=>{
       let _lt=null,_sx=0,_sy=0,_pid=null;
       el.addEventListener('pointerdown',e=>{
         if(e.pointerType==='mouse')return;
+        e.preventDefault(); // bloque scroll + synthèse click ; gérés manuellement ci-dessous
         _pid=e.pointerId;_sx=e.clientX;_sy=e.clientY;
         el.classList.add('pm-pressing');
         _lt=setTimeout(()=>{
@@ -3279,8 +3281,7 @@ function openPresetModal(cfg){
           modeReorder.classList.toggle('active',true);
           sheet.classList.add('pm-reorder-on');
           _reorderDragSrcId=itemId;
-          buildFamCol();buildItems(); // rebuild pour montrer les drag handles
-          // Retrouver le nouvel élément après rebuild et capturer le pointer
+          buildFamCol();buildItems();
           const newEl=itemsWrap.querySelector('[data-pm-id="'+itemId+'"]');
           if(newEl&&_pid!==null){
             newEl.classList.add('pm-dragging');
@@ -3317,8 +3318,18 @@ function openPresetModal(cfg){
         if(e.pointerId!==_pid||!_lt)return;
         if(Math.hypot(e.clientX-_sx,e.clientY-_sy)>12){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');}
       });
-      const _pc=()=>{if(_lt){clearTimeout(_lt);_lt=null;}el.classList.remove('pm-pressing');_pid=null;};
-      el.addEventListener('pointerup',_pc);el.addEventListener('pointercancel',_pc);
+      // Tap court (pointerup avant timer) → sélectionner l'item (simule le click bloqué par preventDefault)
+      el.addEventListener('pointerup',e=>{
+        if(e.pointerId!==_pid)return;
+        if(_lt){clearTimeout(_lt);_lt=null;el.classList.remove('pm-pressing');el.click();}
+        _pid=null;
+      });
+      // Scroll (pointercancel) → nettoyage silencieux, pas de sélection
+      el.addEventListener('pointercancel',e=>{
+        if(e.pointerId!==_pid)return;
+        if(_lt){clearTimeout(_lt);_lt=null;}
+        el.classList.remove('pm-pressing');_pid=null;
+      });
     };
     // Champ recherche inline (à droite de 🔍, caché par défaut)
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
@@ -3856,17 +3867,22 @@ function openPresetModal(cfg){
         const b=document.createElement('button');b.className='pm-fam-btn'+(famFilter===f.id?' active':'');
         b.textContent=f.nom;
         b.dataset.famId=f.id;
-        b.addEventListener('click',()=>_setFam(f.id));
+        // Tap touch → _setFam ; click souris → _setFam via click normal
+        // Pour MX : preventDefault dans pointerdown bloque scroll + click synthétique ;
+        //   pointerup court → _setFam manuel ; pointercancel (scroll) → nettoyage silencieux
+        if(!_isMxFam){b.addEventListener('click',()=>_setFam(f.id));}
         if(_isMxFam){
+          b.addEventListener('click',()=>_setFam(f.id)); // souris uniquement (touch bloqué par preventDefault)
           let _flt=null,_fsx=0,_fsy=0,_fpid=null,_factive=false;
           b.addEventListener('pointerdown',e=>{
             if(e.button!==0||e.pointerType==='mouse')return;
+            e.preventDefault(); // bloque scroll + synthèse click touch
             _fpid=e.pointerId;_fsx=e.clientX;_fsy=e.clientY;_factive=false;
             b.classList.add('pm-pressing');
             _flt=setTimeout(()=>{
               _flt=null;b.classList.remove('pm-pressing');
               _factive=true;b.classList.add('pm-dragging');
-              try{b.setPointerCapture(_fpid);}catch(_){} // après 450ms : pas de pointercancel immédiat
+              try{b.setPointerCapture(_fpid);}catch(_){}
             },450);
           });
           b.addEventListener('pointermove',e=>{
@@ -3881,7 +3897,8 @@ function openPresetModal(cfg){
             famCol.querySelectorAll('.pm-fam-drag-over').forEach(d=>d.classList.remove('pm-fam-drag-over'));
             if(tgt&&tgt.dataset.famId!==f.id)tgt.classList.add('pm-fam-drag-over');
           });
-          const _fend=e=>{
+          // pointerup : fin drag (drop) ou tap court (sélectionner famille)
+          b.addEventListener('pointerup',e=>{
             if(e.pointerId!==_fpid)return;
             if(_flt){clearTimeout(_flt);_flt=null;}
             b.classList.remove('pm-pressing');
@@ -3892,11 +3909,17 @@ function openPresetModal(cfg){
               const tgtId=over?.dataset?.famId;
               _factive=false;
               if(tgtId&&tgtId!==f.id)pmDropFam(f.id,tgtId);
-            }
+            } else { _setFam(f.id); } // tap court : sélectionner famille
             _fpid=null;
-          };
-          b.addEventListener('pointerup',_fend);
-          b.addEventListener('pointercancel',_fend);
+          });
+          // pointercancel (scroll) : nettoyage silencieux, pas de sélection
+          b.addEventListener('pointercancel',e=>{
+            if(e.pointerId!==_fpid)return;
+            if(_flt){clearTimeout(_flt);_flt=null;}
+            b.classList.remove('pm-pressing');
+            if(_factive){b.classList.remove('pm-dragging');famCol.querySelectorAll('.pm-fam-drag-over').forEach(d=>d.classList.remove('pm-fam-drag-over'));_factive=false;}
+            _fpid=null;
+          });
         }
         famCol.appendChild(b);
       });
