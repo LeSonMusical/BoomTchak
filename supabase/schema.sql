@@ -589,7 +589,11 @@ END $$;
 -- P5 : La table metro_familles n'était jamais seedée → fallback SIG_FAMILLES permanent
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Correction P1/P2 : affecter ordre et type explicites aux familles école existantes
+-- Correction P1/P2 : créer la colonne type si elle n'existe pas (migration v3.10.20 manquante)
+ALTER TABLE public.familles ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'both'
+  CHECK (type IN ('pattern','groove','both'));
+
+-- Affecter ordre et type explicites aux familles école existantes
 UPDATE public.familles SET ordre = 0, type = 'both' WHERE id = 'fam_base'       AND scope = 'school';
 UPDATE public.familles SET ordre = 1, type = 'both' WHERE id = 'fam_euclidien'  AND scope = 'school';
 UPDATE public.familles SET ordre = 2, type = 'both' WHERE id = 'fam_afrocubain' AND scope = 'school';
