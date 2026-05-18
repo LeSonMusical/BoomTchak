@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.5</span>
+      <span class="app-version">v3.14.6</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2210,12 +2210,12 @@ function rebuildMetroPresets() {
   // Purger les presets supprimés du cache local
   if (packCours.metroPresets)
     packCours.metroPresets = packCours.metroPresets.filter(p => !_DELETED_PRESET_IDS.has(p.id));
-  // Presets DB (tous : base, school, teacher) — teacher apparaît en bas dans le modal
+  // Presets DB (tous : school, teacher) — teacher apparaît en bas dans le modal
   const dbPresets = (packCours.metroPresets || []).map(normalize);
   const dbIds = new Set(dbPresets.map(p => p.id));
-  // Fallback JS pour les presets de base pas encore seeded en DB
+  // Fallback JS pour les presets pas encore seeded en DB (source school comme les presets DB)
   const fallback = METRO_PRESETS_DEFAULT.filter(p => !dbIds.has(p.id))
-    .map(p => normalize({...p, source: 'base'}));
+    .map(p => normalize({...p, source: 'school'}));
   metroPresets.length = 0;
   [...dbPresets, ...fallback].forEach(p => metroPresets.push(p));
 }
@@ -2225,7 +2225,7 @@ function getSigFallback(presetId) {
     const found = metroPresets.find(p => p.id === presetId);
     if (found) return _normalizeSig({...found});
     const def = METRO_PRESETS_DEFAULT.find(p => p.id === presetId);
-    if (def) return _normalizeSig({...def, source: 'base'});
+    if (def) return _normalizeSig({...def, source: 'school'});
     // Synthétiser depuis l'ID si format N/M (ex: grooves sauvegardés avec une sig supprimée)
     const m = presetId.match(/^(\d+)\/(\d+)$/);
     if (m) {
@@ -7450,7 +7450,7 @@ async function sbSyncSchoolPool() {
     ]);
     sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets: metroPres, metroFamilles: metroFams, bandFamilles: bandFams, soundFamilles: soundFams });
     // MX : seeder les presets de base si la DB n'en contient encore aucun
-    if (authProfile?.role === 'mx' && Array.isArray(metroPres) && !metroPres.some(p => p.source === 'base')) {
+    if (authProfile?.role === 'mx' && Array.isArray(metroPres) && metroPres.length === 0) {
       await _seedBaseMetroPresets();
       const [seeded, seededFams] = await Promise.all([
         sbFetch('/rest/v1/metro_presets?scope=eq.school&approved=eq.true&select=*&order=ordre.asc,created_at.asc').catch(()=>[]),
@@ -7947,7 +7947,7 @@ async function _seedBaseMetroPresets() {
         metro_pattern: p.metroPattern,
         familles_ids: [p.famille],
         ordre: i,
-        scope: 'school', approved: true, source: 'base', owner_id: authProfile.id,
+        scope: 'school', approved: true, source: 'school', owner_id: authProfile.id,
       }))),
     });
   } catch(e) { console.error('Seeding presets de base échoué :', e); }
