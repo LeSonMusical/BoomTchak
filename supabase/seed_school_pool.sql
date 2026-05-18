@@ -3,16 +3,24 @@
 -- À coller dans Supabase > SQL Editor > New query > Run
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- ── Familles ─────────────────────────────────────────────────────────────────
-insert into familles (id, nom, scope) values
-  ('fam_base',       'Référentiel', 'school'),
-  ('fam_euclidien',  'Euclidien',   'school'),
-  ('fam_afrocubain', 'Afro-cubain', 'school'),
-  ('fam_africain',   'Africain',    'school'),
-  ('fam_bresilien',  'Brésilien',   'school'),
-  ('fam_caraibe',    'Caraïbe',     'school'),
-  ('fam_flamenco',   'Flamenco',    'school')
-on conflict (id) do update set nom = excluded.nom, scope = 'school';
+-- ── Familles patterns/grooves ────────────────────────────────────────────────
+insert into familles (id, nom, scope, ordre, type) values
+  ('fam_base',       'Référentiel', 'school', 0, 'both'),
+  ('fam_euclidien',  'Euclidien',   'school', 1, 'both'),
+  ('fam_afrocubain', 'Afro-cubain', 'school', 2, 'both'),
+  ('fam_africain',   'Africain',    'school', 3, 'both'),
+  ('fam_bresilien',  'Brésilien',   'school', 4, 'both'),
+  ('fam_caraibe',    'Caraïbe',     'school', 5, 'both'),
+  ('fam_flamenco',   'Flamenco',    'school', 6, 'both')
+on conflict (id) do update set nom = excluded.nom, scope = 'school', ordre = excluded.ordre, type = excluded.type;
+
+-- ── Familles métronome ────────────────────────────────────────────────────────
+insert into metro_familles (id, nom, scope, ordre) values
+  ('binaire',  'Binaire ♩',      'school', 0),
+  ('ternaire', 'Ternaire ♩.',    'school', 1),
+  ('aksak',    'Aksak ♪',        'school', 2),
+  ('breve',    'Alla breve 𝅗𝅥',  'school', 3)
+on conflict (id) do update set nom = excluded.nom, scope = 'school', ordre = excluded.ordre;
 
 -- ── Patterns ─────────────────────────────────────────────────────────────────
 insert into patterns (id, nom, sequence, pas, familles_ids, encyclo_ref, scope, approved) values
