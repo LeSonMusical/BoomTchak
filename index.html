@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.7</span>
+      <span class="app-version">v3.14.8</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3843,8 +3843,9 @@ function openPresetModal(cfg){
         b.addEventListener('click',()=>_setFam(f.id));
         if(_isMxFam){
           let _flt=null;
-          b.addEventListener('touchstart',e=>{
-            if(e.touches.length>1)return;b.classList.add('pm-pressing');
+          b.addEventListener('pointerdown',e=>{
+            if(e.button!==0||e.pointerType==='mouse')return;
+            b.classList.add('pm-pressing');
             _flt=setTimeout(()=>{
               _flt=null;b.classList.remove('pm-pressing');
               reorderMode=true;manageMode=false;paletteTarget=null;
@@ -3852,11 +3853,11 @@ function openPresetModal(cfg){
               sheet.classList.add('pm-reorder-on');
               buildFamCol();buildItems();
             },450);
-          },{passive:true});
+          });
           const _fc=()=>{if(_flt){clearTimeout(_flt);_flt=null;}b.classList.remove('pm-pressing');};
-          b.addEventListener('touchmove',_fc,{passive:true});
-          b.addEventListener('touchend',_fc,{passive:true});
-          b.addEventListener('touchcancel',_fc,{passive:true});
+          b.addEventListener('pointermove',_fc);
+          b.addEventListener('pointerup',_fc);
+          b.addEventListener('pointercancel',_fc);
         }
         famCol.appendChild(b);
       });
