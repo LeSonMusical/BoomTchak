@@ -231,10 +231,10 @@ create policy "Insert student_data" on public.student_data for insert
 create table public.metro_presets (
   id                 text primary key,
   label              text not null,
-  beats_per_measure  int  not null,
+  nb_divisions       int  not null,
   beat_unit          int  not null default 4,
-  subdivision        int  not null default 2,
-  step_unit          int  not null default 8,
+  subdivision        int  not null default 1,
+  equivalence        int           default 2,
   metro_pattern      text[]        not null,
   scope              text not null default 'school' check (scope in ('school','teacher')),
   source             text not null default 'school' check (source in ('base','school','teacher')),

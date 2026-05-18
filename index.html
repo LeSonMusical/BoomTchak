@@ -490,10 +490,10 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-close:hover{border-color:#999;color:#333;}
 .pm-body{display:flex;flex:1;overflow:hidden;}
 .pm-fam-col{width:32%;border-right:1px solid #e0ddd8;overflow-y:auto;flex-shrink:0;touch-action:pan-y;overscroll-behavior:contain;}
-.pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;}
+.pm-fam-btn{display:block;width:100%;text-align:left;padding:9px 10px;font-size:11px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#555;line-height:1.3;touch-action:none;}
 .pm-fam-btn.active{font-weight:600;color:var(--pm-ac,#4a3d8a);background:var(--pm-bg2,#f5f3f0);border-left:2px solid var(--pm-ac,#4a3d8a);padding-left:8px;}
 .pm-items{overflow-y:auto;flex:1;touch-action:pan-y;overscroll-behavior:contain;}
-.pm-item{display:block;width:100%;text-align:left;padding:10px 14px;font-size:12px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#1a1a18;}
+.pm-item{display:block;width:100%;text-align:left;padding:10px 14px;font-size:12px;background:none;border:none;border-bottom:1px solid #f0ede8;cursor:pointer;color:#1a1a18;touch-action:none;}
 .pm-item:hover,.pm-item:active{background:var(--pm-bg2,#f5f3f0);}
 .pm-item.pm-cur{font-weight:700;color:var(--pm-ac,#4a3d8a);}
 .pm-empty{padding:18px;text-align:center;color:#888;font-size:12px;}
@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.10</span>
+      <span class="app-version">v3.14.11</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3245,18 +3245,22 @@ function openPresetModal(cfg){
   // Boutons mode gérer/réordonner dans le header (groove, pattern, sig et band)
   if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'||cfg.type==='sound'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
-    // Fonction toggle réordonner (appelée par appui long sur item)
+    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='☰';
+    // Fonction toggle réordonner (appelée par appui long sur item OU bouton ☰)
     const _toggleReorder=()=>{
       reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
       modeManage.classList.toggle('active',false);
+      modeReorder.classList.toggle('active',reorderMode);
       sheet.classList.toggle('pm-reorder-on',reorderMode);
       buildFamCol();buildItems();
     };
     modeManage.addEventListener('click',()=>{
       manageMode=!manageMode;if(manageMode){reorderMode=false;sheet.classList.remove('pm-reorder-on');}paletteTarget=null;
       modeManage.classList.toggle('active',manageMode);
+      modeReorder.classList.toggle('active',false);
       buildFamCol();buildItems();
     });
+    modeReorder.addEventListener('click',_toggleReorder);
     // Appui long sur un item → réorganisation dans le même geste
     // setPointerCapture dans le timer (pas dans pointerdown) pour éviter pointercancel immédiat mobile
     const _addLongPress=(el,itemId)=>{
@@ -3270,6 +3274,7 @@ function openPresetModal(cfg){
           el.classList.remove('pm-pressing');
           reorderMode=true;manageMode=false;paletteTarget=null;
           modeManage.classList.toggle('active',false);
+          modeReorder.classList.toggle('active',true);
           sheet.classList.add('pm-reorder-on');
           _reorderDragSrcId=itemId;
           buildFamCol();buildItems(); // rebuild pour montrer les drag handles
@@ -3292,6 +3297,7 @@ function openPresetModal(cfg){
               itemsWrap.querySelectorAll('.pm-drag-over').forEach(d=>d.classList.remove('pm-drag-over'));
               const srcId=_reorderDragSrcId,tgtPmId=over?.dataset?.pmId;
               _reorderDragSrcId=null;reorderMode=false;
+              modeReorder.classList.toggle('active',false);
               sheet.classList.remove('pm-reorder-on');
               newEl.removeEventListener('pointermove',_onMove);
               newEl.removeEventListener('pointerup',_onEnd);
@@ -3322,9 +3328,9 @@ function openPresetModal(cfg){
       modeSearch.classList.toggle('active',open);
       if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
     });
-    // Groupe : [✎][🔍][champ] — bouton ⠿ supprimé (remplacé par appui long sur item)
+    // Groupe : [✎][☰][🔍][champ]
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
     hdr.insertBefore(modeGroup,hclose);
     // Exposer _addLongPress pour buildItems
     sheet._addLongPress=_addLongPress;
@@ -5380,7 +5386,7 @@ function pspDoOverwriteMetro(){
   currentSig = getSigFallback(s.id);
   buildSigSelector(); renderMetroPatternViz();
   if(isMX){
-    sbSaveMetroPreset(s.id).then(ok => showToast(ok?`Preset «${label}» mis à jour`:'Erreur',ok?'info':'error'));
+    sbSaveMetroPreset(s.id).then(ok => { if(ok) showToast(`Preset «${label}» mis à jour`,'info'); });
   } else {
     showToast(`Preset «${label}» en attente de validation`,'info');
   }
@@ -8074,7 +8080,7 @@ async function sbSaveMetroPreset(presetId) {
     else packCours.metroPresets.push(updated);
     saveToStorage(); rebuildMetroPresets(); buildSigSelector(); buildPublishSection(); _pmRefresh?.();
     return true;
-  } catch(e) { console.error('sbSaveMetroPreset échoué :', e); return false; }
+  } catch(e) { console.error('sbSaveMetroPreset échoué :', e); showToast('Erreur DB : '+e.message,'error'); return false; }
 }
 
 async function sbDeleteMetroPreset(presetId) {
