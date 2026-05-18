@@ -57,6 +57,15 @@ body.dark-mode .settings-menu{background:#252522;border-color:#333330}
 body.dark-mode .smenu-row{border-color:rgba(255,255,255,.08)}
 body.dark-mode .smenu-row-btn:hover{background:#333330}
 body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
+body.dark-mode #auth-btn-sync{background:rgba(74,127,165,.2)!important;border-color:#4A7FA5!important;color:#8ab4d0!important}
+body.dark-mode #auth-btn-logout{background:#2a2a28!important;border-color:#444!important;color:#ccc!important}
+body.dark-mode #auth-btn-login{background:#2a2a28!important;border-color:#444!important;color:#aaa!important}
+.pref-ao-preset{padding:2px 5px;font-size:9px;border:1px solid #c8c0e0;border-radius:4px;background:#f5f2fc;color:#4a3d8a;cursor:pointer;white-space:nowrap}
+.pref-ao-preset.active{background:#4a3d8a;color:#fff;border-color:#4a3d8a}
+body.dark-mode .pref-ao-preset{background:#252528;border-color:#555;color:#a89fd0}
+body.dark-mode .pref-ao-preset.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+.pref-ao-btn{padding:1px 7px;font-size:13px;border:1px solid #c8c0e0;border-radius:4px;background:#f5f2fc;color:#4a3d8a;cursor:pointer;line-height:1.4;flex-shrink:0}
+body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .btn-sm-tempo{padding:3px 8px;cursor:pointer;font-size:11px;background:#fff;border:1px solid #b0aea7;border-radius:5px;color:#666}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
@@ -1097,7 +1106,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.13</span>
+      <span class="app-version">v3.14.14</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1133,12 +1142,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
               <option value="bpm">BPM constant (pulsation)</option>
             </select>
           </label>
-          <div style="display:flex;flex-direction:column;gap:2px">
-            <div class="smenu-pref-lbl" style="gap:6px">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div class="smenu-pref-lbl" style="gap:4px">
               <span style="flex:1">Décalage audio/image :</span>
-              <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="width:80px;accent-color:#6B5FA5">
+              <span id="pref-audio-offset-val" style="cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 0">0 ms · Synchro</span>
             </div>
-            <span id="pref-audio-offset-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 0">0 ms · Synchro</span>
+            <div id="pref-ao-presets" style="display:flex;flex-wrap:wrap;gap:2px"></div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <button id="pref-ao-minus" class="pref-ao-btn">−</button>
+              <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="flex:1;accent-color:#6B5FA5">
+              <button id="pref-ao-plus" class="pref-ao-btn">+</button>
+            </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px">
             <div class="smenu-pref-lbl" style="gap:6px">
@@ -1164,7 +1178,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <div id="appro-section" class="smenu-sub" style="display:none"></div>
         <!-- Ligne 6 : Export MIDI -->
         <div class="smenu-row smenu-row-btn" id="smenu-midi-export">
-          <span>🎵 Export MIDI</span>
+          <span>🎵 Export MIDI…</span>
         </div>
       </div>
     </div>
@@ -2258,7 +2272,7 @@ function changeSig(id) {
   currentSig.subdivision = _defSub;
   currentSig.metroPattern = generateMetroPattern(currentSig.nbDivisions, _defSub, currentSig.beatUnit || 4);
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime;
+  if (playing && ac) { _syncMetroToGroove(); }
   setMetroDirty(false); _editingMetroPresetId = null;
   if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
     const slider = document.getElementById('bpm');
@@ -2309,7 +2323,7 @@ function previewMetroPreset(id) {
   });
   currentSig = preset;
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime;
+  if (playing && ac) { _syncMetroToGroove(); }
   setMetroDirty(false); _editingMetroPresetId = null;
   updateBeatDisplay();
   const _ftBeats = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
@@ -2401,7 +2415,7 @@ function buildSigFromControls() {
   const btn = document.getElementById('sig-sel-btn');
   if (btn) btn.textContent = currentSig.label;
   metroStepPos = 0; metroBeatPos = 0;
-  if (playing && ac) metroStartTime = metroNextBeatTime;
+  if (playing && ac) { _syncMetroToGroove(); }
   setMetroDirty(true); updateMetroSaveBtn();
   updateBeatDisplay();
   const _ftB = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
@@ -2525,6 +2539,19 @@ function _syncMetroStartTime(spm) {
   if (!playing || !ac) return;
   const stepSec = (60 / spm) * (8 / (currentSig.beatUnit || 4)) / (currentSig.subdivision || 1);
   metroStartTime = metroNextBeatTime - metroStepPos * stepSec;
+}
+
+// Resync metro to groove cycle boundary after a sig change during playback.
+// Sets metroNextBeatTime to the next time layer 0 will be at step 0, so beat 1 of the
+// new metro pattern aligns with beat 1 of the groove cycle.
+function _syncMetroToGroove() {
+  if (!playing || !ac) return;
+  const n0 = state[0].pattern.length;
+  const bs0 = getBeatSec(0);
+  const sl = (n0 - state[0].stepPos % n0) % n0;
+  const syncT = sl === 0 ? state[0].nextStepTime : state[0].nextStepTime + sl * bs0;
+  metroNextBeatTime = Math.max(ac.currentTime + 0.02, syncT);
+  metroStartTime = metroNextBeatTime;
 }
 
 let playing=false, ac=null, latencyMs=0;
@@ -11235,12 +11262,29 @@ function attachEvents(){
     const pSigLock=document.getElementById('pref-sig-lock');
     if(pSigLock){pSigLock.value=prefs.sigChangeLock||'spm';pSigLock.addEventListener('change',()=>{prefs.sigChangeLock=pSigLock.value;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
     const pAO=document.getElementById('pref-audio-offset'),pAOv=document.getElementById('pref-audio-offset-val');
-    const _updateAO=()=>{const ms=parseInt(pAO.value);pAOv.textContent=ms+' ms · '+getAudioOffsetName(ms);};
+    const _AO_PRESETS=[{v:-80,l:'Avance forte'},{v:-30,l:'Avance'},{v:0,l:'Synchro'},{v:40,l:'Léger retard'},{v:130,l:'Bluetooth'},{v:250,l:'Grand retard'}];
+    const _updateAO=()=>{
+      const ms=parseInt(pAO.value);
+      pAOv.textContent=ms+' ms · '+getAudioOffsetName(ms);
+      document.querySelectorAll('.pref-ao-preset').forEach(b=>{b.classList.toggle('active',parseInt(b.dataset.aoV)===ms);});
+    };
+    const _saveAO=()=>{prefs.audioOffset=parseInt(pAO.value)/1000;localStorage.setItem('btk_prefs',JSON.stringify(prefs));};
     if(pAO){
       pAO.value=Math.round((prefs.audioOffset||0)*1000);
+      const presetsWrap=document.getElementById('pref-ao-presets');
+      if(presetsWrap){
+        _AO_PRESETS.forEach(p=>{
+          const b=document.createElement('button');b.className='pref-ao-preset';b.textContent=p.l;b.dataset.aoV=p.v;
+          b.addEventListener('click',()=>{pAO.value=p.v;_updateAO();_saveAO();});
+          presetsWrap.appendChild(b);
+        });
+      }
       _updateAO();
-      pAO.addEventListener('input',()=>{prefs.audioOffset=parseInt(pAO.value)/1000;_updateAO();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
-      pAOv.addEventListener('click',()=>{pAO.value=0;prefs.audioOffset=0;_updateAO();localStorage.setItem('btk_prefs',JSON.stringify(prefs));});
+      pAO.addEventListener('input',()=>{_updateAO();_saveAO();});
+      pAOv.addEventListener('click',()=>{pAO.value=0;_updateAO();_saveAO();});
+      const pAOMinus=document.getElementById('pref-ao-minus'),pAOPlus=document.getElementById('pref-ao-plus');
+      if(pAOMinus) pAOMinus.addEventListener('click',()=>{pAO.value=Math.max(parseInt(pAO.min),parseInt(pAO.value)-parseInt(pAO.step));_updateAO();_saveAO();});
+      if(pAOPlus)  pAOPlus.addEventListener('click',()=>{pAO.value=Math.min(parseInt(pAO.max),parseInt(pAO.value)+parseInt(pAO.step));_updateAO();_saveAO();});
     }
     const pSV=document.getElementById('pref-soft-vel'),pSVv=document.getElementById('pref-soft-vel-val');
     const _updateSV=()=>{const p=parseInt(pSV.value);pSVv.textContent=p+'% · '+getSoftVelName(p);};
