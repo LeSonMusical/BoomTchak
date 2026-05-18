@@ -73,87 +73,59 @@ Merger vers : `main` après chaque session
 ## Fichiers de référence
 - `index.html` — application complète (~10700 lignes)
 - `BoomTchak_v3_bible.md` — référence technique v3 (DB, RLS, workflows TX/MX)
-- `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.14.6)
+- `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.14.15)
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.14.6** (session 2026-05-18)
+**v3.14.15** (session 2026-05-18)
 ---
 
-## CHANTIER SUIVANT — Investigation architecture familles (session 2026-05-18)
+## CHANTIER SUIVANT — Rédaction des articles encyclopédie
 
-### Diagnostic Lamberio
-> "J'ai l'impression que suite à un changement de structure de la DB concernant les familles, tu as empilé l'ancienne méthode (il n'y avait qu'une seule table de famille partagée par band, Groove, pattern) avec une nouvelle (chaque type d'item a ses propres familles et les familles ont un ordre/rang). Il faut investiguer ce point en profondeur car je crois qu'il explique notamment qu'on perde l'ordre des familles, certains tags familles ou que d'autres apparaissent deux fois."
+### Contexte
+La session suivante est dédiée à la rédaction des articles de l'encyclopédie BoomTchak.
+Lamberio fournira un document de référence au début de la session. Le cahier des charges ci-dessous est **indicatif** : il sera adapté article par article selon le contenu.
 
-### Hypothèses à vérifier (identifiées session 2026-05-18)
+### Liste des articles à rédiger (18 articles)
 
-**H1 — Seed sans `ordre`** : `seed_school_pool.sql` insère les familles sans colonne `ordre` → toutes ont `ordre=0` après le seed initial → tri inutile → l'ordre MX est perdu après tout rechargement depuis DB.
+| Clé DB | Titre affiché | Notes |
+|--------|--------------|-------|
+| `tempo` | Tempo | Inclut : placement rythmique et accents |
+| `mesure` | Mesure | Double sens : unité de durée (bar/measure) + métrique (time signature) |
+| `metrique` | Métrique | Signature et chiffrage |
+| `mesure-simple-composee` | Mesure simple / composée | Temps binaire ou ternaire |
+| `mesure-irreguliere` | Mesure irrégulière / asymétrique | — |
+| `temps-ecrit-ressenti` | Temps écrit / ressenti | Unité de division vs unité de temps ressentie |
+| `temps` | Temps | Time vs beat — double sens |
+| `temps-fort-faible` | Temps fort / faible | — |
+| `temps-court-long` | Temps court / long | — |
+| `temps-binaire-ternaire` | Temps binaire / ternaire | Structure interne des temps |
+| `polymetrie` | Polymétrie / polyrythmie | — |
+| `hemiole` | Hémiole | — |
+| `contretemps` | Contretemps / syncope | — |
+| `pulsation` | Pulsation / battement | — |
+| `division` | Division et subdivision | — |
+| `rythme` | Rythme | Durée et placement |
+| `pattern` | Pattern / motif | Phrase musicale |
+| `shuffle` | Shuffle | — |
 
-**H2 — `PTK_DEFAULT.familles` sans `ordre`/`type`** : Les 7 familles hardcodées en JS (`fam_base`, `fam_euclidien`, etc.) n'ont ni `ordre` ni `type`. Quand `loadFromStorage` est appelé sur un localStorage ancien (avant v3.10.20), les familles réinstallées depuis PTK_DEFAULT n'ont pas ces champs → `getFams()` filtre mal par type.
-
-**H3 — `sbMergeSchoolData` efface les familles JS si DB vide** : Ligne 7519 supprime TOUTES les familles `source:'school'` de `packCours.familles`, puis les remplace par les données DB. Si la DB ne contient pas encore les familles (seed non exécuté), le résultat est `packCours.familles = []` → les patterns n'ont plus de famille assignée.
-
-**H4 — `getMetroFamilles()` fallback fragile** : Si `packCours.metroFamilles` est vide (DB non seedée ou `sbMergeSchoolData` n'a pas trouvé de lignes), la fonction tombe sur `SIG_FAMILLES` (IDs : 'binaire', 'ternaire', 'aksak', 'breve'). Ces IDs DOIVENT correspondre exactement à ceux en DB `metro_familles`. Si `_seedBaseMetroPresets()` a échoué ou n'a pas été déclenché, les IDs DB sont différents → associations orphelines.
-
-**H5 — Doublon potentiel `familles` vs `familles_ids`** : PTK_DEFAULT patterns utilisent `familles: ['fam_base']` (champ JS). DB stocke `familles_ids text[]`. `sbMergeSchoolData` mappe `familles: p.familles_ids || []` → cohérent après sync. Mais si un pattern PTK_DEFAULT est traité AVANT la sync (ex: affiché en mode offline), le champ `familles` vient de PTK_DEFAULT. La question est : y a-t-il des endroits où `familles_ids` ET `familles` coexistent sur le même objet, créant un doublon ?
-
-### Prompt d'investigation à copier-coller
-
-```
-BoomTchak v3.14.6 — Investigation architecture familles (perte d'ordre, doublons, orphelins)
-
-Contexte :
-- App single-file index.html (~10700 lignes), vanilla JS, Supabase
-- Version courante v3.14.6
-
-Problème signalé par Lamberio :
-L'ancienne architecture (une seule table `familles` partagée par tous les types) a été
-progressivement remplacée par une architecture à 4 tables séparées :
-  - `familles`       : patterns + grooves (avec colonne `type`: 'pattern'|'groove'|'both')
-  - `metro_familles` : presets métronome
-  - `band_familles`  : bands
-  - `sound_familles` : sons
-
-Mais les deux systèmes semblent coexister dans le code, causant :
-  - Perte de l'ordre des familles après sync DB
-  - Tags familles manquants sur certains items
-  - Possibles doublons dans la liste de tags
-
-Fichiers à lire IMPÉRATIVEMENT avant tout :
-  - CLAUDE.md (section CHANTIER SUIVANT)
-  - BoomTchak_v3_bible.md §4 et §10
-  - index.html lignes 1716-1853 (PTK_DEFAULT)
-  - index.html lignes 3340-3375 (getFams dans openPresetModal)
-  - index.html lignes 5742-5747 (getFamille, getBandFamille, getMetroFamilles)
-  - index.html lignes 7496-7580 (sbMergeSchoolData — merge des familles)
-  - index.html lignes 7699-7715 (sbPushSchoolFamOrder)
-  - index.html lignes 10285-10360 (loadFromStorage — fallbacks PTK_DEFAULT)
-  - supabase/seed_school_pool.sql (structure du seed familles)
-  - supabase/schema.sql (colonnes `ordre`, `type` sur `familles`)
-
-Questions à investiguer :
-1. Le seed `seed_school_pool.sql` insère-t-il les familles avec `ordre` ? Si non, comment l'ordre est-il censé être persisté après le 1er chargement MX ?
-2. `PTK_DEFAULT.familles` a-t-il les champs `ordre` et `type` ? Si non, est-ce un bug quand `loadFromStorage` tombe sur le fallback ligne 10337 ?
-3. Y a-t-il des chemins d'exécution où `packCours.familles` peut contenir deux fois la même famille (ex: une version PTK sans `ordre` + une version DB avec `ordre`) ?
-4. `getFams()` line 3342-3343 filtre par `!f.type || f.type==='groove'` — les familles PTK sans `type` passent TOUJOURS (condition `!f.type` est vraie) → elles apparaissent dans TOUS les modals (groove ET pattern) même si elles devraient être filtrées. Est-ce intentionnel ?
-5. `getMetroFamilles()` ligne 5747 : dans quels cas `packCours.metroFamilles` est-il vide au runtime ? Les IDs 'binaire','ternaire','aksak','breve' (SIG_FAMILLES) correspondent-ils exactement aux IDs dans la table `metro_familles` DB ?
-6. Y a-t-il des items (patterns/grooves) en DB ou en PTK_DEFAULT qui référencent des familles IDs qui n'existent plus, causant des tags orphelins dans l'UI ?
-
-Livrable attendu :
-Un diagnostic complet avec pour chaque problème identifié :
-  - La localisation précise (fichier + numéro de ligne)
-  - L'impact visible pour l'utilisateur
-  - Une proposition de correction (avec complexité estimée)
-
-NE PAS CODER — diagnostic seulement. Soumettre à Lamberio avant toute modification.
-```
-
-
-```
+### Workflow de rédaction
+1. Lamberio partage le document de référence
+2. Pour chaque article : rédiger selon la structure ci-dessous, soumettre à Lamberio pour validation
+3. Une fois validé : insérer en DB via la section Encyclopédie (MX) ou migration SQL
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.14.15 | Préférences : décalage audio → menu `<select>` sur la même ligne (6 préréglages dans l'ordre Lamberio) + slider + boutons −/+ + valeur ms seule ; `.smenu-pref-row` sépare visuellement les 5 prefs ; `.smenu-select` dark mode pour les 2 selects (métrique + décalage) |
+| v3.14.14 | Audio offset : préréglages (boutons → select en v3.14.15) + −/+ ; dark mode boutons auth (sync/logout/login) ; Export MIDI → "Export MIDI…" ; `_syncMetroToGroove()` : synchro métro sur cycle groove après changement de signature pendant la lecture |
+| v3.14.13 | Fix scroll modal : suppression `touch-action:none` → `e.preventDefault()` dans `pointerdown` (touch only) + simulation manuelle du clic sur `pointerup` |
+| v3.14.12 | Boutons volet métro : BPM/Uni/Meter/Vol./Tap ; champ preset `sig-sel-btn` agrandi ; nouvel item inséré après la source (pas en fin de liste) ; `_sortByFamille()` pour swipe groove/pattern |
+| v3.14.11 | Fix message d'erreur save preset métro (affiche message Supabase réel) ; schema.sql : `nb_divisions` dans CREATE TABLE metro_presets |
+| v3.14.10 | Swipe groove/pattern : navigation dans la famille courante en premier, puis famille suivante/précédente en fin de liste |
+| v3.14.9 | Fix long press modal : `setPointerCapture` déplacé dans le timer 450ms (plus dans `pointerdown`) → plus de `pointercancel` immédiat sur mobile ; même fix pour les boutons famille MX |
+| v3.14.8 | Bouton ☰ Réordonner dans l'en-tête du modal preset ; fix déclenchement mute au relâcher appui long sur bouton Sons |
+| v3.14.7 | Fix architecture familles : `seed_school_pool.sql` inclut `ordre` et `type` ; `PTK_DEFAULT.familles` inclut `ordre` et `type` ; migration SQL v3.14.7 (ADD COLUMN ordre/type + UPDATE familles existantes) |
 | v3.14.6 | Suppression `source:'base'` metro presets → `'school'` partout ; condition seeding `metroPres.length===0` ; migration SQL UPDATE metro_presets SET source='school' WHERE source='base' |
 | v3.14.5 | Suppression presets métro 6/8, 9/8, 12/8, 3/8 (statut corrompu) + migration SQL DELETE ; `_DELETED_PRESET_IDS` Set pour purge cache |
 | v3.14.4 | Modal sauvegarde preset métronome unifié avec `#psp-box` (même UX que groove/pattern/band/son) ; `openMetroSavePop`, `pspDoOverwriteMetro`, `pspDoSaveNewMetro` ; dispatcher `pspDoOverwrite`/`pspDoSaveNew` étendu |
@@ -501,8 +473,10 @@ openPresetModal(cfg)
 - Ton pédagogique, pas condescendant — le musicien est au centre
 - Pas de jargon non défini dans l'article lui-même
 
-### Liste des 12 articles validés
-`Tempo` | `Mesure` | `Temps` | `Pulsation` | `Division` | `Rythme` | `Pattern` | `Groove` | `Syncope` (+ Contretemps) | `Polymétrie` | `Shuffle` | `Cycle`
+### Liste des 18 articles (session 2026-05-18)
+`Tempo` | `Mesure` | `Métrique` | `Mesure simple/composée` | `Mesure irrégulière` | `Temps écrit/ressenti` | `Temps` | `Temps fort/faible` | `Temps court/long` | `Temps binaire/ternaire` | `Polymétrie/Polyrythmie` | `Hémiole` | `Contretemps/Syncope` | `Pulsation/Battement` | `Division/Subdivision` | `Rythme` | `Pattern/Motif` | `Shuffle`
+
+> Liste remplace l'ancienne (12 articles). Voir section "CHANTIER SUIVANT" pour les clés DB et détails.
 
 ### Format DB cible (extension à prévoir)
 Le format actuel `{ chapo, bullets }` est insuffisant pour 8 sections nommées avec ancres.
