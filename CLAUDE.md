@@ -8,6 +8,7 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Lamberio = product owner. Questions archi importantes → soumettre AVANT de coder.
 - Langue : français. Variables/fonctions : camelCase anglais.
 - Version `MAJEUR.MINEUR.PATCH` bumpée à chaque commit (dans `<span class="app-version">`).
+- **SQL migrations** : tout script SQL à exécuter par Lamberio (migration, seed, correctif DB) doit être écrit **directement dans l'interface de chat Claude**, pas uniquement dans la description de la PR ou dans les fichiers.
 
 ## Règles CRUD (bible — à respecter impérativement)
 
