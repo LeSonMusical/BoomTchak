@@ -64,7 +64,7 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .temps-bar{background:#efecf8;border-bottom:1px solid #c8c0e0;border-left:3px solid #6B5FA5}
 .temps-bar .section-bar-lbl{color:#4a3d8a}
 .sig-sel{display:none}
-.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex-shrink:1;cursor:pointer;min-width:38px;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
+.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #b0a8d8;border-radius:4px;background:#fff;color:#4a3d8a;flex:1;cursor:pointer;min-width:38px;max-width:160px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
 .sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
 .beat-display{font-size:11px;font-weight:700;color:#4a3d8a;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(107,95,165,.12)}
@@ -78,10 +78,10 @@ body.dark-mode .smenu-sub{background:#1e1e1c;border-color:rgba(255,255,255,.08)}
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 3px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
 .btn-metro-main.on{color:#4a3d8a}
 /* Bouton Pulse (panel toggle) */
-.btn-metro-volet{padding:2px 6px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:2px;transition:color .12s,background .12s,border-color .12s}
+.btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
 .btn-metro-volet:hover{color:#6B5FA5}
 .btn-metro-volet.open{color:#4a3d8a;background:rgba(107,95,165,.14);border-color:rgba(107,95,165,.35);font-weight:700}
-#btn-metro-volet-temps{margin-left:auto}
+#btn-metro-volets-group{display:flex;margin-left:auto;gap:0}
 .metro-3col-sw .metro-3col-lbl{text-align:center}
 .pm-item.pm-pressing{background:rgba(107,95,165,.12)!important;transform:scale(.98);transition:transform .1s}
 .temps-content{display:block}
@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.11</span>
+      <span class="app-version">v3.14.12</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1179,11 +1179,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-main" id="btn-metro-main">Métro</button>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-sign">Unit</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-pat">Métro</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
+    <div id="btn-metro-volets-group">
+    <button class="btn-metro-volet open" id="btn-metro-volet-temps">BPM</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-sign">Uni</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-pat">Meter</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol.</button>
     <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
+    </div>
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <!-- ── Sous-volet 1 : Temps ─────────────────────────────────────────── -->
@@ -4461,7 +4463,7 @@ function buildGrooveSection(){
     });
   });
   attachSwipe(groovePresetBtn,
-    ()=>(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending').sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
+    ()=>_sortByFamille((packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending'),packCours.familles),
     ()=>currentGrooveId, _grooveOnSelect
   );
   bar.appendChild(groovePresetBtn);
@@ -4625,7 +4627,7 @@ function buildLayers(){
       });
     });
     attachSwipe(patPresetBtn,
-      ()=>(packCours.patterns||[]).filter(p=>!p.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
+      ()=>_sortByFamille((packCours.patterns||[]).filter(p=>!p.localDeletePending),packCours.familles),
       ()=>state[li].patternId, _patOnSelect
     );
     row1.appendChild(patPresetBtn);
@@ -5197,6 +5199,7 @@ function pspDoSaveNewPattern(){
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   const nom = document.getElementById('psp-name-input').value.trim() || (srcPat ? srcPat.nom+' (copie)' : 'Pattern');
 
+  const srcIdx = srcPat ? packCours.patterns.findIndex(p=>p.id===srcPat.id) : -1;
   const newPat = {
     id: 'user_' + Date.now(),
     nom,
@@ -5205,8 +5208,10 @@ function pspDoSaveNewPattern(){
     pas: state[li].pattern.length,
     source: 'teacher',
     localChangeType: 'create',
+    ordre: srcPat ? (srcPat.ordre ?? srcIdx) + 1 : packCours.patterns.length,
   };
-  packCours.patterns.push(newPat);
+  if(srcIdx>=0) packCours.patterns.splice(srcIdx+1,0,newPat);
+  else packCours.patterns.push(newPat);
 
   const groove = getGroove(currentGrooveId);
   if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
@@ -5298,6 +5303,7 @@ function pspDoSaveNewGroove(){
   const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
   const nom = document.getElementById('psp-name-input').value.trim() || groove.nom+' (copie)';
 
+  const srcGrooveIdx = packCours.grooves.findIndex(g=>g.id===groove.id);
   const newGroove = JSON.parse(JSON.stringify(groove));
   newGroove.id = 'user_groove_' + Date.now();
   newGroove.nom = nom;
@@ -5306,10 +5312,11 @@ function pspDoSaveNewGroove(){
   LAYERS.forEach((_,li)=>{
     if(newGroove.layers[li] && state[li].patternId) newGroove.layers[li].patternId = state[li].patternId;
   });
-  newGroove.source = 'teacher';
   newGroove.localChangeType = 'create';
+  newGroove.ordre = (groove.ordre ?? srcGrooveIdx) + 1;
   delete newGroove.localDirty; delete newGroove.localChangedFields;
-  packCours.grooves.push(newGroove);
+  if(srcGrooveIdx>=0) packCours.grooves.splice(srcGrooveIdx+1,0,newGroove);
+  else packCours.grooves.push(newGroove);
 
   // Auto-créer une entrée encyclo vide pour ce nouveau groove
   if(!packCours.encyclo) packCours.encyclo = {};
@@ -5402,6 +5409,9 @@ function pspDoSaveNewMetro(){
   const label = document.getElementById('psp-name-input').value.trim() || s?.label || `${s?.nbDivisions||4}/${s?.beatUnit||4}`;
   const equiv = s?.equivalence || 2;
   const id = 'metro_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+  if(!packCours.metroPresets) packCours.metroPresets = [];
+  const srcMetroIdx = s?.id ? packCours.metroPresets.findIndex(p=>p.id===s.id) : -1;
+  const srcMetro = srcMetroIdx>=0 ? packCours.metroPresets[srcMetroIdx] : metroPresets.find(p=>p.id===s?.id);
   const preset = {
     id, label,
     nbDivisions: s?.nbDivisions || 4, beatUnit: s?.beatUnit || 4,
@@ -5411,9 +5421,10 @@ function pspDoSaveNewMetro(){
     familles_ids: [..._pspNewFamIds],
     metroPattern: [...pat],
     source: 'teacher', localStatus: 'draft',
+    ordre: srcMetro ? (srcMetro.ordre ?? srcMetroIdx) + 1 : packCours.metroPresets.length,
   };
-  if(!packCours.metroPresets) packCours.metroPresets = [];
-  packCours.metroPresets.push(preset);
+  if(srcMetroIdx>=0) packCours.metroPresets.splice(srcMetroIdx+1,0,preset);
+  else packCours.metroPresets.push(preset);
   saveToStorage(); rebuildMetroPresets();
   currentSig = metroPresets.find(p => p.id === id) || currentSig;
   buildSigSelector(); setMetroDirty(false); _editingMetroPresetId = null;
@@ -5792,6 +5803,20 @@ function _navigateMetroPreset(dir){
   const next=(cur<0?0:(cur+dir+sorted.length)%sorted.length);
   changeSig(sorted[next].id);
 }
+// Tri famille-d'abord : groupe les items par famille (ordre famille), puis par ordre dans la famille
+function _sortByFamille(items, familles){
+  const famOrd=new Map((familles||[]).map((f,i)=>[f.id,i]));
+  const rank=item=>{
+    const ids=item.familles||[];
+    if(!ids.length)return 99999;
+    return Math.min(...ids.map(id=>famOrd.has(id)?famOrd.get(id):99999));
+  };
+  return [...items].sort((a,b)=>{
+    const d=rank(a)-rank(b);
+    return d!==0?d:(a.ordre||0)-(b.ordre||0);
+  });
+}
+
 // Helper générique swipe gauche/droite sur un bouton preset
 function attachSwipe(el, getList, getCurrentId, onSelect){
   let _tx=null;
@@ -10685,16 +10710,16 @@ function attachEvents(){
       if(bc)bc.classList.toggle('open', sonsOuvert&&instrOuvert);
     }
 
-    let _longPressTimer=null;
+    let _longPressTimer=null, _wasLongPress=false;
     const _clearLong=()=>{if(_longPressTimer){clearTimeout(_longPressTimer);_longPressTimer=null;}};
 
     btnV.addEventListener('pointerdown',e=>{
       _startX=e.clientX; _startVol=bandVolume;
-      _down=true; _dragMoved=false;
+      _down=true; _dragMoved=false; _wasLongPress=false;
       btnV.setPointerCapture(e.pointerId);
       e.preventDefault();
       _longPressTimer=setTimeout(()=>{
-        if(_down&&!_dragMoved){_clearLong();toggleBandSection();}
+        if(_down&&!_dragMoved){_clearLong();_wasLongPress=true;toggleBandSection();}
       },500);
     },{passive:false});
 
@@ -10714,7 +10739,7 @@ function attachEvents(){
     btnV.addEventListener('pointerup',()=>{
       _clearLong();
       _down=false; _dragOverlay.hide();
-      if(_dragMoved) return;
+      if(_dragMoved||_wasLongPress) return; // appui long déjà géré par le timer
       // Court tap : mute band (appui long géré par timeout)
       const now=Date.now();
       if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
