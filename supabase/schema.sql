@@ -573,3 +573,11 @@ DO $$
 BEGIN
   DELETE FROM public.metro_presets WHERE id IN ('6/8', '9/8', '12/8', '3/8');
 END $$;
+
+-- MIGRATION v3.14.6 — Normalisation source 'base' → 'school' pour metro_presets
+-- Les presets seeded initialement avec source='base' sont bloqués dans les workflows
+-- Soumettre/Publier. Cette migration corrige leur statut en 'school'.
+DO $$
+BEGIN
+  UPDATE public.metro_presets SET source = 'school' WHERE source = 'base';
+END $$;
