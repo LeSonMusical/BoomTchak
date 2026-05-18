@@ -581,3 +581,27 @@ DO $$
 BEGIN
   UPDATE public.metro_presets SET source = 'school' WHERE source = 'base';
 END $$;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- MIGRATION v3.14.7 — Correction architecture familles (ordre + type + metro_familles)
+-- P1 : Les familles école n'avaient pas d'ordre défini dans le seed → perte d'ordre MX après sync
+-- P2 : Colonne type non peuplée dans le seed → toutes familles avaient type='both' implicitement
+-- P5 : La table metro_familles n'était jamais seedée → fallback SIG_FAMILLES permanent
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Correction P1/P2 : affecter ordre et type explicites aux familles école existantes
+UPDATE public.familles SET ordre = 0, type = 'both' WHERE id = 'fam_base'       AND scope = 'school';
+UPDATE public.familles SET ordre = 1, type = 'both' WHERE id = 'fam_euclidien'  AND scope = 'school';
+UPDATE public.familles SET ordre = 2, type = 'both' WHERE id = 'fam_afrocubain' AND scope = 'school';
+UPDATE public.familles SET ordre = 3, type = 'both' WHERE id = 'fam_africain'   AND scope = 'school';
+UPDATE public.familles SET ordre = 4, type = 'both' WHERE id = 'fam_bresilien'  AND scope = 'school';
+UPDATE public.familles SET ordre = 5, type = 'both' WHERE id = 'fam_caraibe'    AND scope = 'school';
+UPDATE public.familles SET ordre = 6, type = 'both' WHERE id = 'fam_flamenco'   AND scope = 'school';
+
+-- Correction P5 : seeder metro_familles si absentes
+INSERT INTO public.metro_familles (id, nom, scope, ordre) VALUES
+  ('binaire',  'Binaire ♩',      'school', 0),
+  ('ternaire', 'Ternaire ♩.',    'school', 1),
+  ('aksak',    'Aksak ♪',        'school', 2),
+  ('breve',    'Alla breve 𝅗𝅥',  'school', 3)
+ON CONFLICT (id) DO UPDATE SET nom = EXCLUDED.nom, scope = 'school', ordre = EXCLUDED.ordre;

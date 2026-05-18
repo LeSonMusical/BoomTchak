@@ -1097,7 +1097,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.6</span>
+      <span class="app-version">v3.14.7</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1717,19 +1717,19 @@ const PTK_DEFAULT = {
   meta:{titre:'', auteur:'', version:'2.0', date:''},
   // Familles partagées (patterns, grooves, encyclo) — source de vérité unique
   familles:[
-    {id:'fam_base',       nom:'Référentiel', source:'school'},
-    {id:'fam_euclidien',  nom:'Euclidien',   source:'school'},
-    {id:'fam_afrocubain', nom:'Afro-cubain', source:'school'},
-    {id:'fam_africain',   nom:'Africain',    source:'school'},
-    {id:'fam_bresilien',  nom:'Brésilien',   source:'school'},
-    {id:'fam_caraibe',    nom:'Caraïbe',     source:'school'},
-    {id:'fam_flamenco',   nom:'Flamenco',    source:'school'},
+    {id:'fam_base',       nom:'Référentiel', source:'school', ordre:0, type:'both'},
+    {id:'fam_euclidien',  nom:'Euclidien',   source:'school', ordre:1, type:'both'},
+    {id:'fam_afrocubain', nom:'Afro-cubain', source:'school', ordre:2, type:'both'},
+    {id:'fam_africain',   nom:'Africain',    source:'school', ordre:3, type:'both'},
+    {id:'fam_bresilien',  nom:'Brésilien',   source:'school', ordre:4, type:'both'},
+    {id:'fam_caraibe',    nom:'Caraïbe',     source:'school', ordre:5, type:'both'},
+    {id:'fam_flamenco',   nom:'Flamenco',    source:'school', ordre:6, type:'both'},
   ],
   bandFamilles:[
-    {id:'bf_electro', nom:'Électro',      source:'school'},
-    {id:'bf_perc',    nom:'Percussions',  source:'school'},
-    {id:'bf_rock',    nom:'Rock',         source:'school'},
-    {id:'bf_minimal', nom:'Minimaliste',  source:'school'},
+    {id:'bf_electro', nom:'Électro',      source:'school', ordre:0},
+    {id:'bf_perc',    nom:'Percussions',  source:'school', ordre:1},
+    {id:'bf_rock',    nom:'Rock',         source:'school', ordre:2},
+    {id:'bf_minimal', nom:'Minimaliste',  source:'school', ordre:3},
   ],
   bands:[
     {id:'band_electro', nom:'Électro',     familles:['bf_electro'], source:'school',
@@ -7551,15 +7551,27 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   });
   // Trier par ordre après le merge pour que l'ordre drag-drop MX soit restauré après sync
   packCours.familles.sort((a, b) => (a.ordre ?? 9999) - (b.ordre ?? 9999));
+  // P3 — Si la DB était vide (seed non exécuté), restaurer les défauts PTK pour éviter familles=[]
+  if (!packCours.familles.length) {
+    packCours.familles = JSON.parse(JSON.stringify(PTK_DEFAULT.familles));
+  }
+  // P7 — Purge des familles_ids orphelines sur patterns et grooves
+  const _validFamIds = new Set(packCours.familles.map(f => f.id));
+  packCours.patterns.forEach(p => { if (p.familles?.length) p.familles = p.familles.filter(id => _validFamIds.has(id)); });
+  packCours.grooves.forEach(g => { if (g.familles?.length) g.familles = g.familles.filter(id => _validFamIds.has(id)); });
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
     packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
   });
-  // Merge des familles de métronome
+  // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
   if (Array.isArray(mfRows) && mfRows.length > 0) {
     if (!packCours.metroFamilles) packCours.metroFamilles = [];
-    packCours.metroFamilles = mfRows.map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' }));
+    const localDirtyMFIds = new Set((packCours.metroFamilles).filter(f => f.localDirty || f._deletePending).map(f => f.id));
+    packCours.metroFamilles = [
+      ...(packCours.metroFamilles).filter(f => localDirtyMFIds.has(f.id)),
+      ...mfRows.filter(f => !localDirtyMFIds.has(f.id)).map(f => ({ id: f.id, nom: f.nom, ordre: f.ordre ?? 0, source: 'school' })),
+    ].sort((a, b) => (a.ordre ?? 9999) - (b.ordre ?? 9999));
   }
   // Merge des familles de bands
   if (Array.isArray(bfRows) && bfRows.length > 0) {
