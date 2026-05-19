@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.21</span>
+      <span class="app-version">v3.14.22</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5246,9 +5246,11 @@ let _pspNewFamIds = [];
 let _pspOverwriteFamIds = [];
 
 function saveLayerPattern(li, btn){
-  const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
-  // Sync patternId dans packCours
   const groove = getGroove(currentGrooveId);
+  // Un pattern embarqué dans le groove (affiché «—») n'a pas de référence DB : on passe null
+  const isEmbedded = !!(groove?.layers?.[li]?.sequence);
+  const srcPat = (!isEmbedded && state[li].patternId) ? getPattern(state[li].patternId) : null;
+  // Sync patternId dans packCours
   if(groove && groove.layers[li]) groove.layers[li].patternId = state[li].patternId;
   // Si pas dirty : quick-save silencieux
   if(!dirtyLayers[li]){ saveToStorage(); if(btn)flashSave(btn); return; }
@@ -5277,8 +5279,20 @@ function openPatSavePop(li, btn, srcPat){
   buildPspFamTags();
   buildPspFamSel();
 
-  document.getElementById('psp-new-form').classList.add('hidden');
-  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau Pattern ▶';
+  if(!srcPat){
+    // Pattern non référencé («—») → proposer directement «sauvegarder comme nouveau»
+    ovBtn.style.display = 'none';
+    document.getElementById('psp-new-form').classList.remove('hidden');
+    document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau Pattern ▼';
+    _pspOverwriteFamIds = [..._pspNewFamIds];
+    _pspNewFamIds = [];
+    buildPspFamTags(); buildPspFamSel();
+    setTimeout(()=>document.getElementById('psp-name-input').focus(), 50);
+  } else {
+    ovBtn.style.display = '';
+    document.getElementById('psp-new-form').classList.add('hidden');
+    document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau Pattern ▶';
+  }
 
   document.getElementById('psp-overlay').classList.remove('hidden');
   box.classList.remove('hidden');
