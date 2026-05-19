@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.22</span>
+      <span class="app-version">v3.14.23</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3069,6 +3069,7 @@ function miniConfirm(msg, prefKey, onYes){
 function setLayerDirty(li, isDirty){
   dirtyLayers[li]=isDirty;
   setDirtyUI('preset-btn-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
+  if(isDirty){ grooveDirty=true; updateGrooveSaveBtn(); }
 }
 
 function updateGrooveSaveBtn(){
@@ -5247,14 +5248,10 @@ let _pspOverwriteFamIds = [];
 
 function saveLayerPattern(li, btn){
   const groove = getGroove(currentGrooveId);
-  // Un pattern embarqué dans le groove (affiché «—») n'a pas de référence DB : on passe null
-  const isEmbedded = !!(groove?.layers?.[li]?.sequence);
-  const srcPat = (!isEmbedded && state[li].patternId) ? getPattern(state[li].patternId) : null;
-  // Sync patternId dans packCours
+  // srcPat null si pas de référence (pattern «—» non nommé) → modal proposera "Nouveau"
+  const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   if(groove && groove.layers[li]) groove.layers[li].patternId = state[li].patternId;
-  // Si pas dirty : quick-save silencieux
   if(!dirtyLayers[li]){ saveToStorage(); if(btn)flashSave(btn); return; }
-  // Ouvrir le popover
   openPatSavePop(li, btn, srcPat);
 }
 
@@ -5385,7 +5382,7 @@ function pspDoOverwritePattern(){
     // Mettre à jour la référence dans state et groove
     state[li].patternId = fork.id;
     const groove = getGroove(currentGrooveId);
-    if(groove && groove.layers[li]) groove.layers[li].patternId = fork.id;
+    if(groove && groove.layers[li]){ groove.layers[li].patternId = fork.id; delete groove.layers[li].sequence; }
     saveToStorage(); setLayerDirty(li, false);
     buildLayers();
     refreshMenuBtnStates(); buildPublishSection();
@@ -5400,7 +5397,10 @@ function pspDoOverwritePattern(){
     srcPat.sequence = currentSeq;
     srcPat.familles = [...savedFamIds];
     markItemDirty(srcPat, 'sequence');
-    saveToStorage(); setLayerDirty(li,false);
+    const _gp = getGroove(currentGrooveId);
+    if(_gp && _gp.layers[li]) delete _gp.layers[li].sequence;
+    saveToStorage(); setLayerDirty(li, false);
+    buildLayers();
     if(btn)flashSave(btn); closePatSavePop();
     buildPublishSection();
   };
@@ -5441,7 +5441,7 @@ function pspDoSaveNewPattern(){
   else packCours.patterns.push(newPat);
 
   const groove = getGroove(currentGrooveId);
-  if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
+  if(groove && groove.layers[li]){ groove.layers[li].patternId = newPat.id; delete groove.layers[li].sequence; }
   state[li].patternId = newPat.id;
 
   saveToStorage(); setLayerDirty(li,false);
