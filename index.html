@@ -416,18 +416,19 @@ body.dark-mode .enc-related{border-top-color:#333}
 .pm-fam-cf{font-size:9px!important;padding:1px 6px!important;opacity:.75}
 .pm-fam-cf.active{opacity:1;font-weight:600;border-color:var(--pm-ac)!important;color:var(--pm-ac)!important}
 /* Tabs sections (nouveau format) */
-.enc-tabs-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;border-bottom:2px solid #e8e5e0;padding-bottom:4px}
-.enc-tab{font-size:10px;padding:2px 9px;border:1px solid #c8c4be;border-radius:4px 4px 0 0;background:#f5f3f0;color:#666;cursor:pointer;font-family:inherit;line-height:1.6;margin-bottom:-2px;border-bottom-color:#e8e5e0}
-.enc-tab.active{background:#fff;color:#1a1a18;font-weight:600;border-bottom-color:#fff;border-color:#c8c4be}
-.enc-tab-add{background:none;border-style:dashed;color:#aaa;font-size:12px;padding:1px 7px}
-.enc-tab-add:hover{color:#4a6d40;border-color:#4a6d40}
-.enc-sec-content{min-height:60px}
+.enc-section{margin:10px 0 14px;border-top:1px solid #e8e5e0;padding-top:8px}
+.enc-section:first-of-type{border-top:none;margin-top:4px}
+.enc-sec-hdr{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.enc-sec-titre{font-size:13px;font-weight:600;color:var(--ct,#1a1a18);flex:1;min-width:40px}
+.enc-sec-titre[contenteditable]{border-bottom:1px dashed #c0bdb7;outline:none;padding-bottom:1px}
+.enc-sec-del{background:none;border:none;cursor:pointer;font-size:13px;padding:0 4px;opacity:.5;line-height:1}
+.enc-sec-del:hover{opacity:1}
 .enc-section-body{font-size:12px;line-height:1.65;color:#2a2a28;white-space:pre-line}
-.enc-section-body[contenteditable]{white-space:pre-wrap;outline:none;min-height:40px}
-body.dark-mode .enc-tabs-row{border-bottom-color:#333}
-body.dark-mode .enc-tab{background:#1e1e1c;color:#888;border-color:#444;border-bottom-color:#333}
-body.dark-mode .enc-tab.active{background:#2a2926;color:#c8c4be;border-bottom-color:#2a2926;border-color:#555}
-body.dark-mode .enc-section-body{color:#c0bdb7}
+.enc-sec-body-edit{font-size:12px;line-height:1.65;color:#2a2a28;white-space:pre-wrap;outline:none;min-height:40px}
+body.dark-mode .enc-section{border-top-color:#333}
+body.dark-mode .enc-sec-titre{color:#c8c4be}
+body.dark-mode .enc-sec-titre[contenteditable]{border-bottom-color:#555}
+body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7}
 
 /* ─── BOTTOM BAR ─── */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #d0cec7;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
@@ -1123,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.17</span>
+      <span class="app-version">v3.14.18</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1743,30 +1744,36 @@ const ENCYCLO_CATS=[
   {id:'metro',    label:'Métronomes'},
 ];
 
-// Templates sections pour nouveaux articles
+// Templates sections pour nouveaux articles — chapo séparé + sections linéaires
 const ENCYCLO_TEMPLATES={
-  concept:[
-    {id:'en-bref',         titre:'En bref',                         contenu:''},
-    {id:'en-theorie',      titre:'En théorie',                      contenu:''},
-    {id:'en-pratique',     titre:'En pratique',                     contenu:''},
-    {id:'dans-boomtchak',  titre:'Dans BoomTchak',                  contenu:''},
-    {id:'plus-loin',       titre:'Pour aller plus loin',            contenu:''},
-    {id:'culture',         titre:'Histoire / Culture / Écriture',   contenu:''},
-    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
-  ],
-  groove:[
-    {id:'origine',         titre:'Origine',                         contenu:''},
-    {id:'ecriture',        titre:'Écriture',                        contenu:''},
-    {id:'logique',         titre:'Logique',                         contenu:''},
-    {id:'sensation',       titre:'Sensation',                       contenu:''},
-    {id:'utilisation',     titre:'Utilisation',                     contenu:''},
-    {id:'relations',       titre:'Relations',                       contenu:''},
-    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
-  ],
-  vide:[
-    {id:'contenu',         titre:'Contenu',                         contenu:''},
-    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
-  ],
+  concept:{
+    chapo:'',
+    sections:[
+      {id:'en-theorie',      titre:'En théorie',                      contenu:''},
+      {id:'en-pratique',     titre:'En pratique',                     contenu:''},
+      {id:'dans-boomtchak',  titre:'Dans BoomTchak',                  contenu:''},
+      {id:'plus-loin',       titre:'Pour aller plus loin',            contenu:''},
+      {id:'culture',         titre:'Histoire / Culture / Écriture',   contenu:''},
+      {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
+    ],
+  },
+  groove:{
+    chapo:'',
+    sections:[
+      {id:'origine',         titre:'Origine',      contenu:''},
+      {id:'ecriture',        titre:'Écriture',     contenu:''},
+      {id:'sensation',       titre:'Sensation',    contenu:''},
+      {id:'utilisation',     titre:'Utilisation',  contenu:''},
+      {id:'relations',       titre:'Relations',    contenu:''},
+      {id:'voir-aussi',      titre:'Voir aussi',   contenu:''},
+    ],
+  },
+  vide:{
+    chapo:'',
+    sections:[
+      {id:'contenu',         titre:'Contenu',      contenu:''},
+    ],
+  },
 };
 
 // Entrées misc de l'encyclopédie (ni groove ni pattern)
@@ -3812,17 +3819,6 @@ function openPresetModal(cfg){
     };
     mkFilterBtn('all','Tout');
     if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
-    // Encyclopédie : filtres contenu écrits/non écrits (sous "Tout")
-    if(cfg.type==='encyclo'){
-      const mkCF=(val,lbl)=>{
-        const b=document.createElement('button');
-        b.className='pm-fam-btn pm-fam-cf'+(encContentFilter===val?' active':'');
-        b.textContent=lbl;b.title=val==='written'?'Articles avec contenu':'Articles sans contenu';
-        b.addEventListener('click',()=>{encContentFilter=encContentFilter===val?'all':val;buildFamCol();buildItems();});
-        famCol.appendChild(b);
-      };
-      mkCF('written','Écrits ●');mkCF('empty','Non écrits ○');
-    }
 
     // Son : colonne gauche avec section Familles (soundFamilles)
     if(cfg.type==='sound'){
@@ -4046,8 +4042,18 @@ function openPresetModal(cfg){
         }
         famCol.appendChild(b);
       });
-      // Encyclopédie : filtre famille secondaire (grooves/patterns/band/son/metro)
+      // Encyclopédie : filtres contenu + filtre famille secondaire
       if(cfg.type==='encyclo'){
+        const cfSep=document.createElement('div');cfSep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:4px 0 2px';
+        famCol.appendChild(cfSep);
+        const mkCF=(val,lbl)=>{
+          const b=document.createElement('button');
+          b.className='pm-fam-btn pm-fam-cf'+(encContentFilter===val?' active':'');
+          b.textContent=lbl;b.title=val==='written'?'Articles avec contenu':'Articles sans contenu';
+          b.addEventListener('click',()=>{encContentFilter=encContentFilter===val?'all':val;buildFamCol();buildItems();});
+          famCol.appendChild(b);
+        };
+        mkCF('written','Écrits ●');mkCF('empty','Non écrits ○');
         let subFams=null;
         if(famFilter==='all'||famFilter==='groove'||famFilter==='pattern') subFams=packCours.familles||[];
         else if(famFilter==='band') subFams=packCours.bandFamilles||[];
@@ -4306,13 +4312,11 @@ function openPresetModal(cfg){
       if(!items.length&&!manageMode&&!(currentMode==='tx'||authProfile?.role==='mx')){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucune entrée';itemsWrap.appendChild(e);return;}
       items.forEach(item=>{
         if(manageMode&&item.typeBadge==='✎'){
-          // Mode gérer : renommer les articles custom uniquement
+          // Mode gérer : clic sur le nom → renommer inline ; 🗑 à droite
           const div=document.createElement('div');div.className='pm-item pm-manage';div.style.cssText='display:flex;align-items:center;gap:6px';
           const badge=document.createElement('span');badge.style.cssText=(bdgStyle['✎'])+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent='✎';
-          const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.style.cssText='flex:1;font-size:11px';nameEl.textContent=item.nom;
-          const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
-          renBtn.addEventListener('click',e=>{
-            e.stopPropagation();
+          const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.style.cssText='flex:1;font-size:11px;cursor:text';nameEl.textContent=item.nom;
+          const startRename=()=>{
             nameEl.contentEditable='true';nameEl.focus();
             const r=document.createRange();r.selectNodeContents(nameEl);const s=window.getSelection();s.removeAllRanges();s.addRange(r);
             nameEl.dataset.orig=nameEl.textContent;
@@ -4328,8 +4332,18 @@ function openPresetModal(cfg){
             };
             nameEl.addEventListener('blur',commit,{once:true});
             nameEl.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();nameEl.blur();}if(ev.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
+          };
+          nameEl.addEventListener('click',e=>{e.stopPropagation();startRename();});
+          const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer cet article';
+          delBtn.addEventListener('click',e=>{
+            e.stopPropagation();
+            if(!confirm('Supprimer l\'article "'+item.nom+'" ?'))return;
+            const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);
+            if(idx>=0)packCours.encycloIndex.splice(idx,1);
+            if(packCours.encyclo)delete packCours.encyclo[item.id];
+            saveToStorage();buildItems();
           });
-          div.appendChild(badge);div.appendChild(nameEl);div.appendChild(renBtn);
+          div.appendChild(badge);div.appendChild(nameEl);div.appendChild(delBtn);
           itemsWrap.appendChild(div);
         } else {
           const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
@@ -4367,10 +4381,10 @@ function openPresetModal(cfg){
             if(!packCours.encycloIndex)packCours.encycloIndex=[];
             if(packCours.encycloIndex.some(e=>e.id===id)||ENCYCLO_MISC.some(m=>m.id===id)){showToast('Clé "'+id+'" déjà utilisée — choisissez un autre titre','error');return;}
             const tplKey=tplSel.value;
-            const sections=JSON.parse(JSON.stringify(ENCYCLO_TEMPLATES[tplKey]||ENCYCLO_TEMPLATES.vide));
+            const tpl=JSON.parse(JSON.stringify(ENCYCLO_TEMPLATES[tplKey]||ENCYCLO_TEMPLATES.vide));
             packCours.encycloIndex.push({id,nom,category:catSel.value,source:authProfile?.role==='mx'?'school':'teacher'});
             if(!packCours.encyclo)packCours.encyclo={};
-            packCours.encyclo[id]={titre:nom,sections};
+            packCours.encyclo[id]={titre:nom,chapo:tpl.chapo||'',sections:tpl.sections};
             saveToStorage();cfg.onSelect(id);_closeOverlay();
           };
           okBtn.addEventListener('click',doCreate);
@@ -6481,29 +6495,19 @@ function renderEncyclo(key){
     const sepTb=document.createElement('span');sepTb.style.cssText='flex:1';tb.appendChild(sepTb);
 
     if(isNewFormat){
-      // Nouveau format : renommer section courante + supprimer section courante
-      const renTb=document.createElement('button');renTb.className='enc-tb-btn';renTb.textContent='✎ Renommer';renTb.title='Renommer la section';
-      renTb.addEventListener('mousedown',e=>{
+      const addSecTb=document.createElement('button');addSecTb.className='enc-tb-btn';addSecTb.textContent='＋ Section';addSecTb.title='Ajouter une section';
+      addSecTb.addEventListener('mousedown',e=>{
         e.preventDefault();
         ensureEnc();
+        if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
+        const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
         const secs=packCours.encyclo[key].sections;
-        if(!secs||!secs[_focusedSecIdx])return;
-        const newTitre=prompt('Nouveau titre de la section :',secs[_focusedSecIdx].titre);
-        if(newTitre?.trim()){secs[_focusedSecIdx].titre=newTitre.trim();encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);}
-      });
-      tb.appendChild(renTb);
-      const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Section';delTb.title='Supprimer cette section';
-      delTb.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        ensureEnc();
-        const secs=packCours.encyclo[key].sections;
-        if(!secs||secs.length<=1)return;
-        if(!confirm('Supprimer la section "'+secs[_focusedSecIdx].titre+'" ?'))return;
-        secs.splice(_focusedSecIdx,1);
-        _focusedSecIdx=Math.max(0,_focusedSecIdx-1);
+        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx+1:secs.length;
+        secs.splice(insertAt,0,newSec);
+        _focusedSecIdx=insertAt;
         encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
       });
-      tb.appendChild(delTb);
+      tb.appendChild(addSecTb);
     } else {
       // Format héritage : ＋ Note et − Suppr.
       const addTb=document.createElement('button');addTb.className='enc-tb-btn';addTb.textContent='＋ Section';addTb.title='Ajouter une section';
@@ -6557,69 +6561,82 @@ function renderEncyclo(key){
     tb.classList.add('visible');
   }
 
-  // ── Nouveau format : tabs ────────────────────────────────────────────────
+  // ── Nouveau format : sections linéaires ──────────────────────────────────
   if(isNewFormat){
     const sections=entry.sections;
-    const tabsRow=document.createElement('div');tabsRow.className='enc-tabs-row';
-    const secContent=document.createElement('div');secContent.className='enc-sec-content';
+    // Chapo
+    const chapoEl=document.createElement('p');chapoEl.className='encyclo-chapo';
+    if(isEditable){
+      chapoEl.contentEditable='true';
+      chapoEl.textContent=entry.chapo||'';
+      chapoEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
+      chapoEl.addEventListener('focus',()=>{chapoEl.dataset.orig=chapoEl.textContent;body._encShowToolbar?.();});
+      chapoEl.addEventListener('blur',()=>{ensureEnc();const v=(chapoEl.innerText||'').replace(/\n+$/,'');packCours.encyclo[key].chapo=v;if(v!==chapoEl.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
+    } else {
+      if(entry.chapo){chapoEl.innerHTML=parseMarkdown(entry.chapo);_attachLinks(chapoEl);}
+    }
+    if(entry.chapo||isEditable)body.appendChild(chapoEl);
 
-    const renderTabContent=(secIdx)=>{
-      secContent.innerHTML='';
-      const sec=sections[secIdx];if(!sec)return;
+    // Sections
+    sections.forEach((sec,i)=>{
+      const secDiv=document.createElement('div');secDiv.className='enc-section';
+      const hdr=document.createElement('div');hdr.className='enc-sec-hdr';
+      const titrEl=document.createElement('span');titrEl.className='enc-sec-titre';
       if(isEditable){
-        const contentEl=document.createElement('div');contentEl.className='enc-section-body';
-        contentEl.contentEditable='true';contentEl.innerText=sec.contenu||'';
-        contentEl.addEventListener('focus',()=>{_focusedSecIdx=secIdx;body._encShowToolbar?.();});
-        contentEl.addEventListener('blur',()=>{
+        titrEl.contentEditable='true';titrEl.textContent=sec.titre;
+        titrEl.addEventListener('focus',()=>{_focusedSecIdx=i;});
+        titrEl.addEventListener('blur',()=>{ensureEnc();const v=(titrEl.innerText||'').trim()||sec.titre;if(packCours.encyclo[key]?.sections?.[i])packCours.encyclo[key].sections[i].titre=v;if(v!==sec.titre){encycloDir=true;updateEncycloSaveBtn();}});
+      } else {
+        titrEl.textContent=sec.titre;
+      }
+      hdr.appendChild(titrEl);
+      if(isEditable){
+        const delBtn=document.createElement('button');delBtn.className='enc-sec-del';delBtn.textContent='🗑';delBtn.title='Supprimer cette section';
+        delBtn.addEventListener('mousedown',e=>{
+          e.preventDefault();
+          if(!confirm('Supprimer la section "'+sec.titre+'" ?'))return;
           ensureEnc();
-          const newVal=(contentEl.innerText||'').replace(/\n+$/,'');
-          if(packCours.encyclo[key]?.sections?.[secIdx]!==undefined)
-            packCours.encyclo[key].sections[secIdx].contenu=newVal;
+          packCours.encyclo[key].sections.splice(i,1);
+          _focusedSecIdx=Math.max(0,i-1);
+          encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+        });
+        hdr.appendChild(delBtn);
+      }
+      secDiv.appendChild(hdr);
+      const bodyEl=document.createElement('div');bodyEl.className=isEditable?'enc-sec-body-edit':'enc-section-body';
+      if(isEditable){
+        bodyEl.contentEditable='true';bodyEl.innerText=sec.contenu||'';
+        bodyEl.addEventListener('focus',()=>{_focusedSecIdx=i;body._encShowToolbar?.();});
+        bodyEl.addEventListener('blur',()=>{
+          ensureEnc();
+          const newVal=(bodyEl.innerText||'').replace(/\n+$/,'');
+          if(packCours.encyclo[key]?.sections?.[i]!==undefined)packCours.encyclo[key].sections[i].contenu=newVal;
           if(newVal!==sec.contenu){encycloDir=true;updateEncycloSaveBtn();}
           body._encHideToolbar?.();
         });
-        secContent.appendChild(contentEl);
-        if(secIdx===_focusedSecIdx)requestAnimationFrame(()=>contentEl.focus());
       } else {
-        const div=document.createElement('div');div.className='enc-section-body';
-        div.innerHTML=parseMarkdown(sec.contenu||'');
-        _attachLinks(div);
-        secContent.appendChild(div);
+        bodyEl.innerHTML=parseMarkdown(sec.contenu||'');
+        _attachLinks(bodyEl);
       }
-    };
-
-    const activateTab=(idx)=>{
-      _focusedSecIdx=idx;
-      tabsRow.querySelectorAll('.enc-tab').forEach((t,ti)=>t.classList.toggle('active',ti===idx));
-      renderTabContent(idx);
-    };
-
-    sections.forEach((sec,i)=>{
-      const tab=document.createElement('button');tab.className='enc-tab'+(i===_focusedSecIdx?' active':'');
-      tab.textContent=sec.titre;
-      tab.addEventListener('click',()=>activateTab(i));
-      tabsRow.appendChild(tab);
+      secDiv.appendChild(bodyEl);
+      body.appendChild(secDiv);
+      if(isEditable&&i===_focusedSecIdx)requestAnimationFrame(()=>bodyEl.focus());
     });
 
     if(isEditable){
-      const addTab=document.createElement('button');addTab.className='enc-tab enc-tab-add';addTab.textContent='＋';addTab.title='Ajouter une section';
-      addTab.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        const titre=prompt('Titre de la nouvelle section :');if(!titre?.trim())return;
+      const addBtn=document.createElement('button');addBtn.className='enc-add-bullet enc-add-section-btn';addBtn.textContent='＋ Section';
+      addBtn.addEventListener('click',()=>{
         ensureEnc();
-        if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=sections;
-        const newSec={id:'sec_'+Date.now(),titre:titre.trim(),contenu:''};
-        const insertAt=_focusedSecIdx+1;
-        packCours.encyclo[key].sections.splice(insertAt,0,newSec);
+        if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
+        const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
+        const secs=packCours.encyclo[key].sections;
+        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx+1:secs.length;
+        secs.splice(insertAt,0,newSec);
         _focusedSecIdx=insertAt;
         encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
       });
-      tabsRow.appendChild(addTab);
+      body.appendChild(addBtn);
     }
-
-    body.appendChild(tabsRow);
-    body.appendChild(secContent);
-    renderTabContent(_focusedSecIdx);
     return;
   }
 
