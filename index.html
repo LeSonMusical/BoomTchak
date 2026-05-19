@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.23</span>
+      <span class="app-version">v3.14.22</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5385,7 +5385,7 @@ function pspDoOverwritePattern(){
     // Mettre à jour la référence dans state et groove
     state[li].patternId = fork.id;
     const groove = getGroove(currentGrooveId);
-    if(groove && groove.layers[li]){ groove.layers[li].patternId = fork.id; delete groove.layers[li].sequence; }
+    if(groove && groove.layers[li]) groove.layers[li].patternId = fork.id;
     saveToStorage(); setLayerDirty(li, false);
     buildLayers();
     refreshMenuBtnStates(); buildPublishSection();
@@ -5400,10 +5400,7 @@ function pspDoOverwritePattern(){
     srcPat.sequence = currentSeq;
     srcPat.familles = [...savedFamIds];
     markItemDirty(srcPat, 'sequence');
-    const _gp = getGroove(currentGrooveId);
-    if(_gp && _gp.layers[li]) delete _gp.layers[li].sequence;
     saveToStorage(); setLayerDirty(li,false);
-    buildLayers();
     if(btn)flashSave(btn); closePatSavePop();
     buildPublishSection();
   };
@@ -5444,7 +5441,7 @@ function pspDoSaveNewPattern(){
   else packCours.patterns.push(newPat);
 
   const groove = getGroove(currentGrooveId);
-  if(groove && groove.layers[li]){ groove.layers[li].patternId = newPat.id; delete groove.layers[li].sequence; }
+  if(groove && groove.layers[li]) groove.layers[li].patternId = newPat.id;
   state[li].patternId = newPat.id;
 
   saveToStorage(); setLayerDirty(li,false);
