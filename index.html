@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.20</span>
+      <span class="app-version">v3.14.21</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -7250,8 +7250,8 @@ function drawLinear(){
   // dotR basé sur l'unité la plus petite
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
-  // half = DENOM/2 : décalage pour aligner les marqueurs sur le CENTRE des steps
-  // (cohérent avec l'aiguille qui utilise cycElU+DENOM/2, et les dots à uPos+s/2)
+  // half = DENOM/2 : décalage universel pour aligner marqueurs ET dots sur la grille de base
+  // (aiguille : cycElU+DENOM/2 ; dots : uPos+DENOM/2 — indépendant de la vitesse du layer)
   const half=DENOM/2;
   // Lignes de temps (beats) — légères, entre les séparateurs de mesure
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
@@ -7293,7 +7293,7 @@ function drawLinear(){
     for(let rep=0;rep<numReps;rep++){
       for(let si=0;si<n;si++){
         const uPos=(si+rep*n)*s; if(uPos>=dispU) break;
-        const x=marginX+uW*(uPos+s/2);
+        const x=marginX+uW*(uPos+DENOM/2);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
         if(isOn){
           ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
@@ -7335,7 +7335,7 @@ function drawLinear(){
       if(state[li].pattern[curSi]==='.') return; // silence : pas d'anneau
       const uPos=(curRep*n+curSi)*su[li];
       if(uPos>=dispU) return;
-      const x=marginX+uW*(uPos+su[li]/2);
+      const x=marginX+uW*(uPos+DENOM/2);
       ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
       ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
     });
@@ -7372,7 +7372,7 @@ function circleHitTest(x, y){
       for(let rep=0;rep<numReps;rep++){
         for(let si=0;si<n;si++){
           const uPos=(si+rep*n)*suL[li]; if(uPos>=dispU) break;
-          const sx=marginX+uW*(uPos+suL[li]/2);
+          const sx=marginX+uW*(uPos+3);
           if(Math.hypot(x-sx,y-layY)<=dotR+5) return{li,si};
         }
       }
