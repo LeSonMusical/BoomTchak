@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.18</span>
+      <span class="app-version">v3.14.19</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2658,9 +2658,19 @@ function scheduler(){
           });
           updateGlobalSpeedBtns();
         }
-        if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
-        if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
-        if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
+        if(state[li].pendingClear||state[li].pendingHalf||state[li].pendingDouble){
+          // Calcul totalU avant/après pour recalibrer l'aiguille vue linéaire (évite saut visuel)
+          const _calcTU=()=>{let u=0;LAYERS.forEach((_,lj)=>{if(state[lj].pattern.length>0){const m=state[lj].doubleOn?2:state[lj].halfOn?0.5:1,tf=state[lj].ternOn?2/3:1,s=Math.round(6*tf/m);const c=state[lj].pattern.length*s;u=u>0?lcm(u,c):c;}});return u;};
+          const _oldTU=_calcTU();
+          if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
+          if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
+          if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
+          const _newTU=_calcTU();
+          if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
+            const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
+            if(_bspm>0){const _bss=60/_bspm;const _t0=state[li].nextStepTime;const _elU=(_t0-linearCycleStartTime)/_bss*6;const _k=Math.round(_elU/_newTU);linearCycleStartTime=_t0-_k*_newTU/6*_bss;}
+          }
+        }
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
         if(recLayers.includes(li)&&state[li].recording&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
           state[li].prevPattern=[...state[li].pattern]; // garde la prise précédente pour ↺ Reprendre
@@ -5345,6 +5355,7 @@ function pspDoSaveNew(){
 
 function pspDoOverwritePattern(){
   const li = _pspLi; const btn = _pspBtn;
+  const savedFamIds = [..._pspNewFamIds]; // sauvegarde avant closePatSavePop qui vide _pspNewFamIds
   const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
   if(!srcPat){ closePatSavePop(); return; }
   const currentSeq = state[li].pattern.join('');
@@ -5355,7 +5366,7 @@ function pspDoOverwritePattern(){
     const fork = txForkItem('pattern', srcPat);
     fork.sequence = currentSeq;
     fork.pas = state[li].pattern.length;
-    fork.familles = [..._pspNewFamIds];
+    fork.familles = [...savedFamIds];
     fork.localChangedFields = ['sequence'];
     // Mettre à jour la référence dans state et groove
     state[li].patternId = fork.id;
@@ -5373,6 +5384,7 @@ function pspDoOverwritePattern(){
 
   const persist = ()=>{
     srcPat.sequence = currentSeq;
+    srcPat.familles = [...savedFamIds];
     markItemDirty(srcPat, 'sequence');
     saveToStorage(); setLayerDirty(li,false);
     if(btn)flashSave(btn); closePatSavePop();
@@ -5460,6 +5472,7 @@ function openGrooveSavePop(btn){
 
 function pspDoOverwriteGroove(){
   const btn = _pspBtn;
+  const savedFamIds = [..._pspNewFamIds]; // sauvegarde avant closePatSavePop qui vide _pspNewFamIds
   const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
 
   // TX écrase un groove école → fork implicite (source:'teacher', soumettable)
@@ -5478,13 +5491,13 @@ function pspDoOverwriteGroove(){
       fork.layers[li].ternOn=state[li].ternOn||false;
       fork.layers[li].shift=state[li].shiftN||0;
     });
-    fork.familles=[..._pspNewFamIds];
+    fork.familles=[...savedFamIds];
     const bpmVal=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
     if(bpmVal>0){if(!fork.tempo)fork.tempo={};fork.tempo.defaut=bpmVal;}
     currentGrooveId=fork.id;
     grooveDirty=false; updateGrooveSaveBtn();
     saveToStorage(); buildLibListGrooves(); buildPublishSection();
-    buildGrooveSection();
+    buildGrooveSection(); buildLayers();
     showToast('Modification sauvegardée — soumettez-la via ···','info');
     if(btn)flashSave(btn);
     return;
@@ -5492,8 +5505,9 @@ function pspDoOverwriteGroove(){
 
   closePatSavePop();
   saveGroove();
-  groove.familles = [..._pspNewFamIds];
+  groove.familles = [...savedFamIds];
   markItemDirty(groove, 'layers');
+  buildLayers();
   grooveDirty = false; updateGrooveSaveBtn();
   saveToStorage(); buildPublishSection();
   if(btn) flashSave(btn);
@@ -7236,6 +7250,17 @@ function drawLinear(){
   // dotR basé sur l'unité la plus petite
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
+  // Lignes de temps (beats) — légères, entre les séparateurs de mesure
+  const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
+  if(beatU<measU&&beatU>0){
+    const numBeats=Math.ceil(dispU/beatU);
+    for(let b=1;b<numBeats;b++){
+      if(b*beatU%measU===0)continue; // mesure déjà dessinée
+      const x=marginX+uW*b*beatU; if(x>W-marginX+2)break;
+      ctx.beginPath();ctx.moveTo(x,marginY-2);ctx.lineTo(x,H-marginY+2);
+      ctx.strokeStyle=isDark?'#373533':'#e0dcd4';ctx.lineWidth=0.5;ctx.stroke();
+    }
+  }
   // Séparateurs de mesures
   for(let m=0;m<=numMeasures;m++){
     const x=marginX+uW*m*measU; if(x>W-marginX+2) break;
