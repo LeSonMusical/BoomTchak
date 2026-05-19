@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.23</span>
+      <span class="app-version">v3.14.24</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -5590,8 +5590,20 @@ function openMetroSavePop(btn){
   _pspNewFamIds = s.familles_ids ? [...s.familles_ids] : (s.famille ? [s.famille] : []);
   buildPspFamTags(); buildPspFamSel();
 
-  document.getElementById('psp-new-form').classList.add('hidden');
-  document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau preset ▶';
+  if(!canOverwrite){
+    // Signature _custom ou pas de preset existant → proposer directement "Nouveau"
+    ovBtn.style.display = 'none';
+    document.getElementById('psp-new-form').classList.remove('hidden');
+    document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau preset ▼';
+    _pspOverwriteFamIds = [..._pspNewFamIds];
+    _pspNewFamIds = [];
+    buildPspFamTags(); buildPspFamSel();
+    setTimeout(()=>document.getElementById('psp-name-input').focus(), 50);
+  } else {
+    ovBtn.style.display = '';
+    document.getElementById('psp-new-form').classList.add('hidden');
+    document.getElementById('psp-new-toggle').textContent = '＋ Sauvegarder comme nouveau preset ▶';
+  }
 
   document.getElementById('psp-overlay').classList.remove('hidden');
   box.classList.remove('hidden');
@@ -5600,7 +5612,8 @@ function openMetroSavePop(btn){
 function pspDoOverwriteMetro(){
   const btn = _pspBtn;
   const s = currentSig;
-  if(!s?.id || s.id === '_custom'){ closePatSavePop(); return; }
+  // Si la signature est _custom (structure modifiée), rediriger vers "sauvegarder comme nouveau"
+  if(!s?.id || s.id === '_custom'){ pspDoSaveNewMetro(); return; }
   const label = document.getElementById('psp-name-input').value.trim() || s.label || s.id;
   const isMX = authProfile?.role === 'mx';
   if(!packCours.metroPresets) packCours.metroPresets = [];
@@ -5611,6 +5624,9 @@ function pspDoOverwriteMetro(){
   }
   if(pci >= 0){
     packCours.metroPresets[pci].label = label;
+    packCours.metroPresets[pci].nbDivisions = s.nbDivisions || 4;
+    packCours.metroPresets[pci].beatUnit = s.beatUnit || 4;
+    packCours.metroPresets[pci].subdivision = s.subdivision || 1;
     packCours.metroPresets[pci].metroPattern = [...(s.metroPattern||[])];
     packCours.metroPresets[pci].equivalence = s.equivalence || 2;
     packCours.metroPresets[pci].familles_ids = [..._pspNewFamIds];
