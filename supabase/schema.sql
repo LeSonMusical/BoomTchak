@@ -85,13 +85,18 @@ create table public.grooves (
 -- ── Encyclopédie ─────────────────────────────────────────────────────────────
 create table public.encyclo (
   key         text primary key,
+  titre       text default '',
   chapo       text default '',
   bullets     jsonb default '[]',
+  sections    jsonb default '[]',
   scope       text not null default 'school' check (scope in ('school','teacher')),
   approved    boolean default true,
   owner_id    uuid references public.profiles(id) on delete cascade,
   updated_at  timestamptz default now()
 );
+-- Migration v3.14.16 (à exécuter si la table existe déjà) :
+-- ALTER TABLE public.encyclo ADD COLUMN IF NOT EXISTS titre text DEFAULT '';
+-- ALTER TABLE public.encyclo ADD COLUMN IF NOT EXISTS sections jsonb DEFAULT '[]'::jsonb;
 
 -- ── Parcours (phase suivante) ─────────────────────────────────────────────────
 create table public.parcours (

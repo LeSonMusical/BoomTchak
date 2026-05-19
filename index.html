@@ -412,6 +412,19 @@ body.dark-mode .enc-lp-item:hover{background:#2a3820}
 .enc-related-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:3px}
 .enc-related-list li{font-size:11px}
 body.dark-mode .enc-related{border-top-color:#333}
+/* Tabs sections (nouveau format) */
+.enc-tabs-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;border-bottom:2px solid #e8e5e0;padding-bottom:4px}
+.enc-tab{font-size:10px;padding:2px 9px;border:1px solid #c8c4be;border-radius:4px 4px 0 0;background:#f5f3f0;color:#666;cursor:pointer;font-family:inherit;line-height:1.6;margin-bottom:-2px;border-bottom-color:#e8e5e0}
+.enc-tab.active{background:#fff;color:#1a1a18;font-weight:600;border-bottom-color:#fff;border-color:#c8c4be}
+.enc-tab-add{background:none;border-style:dashed;color:#aaa;font-size:12px;padding:1px 7px}
+.enc-tab-add:hover{color:#4a6d40;border-color:#4a6d40}
+.enc-sec-content{min-height:60px}
+.enc-section-body{font-size:12px;line-height:1.65;color:#2a2a28;white-space:pre-line}
+.enc-section-body[contenteditable]{white-space:pre-wrap;outline:none;min-height:40px}
+body.dark-mode .enc-tabs-row{border-bottom-color:#333}
+body.dark-mode .enc-tab{background:#1e1e1c;color:#888;border-color:#444;border-bottom-color:#333}
+body.dark-mode .enc-tab.active{background:#2a2926;color:#c8c4be;border-bottom-color:#2a2926;border-color:#555}
+body.dark-mode .enc-section-body{color:#c0bdb7}
 
 /* ─── BOTTOM BAR ─── */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #d0cec7;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
@@ -1107,7 +1120,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.15</span>
+      <span class="app-version">v3.14.16</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1722,7 +1735,36 @@ const ENCYCLO_CATS=[
   {id:'concepts', label:'Concepts'},
   {id:'groove',   label:'Grooves'},
   {id:'pattern',  label:'Patterns'},
+  {id:'band',     label:'Bands'},
+  {id:'son',      label:'Sons'},
+  {id:'metro',    label:'Métronomes'},
 ];
+
+// Templates sections pour nouveaux articles
+const ENCYCLO_TEMPLATES={
+  concept:[
+    {id:'en-bref',         titre:'En bref',                         contenu:''},
+    {id:'en-theorie',      titre:'En théorie',                      contenu:''},
+    {id:'en-pratique',     titre:'En pratique',                     contenu:''},
+    {id:'dans-boomtchak',  titre:'Dans BoomTchak',                  contenu:''},
+    {id:'plus-loin',       titre:'Pour aller plus loin',            contenu:''},
+    {id:'culture',         titre:'Histoire / Culture / Écriture',   contenu:''},
+    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
+  ],
+  groove:[
+    {id:'origine',         titre:'Origine',                         contenu:''},
+    {id:'ecriture',        titre:'Écriture',                        contenu:''},
+    {id:'logique',         titre:'Logique',                         contenu:''},
+    {id:'sensation',       titre:'Sensation',                       contenu:''},
+    {id:'utilisation',     titre:'Utilisation',                     contenu:''},
+    {id:'relations',       titre:'Relations',                       contenu:''},
+    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
+  ],
+  vide:[
+    {id:'contenu',         titre:'Contenu',                         contenu:''},
+    {id:'voir-aussi',      titre:'Voir aussi',                      contenu:''},
+  ],
+};
 
 // Entrées misc de l'encyclopédie (ni groove ni pattern)
 const ENCYCLO_MISC=[
@@ -3389,7 +3431,7 @@ function openPresetModal(cfg){
     // Exposer _addLongPress pour buildItems
     sheet._addLongPress=_addLongPress;
   }
-  // Encyclopédie : bouton recherche seul (pas de gérer/réordonner)
+  // Encyclopédie : bouton gérer + recherche
   if(cfg.type==='encyclo'){
     const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
     searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
@@ -3399,8 +3441,14 @@ function openPresetModal(cfg){
       modeSearch.classList.toggle('active',open);
       if(open)searchInp.focus();else{searchInp.value='';searchQuery='';buildItems();}
     });
+    const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
+    modeManage.addEventListener('click',()=>{
+      manageMode=!manageMode;
+      modeManage.classList.toggle('active',manageMode);
+      buildFamCol();buildItems();
+    });
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
     hdr.insertBefore(modeGroup,hclose);
   }
 
@@ -3447,6 +3495,9 @@ function openPresetModal(cfg){
       const showMisc=cat==='all'||cat==='appli'||cat==='concepts';
       const showG=cat==='all'||cat==='groove';
       const showP=cat==='all'||cat==='pattern';
+      const showB=cat==='all'||cat==='band';
+      const showS=cat==='all'||cat==='son';
+      const showM=cat==='all'||cat==='metro';
       let items=[];
       if(showMisc)
         ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
@@ -3463,6 +3514,19 @@ function openPresetModal(cfg){
         packCours.patterns
           .filter(p=>encFamFilter==='all'||(p.familles||[]).includes(encFamFilter))
           .forEach(p=>{const key=p.encyclo_ref||p.id;items.push({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
+      if(showB)
+        (packCours.bands||[])
+          .filter(b=>!b.localDeletePending)
+          .filter(b=>encFamFilter==='all'||(b.familles||[]).includes(encFamFilter))
+          .forEach(b=>items.push({id:b.id,nom:b.nom,typeBadge:'B',hasC:hasEncycloContent(b.id)}));
+      if(showS)
+        (packCours.soundPresets||[])
+          .filter(sp=>encFamFilter==='all'||(sp.familles_ids||[]).includes(encFamFilter))
+          .forEach(sp=>items.push({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
+      if(showM)
+        metroPresets
+          .filter(p=>encFamFilter==='all'||(p.familles_ids||[]).includes(encFamFilter))
+          .forEach(p=>items.push({id:p.id,nom:p.label||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
       if(searchQuery){const q=searchQuery.toLowerCase();items=items.filter(i=>i.nom.toLowerCase().includes(q));}
       return items;
     }
@@ -3964,20 +4028,27 @@ function openPresetModal(cfg){
         }
         famCol.appendChild(b);
       });
-      // Encyclopédie : filtre famille secondaire (grooves/patterns)
-      if(cfg.type==='encyclo'&&(famFilter==='all'||famFilter==='groove'||famFilter==='pattern')){
-        const sep=document.createElement('div');sep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:6px 0 2px';
-        famCol.appendChild(sep);
-        const famSel=document.createElement('select');
-        famSel.style.cssText='font-size:9px;width:100%;padding:2px 4px;border-radius:4px;border:1px solid #ccc;background:#fff;margin-top:2px';
-        famSel.innerHTML='<option value="all">— Toutes familles —</option>';
-        (packCours.familles||[]).forEach(f=>{
-          const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;
-          if(encFamFilter===f.id)o.selected=true;
-          famSel.appendChild(o);
-        });
-        famSel.addEventListener('change',()=>{encFamFilter=famSel.value;buildItems();});
-        famCol.appendChild(famSel);
+      // Encyclopédie : filtre famille secondaire (grooves/patterns/band/son/metro)
+      if(cfg.type==='encyclo'){
+        let subFams=null;
+        if(famFilter==='all'||famFilter==='groove'||famFilter==='pattern') subFams=packCours.familles||[];
+        else if(famFilter==='band') subFams=packCours.bandFamilles||[];
+        else if(famFilter==='son')  subFams=packCours.soundFamilles||[];
+        else if(famFilter==='metro') subFams=getMetroFamilles();
+        if(subFams&&subFams.length>0){
+          const sep=document.createElement('div');sep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:6px 0 2px';
+          famCol.appendChild(sep);
+          const famSel=document.createElement('select');
+          famSel.style.cssText='font-size:9px;width:100%;padding:2px 4px;border-radius:4px;border:1px solid #ccc;background:#fff;margin-top:2px';
+          famSel.innerHTML='<option value="all">— Toutes familles —</option>';
+          subFams.forEach(f=>{
+            const o=document.createElement('option');o.value=f.id;o.textContent=f.nom;
+            if(encFamFilter===f.id)o.selected=true;
+            famSel.appendChild(o);
+          });
+          famSel.addEventListener('change',()=>{encFamFilter=famSel.value;buildItems();});
+          famCol.appendChild(famSel);
+        }
       }
     }
   }
@@ -4213,41 +4284,75 @@ function openPresetModal(cfg){
     // Encyclopédie : navigation par catégorie
     if(cfg.type==='encyclo'){
       const items=getFilteredItems();
-      const bdgStyle={'G':'background:#faf3e0;color:#8B6914','P':'background:#f0f5ff;color:#2d5f80','M':'background:#f5f4f0;color:#666','✎':'background:#f0f5ee;color:#4a6d40'};
-      if(!items.length&&!(currentMode==='tx'||authProfile?.role==='mx')){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucune entrée';itemsWrap.appendChild(e);return;}
+      const bdgStyle={'G':'background:#faf3e0;color:#8B6914','P':'background:#f0f5ff;color:#2d5f80','M':'background:#f5f4f0;color:#666','✎':'background:#f0f5ee;color:#4a6d40','B':'background:#f5f0ff;color:#6040a0','S':'background:#fff0f5;color:#a04060','♩':'background:#f0f8f0;color:#2a7a40'};
+      if(!items.length&&!manageMode&&!(currentMode==='tx'||authProfile?.role==='mx')){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucune entrée';itemsWrap.appendChild(e);return;}
       items.forEach(item=>{
-        const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left';
-        const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
-        const nameEl=document.createElement('span');nameEl.style.cssText='flex:1;opacity:'+(item.hasC?'1':'.45');nameEl.textContent=item.nom;
-        const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
-        row.appendChild(badge);row.appendChild(nameEl);row.appendChild(dot);
-        row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-        itemsWrap.appendChild(row);
+        if(manageMode&&item.typeBadge==='✎'){
+          // Mode gérer : renommer les articles custom uniquement
+          const div=document.createElement('div');div.className='pm-item pm-manage';div.style.cssText='display:flex;align-items:center;gap:6px';
+          const badge=document.createElement('span');badge.style.cssText=(bdgStyle['✎'])+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent='✎';
+          const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.style.cssText='flex:1;font-size:11px';nameEl.textContent=item.nom;
+          const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
+          renBtn.addEventListener('click',e=>{
+            e.stopPropagation();
+            nameEl.contentEditable='true';nameEl.focus();
+            const r=document.createRange();r.selectNodeContents(nameEl);const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+            nameEl.dataset.orig=nameEl.textContent;
+            const commit=()=>{
+              nameEl.contentEditable='false';
+              const newNom=nameEl.textContent.trim();
+              if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
+              if(newNom===nameEl.dataset.orig)return;
+              const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);
+              if(idx>=0){packCours.encycloIndex[idx].nom=newNom;}
+              if(packCours.encyclo?.[item.id]){packCours.encyclo[item.id].titre=newNom;}
+              saveToStorage();buildEncycloSection();
+            };
+            nameEl.addEventListener('blur',commit,{once:true});
+            nameEl.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();nameEl.blur();}if(ev.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
+          });
+          div.appendChild(badge);div.appendChild(nameEl);div.appendChild(renBtn);
+          itemsWrap.appendChild(div);
+        } else {
+          const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+          row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left';
+          const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
+          const nameEl=document.createElement('span');nameEl.style.cssText='flex:1;opacity:'+(item.hasC?'1':'.45');nameEl.textContent=item.nom;
+          const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
+          row.appendChild(badge);row.appendChild(nameEl);row.appendChild(dot);
+          row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+          itemsWrap.appendChild(row);
+        }
       });
-      // Bouton Créer article (TX + MX uniquement)
+      // Bouton Créer article (TX + MX — visible en mode gérer ou toujours en mode normal)
       if(currentMode==='tx'||authProfile?.role==='mx'){
         const createRow=document.createElement('button');createRow.className='pm-item pm-item-new';createRow.textContent='＋ Nouvel article';
         createRow.addEventListener('click',()=>{
           itemsWrap.innerHTML='';
+          const sel=t=>Object.assign(document.createElement('select'),{style:'font-size:11px;padding:3px 6px;border:1px solid #c0bdb7;border-radius:4px'});
           const form=document.createElement('div');form.style.cssText='padding:12px;display:flex;flex-direction:column;gap:8px';
           const nomInp=document.createElement('input');nomInp.placeholder='Titre de l\'article';nomInp.style.cssText='font-size:12px;padding:5px 8px;border:1px solid #c0bdb7;border-radius:4px;outline:none';
-          const catSel=document.createElement('select');catSel.style.cssText='font-size:11px;padding:3px 6px;border:1px solid #c0bdb7;border-radius:4px';
+          const catSel=sel();
           ENCYCLO_CATS.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.label;if(c.id===famFilter&&famFilter!=='all')o.selected=true;catSel.appendChild(o);});
+          const tplSel=sel();
+          [{v:'concept',l:'Concept (En bref / Théorie / Pratique…)'},{v:'groove',l:'Groove/Pattern (Origine / Écriture…)'},{v:'vide',l:'Vide'}]
+            .forEach(({v,l})=>{const o=document.createElement('option');o.value=v;o.textContent=l;tplSel.appendChild(o);});
           const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
           const okBtn=document.createElement('button');okBtn.textContent='Créer';okBtn.style.cssText='font-size:11px;padding:3px 10px;border:1px solid #4a6d40;border-radius:4px;background:#4a6d40;color:#fff;cursor:pointer';
           const cancelBtn=document.createElement('button');cancelBtn.textContent='Annuler';cancelBtn.style.cssText='font-size:11px;padding:3px 10px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;cursor:pointer';
           btns.appendChild(okBtn);btns.appendChild(cancelBtn);
-          form.appendChild(nomInp);form.appendChild(catSel);form.appendChild(btns);
+          form.appendChild(nomInp);form.appendChild(catSel);form.appendChild(tplSel);form.appendChild(btns);
           itemsWrap.appendChild(form);nomInp.focus();
           const doCreate=()=>{
             const nom=nomInp.value.trim();if(!nom)return;
             const id='enc_'+nom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
             if(!packCours.encycloIndex)packCours.encycloIndex=[];
             if(packCours.encycloIndex.some(e=>e.id===id)||ENCYCLO_MISC.some(m=>m.id===id)){showToast('Clé "'+id+'" déjà utilisée — choisissez un autre titre','error');return;}
+            const tplKey=tplSel.value;
+            const sections=JSON.parse(JSON.stringify(ENCYCLO_TEMPLATES[tplKey]||ENCYCLO_TEMPLATES.vide));
             packCours.encycloIndex.push({id,nom,category:catSel.value,source:authProfile?.role==='mx'?'school':'teacher'});
             if(!packCours.encyclo)packCours.encyclo={};
-            packCours.encyclo[id]={chapo:'',bullets:[],related:[]};
+            packCours.encyclo[id]={titre:nom,sections};
             saveToStorage();cfg.onSelect(id);_closeOverlay();
           };
           okBtn.addEventListener('click',doCreate);
@@ -6291,12 +6396,16 @@ let _savedRange=null; // sauvegarde de sélection pour le picker lien
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
-  let _focusedBulletIdx=null; // section focalisée : null=chapo, ≥0=index bullet
+  let _focusedBulletIdx=null; // section focalisée (legacy: null=chapo, ≥0=bullet idx)
+  let _focusedSecIdx=0;       // section active dans le nouveau format tabs
   // Aperçu TX : afficher le contenu de la proposition sans modifier packCours
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
-  const entry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
+  const rawEntry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
   const isEditable = !isPreview && encEditMode && (currentMode==='tx' || authProfile?.role==='mx');
+  // Détecter le format : nouveau (sections[]) ou héritage (chapo+bullets)
+  const isNewFormat = rawEntry && Array.isArray(rawEntry.sections) && rawEntry.sections.length > 0;
+  const entry = rawEntry;
   if(!entry || (!isPreview && !isEditable && !hasEncycloContent(key))){
     const p=document.createElement('p');p.className='encyclo-vide';
     p.textContent=isEditable?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
@@ -6317,7 +6426,7 @@ function renderEncyclo(key){
     }));
   };
 
-  // Toolbar fixe en bas de l'écran (TX + MX) — au-dessus du clavier mobile
+  // ── Toolbar (TX + MX) ────────────────────────────────────────────────────
   const tb=document.getElementById('enc-floating-toolbar');
   if(!isEditable){
     if(tb){tb.classList.remove('visible');tb.innerHTML='';}
@@ -6332,7 +6441,6 @@ function renderEncyclo(key){
     mkTb('G','Gras',()=>wrapMdSelection(document.activeElement,'**'));
     mkTb('I','Italique',()=>wrapMdSelection(document.activeElement,'_'));
     mkTb('🔗','Lien interne',()=>{
-      // Sauvegarder sélection + élément actif avant que le modal prenne le focus
       const sel=window.getSelection();
       _savedRange=(sel&&sel.rangeCount)?sel.getRangeAt(0).cloneRange():null;
       const _savedEl=document.activeElement;
@@ -6348,37 +6456,60 @@ function renderEncyclo(key){
       });
     });
 
-    // Boutons ＋ note et − supprimer dans la toolbar
     const sepTb=document.createElement('span');sepTb.style.cssText='flex:1';tb.appendChild(sepTb);
-    const addTb=document.createElement('button');addTb.className='enc-tb-btn';addTb.textContent='＋ Note';addTb.title='Ajouter une note';
-    addTb.addEventListener('mousedown',e=>{
-      e.preventDefault();
-      ensureEnc();if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
-      const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:0;
-      packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
-      encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
-      // Auto-focus la nouvelle note : le focus handler de la nouvelle closure fixe _focusedBulletIdx
-      const newLi=body.querySelectorAll('.encyclo-bullets li')[insertIdx];
-      if(newLi){const kEl=newLi.querySelector('.encyclo-bkey');if(kEl&&kEl.isContentEditable){kEl.focus();const r=document.createRange();r.selectNodeContents(kEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}}
-    });
-    tb.appendChild(addTb);
-    const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Suppr.';delTb.title='Supprimer cette note';
-    delTb.addEventListener('mousedown',e=>{
-      e.preventDefault();
-      if(_focusedBulletIdx===null||_focusedBulletIdx<0)return;
-      ensureEnc();
-      packCours.encyclo[key].bullets.splice(_focusedBulletIdx,1);
-      encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
-    });
-    tb.appendChild(delTb);
 
-    // Nettoyer les anciens listeners VV si renderEncyclo est rappelé en cours d'édition
+    if(isNewFormat){
+      // Nouveau format : renommer section courante + supprimer section courante
+      const renTb=document.createElement('button');renTb.className='enc-tb-btn';renTb.textContent='✎ Renommer';renTb.title='Renommer la section';
+      renTb.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        ensureEnc();
+        const secs=packCours.encyclo[key].sections;
+        if(!secs||!secs[_focusedSecIdx])return;
+        const newTitre=prompt('Nouveau titre de la section :',secs[_focusedSecIdx].titre);
+        if(newTitre?.trim()){secs[_focusedSecIdx].titre=newTitre.trim();encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);}
+      });
+      tb.appendChild(renTb);
+      const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Section';delTb.title='Supprimer cette section';
+      delTb.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        ensureEnc();
+        const secs=packCours.encyclo[key].sections;
+        if(!secs||secs.length<=1)return;
+        if(!confirm('Supprimer la section "'+secs[_focusedSecIdx].titre+'" ?'))return;
+        secs.splice(_focusedSecIdx,1);
+        _focusedSecIdx=Math.max(0,_focusedSecIdx-1);
+        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+      });
+      tb.appendChild(delTb);
+    } else {
+      // Format héritage : ＋ Note et − Suppr.
+      const addTb=document.createElement('button');addTb.className='enc-tb-btn';addTb.textContent='＋ Note';addTb.title='Ajouter une note';
+      addTb.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        ensureEnc();if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
+        const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:0;
+        packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
+        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+        const newLi=body.querySelectorAll('.encyclo-bullets li')[insertIdx];
+        if(newLi){const kEl=newLi.querySelector('.encyclo-bkey');if(kEl&&kEl.isContentEditable){kEl.focus();const r=document.createRange();r.selectNodeContents(kEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}}
+      });
+      tb.appendChild(addTb);
+      const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Suppr.';delTb.title='Supprimer cette note';
+      delTb.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        if(_focusedBulletIdx===null||_focusedBulletIdx<0)return;
+        ensureEnc();
+        packCours.encyclo[key].bullets.splice(_focusedBulletIdx,1);
+        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+      });
+      tb.appendChild(delTb);
+    }
+
     if(tb._vvSync){
       window.visualViewport?.removeEventListener('resize',tb._vvSync);
       window.visualViewport?.removeEventListener('scroll',tb._vvSync);
     }
-    // Ancrer la toolbar au viewport visuel : compense le scroll du layout viewport
-    // quand le clavier OS apparaît (translateY = vv.offsetTop)
     const _vvSync=()=>{
       const vv=window.visualViewport;
       if(vv) tb.style.transform='translateY('+Math.round(vv.offsetTop)+'px)';
@@ -6404,15 +6535,81 @@ function renderEncyclo(key){
     tb.classList.add('visible');
   }
 
+  // ── Nouveau format : tabs ────────────────────────────────────────────────
+  if(isNewFormat){
+    const sections=entry.sections;
+    const tabsRow=document.createElement('div');tabsRow.className='enc-tabs-row';
+    const secContent=document.createElement('div');secContent.className='enc-sec-content';
+
+    const renderTabContent=(secIdx)=>{
+      secContent.innerHTML='';
+      const sec=sections[secIdx];if(!sec)return;
+      if(isEditable){
+        const contentEl=document.createElement('div');contentEl.className='enc-section-body';
+        contentEl.contentEditable='true';contentEl.textContent=sec.contenu;
+        contentEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
+        contentEl.addEventListener('focus',()=>{_focusedSecIdx=secIdx;body._encShowToolbar?.();});
+        contentEl.addEventListener('blur',()=>{
+          ensureEnc();
+          if(packCours.encyclo[key]?.sections?.[secIdx]!==undefined)
+            packCours.encyclo[key].sections[secIdx].contenu=contentEl.textContent;
+          if(contentEl.textContent!==sec.contenu){encycloDir=true;updateEncycloSaveBtn();}
+          body._encHideToolbar?.();
+        });
+        secContent.appendChild(contentEl);
+        if(secIdx===_focusedSecIdx)requestAnimationFrame(()=>contentEl.focus());
+      } else {
+        const div=document.createElement('div');div.className='enc-section-body';
+        div.innerHTML=parseMarkdown(sec.contenu||'');
+        _attachLinks(div);
+        secContent.appendChild(div);
+      }
+    };
+
+    const activateTab=(idx)=>{
+      _focusedSecIdx=idx;
+      tabsRow.querySelectorAll('.enc-tab').forEach((t,ti)=>t.classList.toggle('active',ti===idx));
+      renderTabContent(idx);
+    };
+
+    sections.forEach((sec,i)=>{
+      const tab=document.createElement('button');tab.className='enc-tab'+(i===_focusedSecIdx?' active':'');
+      tab.textContent=sec.titre;
+      tab.addEventListener('click',()=>activateTab(i));
+      tabsRow.appendChild(tab);
+    });
+
+    if(isEditable){
+      const addTab=document.createElement('button');addTab.className='enc-tab enc-tab-add';addTab.textContent='＋';addTab.title='Ajouter une section';
+      addTab.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        const titre=prompt('Titre de la nouvelle section :');if(!titre?.trim())return;
+        ensureEnc();
+        if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=sections;
+        const newSec={id:'sec_'+Date.now(),titre:titre.trim(),contenu:''};
+        packCours.encyclo[key].sections.push(newSec);
+        _focusedSecIdx=packCours.encyclo[key].sections.length-1;
+        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+      });
+      tabsRow.appendChild(addTab);
+    }
+
+    body.appendChild(tabsRow);
+    body.appendChild(secContent);
+    renderTabContent(_focusedSecIdx);
+    return;
+  }
+
+  // ── Format héritage : chapo + bullets ────────────────────────────────────
   const chapo=document.createElement('p');chapo.className='encyclo-chapo';
   if(isEditable){
     chapo.contentEditable='true';
-    chapo.textContent=entry.chapo;
+    chapo.textContent=entry.chapo||'';
     chapo.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
     chapo.addEventListener('focus',()=>{chapo.dataset.orig=chapo.textContent;_focusedBulletIdx=null;body._encShowToolbar?.();});
     chapo.addEventListener('blur',()=>{ensureEnc();packCours.encyclo[key].chapo=chapo.textContent;if(chapo.textContent!==chapo.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
   } else {
-    chapo.innerHTML=parseMarkdown(entry.chapo);
+    chapo.innerHTML=parseMarkdown(entry.chapo||'');
     _attachLinks(chapo);
   }
   body.appendChild(chapo);
@@ -6439,7 +6636,7 @@ function renderEncyclo(key){
   });
   body.appendChild(ul);
 
-  // ── Section « Voir aussi » (articles connexes) ────────────────────────────
+  // ── Section « Voir aussi » (format héritage) ──────────────────────────────
   const related=(entry.related||[]);
   if(related.length>0||isEditable){
     const vaDiv=document.createElement('div');vaDiv.className='enc-related';
@@ -7689,7 +7886,12 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
-    packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
+    // Nouveau format (sections[]) ou héritage (chapo+bullets)
+    if (Array.isArray(e.sections) && e.sections.length > 0) {
+      packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections };
+    } else {
+      packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
+    }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
   if (Array.isArray(mfRows) && mfRows.length > 0) {
@@ -8229,11 +8431,19 @@ async function sbSubmitEncycloTX(key) {
   const entry = packCours.encyclo?.[key];
   if (!entry) return false;
   const txKey = 'tx_' + authProfile.id + '_' + key;
+  const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ key: txKey, chapo: entry.chapo || '', bullets: entry.bullets || [], scope: 'teacher', approved: false, owner_id: authProfile.id }),
+      body: JSON.stringify({
+        key: txKey,
+        titre: entry.titre || '',
+        sections: isNewFmt ? entry.sections : [],
+        chapo: isNewFmt ? '' : (entry.chapo || ''),
+        bullets: isNewFmt ? [] : (entry.bullets || []),
+        scope: 'teacher', approved: false, owner_id: authProfile.id,
+      }),
     });
     return true;
   } catch(e) { console.error('Soumission encyclo TX échouée :', e); return false; }
@@ -8249,10 +8459,18 @@ async function sbApproveEncycloItem(key) {
       const rows = await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}&select=*`);
       const row = Array.isArray(rows) && rows[0];
       if (row) {
+        const isNewFmt = Array.isArray(row.sections) && row.sections.length > 0;
         await sbFetch('/rest/v1/encyclo', {
           method: 'POST',
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({ key: canonicalKey, chapo: row.chapo || '', bullets: row.bullets || [], scope: 'school', approved: true, owner_id: null }),
+          body: JSON.stringify({
+            key: canonicalKey,
+            titre: row.titre || '',
+            sections: isNewFmt ? row.sections : [],
+            chapo: isNewFmt ? '' : (row.chapo || ''),
+            bullets: isNewFmt ? [] : (row.bullets || []),
+            scope: 'school', approved: true, owner_id: null,
+          }),
         });
         // Pas de DELETE RLS sur encyclo → marquer approuvé (scope='teacher' valide, approved=true exclut du fetch pending)
         await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`, {
@@ -8350,14 +8568,17 @@ async function sbSaveEncycloEntry(key) {
   if (!authSession || authProfile?.role !== 'mx') return;
   const entry = packCours.encyclo?.[key];
   if (!entry) return;
+  const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         key,
-        chapo:   entry.chapo   || '',
-        bullets: entry.bullets || [],
+        titre:   entry.titre   || '',
+        sections: isNewFmt ? entry.sections : [],
+        chapo:   isNewFmt ? '' : (entry.chapo   || ''),
+        bullets: isNewFmt ? [] : (entry.bullets || []),
         scope:   'school',
         approved: true,
         owner_id: authProfile.id,
