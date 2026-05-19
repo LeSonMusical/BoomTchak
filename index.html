@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.19</span>
+      <span class="app-version">v3.14.20</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -7250,20 +7250,23 @@ function drawLinear(){
   // dotR basé sur l'unité la plus petite
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
+  // half = DENOM/2 : décalage pour aligner les marqueurs sur le CENTRE des steps
+  // (cohérent avec l'aiguille qui utilise cycElU+DENOM/2, et les dots à uPos+s/2)
+  const half=DENOM/2;
   // Lignes de temps (beats) — légères, entre les séparateurs de mesure
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
-    const numBeats=Math.ceil(dispU/beatU);
-    for(let b=1;b<numBeats;b++){
-      if(b*beatU%measU===0)continue; // mesure déjà dessinée
-      const x=marginX+uW*b*beatU; if(x>W-marginX+2)break;
+    const numBeats=Math.ceil(dispU/beatU)+1;
+    for(let b=0;b<numBeats;b++){
+      if(b*beatU%measU===0)continue; // mesure dessinée séparément
+      const x=marginX+uW*(b*beatU+half); if(x>W-marginX+2)break;
       ctx.beginPath();ctx.moveTo(x,marginY-2);ctx.lineTo(x,H-marginY+2);
       ctx.strokeStyle=isDark?'#373533':'#e0dcd4';ctx.lineWidth=0.5;ctx.stroke();
     }
   }
-  // Séparateurs de mesures
+  // Séparateurs de mesures (alignés sur le centre du premier step de chaque mesure)
   for(let m=0;m<=numMeasures;m++){
-    const x=marginX+uW*m*measU; if(x>W-marginX+2) break;
+    const x=marginX+uW*(m*measU+half); if(x>W-marginX+2) break;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
     ctx.lineWidth=m===0?1.5:0.75; ctx.stroke();
