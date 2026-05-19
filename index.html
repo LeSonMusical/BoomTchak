@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.24</span>
+      <span class="app-version">v3.14.25</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2236,9 +2236,16 @@ function _normalizeSig(s) {
       ? (s.beatsPerMeasure || 4) * (s.stepsPerBeat || 3)
       : (s.beatsPerMeasure || 4);
   }
-  const expectedLen = s.nbDivisions * (s.subdivision || 1);
+  // Inférer subdivision depuis la longueur du metroPattern si subdivision absent/nul (anciens presets)
+  if (!s.subdivision && Array.isArray(s.metroPattern) && s.metroPattern.length > 0 && s.nbDivisions > 0) {
+    const inferred = Math.round(s.metroPattern.length / s.nbDivisions);
+    s.subdivision = inferred >= 1 ? inferred : _defaultSubdiv(s.nbDivisions, s.beatUnit || 4);
+  } else if (!s.subdivision) {
+    s.subdivision = _defaultSubdiv(s.nbDivisions, s.beatUnit || 4);
+  }
+  const expectedLen = s.nbDivisions * s.subdivision;
   if (!Array.isArray(s.metroPattern) || s.metroPattern.length !== expectedLen)
-    s.metroPattern = generateMetroPattern(s.nbDivisions, s.subdivision || 1, s.beatUnit || 4);
+    s.metroPattern = generateMetroPattern(s.nbDivisions, s.subdivision, s.beatUnit || 4);
   return s;
 }
 
@@ -2332,11 +2339,8 @@ function buildSigSelector() {
 function changeSig(id) {
   const oldSig = currentSig;
   currentSig = getSigFallback(id);
-  // Toujours réinitialiser au pattern par défaut au changement de signature
-  // subdiv par défaut : 2 sauf mesures composées (3N/8) → 1
-  const _defSub = _defaultSubdiv(currentSig.nbDivisions, currentSig.beatUnit || 4);
-  currentSig.subdivision = _defSub;
-  currentSig.metroPattern = generateMetroPattern(currentSig.nbDivisions, _defSub, currentSig.beatUnit || 4);
+  // Ne pas écraser subdivision/metroPattern — getSigFallback les charge depuis le preset sauvegardé
+  // (la génération par défaut est faite par _normalizeSig en fallback si le preset n'a pas de valeurs)
   metroStepPos = 0; metroBeatPos = 0;
   if (playing && ac) { _syncMetroToGroove(); }
   setMetroDirty(false); _editingMetroPresetId = null;
@@ -8024,9 +8028,9 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
       const preset = {
         id: row.id, label: row.label,
         nbDivisions: _nb, beatUnit: row.beat_unit,
-        subdivision: row.subdivision || 1,
+        subdivision: row.subdivision || (row.metro_pattern && _nb ? Math.round(row.metro_pattern.length / _nb) : 0) || _defaultSubdiv(_nb, row.beat_unit || 4),
         equivalence: row.equivalence ?? row.fel_beat_steps ?? undefined,
-        metroPattern: row.metro_pattern || generateMetroPattern(_nb, row.subdivision || 1, row.beat_unit || 4),
+        metroPattern: row.metro_pattern || null,
         familles_ids: row.familles_ids || [],
         ordre: row.ordre ?? 0,
         source: row.source || 'school', approved: true, ownerId: row.owner_id,
@@ -8400,9 +8404,9 @@ async function _syncMetroPresetsOnly(rows) {
     const preset = {
       id: row.id, label: row.label,
       nbDivisions: _nb, beatUnit: row.beat_unit,
-      subdivision: row.subdivision || 1,
+      subdivision: row.subdivision || (row.metro_pattern && _nb ? Math.round(row.metro_pattern.length / _nb) : 0) || _defaultSubdiv(_nb, row.beat_unit || 4),
       equivalence: row.equivalence ?? row.fel_beat_steps ?? undefined,
-      metroPattern: row.metro_pattern || generateMetroPattern(_nb, row.subdivision || 1, row.beat_unit || 4),
+      metroPattern: row.metro_pattern || null,
       familles_ids: row.familles_ids || [],
       ordre: row.ordre ?? 0,
       source: row.source || 'school', approved: true, ownerId: row.owner_id,
