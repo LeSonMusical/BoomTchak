@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.25</span>
+      <span class="app-version">v3.14.26</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3458,15 +3458,19 @@ function openPresetModal(cfg){
     // Exposer _addLongPress pour buildItems
     sheet._addLongPress=_addLongPress;
   }
-  // Encyclopédie : bouton gérer + recherche
+  // Encyclopédie : bouton gérer + recherche (toujours visible)
   if(cfg.type==='encyclo'){
-    const searchInp=document.createElement('input');searchInp.className='pm-header-search';searchInp.type='search';searchInp.placeholder='Chercher…';
-    searchInp.addEventListener('input',()=>{searchQuery=searchInp.value.trim();buildItems();});
-    const modeSearch=document.createElement('button');modeSearch.className='pm-mode-btn';modeSearch.title='Rechercher';modeSearch.textContent='🔍';
+    const searchInp=document.createElement('input');searchInp.className='pm-header-search pm-search-open';searchInp.type='search';searchInp.placeholder='Chercher…';
+    const modeSearch=document.createElement('button');modeSearch.className='pm-mode-btn';modeSearch.title='Effacer la recherche';modeSearch.textContent='🔍';
+    searchInp.addEventListener('input',()=>{
+      searchQuery=searchInp.value.trim();
+      modeSearch.classList.toggle('active',!!searchQuery);
+      buildItems();
+    });
     modeSearch.addEventListener('click',()=>{
-      const open=searchInp.classList.toggle('pm-search-open');
-      modeSearch.classList.toggle('active',open);
-      if(open)searchInp.focus();else{searchInp.value='';searchQuery='';buildItems();}
+      searchInp.value='';searchQuery='';
+      modeSearch.classList.remove('active');
+      buildItems();searchInp.focus();
     });
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
     modeManage.addEventListener('click',()=>{
@@ -4326,50 +4330,57 @@ function openPresetModal(cfg){
       const bdgStyle={'G':'background:#faf3e0;color:#8B6914','P':'background:#f0f5ff;color:#2d5f80','M':'background:#f5f4f0;color:#666','✎':'background:#f0f5ee;color:#4a6d40','B':'background:#f5f0ff;color:#6040a0','S':'background:#fff0f5;color:#a04060','♩':'background:#f0f8f0;color:#2a7a40'};
       if(!items.length&&!manageMode&&!(currentMode==='tx'||authProfile?.role==='mx')){const e=document.createElement('div');e.className='pm-empty';e.textContent='Aucune entrée';itemsWrap.appendChild(e);return;}
       items.forEach(item=>{
-        if(manageMode&&item.typeBadge==='✎'){
-          // Mode gérer : clic sur le nom → renommer inline ; 🗑 à droite
-          const div=document.createElement('div');div.className='pm-item pm-manage';div.style.cssText='display:flex;align-items:center;gap:6px';
-          const badge=document.createElement('span');badge.style.cssText=(bdgStyle['✎'])+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent='✎';
-          const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.style.cssText='flex:1;font-size:11px;cursor:text';nameEl.textContent=item.nom;
+        const isCustom=item.typeBadge==='✎';
+        const row=document.createElement('button');
+        row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
+        row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left'+(manageMode?';cursor:default':'');
+        // Badge : toujours affiché sauf l'icône ✎ en mode gestion (remplacé par rien)
+        if(!manageMode||!isCustom){
+          const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
+          row.appendChild(badge);
+        }
+        // Nom (éditable inline pour articles custom en mode gestion)
+        const nameEl=document.createElement('span');
+        nameEl.style.cssText='flex:1;'+(manageMode?'font-size:11px':('opacity:'+(item.hasC?'1':'.45')));
+        nameEl.textContent=item.nom;
+        if(manageMode&&isCustom){
+          nameEl.className='pm-item-name';nameEl.style.cursor='text';
           const startRename=()=>{
             nameEl.contentEditable='true';nameEl.focus();
             const r=document.createRange();r.selectNodeContents(nameEl);const s=window.getSelection();s.removeAllRanges();s.addRange(r);
             nameEl.dataset.orig=nameEl.textContent;
-            const commit=()=>{
-              nameEl.contentEditable='false';
-              const newNom=nameEl.textContent.trim();
-              if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
-              if(newNom===nameEl.dataset.orig)return;
-              const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);
-              if(idx>=0){packCours.encycloIndex[idx].nom=newNom;}
-              if(packCours.encyclo?.[item.id]){packCours.encyclo[item.id].titre=newNom;}
-              saveToStorage();buildEncycloSection();
-            };
+            const commit=()=>{nameEl.contentEditable='false';const newNom=nameEl.textContent.trim();if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}if(newNom===nameEl.dataset.orig)return;const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);if(idx>=0){packCours.encycloIndex[idx].nom=newNom;}if(packCours.encyclo?.[item.id]){packCours.encyclo[item.id].titre=newNom;}saveToStorage();buildEncycloSection();};
             nameEl.addEventListener('blur',commit,{once:true});
             nameEl.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();nameEl.blur();}if(ev.key==='Escape'){nameEl.textContent=nameEl.dataset.orig;nameEl.blur();}});
           };
           nameEl.addEventListener('click',e=>{e.stopPropagation();startRename();});
-          const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer cet article';
+        }
+        row.appendChild(nameEl);
+        if(!manageMode){
+          // Mode normal : indicateur ●/○ + clic pour sélectionner
+          const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
+          row.appendChild(dot);
+          row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
+        } else {
+          // Mode gestion : corbeille sur tous les items
+          const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer';
           delBtn.addEventListener('click',e=>{
             e.stopPropagation();
-            if(!confirm('Supprimer l\'article "'+item.nom+'" ?'))return;
-            const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);
-            if(idx>=0)packCours.encycloIndex.splice(idx,1);
-            if(packCours.encyclo)delete packCours.encyclo[item.id];
+            const category=isCustom?((packCours.encycloIndex||[]).find(x=>x.id===item.id)?.category||''):'';
+            const isConceptAppli=isCustom&&(category==='concepts'||category==='appli');
+            const msg=isConceptAppli
+              ?`Supprimer l'article "${item.nom}" ?\n⚠ Cette entrée sera définitivement retirée de l'encyclopédie.`
+              :isCustom
+              ?`Supprimer l'article "${item.nom}" ?`
+              :`Effacer le contenu encyclopédique de "${item.nom}" ?\n(L'item lui-même ne sera pas supprimé)`;
+            if(!confirm(msg))return;
+            if(isCustom){const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);if(idx>=0)packCours.encycloIndex.splice(idx,1);if(packCours.encyclo)delete packCours.encyclo[item.id];buildEncycloSection();}
+            else{if(packCours.encyclo)delete packCours.encyclo[item.id];}
             saveToStorage();buildItems();
           });
-          div.appendChild(badge);div.appendChild(nameEl);div.appendChild(delBtn);
-          itemsWrap.appendChild(div);
-        } else {
-          const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-          row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left';
-          const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
-          const nameEl=document.createElement('span');nameEl.style.cssText='flex:1;opacity:'+(item.hasC?'1':'.45');nameEl.textContent=item.nom;
-          const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
-          row.appendChild(badge);row.appendChild(nameEl);row.appendChild(dot);
-          row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
-          itemsWrap.appendChild(row);
+          row.appendChild(delBtn);
         }
+        itemsWrap.appendChild(row);
       });
       // Bouton Créer article (TX + MX — visible en mode gérer ou toujours en mode normal)
       if(currentMode==='tx'||authProfile?.role==='mx'){
@@ -6114,6 +6125,8 @@ function getEncycloDisplayName(key) {
   const grv = packCours.grooves.find(g => g.id === key || g.id === resolvedKey)
            || PTK_DEFAULT.grooves?.find(g => g.id === resolvedKey);
   if (grv) return grv.nom;
+  const metro = metroPresets.find(p => p.id === key || p.id === resolvedKey);
+  if (metro) return metro.label || metro.id;
   return resolvedKey;
 }
 
