@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.26</span>
+      <span class="app-version">v3.14.27</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3554,10 +3554,14 @@ function openPresetModal(cfg){
         (packCours.soundPresets||[])
           .filter(sp=>encFamFilter==='all'||(sp.familles_ids||[]).includes(encFamFilter))
           .forEach(sp=>items.push({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
-      if(showM)
+      if(showM){
+        // Collecter toutes les clés déjà couvertes par patterns/grooves/bands/sons
+        const coveredKeys=new Set(items.map(i=>i.id));
         metroPresets
           .filter(p=>encFamFilter==='all'||(p.familles_ids||[]).includes(encFamFilter))
-          .forEach(p=>items.push({id:p.id,nom:p.label||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
+          .filter(p=>!coveredKeys.has(p.id)) // dédupliquer : skip si déjà un item avec cet id
+          .forEach(p=>items.push({id:p.id,nom:p.label||p.nom||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
+      }
       if(searchQuery){const q=searchQuery.toLowerCase();items=items.filter(i=>i.nom.toLowerCase().includes(q));}
       if(encContentFilter==='written') items=items.filter(i=>i.hasC);
       if(encContentFilter==='empty')   items=items.filter(i=>!i.hasC);
