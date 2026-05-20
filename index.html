@@ -1124,7 +1124,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.27</span>
+      <span class="app-version">v3.14.28</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -8778,23 +8778,24 @@ async function sbCheckRejections() {
 }
 
 function loadPendingPattern(p) {
-  const exists = packCours.patterns.find(x => x.id === p.id);
-  if (!exists) {
+  if (!packCours.patterns.find(x => x.id === p.id)) {
     packCours.patterns.push({
       id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
       familles: p.familles_ids || [], encyclo_ref: p.encyclo_ref || null,
       source: 'pending',
     });
   }
-  // Charger dans la couche grave courante
+  // Toujours charger dans state[0] pour la prévisualisation
+  const seq = (p.sequence || '').split('');
+  state[0].patternId = p.id;
+  state[0].pattern = seq;
+  state[0].stepPos = 0;
+  state[0].wrapped = false;
+  // Mettre à jour la référence dans le groove courant si disponible
   const groove = getGroove(currentGrooveId);
-  if (groove && groove.layers[0]) {
-    groove.layers[0].patternId = p.id;
-    state[0].patternId = p.id;
-    state[0].pattern = p.sequence.split('');
-    state[0].stepPos = 0;
-    buildLayers();
-  }
+  if (groove && groove.layers[0]) groove.layers[0].patternId = p.id;
+  buildLayers();
+  if (circleView) drawCircles();
 }
 
 function loadPendingGroove(g) {
