@@ -1133,7 +1133,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.32</span>
+      <span class="app-version">v3.14.33</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -3184,7 +3184,7 @@ function updateSettingsBadge(){
   }
 }
 let layersOuverts = true;
-let encycloOuvert = true;
+let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
 
@@ -6480,6 +6480,7 @@ function toggleEncyclo(open){
   encycloOuvert=open;
   const panel=document.getElementById('encyclo-panel');
   if(panel){
+    if(open) _encPanelH=_calcEncycloSnapH(); // recalcul à chaque ouverture
     panel.classList.toggle('open',open);
     panel.style.height=open?_encPanelH+'vh':'0';
   }
@@ -7712,6 +7713,19 @@ function setNavSection(name){
 }
 
 // ── Volet Encyclopédie — drag & snap ────────────────────────────────────────
+function _calcEncycloSnapH(){
+  // Hauteur de panel idéale pour que le top du panel soit juste sous la vue cyclique
+  const cv=document.getElementById('circle-view');
+  if(cv){
+    const r=cv.getBoundingClientRect();
+    if(r.bottom>0){ // vue visible dans le viewport
+      const avail=window.innerHeight-60-r.bottom-8; // 60=tabbar, 8=marge
+      const pct=Math.round(avail/window.innerHeight*100);
+      return Math.max(28,Math.min(88,pct));
+    }
+  }
+  return 60; // fallback
+}
 function _initEncycloPanel(){
   const SNAPS=[28,60,88]; // snap points en vh
   const CLOSE_THRESH=18;  // en dessous → fermer
@@ -12080,10 +12094,7 @@ window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
 window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
-// Volet Encyclopédie : panel hauteur initiale (encycloOuvert=true par défaut)
 _initEncycloPanel();
-const _epInit=document.getElementById('encyclo-panel');
-if(_epInit){_epInit.style.height=_encPanelH+'vh';_epInit.classList.add('open');}
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
 _syncNavTabs(); // Sync onglets de nav
