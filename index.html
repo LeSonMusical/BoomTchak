@@ -539,6 +539,7 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .pm-empty{padding:18px;text-align:center;color:#888;font-size:12px;}
 /* Bouton preset (remplace les 2 selects) */
 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:160px;padding:2px 5px;border-radius:4px;background:#fff;border:1px solid #ccc;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1a1a18;}
+.groove-bar .pm-preset-btn{max-width:none}
 .pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
 .pm-preset-dirty{border-color:#D85A30!important;color:#D85A30!important;}
 .pm-preset-dirty::before{content:'● ';}
@@ -1136,7 +1137,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.37</span>
+      <span class="app-version">v3.14.38</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4780,10 +4781,9 @@ function buildGrooveSection(){
   btnView.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle'));
   bar.appendChild(btnView);
 
-  const _spacerGroove=document.createElement('div');_spacerGroove.className='sb-spacer';
-  bar.appendChild(_spacerGroove);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
+  btnVolet.style.marginLeft='auto';
   btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
   btnVolet.addEventListener('click',()=>{
     layersOuverts=!layersOuverts;
@@ -6398,7 +6398,7 @@ function buildEncycloSection(){
   pb.addEventListener('click',e=>{
     e.stopPropagation();
     openPresetModal({type:'encyclo',currentId:currentEncycloId,label:'Encyclopédie',accent:'#4a6d40',bg:'#f0f5ee',
-      onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);buildEncycloSection();}});
+      onSelect:(key)=>{showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);}});
   });
 
   // Liste de navigation (swipe + boutons ◀ ▶)
@@ -6460,6 +6460,20 @@ function buildEncycloSection(){
   });
   bar.appendChild(saveBtnEnc);
 
+  // Bouton 🎲 article aléatoire (basse priorité)
+  const btnDiceEnc=document.createElement('button');btnDiceEnc.className='btn-dice-rng';btnDiceEnc.title='Article aléatoire';btnDiceEnc.textContent='🎲';
+  btnDiceEnc.addEventListener('click',e=>{
+    e.stopPropagation();
+    const list=[];
+    ENCYCLO_MISC.forEach(m=>{if(hasEncycloContent(m.id))list.push(m.id);});
+    (packCours.encycloIndex||[]).forEach(e=>{if(hasEncycloContent(e.id))list.push(e.id);});
+    if(!list.length)return;
+    const key=list[Math.floor(Math.random()*list.length)];
+    showEncycloEntry(key);
+    if(!encycloOuvert)toggleEncyclo(true);
+  });
+  bar.appendChild(btnDiceEnc);
+
   // Bouton toggle édition (TX + MX uniquement)
   let editBtn = null;
   if (currentMode === 'tx' || authProfile?.role === 'mx') {
@@ -6493,6 +6507,7 @@ function buildEncycloSection(){
     }
   });
   cont.appendChild(bar);
+  {const ro=new ResizeObserver(([e])=>{btnDiceEnc.classList.toggle('visible',e.contentRect.width>=280);});ro.observe(bar);}
 
   // Contenu collapsible
   const content=document.createElement('div');
