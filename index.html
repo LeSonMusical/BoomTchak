@@ -85,7 +85,7 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .temps-slider::-moz-range-track{height:2px;background:#c8c0e0;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;padding:0 3px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;letter-spacing:.03em;white-space:nowrap}
+.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;color:#6B5FA5;transition:color .15s;line-height:1}
 .btn-metro-main.on{color:#4a3d8a}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#a89fd0;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
@@ -209,7 +209,8 @@ body.dark-mode .sig-edit-val{color:#666}
 /* ─── BARRES DE SECTION ─── */
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
 .section-bar select{font-size:10px;flex:1;min-width:0;padding:1px 3px;border-radius:4px;background:#fff;color:#1a1a18;cursor:pointer}
-.section-bar-lbl{font-size:10px;font-weight:600;flex-shrink:0;letter-spacing:.03em;min-width:44px}
+.section-bar-lbl{font-size:17px;flex-shrink:0;padding:0 2px;line-height:1;min-width:auto}
+.sb-name{flex:1;text-align:center;min-width:0;overflow:hidden;white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.03em;color:inherit;pointer-events:none}
 .btn-sec-ico{cursor:pointer;font-size:13px;background:none;border:none;padding:1px 3px;line-height:1;opacity:.6;flex-shrink:0}
 .btn-sec-ico:hover{opacity:1}
 .btn-info-ico{padding:1px 5px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid #c0bdb7;border-radius:4px;color:#666;flex-shrink:0;line-height:1.4}
@@ -384,10 +385,9 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
 .encyclo-panel-handle-wrap:hover .encyclo-panel-handle{background:#aaa}
 .encyclo-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-/* Inside panel: content always visible, hide toggle & label */
+/* Inside panel: content always visible, hide toggle button */
 #encyclo-panel .encyclo-content{max-height:none!important;overflow:visible!important}
 #encyclo-panel .btn-volet-encyclo{display:none!important}
-#encyclo-panel .section-bar-lbl{display:none!important}
 /* Prevent accidental bar-background tap closing panel */
 #encyclo-panel .encyclo-bar{pointer-events:none}
 #encyclo-panel .encyclo-bar>*{pointer-events:auto}
@@ -1133,7 +1133,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.33</span>
+      <span class="app-version">v3.14.34</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1230,13 +1230,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
-    <button class="btn-metro-main" id="btn-metro-main">Métro</button>
+    <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
+    <span class="sb-name" id="sb-name-metro" data-long="Métronome" data-short="Métro"></span>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
     <div id="btn-metro-volets-group">
     <button class="btn-metro-volet open" id="btn-metro-volet-temps">BPM</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-sign">Uni</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-pat">Meter</button>
+    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Unit</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-pat">Metro</button>
     <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol.</button>
     <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
     </div>
@@ -1276,7 +1277,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div><!-- /metro-bloc temps -->
   </div><!-- /metro-sub-temps -->
   <!-- ── Sous-volet 2 : Sign ────────────────────────────────────────── -->
-  <div class="metro-sub" id="metro-sub-sign" style="display:none">
+  <div class="metro-sub" id="metro-sub-sign" style="display:block">
   <div class="metro-bloc">
     <div class="metro-3col">
       <!-- Col 1 : Signature — partage l'espace disponible -->
@@ -4635,8 +4636,10 @@ function buildBandSection(){
   const bar=document.createElement('div');
   bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Band';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🔈';
   bar.appendChild(lbl);
+  const _sbNBand=document.createElement('span');_sbNBand.className='sb-name';_sbNBand.dataset.long='Sons & instruments';_sbNBand.dataset.short='Sons';
+  bar.appendChild(_sbNBand);
 
   // Bouton preset band (remplace filtre famille + select)
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
@@ -4690,6 +4693,7 @@ function buildBandSection(){
     }
   });
   cont.appendChild(bar);
+  _initSbName(_sbNBand);
 
   const bc=document.getElementById('band-content');
   if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
@@ -4710,8 +4714,10 @@ function buildGrooveSection(){
   }
   refreshGrooveClass();
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Groove';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';
   bar.appendChild(lbl);
+  const _sbNGroove=document.createElement('span');_sbNGroove.className='sb-name';_sbNGroove.dataset.long='Groove et pattern';_sbNGroove.dataset.short='Groove';
+  bar.appendChild(_sbNGroove);
 
   // Bouton preset groove (remplace filtre famille + select)
   const curGroove=getGroove(currentGrooveId);
@@ -4795,6 +4801,7 @@ function buildGrooveSection(){
     }
   });
   cont.appendChild(bar);
+  _initSbName(_sbNGroove);
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -6360,8 +6367,10 @@ function buildEncycloSection(){
   // Barre header (cliquable pour toggle)
   const bar=document.createElement('div');bar.className='section-bar encyclo-bar';
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='Encyclo';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='📖';
   bar.appendChild(lbl);
+  const _sbNEnc=document.createElement('span');_sbNEnc.className='sb-name';_sbNEnc.dataset.long='Encyclopédie';_sbNEnc.dataset.short='Encyclopédie';
+  bar.appendChild(_sbNEnc);
 
   // Bouton preset (comme groove/pattern/band)
   const pb=document.createElement('button');
@@ -6463,6 +6472,7 @@ function buildEncycloSection(){
     }
   });
   cont.appendChild(bar);
+  _initSbName(_sbNEnc);
 
   // Contenu collapsible
   const content=document.createElement('div');
@@ -7663,6 +7673,19 @@ function _toggleMetroPanel(){
 }
 
 // ── Navigation tabs ──────────────────────────────────────────────────────────
+// Nom de section responsive (long / court / caché selon l'espace disponible)
+function _initSbName(el){
+  if(!el)return;
+  const long=el.dataset.long||'';
+  const short=el.dataset.short||long;
+  const ro=new ResizeObserver(([entry])=>{
+    const w=entry.contentRect.width;
+    if(w>=55)el.textContent=long;
+    else if(w>=25)el.textContent=short;
+    else el.textContent='';
+  });
+  ro.observe(el);
+}
 function _syncNavTabs(){
   const metroWrap=document.getElementById('temps-wrap');
   const metroOpen=metroWrap&&metroWrap.style.display!=='none';
@@ -11350,7 +11373,7 @@ function attachEvents(){
         if(s)s.style.display='none';if(b)b.classList.remove('open');
       });
     } else {
-      const saved=_metroCollapsedState||[true,false,false,false,false];
+      const saved=_metroCollapsedState||[true,true,false,false,false]; // BPM + Unit ouverts par défaut
       _METRO_SUBS_MAP.forEach(({subId,btnId},i)=>{
         const s=document.getElementById(subId),b=document.getElementById(btnId);
         if(s)s.style.display=saved[i]?'block':'none';
@@ -12095,6 +12118,7 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 _initEncycloPanel();
+_initSbName(document.getElementById('sb-name-metro'));
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
 _syncNavTabs(); // Sync onglets de nav
