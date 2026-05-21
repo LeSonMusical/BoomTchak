@@ -1136,7 +1136,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.36</span>
+      <span class="app-version">v3.14.37</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -4748,6 +4748,16 @@ function buildGrooveSection(){
   saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
   bar.appendChild(saveBtnGroove);
 
+  const btnDiceGroove=document.createElement('button');btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
+  btnDiceGroove.addEventListener('click',e=>{
+    e.stopPropagation();
+    const list=(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending');
+    if(!list.length)return;
+    const pick=list[Math.floor(Math.random()*list.length)];
+    _grooveOnSelect(pick.id);
+  });
+  bar.appendChild(btnDiceGroove);
+
   // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
@@ -4772,15 +4782,6 @@ function buildGrooveSection(){
 
   const _spacerGroove=document.createElement('div');_spacerGroove.className='sb-spacer';
   bar.appendChild(_spacerGroove);
-  const btnDiceGroove=document.createElement('button');btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
-  btnDiceGroove.addEventListener('click',e=>{
-    e.stopPropagation();
-    const list=(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending');
-    if(!list.length)return;
-    const pick=list[Math.floor(Math.random()*list.length)];
-    _grooveOnSelect(pick.id);
-  });
-  bar.appendChild(btnDiceGroove);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
   btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
