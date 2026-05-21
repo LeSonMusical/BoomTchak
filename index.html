@@ -210,11 +210,10 @@ body.dark-mode .sig-edit-val{color:#666}
 .section-bar{display:flex;align-items:center;gap:5px;padding:.3rem .5rem;border-radius:4px;flex-wrap:nowrap;overflow:hidden;margin-bottom:4px}
 .section-bar select{font-size:10px;flex:1;min-width:0;padding:1px 3px;border-radius:4px;background:#fff;color:#1a1a18;cursor:pointer}
 .section-bar-lbl{font-size:17px;flex-shrink:0;padding:0 2px;line-height:1;min-width:auto}
-.sb-name{flex:1;text-align:center;min-width:0;overflow:hidden;white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.03em;color:inherit;pointer-events:none}
-.temps-bar .sb-name{color:#4a3d8a}
-.groove-bar .sb-name{color:#8B6914}
-.band-bar .sb-name{color:#2d5f80}
-.encyclo-bar .sb-name{color:#666}
+.sb-spacer{flex:1;min-width:0}
+.btn-dice-rng{display:none;padding:2px 5px;cursor:pointer;font-size:13px;background:transparent;border:none;flex-shrink:0;opacity:.55;line-height:1;transition:opacity .12s}
+.btn-dice-rng.visible{display:inline-flex;align-items:center}
+.btn-dice-rng:hover{opacity:1}
 .btn-sec-ico{cursor:pointer;font-size:13px;background:none;border:none;padding:1px 3px;line-height:1;opacity:.6;flex-shrink:0}
 .btn-sec-ico:hover{opacity:1}
 .btn-info-ico{padding:1px 5px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid #c0bdb7;border-radius:4px;color:#666;flex-shrink:0;line-height:1.4}
@@ -939,16 +938,13 @@ body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color
 body.dark-mode .section-bar-lbl{color:inherit}
 body.dark-mode .groove-bar{background:#28251a;border-bottom-color:#3a3520}
 body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
-body.dark-mode .groove-bar .sb-name{color:#c8961a}
 body.dark-mode .groove-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
 body.dark-mode .band-bar .section-bar-lbl{color:#7ab0cc}
-body.dark-mode .band-bar .sb-name{color:#7ab0cc}
 body.dark-mode .band-bar select,body.dark-mode #band-sel{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-sounds-wrap{border-left-color:#3a5a70}
 body.dark-mode .encyclo-bar{background:#252522;border-left-color:#555}
 body.dark-mode .encyclo-bar .section-bar-lbl{color:#888}
-body.dark-mode .encyclo-bar .sb-name{color:#888}
 body.dark-mode .encyclo-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
@@ -962,7 +958,6 @@ body.dark-mode .btn-mute-lbl{background:var(--cc);color:#fff}
 body.dark-mode .btn-mute-lbl.muted{background:#3a3a38;color:#555}
 body.dark-mode .temps-bar{background:#1e1c2a;border-bottom-color:#2a2448}
 body.dark-mode .temps-bar .section-bar-lbl{color:#a89fd0}
-body.dark-mode .temps-bar .sb-name{color:#a89fd0}
 body.dark-mode .sig-sel-btn{background:#2a2a28!important;color:#a89fd0!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .beat-display{color:#a89fd0}
 body.dark-mode .beat-display:hover{background:rgba(168,159,208,.15)}
@@ -1141,7 +1136,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.35</span>
+      <span class="app-version">v3.14.36</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1241,7 +1236,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
     <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
     <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    <span class="sb-name" id="sb-name-metro" data-long="Métronome" data-short="Métro"></span>
+    <div class="sb-spacer"></div>
     <div id="btn-metro-volets-group">
     <button class="btn-metro-volet open" id="btn-metro-volet-temps">BPM</button>
     <button class="btn-metro-volet open" id="btn-metro-volet-sign">Unit</button>
@@ -4646,7 +4641,6 @@ function buildBandSection(){
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🔈';
   bar.appendChild(lbl);
-  const _sbNBand=document.createElement('span');_sbNBand.className='sb-name';_sbNBand.dataset.long='Sons & instruments';_sbNBand.dataset.short='Sons';
 
   // Bouton preset band (remplace filtre famille + select)
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
@@ -4679,7 +4673,8 @@ function buildBandSection(){
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
   bar.appendChild(saveBtn);
 
-  bar.appendChild(_sbNBand);
+  const _spacerBand=document.createElement('div');_spacerBand.className='sb-spacer';
+  bar.appendChild(_spacerBand);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-band'+(instrOuvert?' open':'');
   btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
@@ -4701,7 +4696,6 @@ function buildBandSection(){
     }
   });
   cont.appendChild(bar);
-  _initSbName(_sbNBand);
 
   const bc=document.getElementById('band-content');
   if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
@@ -4724,7 +4718,6 @@ function buildGrooveSection(){
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';
   bar.appendChild(lbl);
-  const _sbNGroove=document.createElement('span');_sbNGroove.className='sb-name';_sbNGroove.dataset.long='Groove et pattern';_sbNGroove.dataset.short='Groove';
 
   // Bouton preset groove (remplace filtre famille + select)
   const curGroove=getGroove(currentGrooveId);
@@ -4777,7 +4770,17 @@ function buildGrooveSection(){
   btnView.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle'));
   bar.appendChild(btnView);
 
-  bar.appendChild(_sbNGroove);
+  const _spacerGroove=document.createElement('div');_spacerGroove.className='sb-spacer';
+  bar.appendChild(_spacerGroove);
+  const btnDiceGroove=document.createElement('button');btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
+  btnDiceGroove.addEventListener('click',e=>{
+    e.stopPropagation();
+    const list=(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending');
+    if(!list.length)return;
+    const pick=list[Math.floor(Math.random()*list.length)];
+    _grooveOnSelect(pick.id);
+  });
+  bar.appendChild(btnDiceGroove);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
   btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
@@ -4809,7 +4812,7 @@ function buildGrooveSection(){
     }
   });
   cont.appendChild(bar);
-  _initSbName(_sbNGroove);
+  {const ro=new ResizeObserver(([e])=>{btnDiceGroove.classList.toggle('visible',e.contentRect.width>=280);});ro.observe(bar);}
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -4922,6 +4925,15 @@ function buildLayers(){
     saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
     saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
     row1.appendChild(saveBtn);
+    // 🎲 pattern aléatoire (basse priorité)
+    const btnDicePat=document.createElement('button');btnDicePat.className='btn-dice-rng';btnDicePat.title='Pattern aléatoire';btnDicePat.textContent='🎲';
+    btnDicePat.addEventListener('click',e=>{
+      e.stopPropagation();
+      const list=(packCours.patterns||[]).filter(p=>!p.localDeletePending);
+      if(!list.length)return;
+      _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
+    });
+    row1.appendChild(btnDicePat);
     // i info + rec
     row1.appendChild(btnI);
     row1.appendChild(bRec);
@@ -4930,6 +4942,7 @@ function buildLayers(){
     btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
     btnMod.textContent='mod ▶';
     row1.appendChild(btnMod);
+    {const ro=new ResizeObserver(([e])=>{btnDicePat.classList.toggle('visible',e.contentRect.width>=260);});ro.observe(row1);}
     layerDiv.appendChild(row1);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
@@ -6377,8 +6390,6 @@ function buildEncycloSection(){
 
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='📖';
   bar.appendChild(lbl);
-  const _sbNEnc=document.createElement('span');_sbNEnc.className='sb-name';_sbNEnc.dataset.long='Encyclopédie';_sbNEnc.dataset.short='Encyclopédie';
-
   // Bouton preset (comme groove/pattern/band)
   const pb=document.createElement('button');
   pb.id='encyclo-preset-btn';pb.className='pm-preset-btn';
@@ -6465,7 +6476,8 @@ function buildEncycloSection(){
     bar.appendChild(editBtn);
   }
 
-  bar.appendChild(_sbNEnc);
+  const _spacerEnc=document.createElement('div');_spacerEnc.className='sb-spacer';
+  bar.appendChild(_spacerEnc);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-encyclo'+(encycloOuvert?' open':'');
   btnVolet.textContent=encycloOuvert?'Lire ▼':'Lire ▶';
@@ -6480,7 +6492,6 @@ function buildEncycloSection(){
     }
   });
   cont.appendChild(bar);
-  _initSbName(_sbNEnc);
 
   // Contenu collapsible
   const content=document.createElement('div');
@@ -7681,19 +7692,6 @@ function _toggleMetroPanel(){
 }
 
 // ── Navigation tabs ──────────────────────────────────────────────────────────
-// Nom de section responsive (long / court / caché selon l'espace disponible)
-function _initSbName(el){
-  if(!el)return;
-  const long=el.dataset.long||'';
-  const short=el.dataset.short||long;
-  const ro=new ResizeObserver(([entry])=>{
-    const w=entry.contentRect.width;
-    if(w>=55)el.textContent=long;
-    else if(w>=25)el.textContent=short;
-    else el.textContent='';
-  });
-  ro.observe(el);
-}
 function _syncNavTabs(){
   const metroWrap=document.getElementById('temps-wrap');
   const metroOpen=metroWrap&&metroWrap.style.display!=='none';
@@ -12126,7 +12124,6 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 _initEncycloPanel();
-_initSbName(document.getElementById('sb-name-metro'));
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
 _syncNavTabs(); // Sync onglets de nav
