@@ -24,7 +24,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 html{overflow-x:hidden;overscroll-behavior-x:none}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
 body.drawer-open{padding-bottom:calc(68px + 220px)}
-.frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:.5rem .85rem}
+.frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:0 .85rem .5rem}
 
 /* ─── TOP BAR ─── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -225,7 +225,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{background:transparent;color:#C8961A;font-size:20px}
+.groove-bar .btn-view{background:transparent;color:#6B5FA5;font-size:20px;border-color:#c8c0e0}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -1052,7 +1052,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{color:#C8961A}
+body.dark-mode .groove-bar .btn-view{color:#a89fd0;border-color:#5a5280}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -1137,7 +1137,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.39</span>
+      <span class="app-version">v3.14.40</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -7742,6 +7742,15 @@ function _navSetSons(open){
   const bc=document.getElementById('band-content');
   if(bc)bc.classList.toggle('open',open&&instrOuvert);
 }
+function _navCloseJouer(){
+  const pd=document.getElementById('play-drawer');
+  if(!pd||!pd.classList.contains('open'))return;
+  pd.classList.remove('open');
+  jouerOpen=false;
+  document.body.classList.remove('drawer-open');
+  const bj=document.getElementById('btn-jouer');
+  if(bj)bj.classList.remove('active');
+}
 function setNavSection(name){
   const metroWrap=document.getElementById('temps-wrap');
   const isMetroOpen=metroWrap&&metroWrap.style.display!=='none';
@@ -7749,7 +7758,8 @@ function setNavSection(name){
   if(name==='metro'&&isMetroOpen){_navSetMetro(false);_syncNavTabs();return;}
   if(name==='sons'&&sonsOuvert){_navSetSons(false);_syncNavTabs();return;}
   if(name==='encyclo'&&encycloOuvert){toggleEncyclo(false);_syncNavTabs();return;}
-  // Close others, open selected
+  // Close others (including Jouer), open selected
+  _navCloseJouer();
   if(name!=='metro'&&isMetroOpen)_navSetMetro(false);
   if(name!=='sons'&&sonsOuvert)_navSetSons(false);
   if(name!=='encyclo'&&encycloOuvert)toggleEncyclo(false);
@@ -11903,7 +11913,19 @@ function attachEvents(){
     document.body.classList.toggle('drawer-open',jouerOpen);
     buildSoundPanel();
   };
-  btnJouer.addEventListener('click',()=>{ playDrawer.classList.toggle('open');_syncJouerOpen(); });
+  btnJouer.addEventListener('click',()=>{
+    const willOpen=!playDrawer.classList.contains('open');
+    if(willOpen){
+      // Fermer les sections exclusives avant d'ouvrir Jouer
+      if(encycloOuvert)toggleEncyclo(false);
+      const mw=document.getElementById('temps-wrap');
+      if(mw&&mw.style.display!=='none')_navSetMetro(false);
+      if(sonsOuvert)_navSetSons(false);
+      _syncNavTabs();
+    }
+    playDrawer.classList.toggle('open');
+    _syncJouerOpen();
+  });
   document.getElementById('btn-jouer-val').addEventListener('click',()=>{
     [...recLayers].forEach(li=>stopRec(li,true));
   });
