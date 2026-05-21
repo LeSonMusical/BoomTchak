@@ -436,11 +436,9 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 .bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
 .bottom-right{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn-rec-box{height:44px;background:#fff;border:2px solid #D85A30;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
-body.rec-active .btn-rec-box{display:flex}
+body.rec-tapped .btn-rec-box{display:flex}
 body.rec-active #btn-jouer{display:none}
-body.rec-active .play-drawer-close{display:none}
 .btn-cap-single{flex:1;border:none;background:#c0392b;font-size:11px;font-weight:700;color:#fff;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
-body.rec-tapped .btn-cap-single{display:none}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-cap-ann{display:none;flex:1;border:none;border-right:1px solid rgba(255,255,255,.25);background:#c0392b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;min-width:44px}
 .btn-cap-val{display:none;flex:2;border:none;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;padding:0 10px}
@@ -1124,7 +1122,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.28</span>
+      <span class="app-version">v3.14.29</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -2993,18 +2991,20 @@ function stopPlay(){
   }
 }
 
+function refreshTransportBtn(){
+  const btn=document.getElementById('btn-play');if(!btn)return;
+  btn.textContent=playing?'■':'▶';
+  btn.classList.toggle('active',playing);
+}
 function togglePlay(){
   if(!playing){
     if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
     ac.resume(); // iOS 18 : resume() synchrone dans le handler de clic
-    document.getElementById('btn-play').textContent='■';
-    document.getElementById('btn-play').classList.add('active');
     startPlay();
   } else {
     stopPlay();
-    document.getElementById('btn-play').textContent='▶';
-    document.getElementById('btn-play').classList.remove('active');
   }
+  refreshTransportBtn();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -11705,6 +11705,8 @@ function attachEvents(){
     [...recLayers].forEach(li=>stopRec(li,false));
   });
   document.getElementById('play-drawer-close').addEventListener('click',()=>{
+    // Si en mode capture → annuler le recording avant de fermer
+    if(recLayers.length>0) [...recLayers].forEach(li=>stopRec(li,false));
     playDrawer.classList.remove('open'); _syncJouerOpen();
   });
 
@@ -11740,8 +11742,8 @@ function attachEvents(){
     });
     _updateGarderEff();
     if(circleView)drawCircles();
-    // Si transport arrêté → lancer la lecture en rec
-    if(!playing) startPlay();
+    // Reprendre = revenir à l'état "prêt à enregistrer" (arrêter si en lecture)
+    if(playing){ stopPlay(); refreshTransportBtn(); }
   });
   document.getElementById('rec-ctrl-mode').addEventListener('click',()=>{
     if(recLayers.length===0)return;
