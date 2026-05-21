@@ -432,30 +432,26 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 
 /* ─── BOTTOM BAR ─── */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #d0cec7;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
-.bottom-left{flex:1;display:flex;align-items:center;justify-content:center}
-.bottom-center{display:flex;align-items:center;justify-content:center;padding:0 16px}
-.bottom-right{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-.btn-rec-box{height:44px;background:#fff;border:2px solid #D85A30;border-radius:10px;display:none;align-items:stretch;overflow:hidden;white-space:nowrap;flex-shrink:0}
-body.rec-tapped .btn-rec-box{display:flex}
-body.rec-tapped .btn-cap-single{display:none}
-body.rec-active #btn-jouer{display:none}
-.btn-cap-single{flex:1;border:none;background:#c0392b;font-size:11px;font-weight:700;color:#fff;cursor:pointer;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.nav-pair{flex:1;display:flex;align-items:stretch}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:none;background:transparent;cursor:pointer;color:#999;padding:4px 0;transition:color .12s,background .12s;-webkit-tap-highlight-color:transparent}
+.nav-tab:active{opacity:.7}
+.nav-tab.active{color:#1D9E75;background:rgba(29,158,117,.07)}
+.nav-tab .nav-tab-ico{font-size:18px;line-height:1.1}
+.nav-tab .nav-tab-lbl{font-size:8.5px;font-weight:700;letter-spacing:.01em}
+.nav-play-wrap{display:flex;align-items:center;justify-content:center;padding:0 6px;flex-shrink:0}
+.nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:#c0392b;color:#fff;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
+.nav-cap-val{flex:1;display:none;align-items:center;justify-content:center;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
+body.rec-tapped .nav-pair{display:none}
+body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
-.btn-cap-ann{display:none;flex:1;border:none;border-right:1px solid rgba(255,255,255,.25);background:#c0392b;color:#fff;font-size:16px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;min-width:44px}
-.btn-cap-val{display:none;flex:2;border:none;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;padding:0 10px}
-body.rec-tapped .btn-cap-ann,body.rec-tapped .btn-cap-val{display:flex}
-.btn-play-main{height:44px;padding:0 28px;font-size:22px;font-weight:700;border:2px solid #1a1a18;border-radius:10px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative}
+.btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .btn-play-main:hover{background:#f0ede8}
-.btn-play-main.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.btn-play-main.active{background:#1a1a18;color:#fff;border-color:#1a1a18;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 /* Prêt rec (armé, pas en lecture) */
 body.rec-active .btn-play-main:not(.active){border-color:#D85A30;color:#D85A30}
 body.rec-active .btn-play-main:not(.active)::after{content:'';position:absolute;top:5px;right:7px;width:7px;height:7px;border-radius:50%;background:#c0392b}
 /* En lecture + rec */
 body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
-.btn-jouer-wrap{height:44px;padding:0 14px;cursor:pointer;font-size:11px;font-weight:700;background:#fff;border:2px solid #c0bdb7;border-radius:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
-.btn-jouer-wrap:hover{background:#f0ede8}
-.btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
-.hand{font-size:22px;line-height:1}
 
 /* ─── VOLET JOUER ─── */
 .play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 18px;display:none}
@@ -1006,17 +1002,16 @@ body.dark-mode .encyclo-bkey{color:#e0ddd8}
 body.dark-mode .encyclo-bval{color:#888}
 body.dark-mode .encyclo-vide{color:#555}
 body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#333330}
-body.dark-mode .btn-rec-box{background:#2a2a28;border-color:#D85A30}
-body.dark-mode .btn-cap-val{background:#1a8a66}
-body.dark-mode .btn-cap-ann{background:#a0302b}
+body.dark-mode .nav-tab{color:#555}
+body.dark-mode .nav-tab.active{color:#1D9E75;background:rgba(29,158,117,.1)}
 body.dark-mode .btn-rec.recording{background:#c0392b}
-body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#444}
+body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#555;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color:#D85A30;background:#2a2a28}
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
-body.dark-mode .btn-jouer-wrap{background:#2a2a28;color:#aaa;border-color:#444}
-body.dark-mode .btn-jouer-wrap.active{background:#1D9E75;color:#fff;border-color:#1D9E75}
+body.dark-mode .nav-cap-ann{background:#a0302b}
+body.dark-mode .nav-cap-val{background:#1a8a66}
 body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
 body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1123,7 +1118,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.30</span>
+      <span class="app-version">v3.14.31</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1485,19 +1480,39 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- Bottom bar -->
 <div class="bottom-bar">
-  <div class="bottom-left"></div>
-  <div class="bottom-center">
+  <!-- Left pair: Tic-Tac + Sons -->
+  <div class="nav-pair nav-pair-left">
+    <button class="nav-tab" id="nav-tab-metro">
+      <span class="nav-tab-ico">🎹</span>
+      <span class="nav-tab-lbl">Tic-Tac</span>
+    </button>
+    <button class="nav-tab" id="nav-tab-sons">
+      <span class="nav-tab-ico">🔊</span>
+      <span class="nav-tab-lbl">Sons</span>
+    </button>
+  </div>
+  <!-- Capture Annuler — remplace la paire gauche en rec-tapped -->
+  <button class="nav-cap-ann" id="btn-jouer-ann">✗ Annuler</button>
+  <!-- Center: Play (FAB) -->
+  <div class="nav-play-wrap">
     <button class="btn-play-main" id="btn-play">▶</button>
   </div>
-  <div class="bottom-right">
-    <button class="btn-jouer-wrap" id="btn-jouer">
-      <span class="hand">🤚</span>Jouer<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span>
+  <!-- Capture Valider — remplace la paire droite en rec-tapped -->
+  <button class="nav-cap-val" id="btn-jouer-val">✓ Valider</button>
+  <!-- Right pair: Encyclo + Jouer -->
+  <div class="nav-pair nav-pair-right">
+    <button class="nav-tab" id="nav-tab-encyclo">
+      <span class="nav-tab-ico">📖</span>
+      <span class="nav-tab-lbl">Encyclo</span>
     </button>
-    <div class="btn-rec-box" id="btn-rec-box">
-      <button class="btn-cap-single" id="btn-capture"><span class="hand">🤚</span>Capture<span class="hand" style="transform:scaleX(-1);display:inline-block">🤚</span></button>
-      <button class="btn-cap-ann" id="btn-jouer-ann">✗</button>
-      <button class="btn-cap-val" id="btn-jouer-val">✓ Valider</button>
-    </div>
+    <button class="nav-tab" id="btn-jouer">
+      <span class="nav-tab-ico">🤚</span>
+      <span class="nav-tab-lbl">Jouer</span>
+    </button>
+  </div>
+  <!-- Kept for JS compatibility -->
+  <div id="btn-rec-box" style="display:none">
+    <button id="btn-capture" style="display:none"></button>
   </div>
 </div>
 
@@ -6444,6 +6459,7 @@ function toggleEncyclo(open){
   const content=document.getElementById('encyclo-content');
   if(content)content.classList.toggle('open',open);
   if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb)tb.classList.remove('visible');}
+  if(typeof _syncNavTabs==='function')_syncNavTabs();
 }
 
 function showEncycloEntry(key, _fromHistory){
@@ -7617,6 +7633,57 @@ function _toggleMetroPanel(){
   const btnT=document.getElementById('btn-tempo');
   if(btnT) btnT.classList.toggle('active',hidden);
   _ribSigMetroOpen=false;
+  _syncNavTabs();
+}
+
+// ── Navigation tabs ──────────────────────────────────────────────────────────
+function _syncNavTabs(){
+  const metroWrap=document.getElementById('temps-wrap');
+  const metroOpen=metroWrap&&metroWrap.style.display!=='none';
+  const tmM=document.getElementById('nav-tab-metro');
+  const tmS=document.getElementById('nav-tab-sons');
+  const tmE=document.getElementById('nav-tab-encyclo');
+  if(tmM)tmM.classList.toggle('active',metroOpen);
+  if(tmS)tmS.classList.toggle('active',sonsOuvert);
+  if(tmE)tmE.classList.toggle('active',encycloOuvert);
+}
+function _navSetMetro(open){
+  const wrap=document.getElementById('temps-wrap'); if(!wrap)return;
+  wrap.style.display=open?'':'none';
+  const btnT=document.getElementById('btn-tempo');
+  if(btnT)btnT.classList.toggle('active',open);
+  _ribSigMetroOpen=false;
+}
+function _navSetSons(open){
+  if(sonsOuvert===open)return;
+  sonsOuvert=open;
+  if(open)instrOuvert=true;
+  const bar=document.querySelector('.band-bar');
+  if(bar){
+    bar.classList.toggle('visible',open);
+    const btnInstr=bar.querySelector('.btn-volet-band');
+    if(btnInstr){btnInstr.textContent=instrOuvert?'Instru ▼':'Instru ▶';btnInstr.classList.toggle('open',instrOuvert);}
+  }
+  const btnV=document.getElementById('btn-vol');
+  if(btnV)btnV.classList.toggle('active',open);
+  const bc=document.getElementById('band-content');
+  if(bc)bc.classList.toggle('open',open&&instrOuvert);
+}
+function setNavSection(name){
+  const metroWrap=document.getElementById('temps-wrap');
+  const isMetroOpen=metroWrap&&metroWrap.style.display!=='none';
+  // Toggle off if already active
+  if(name==='metro'&&isMetroOpen){_navSetMetro(false);_syncNavTabs();return;}
+  if(name==='sons'&&sonsOuvert){_navSetSons(false);_syncNavTabs();return;}
+  if(name==='encyclo'&&encycloOuvert){toggleEncyclo(false);_syncNavTabs();return;}
+  // Close others, open selected
+  if(name!=='metro'&&isMetroOpen)_navSetMetro(false);
+  if(name!=='sons'&&sonsOuvert)_navSetSons(false);
+  if(name!=='encyclo'&&encycloOuvert)toggleEncyclo(false);
+  if(name==='metro')_navSetMetro(true);
+  else if(name==='sons')_navSetSons(true);
+  else if(name==='encyclo')toggleEncyclo(true);
+  _syncNavTabs();
 }
 // Ouverture rapide du volet Métro sur le sous-volet Unit uniquement (depuis barre info sig)
 // N'affecte PAS btn-tempo.active — indépendant du toggle standard
@@ -11050,6 +11117,7 @@ function attachEvents(){
       const hidden=wrap.style.display==='none';
       wrap.style.display=hidden?'':'none';
       btnT.classList.toggle('active',hidden);
+      _syncNavTabs();
     }
 
     btnT.addEventListener('pointerdown',e=>{
@@ -11114,6 +11182,7 @@ function attachEvents(){
       btnV.classList.toggle('active',sonsOuvert);
       const bc=document.getElementById('band-content');
       if(bc)bc.classList.toggle('open', sonsOuvert&&instrOuvert);
+      if(typeof _syncNavTabs==='function')_syncNavTabs();
     }
 
     let _longPressTimer=null, _wasLongPress=false;
@@ -11682,6 +11751,11 @@ function attachEvents(){
     if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
 
+  // ── Nav tabs ──
+  document.getElementById('nav-tab-metro').addEventListener('click',()=>setNavSection('metro'));
+  document.getElementById('nav-tab-sons').addEventListener('click',()=>setNavSection('sons'));
+  document.getElementById('nav-tab-encyclo').addEventListener('click',()=>setNavSection('encyclo'));
+
   // ── Play ──
   document.getElementById('btn-play').addEventListener('click',togglePlay);
 
@@ -11695,10 +11769,6 @@ function attachEvents(){
     buildSoundPanel();
   };
   btnJouer.addEventListener('click',()=>{ playDrawer.classList.toggle('open');_syncJouerOpen(); });
-  document.getElementById('btn-capture').addEventListener('click',()=>{
-    // Avant tout tap = annuler le rec (rien n'a été enregistré)
-    [...recLayers].forEach(li=>stopRec(li,false));
-  });
   document.getElementById('btn-jouer-val').addEventListener('click',()=>{
     [...recLayers].forEach(li=>stopRec(li,true));
   });
@@ -11938,6 +12008,7 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
+_syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 </script>
 </body>
