@@ -225,7 +225,8 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{background:transparent;color:#6B5FA5;font-size:20px;border-color:#c8c0e0}
+.groove-bar .btn-view{background:#6B5FA5;color:#fff;font-size:17px;border-color:#6B5FA5;border-radius:8px;width:auto;padding:2px 6px}
+.groove-bar .btn-view:hover{background:#5a4f94;border-color:#5a4f94}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -917,6 +918,7 @@ body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justif
 /* ─── MODE SOMBRE ─── */
 body.dark-mode{background:#18181a;color:#e0ddd8}
 body.dark-mode .frame{background:#222220}
+body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#e0ddd8}
 body.dark-mode .app-version{color:#555}
@@ -1052,7 +1054,7 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{color:#a89fd0;border-color:#5a5280}
+body.dark-mode .groove-bar .btn-view{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -1137,7 +1139,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.40</span>
+      <span class="app-version">v3.14.41</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -12168,6 +12170,8 @@ _initEncycloPanel();
 setMetroGlobal(!metro.muted);
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
+// Aligner padding-top body sur la hauteur réelle de la topbar
+(()=>{const tb=document.querySelector('.top-bar');if(tb)document.body.style.paddingTop=tb.offsetHeight+'px';})();
 </script>
 </body>
 </html>
