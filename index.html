@@ -376,8 +376,21 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-bval[contenteditable],.encyclo-chapo[contenteditable]{white-space:pre-wrap}
 .encyclo-bkey{font-weight:500;color:#1a1a18}
 .encyclo-bval{color:#555;padding-left:10px;white-space:pre-line}
-#enc-floating-toolbar{position:fixed;top:56px;left:0;right:0;z-index:95;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 2px 8px rgba(0,0,0,.12);will-change:transform}
+#enc-floating-toolbar{position:sticky;top:0;z-index:2;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 #enc-floating-toolbar.visible{display:flex;background:#4a6d40;border-bottom-color:#3a5c32}
+/* ─── VOLET ENCYCLOPÉDIE (bottom sheet redimensionnable) ─── */
+.encyclo-panel{position:fixed;left:0;right:0;bottom:60px;z-index:102;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #4a6d40;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height}
+.encyclo-panel-handle-wrap{flex-shrink:0;padding:10px 0 6px;display:flex;justify-content:center;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
+.encyclo-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
+.encyclo-panel-handle-wrap:hover .encyclo-panel-handle{background:#aaa}
+.encyclo-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+/* Inside panel: content always visible, hide toggle & label */
+#encyclo-panel .encyclo-content{max-height:none!important;overflow:visible!important}
+#encyclo-panel .btn-volet-encyclo{display:none!important}
+#encyclo-panel .section-bar-lbl{display:none!important}
+/* Prevent accidental bar-background tap closing panel */
+#encyclo-panel .encyclo-bar{pointer-events:none}
+#encyclo-panel .encyclo-bar>*{pointer-events:auto}
 .enc-tb-btn{font-size:11px;padding:3px 11px;border:1px solid rgba(255,255,255,.35);border-radius:3px;background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-family:inherit;line-height:1.5}
 .enc-tb-btn:hover{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.6)}
 #encyclo-body.enc-edit-active{background:rgba(74,109,64,.05);border-radius:4px;padding:4px}
@@ -400,6 +413,8 @@ body.dark-mode .btn-enc-nav{background:#2a2926;color:#aaa;border-color:#555}
 body.dark-mode .btn-enc-edit{color:#777}
 body.dark-mode .btn-enc-edit.active{background:#4a6d40;color:#fff}
 body.dark-mode #enc-floating-toolbar.visible{background:#2d4a28;border-bottom-color:#3a5c32}
+body.dark-mode .encyclo-panel{background:#252522;border-top-color:#4a6d40;box-shadow:0 -4px 20px rgba(0,0,0,.35)}
+body.dark-mode .encyclo-panel-handle{background:#444}
 body.dark-mode #encyclo-body.enc-edit-active{background:rgba(74,109,64,.12)}
 body.dark-mode .enc-link{color:#7ab87a}
 body.dark-mode .enc-link-picker{background:#1e2820;border-color:#4a6d40}
@@ -1118,7 +1133,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
     <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
       <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.31</span>
+      <span class="app-version">v3.14.32</span>
     </div>
   </div>
   <div class="top-bar-center">
@@ -1369,8 +1384,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <canvas id="rhythm-canvas"></canvas>
   </div>
   <div class="hdivider"></div>
-  <!-- Section Encyclopédie -->
-  <div id="section-encyclo"></div>
+</div>
+
+<!-- VOLET ENCYCLOPÉDIE (bottom sheet redimensionnable) -->
+<div id="encyclo-panel" class="encyclo-panel">
+  <div class="encyclo-panel-handle-wrap" id="encyclo-panel-handle">
+    <div class="encyclo-panel-handle"></div>
+  </div>
+  <div class="encyclo-panel-content" id="encyclo-panel-content">
+    <div id="enc-floating-toolbar"></div>
+    <div id="section-encyclo"></div>
+  </div>
 </div>
 
 <!-- Volet Jouer -->
@@ -1483,7 +1507,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Left pair: Tic-Tac + Sons -->
   <div class="nav-pair nav-pair-left">
     <button class="nav-tab" id="nav-tab-metro">
-      <span class="nav-tab-ico">🎹</span>
+      <span class="nav-tab-ico">⏱️</span>
       <span class="nav-tab-lbl">Tic-Tac</span>
     </button>
     <button class="nav-tab" id="nav-tab-sons">
@@ -1540,9 +1564,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="midi-export-btn" id="midi-export-confirm">⬇ Télécharger .mid</button>
   </div>
 </div>
-
-<!-- Toolbar d'édition encyclopédie — fixe, au-dessus de la bottom-bar -->
-<div id="enc-floating-toolbar"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3164,6 +3185,7 @@ function updateSettingsBadge(){
 }
 let layersOuverts = true;
 let encycloOuvert = true;
+let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
 
 // ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
@@ -6456,6 +6478,12 @@ function buildEncycloSection(){
 
 function toggleEncyclo(open){
   encycloOuvert=open;
+  const panel=document.getElementById('encyclo-panel');
+  if(panel){
+    panel.classList.toggle('open',open);
+    panel.style.height=open?_encPanelH+'vh':'0';
+  }
+  // Compatibilité : encyclo-content toujours visible dans le panel (override CSS), mais synced pour code tiers
   const content=document.getElementById('encyclo-content');
   if(content)content.classList.toggle('open',open);
   if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb)tb.classList.remove('visible');}
@@ -6618,10 +6646,7 @@ function renderEncyclo(key){
       window.visualViewport?.removeEventListener('resize',tb._vvSync);
       window.visualViewport?.removeEventListener('scroll',tb._vvSync);
     }
-    const _vvSync=()=>{
-      const vv=window.visualViewport;
-      if(vv) tb.style.transform='translateY('+Math.round(vv.offsetTop)+'px)';
-    };
+    const _vvSync=()=>{}; // toolbar position:sticky dans le panel — pas besoin de transform
     tb._vvSync=_vvSync;
     const showTb=()=>{
       body.classList.add('enc-edit-active');tb.classList.add('visible');
@@ -7685,6 +7710,57 @@ function setNavSection(name){
   else if(name==='encyclo')toggleEncyclo(true);
   _syncNavTabs();
 }
+
+// ── Volet Encyclopédie — drag & snap ────────────────────────────────────────
+function _initEncycloPanel(){
+  const SNAPS=[28,60,88]; // snap points en vh
+  const CLOSE_THRESH=18;  // en dessous → fermer
+  const panel=document.getElementById('encyclo-panel');
+  const hw=document.getElementById('encyclo-panel-handle');
+  if(!panel||!hw)return;
+  let _drag=false,_startY=0,_startH=0;
+
+  hw.addEventListener('pointerdown',e=>{
+    if(e.button&&e.button!==0)return;
+    e.preventDefault();
+    hw.setPointerCapture(e.pointerId);
+    _drag=true;_startY=e.clientY;
+    _startH=parseFloat(panel.style.height)||_encPanelH;
+    panel.style.transition='none';
+  },{passive:false});
+
+  hw.addEventListener('pointermove',e=>{
+    if(!_drag)return;
+    const dy=_startY-e.clientY; // drag vers le haut = positif = plus grand
+    const newH=Math.max(10,Math.min(92,_startH+dy/window.innerHeight*100));
+    panel.style.height=newH+'vh';
+  },{passive:false});
+
+  function _snapOrClose(){
+    if(!_drag)return;
+    _drag=false;
+    const cur=parseFloat(panel.style.height)||60;
+    panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    if(cur<CLOSE_THRESH){
+      toggleEncyclo(false);
+    } else {
+      let best=SNAPS[0],minD=Infinity;
+      SNAPS.forEach(s=>{const d=Math.abs(cur-s);if(d<minD){minD=d;best=s;}});
+      _encPanelH=best;
+      panel.style.height=best+'vh';
+    }
+    setTimeout(()=>{panel.style.transition='';},300);
+  }
+  hw.addEventListener('pointerup',_snapOrClose);
+  hw.addEventListener('pointercancel',()=>{
+    if(!_drag)return;
+    _drag=false;
+    panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    panel.style.height=_encPanelH+'vh';
+    setTimeout(()=>{panel.style.transition='';},300);
+  });
+}
+
 // Ouverture rapide du volet Métro sur le sous-volet Unit uniquement (depuis barre info sig)
 // N'affecte PAS btn-tempo.active — indépendant du toggle standard
 let _ribSigMetroOpen=false;
@@ -11747,8 +11823,6 @@ function attachEvents(){
   document.getElementById('btn-app-title').addEventListener('click',()=>{
     showEncycloEntry('poumtchak');
     if(!encycloOuvert)toggleEncyclo(true);
-    const el=document.getElementById('section-encyclo');
-    if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
 
   // ── Nav tabs ──
@@ -12006,6 +12080,10 @@ window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
 window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
 // États par défaut
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
+// Volet Encyclopédie : panel hauteur initiale (encycloOuvert=true par défaut)
+_initEncycloPanel();
+const _epInit=document.getElementById('encyclo-panel');
+if(_epInit){_epInit.style.height=_encPanelH+'vh';_epInit.classList.add('open');}
 // metro.muted=true par défaut → état initial bouton top bar
 setMetroGlobal(!metro.muted);
 _syncNavTabs(); // Sync onglets de nav
