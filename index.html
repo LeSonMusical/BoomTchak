@@ -28,19 +28,21 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 
 /* ─── TOP BAR ─── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:7px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.app-title-block{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;line-height:1.15;gap:0}
+.app-title-block{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;line-height:1.15;gap:0;cursor:pointer;padding:2px 4px;border-radius:4px;-webkit-tap-highlight-color:transparent}
+.app-title-block:hover .app-name{text-decoration:underline dotted}
 .app-name{font-size:13px;font-weight:700;color:#8B6914;letter-spacing:.01em}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
-.btn-auth-status{font-size:19px;padding:1px 6px;flex-shrink:0;line-height:1}
-.top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto}
+.btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
+.top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
 .btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;color:#3A5A8A;flex-shrink:0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
+.top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
-/* Bouton forme dans la barre de vues */
-.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #c0c8d0;background:#f5f4f0;color:#555;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4}
-.btn-view-shape:hover{background:#e8e5e0}
+/* Bouton forme dans la barre de vues — toujours violet */
+.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #6B5FA5;background:#6B5FA5;color:#fff;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:700}
+.btn-view-shape:hover{background:#5a4f94;border-color:#5a4f94}
 /* Barre de contrôle des vues (au-dessus du canvas) */
 #view-mode-bar{display:flex;align-items:center;gap:4px;padding:3px 8px;background:#f5f4f0;border-bottom:1px solid #e0ddd8;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
@@ -96,7 +98,8 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 #btn-metro-volets-group{display:flex;gap:0}
 .metro-3col-sw .metro-3col-lbl{text-align:center}
 .pm-item.pm-pressing{background:rgba(107,95,165,.12)!important;transform:scale(.98);transition:transform .1s}
-.temps-content{display:block}
+.temps-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
+.temps-content.open{max-height:900px}
 .metro-sub{border-top:1px solid rgba(0,0,0,.08)}
 .metro-bloc{border-left:2px solid #C8D0D8;margin-left:4px;padding:.2rem 0 .35rem .5rem;display:flex;flex-direction:column;gap:0}
 .metro-panel{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:.1rem 0}
@@ -922,7 +925,7 @@ body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
 body.dark-mode .btn-sig-top{color:#6A8EC0}
-body.dark-mode .btn-view-shape{background:#2a2a28;border-color:#444;color:#aaa}
+body.dark-mode .btn-view-shape{background:#5a4f94;border-color:#5a4f94;color:#fff}
 body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
@@ -1134,10 +1137,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <!-- LEFT: app identity -->
-  <div class="app-title-block">
+  <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
+  <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.14.48</span>
+    <span class="app-version">v3.14.49</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7661,21 +7664,7 @@ function updateViewModeBar(){
   bar.innerHTML='';
   const isCircle = viewShape === 'circle';
 
-  // Bouton forme ◎/☰
-  const btnShape=document.createElement('button');
-  btnShape.id='btn-view';
-  btnShape.className='btn-view-shape';
-  btnShape.textContent=isCircle?'◎':'☰';
-  btnShape.title=isCircle?'Vue circulaire':'Vue linéaire';
-  btnShape.addEventListener('click',()=>setView(isCircle?'linear':'circle'));
-  bar.appendChild(btnShape);
-
-  // Séparateur
-  const sep=document.createElement('span');
-  sep.className='view-bar-sep';sep.textContent='|';
-  bar.appendChild(sep);
-
-  // Boutons contextuels
+  // Boutons contextuels (en premier)
   const opts = isCircle
     ? [['pattern','Motif'],['measure','Mesure']]
     : [['pattern','Pas'],['cycle','Cycle']];
@@ -7687,6 +7676,16 @@ function updateViewModeBar(){
     btn.addEventListener('click',()=>setViewCycle(val));
     bar.appendChild(btn);
   });
+
+  // Bouton forme ◎/☰ tout à droite, toujours violet
+  const btnShape=document.createElement('button');
+  btnShape.id='btn-view';
+  btnShape.className='btn-view-shape';
+  btnShape.textContent=isCircle?'◎':'☰';
+  btnShape.title=isCircle?'Vue circulaire':'Vue linéaire';
+  btnShape.style.marginLeft='auto';
+  btnShape.addEventListener('click',()=>setView(isCircle?'linear':'circle'));
+  bar.appendChild(btnShape);
 }
 
 // ── Fractions Unicode lisibles (demi, tiers, quarts…) ──
@@ -7730,10 +7729,19 @@ function updateStepSeqInfo(li){
 // ── updateRhythmInfoBar() : barre info rythmique globale (toutes vues) ──
 function _toggleMetroPanel(){
   const wrap=document.getElementById('temps-wrap'); if(!wrap) return;
-  const hidden=wrap.style.display==='none';
-  wrap.style.display=hidden?'':'none';
+  const content=document.getElementById('temps-content');
+  const isOpen=wrap.style.display!=='none';
+  if(isOpen){
+    // Fermeture : replier le contenu d'abord, puis cacher la barre
+    if(content) content.classList.remove('open');
+    setTimeout(()=>{ wrap.style.display='none'; },230);
+  } else {
+    // Ouverture : afficher la barre (instantané), puis déplier le contenu
+    wrap.style.display='';
+    requestAnimationFrame(()=>{ if(content) content.classList.add('open'); });
+  }
   const btnT=document.getElementById('btn-tempo');
-  if(btnT) btnT.classList.toggle('active',hidden);
+  if(btnT) btnT.classList.toggle('active',!isOpen);
   _ribSigMetroOpen=false;
   _syncNavTabs();
 }
@@ -7751,7 +7759,14 @@ function _syncNavTabs(){
 }
 function _navSetMetro(open){
   const wrap=document.getElementById('temps-wrap'); if(!wrap)return;
-  wrap.style.display=open?'':'none';
+  const content=document.getElementById('temps-content');
+  if(open){
+    wrap.style.display='';
+    requestAnimationFrame(()=>{ if(content) content.classList.add('open'); });
+  } else {
+    if(content) content.classList.remove('open');
+    setTimeout(()=>{ wrap.style.display='none'; },230);
+  }
   const btnT=document.getElementById('btn-tempo');
   if(btnT)btnT.classList.toggle('active',open);
   _ribSigMetroOpen=false;
@@ -8111,9 +8126,12 @@ async function sbSyncPublicPool() {
       buildGrooveSection(); buildEncycloSection();
       if(!playing&&currentGrooveId&&getGroove(currentGrooveId)) applyGroove(currentGrooveId);
       else buildLayers();
-      // Charger l'article BoomTchak après que la DB est prête
-      showEncycloEntry('poumtchak');
-      if(!encycloOuvert) toggleEncyclo(true);
+      // Charger l'article BoomTchak uniquement à la première visite
+      if(!localStorage.getItem('ptk_visited')){
+        localStorage.setItem('ptk_visited','1');
+        showEncycloEntry('poumtchak');
+        if(!encycloOuvert) toggleEncyclo(true);
+      }
     }
   } catch(e) {
     // Silencieux si RLS bloque la lecture anonyme (non migré)
@@ -11290,13 +11308,7 @@ function attachEvents(){
     const LONG_MS=350, DRAG_PX=6, POS_PER_PX=2;
     let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
 
-    function toggleTempsWrap(){
-      const wrap=document.getElementById('temps-wrap');
-      const hidden=wrap.style.display==='none';
-      wrap.style.display=hidden?'':'none';
-      btnT.classList.toggle('active',hidden);
-      _syncNavTabs();
-    }
+    function toggleTempsWrap(){ _toggleMetroPanel(); }
 
     btnT.addEventListener('pointerdown',e=>{
       _startX=e.clientX; _startVal=parseInt(bpmSlider.value);
@@ -11934,10 +11946,14 @@ function attachEvents(){
 
   // btn-sons remplacé par btn-vol (géré dans le bloc Btn Vol ci-dessus)
 
-  // ── Titre BoomTchak → encyclo ──
+  // ── Titre BoomTchak → toggle article BoomTchak ──
   document.getElementById('btn-app-title')?.addEventListener('click',()=>{
-    showEncycloEntry('poumtchak');
-    if(!encycloOuvert)toggleEncyclo(true);
+    if(encycloOuvert && currentEncycloId==='poumtchak'){
+      toggleEncyclo(false);
+    } else {
+      showEncycloEntry('poumtchak');
+      if(!encycloOuvert) toggleEncyclo(true);
+    }
   });
 
   // ── Nav tabs ──
