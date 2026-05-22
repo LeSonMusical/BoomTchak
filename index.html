@@ -1138,9 +1138,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <!-- LEFT: auth/settings -->
   <div class="settings-menu-wrap">
-    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages / Connexion"><span id="auth-status-icon">👤</span><span class="app-version">v3.14.45</span></button>
+    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages">⚙</button>
     <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
     <div class="settings-menu" id="panel-settings">
+        <!-- Ligne 0 : App identity -->
+        <div class="smenu-row" style="justify-content:flex-start;gap:8px">
+          <span style="font-size:13px;font-weight:700;color:#8B6914">BoomTchak</span>
+          <span id="smenu-app-version" class="app-version">v3.14.46</span>
+          <span id="smenu-role-chip" style="margin-left:auto;font-size:10px;color:#888"></span>
+        </div>
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
           <span id="smenu-theme-ico">🌙</span>
@@ -2611,7 +2617,7 @@ function updateSigDisplays() {
   const mpvLbl = document.getElementById('mpv-sig-label');
   if (mpvLbl) mpvLbl.innerHTML = frac;
   const sigTop = document.getElementById('sig-top-lbl');
-  if (sigTop) sigTop.textContent = computeSigLabel();
+  if (sigTop) sigTop.textContent = (currentSig?.nbDivisions||4)+'/'+(currentSig?.beatUnit||4);
 }
 
 function renderMetroPatternViz() {
@@ -3135,14 +3141,14 @@ function updateGrooveNameTopBar(){
 }
 
 function _updateAuthStatusIcon(){
-  const icon = document.getElementById('auth-status-icon');
-  if(!icon) return;
+  const chip = document.getElementById('smenu-role-chip');
+  if(!chip) return;
   if(authSession && authProfile){
-    icon.textContent = authProfile.role==='mx' ? '👑'
-                     : authProfile.role==='tx' ? '🎓'
-                     : '👤';
+    chip.textContent = authProfile.role==='mx' ? '👑 Admin MX'
+                     : authProfile.role==='tx' ? '🎓 Enseignant'
+                     : '🎵 Élève';
   } else {
-    icon.textContent = '👤';
+    chip.textContent = '';
   }
 }
 
