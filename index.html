@@ -28,13 +28,11 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 
 /* ─── TOP BAR ─── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:5px;padding:5px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.app-title-block{display:flex;align-items:baseline;gap:4px;flex-shrink:0}
+.app-name{font-size:13px;font-weight:700;color:#8B6914;letter-spacing:.01em}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
-.btn-auth-status{font-size:16px;padding:2px 6px;flex-shrink:0}
-.btn-groove-name{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;overflow:hidden}
-.btn-top.btn-groove-name{color:#8B6914}
-.groove-name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
-.groove-name-arr{font-size:8px;opacity:.5;flex-shrink:0}
-.top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.btn-auth-status{font-size:14px;padding:2px 7px;flex-shrink:0}
+.top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto}
 .btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;color:#3A5A8A;flex-shrink:0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .btn-top:hover{background:#e8e5e0}
@@ -49,7 +47,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);left:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
+.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -922,7 +920,7 @@ body.dark-mode{background:#18181a;color:#e0ddd8}
 body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
-body.dark-mode .btn-groove-name{color:#C8961A}
+body.dark-mode .app-name{color:#C8961A}
 body.dark-mode .btn-sig-top{color:#6A8EC0}
 body.dark-mode .btn-view-shape{background:#2a2a28;border-color:#444;color:#aaa}
 body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
@@ -1136,16 +1134,25 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <!-- LEFT: auth/settings -->
+  <!-- LEFT: app identity -->
+  <div class="app-title-block">
+    <span class="app-name">BoomTchak</span>
+    <span class="app-version">v3.14.47</span>
+  </div>
+  <!-- CENTER→RIGHT: controls rapides -->
+  <div class="top-bar-controls">
+    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
+    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
+  </div>
+  <!-- FAR RIGHT: settings -->
   <div class="settings-menu-wrap">
     <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages">⚙</button>
     <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
     <div class="settings-menu" id="panel-settings">
-        <!-- Ligne 0 : App identity -->
+        <!-- Ligne 0 : Rôle utilisateur -->
         <div class="smenu-row" style="justify-content:flex-start;gap:8px">
-          <span style="font-size:13px;font-weight:700;color:#8B6914">BoomTchak</span>
-          <span id="smenu-app-version" class="app-version">v3.14.46</span>
-          <span id="smenu-role-chip" style="margin-left:auto;font-size:10px;color:#888"></span>
+          <span id="smenu-role-chip" style="font-size:11px;color:#888"></span>
         </div>
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
@@ -1223,16 +1230,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
     </div>
-  <!-- CENTER: groove name -->
-  <button class="btn-top btn-groove-name" id="btn-groove-name" title="Changer de groove">
-    <span id="groove-name-lbl" class="groove-name-txt">—</span><span class="groove-name-arr">▾</span>
-  </button>
-  <!-- RIGHT: sig + tempo + vol -->
-  <div class="top-bar-controls">
-    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
-    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
-  </div>
 </div>
 
 <!-- ZONE CENTRALE -->
@@ -4751,10 +4748,28 @@ function buildGrooveSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';
   bar.appendChild(lbl);
 
+  const curGroove=getGroove(currentGrooveId);
+  const groovePresetBtn=document.createElement('button');
+  groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
+  groovePresetBtn.style.cssText='color:#C8961A;font-weight:600;border-color:#ddd';
+  groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
   const _grooveOnSelect=(id)=>{
     applyGroove(id);refreshGrooveClass();
-    updateGrooveNameTopBar();
+    const pb=document.getElementById('groove-preset-btn');
+    const g=getGroove(id);
+    if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
   };
+  groovePresetBtn.addEventListener('click',()=>{
+    openPresetModal({
+      type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',
+      onSelect:_grooveOnSelect
+    });
+  });
+  attachSwipe(groovePresetBtn,
+    ()=>_sortByFamille((packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending'),packCours.familles),
+    ()=>currentGrooveId, _grooveOnSelect
+  );
+  bar.appendChild(groovePresetBtn);
 
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
