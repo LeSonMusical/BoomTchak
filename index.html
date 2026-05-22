@@ -27,21 +27,24 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:0 .85rem .5rem}
 
 /* ─── TOP BAR ─── */
-.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.top-bar-left{display:flex;align-items:center;gap:4px}
-.top-bar-center{display:flex;align-items:center;gap:6px;justify-content:center}
-.top-bar-right{display:flex;align-items:center;gap:6px;justify-content:flex-end}
-.app-title-block{display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;line-height:1;padding:2px 4px;border-radius:4px}
-.app-title-block:hover{background:#f0ede8}
-.app-name{font-size:13px;font-weight:700;letter-spacing:.06em;color:#1a1a18}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:5px;padding:5px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
-.btn-sx-tx{font-size:9px;padding:2px 6px;background:#ffeedd;border:1px solid #D85A30;border-radius:3px;color:#993C1D;font-weight:600;cursor:pointer}
+.btn-auth-status{font-size:16px;padding:2px 6px;flex-shrink:0}
+.btn-groove-name{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;color:#8B6914;overflow:hidden}
+.groove-name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.groove-name-arr{font-size:8px;opacity:.5;flex-shrink:0}
+.top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;color:#3A5A8A;flex-shrink:0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
-.btn-view{width:28px;height:28px;padding:0;font-size:19px;border:1px solid #ccc;border-radius:5px;cursor:pointer;background:transparent;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
-.btn-view:hover{background:#e8e5e0}
+/* Bouton forme dans la barre de vues */
+.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #c0c8d0;background:#f5f4f0;color:#555;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4}
+.btn-view-shape:hover{background:#e8e5e0}
+/* Barre de contrôle des vues (au-dessus du canvas) */
+#view-mode-bar{display:flex;align-items:center;gap:4px;padding:3px 8px;background:#f5f4f0;border-bottom:1px solid #e0ddd8;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
@@ -225,8 +228,6 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar{background:#faf3e0;border-bottom:1px solid #e0ddd8;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.groove-bar .btn-view{background:#6B5FA5;color:#fff;font-size:17px;border-color:#6B5FA5;border-radius:8px;width:auto;padding:2px 6px}
-.groove-bar .btn-view:hover{background:#5a4f94;border-color:#5a4f94}
 .btn-volet-groove{color:#d4c080 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
 /* barre band : bleue */
@@ -920,14 +921,14 @@ body.dark-mode{background:#18181a;color:#e0ddd8}
 body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
-body.dark-mode .app-name{color:#e0ddd8}
+body.dark-mode .btn-groove-name{color:#C8961A}
+body.dark-mode .btn-sig-top{color:#6A8EC0}
+body.dark-mode .btn-view-shape{background:#2a2a28;border-color:#444;color:#aaa}
+body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-top:hover{background:#333330}
 body.dark-mode .btn-top.active{background:#444440;color:#e0ddd8;border-color:#666}
-body.dark-mode .btn-view{background:transparent;color:#aaa;border-color:#555}
-body.dark-mode .btn-view:hover{background:rgba(255,255,255,.08)}
-body.dark-mode .btn-sx-tx{background:#3a1800;border-color:#993C1D}
 body.dark-mode .t-spm-display{color:#666}
 body.dark-mode .t-spm-display:hover{color:#aaa}
 body.dark-mode .t-equiv{color:#e0ddd8}
@@ -1054,7 +1055,6 @@ body.dark-mode .btn-info-ico{border-color:#444;color:#666}
 body.dark-mode .btn-info-ico:hover{background:#333330}
 body.dark-mode .btn-volet{color:#555}
 body.dark-mode .btn-volet:hover,body.dark-mode .btn-volet.open{color:#aaa}
-body.dark-mode .groove-bar .btn-view{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .btn-sec-save,body.dark-mode .btn-sec-menu{opacity:.45}
 body.dark-mode .vol-h-thumb{border-color:#1c1c1a}
 body.dark-mode .fam-filter{background:rgba(0,0,0,.4);color:var(--cc);border-color:var(--cs)}
@@ -1135,23 +1135,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <div class="top-bar-left">
-    <button class="btn-sx-tx" id="btn-sx-tx">SX</button>
-    <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
-      <span class="app-name">BoomTchak</span>
-      <span class="app-version">v3.14.43</span>
-    </div>
-  </div>
-  <div class="top-bar-center">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
-    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span><span class="sons-lbl">Sons</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
-  </div>
-  <div class="top-bar-right">
-    <div class="settings-menu-wrap">
-      <button class="btn-top" id="btn-settings" title="Menu">···</button>
-      <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
-      <span id="settings-role-badge" style="display:none;position:absolute;bottom:1px;right:0;font-size:9px;pointer-events:none;line-height:1"></span>
-      <div class="settings-menu" id="panel-settings">
+  <!-- LEFT: auth/settings -->
+  <div class="settings-menu-wrap">
+    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages / Connexion"><span id="auth-status-icon">👤</span><span class="app-version">v3.14.44</span></button>
+    <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
+    <div class="settings-menu" id="panel-settings">
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
           <span id="smenu-theme-ico">🌙</span>
@@ -1228,6 +1216,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
     </div>
+  </div>
+  <!-- CENTER: groove name -->
+  <button class="btn-top btn-groove-name" id="btn-groove-name" title="Changer de groove">
+    <span id="groove-name-lbl" class="groove-name-txt">—</span><span class="groove-name-arr">▾</span>
+  </button>
+  <!-- RIGHT: sig + tempo + vol -->
+  <div class="top-bar-controls">
+    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
+    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
   </div>
 </div>
 
@@ -2612,6 +2610,8 @@ function updateSigDisplays() {
   if (sigDisp) sigDisp.innerHTML = frac;
   const mpvLbl = document.getElementById('mpv-sig-label');
   if (mpvLbl) mpvLbl.innerHTML = frac;
+  const sigTop = document.getElementById('sig-top-lbl');
+  if (sigTop) sigTop.textContent = computeSigLabel();
 }
 
 function renderMetroPatternViz() {
@@ -3122,6 +3122,28 @@ function setLayerDirty(li, isDirty){
 
 function updateGrooveSaveBtn(){
   setDirtyUI('groove-preset-btn', 'save-btn-groove', grooveDirty || metroDirty || bandDirty);
+  updateGrooveNameTopBar();
+}
+
+function updateGrooveNameTopBar(){
+  const lbl = document.getElementById('groove-name-lbl');
+  if(!lbl) return;
+  const g = getGroove(currentGrooveId);
+  let name = g ? (g.nom || '—') : '—';
+  if(grooveDirty || metroDirty || bandDirty) name += ' ✎';
+  lbl.textContent = name;
+}
+
+function _updateAuthStatusIcon(){
+  const icon = document.getElementById('auth-status-icon');
+  if(!icon) return;
+  if(authSession && authProfile){
+    icon.textContent = authProfile.role==='mx' ? '👑'
+                     : authProfile.role==='tx' ? '🎓'
+                     : '👤';
+  } else {
+    icon.textContent = '👤';
+  }
 }
 
 function updateEncycloSaveBtn(){
@@ -3202,6 +3224,7 @@ function applyGroove(grooveId){
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
   grooveDirty=false; updateGrooveSaveBtn();
+  updateGrooveNameTopBar();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
 
   // Préserver le mute-all utilisateur (court-tap btn-vol) à travers le changement de groove
@@ -4722,29 +4745,10 @@ function buildGrooveSection(){
   const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';
   bar.appendChild(lbl);
 
-  // Bouton preset groove (remplace filtre famille + select)
-  const curGroove=getGroove(currentGrooveId);
-  const groovePresetBtn=document.createElement('button');
-  groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
-  groovePresetBtn.style.cssText='color:#C8961A;font-weight:600;border-color:#ddd';
-  groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
   const _grooveOnSelect=(id)=>{
     applyGroove(id);refreshGrooveClass();
-    const pb=document.getElementById('groove-preset-btn');
-    const g=getGroove(id);
-    if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
+    updateGrooveNameTopBar();
   };
-  groovePresetBtn.addEventListener('click',()=>{
-    openPresetModal({
-      type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',
-      onSelect:_grooveOnSelect
-    });
-  });
-  attachSwipe(groovePresetBtn,
-    ()=>_sortByFamille((packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending'),packCours.familles),
-    ()=>currentGrooveId, _grooveOnSelect
-  );
-  bar.appendChild(groovePresetBtn);
 
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
@@ -4776,12 +4780,6 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnI);
 
-  const btnView=document.createElement('button');
-  btnView.id='btn-view';btnView.className='btn-view';
-  btnView.textContent=viewShape==='circle'?'◎':'☰';
-  btnView.title=viewShape==='circle'?'Vue circulaire':'Vue linéaire';
-  btnView.addEventListener('click',()=>setView(viewShape==='circle'?'linear':'circle'));
-  bar.appendChild(btnView);
 
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
@@ -7613,10 +7611,6 @@ function _applyView(){
   document.body.classList.toggle('circle-linear', isLinearCyc);
   document.body.classList.toggle('step-seq', isStepSeq);
 
-  // btn-view
-  const btnV = document.getElementById('btn-view');
-  if(btnV){ btnV.textContent = isCircle ? '◎' : '☰'; btnV.title = isCircle ? 'Vue circulaire' : 'Vue linéaire'; }
-
   // Barre de sous-mode
   updateViewModeBar();
 
@@ -7649,9 +7643,25 @@ function updateViewModeBar(){
   bar.style.display='flex';
   bar.innerHTML='';
   const isCircle = viewShape === 'circle';
+
+  // Bouton forme ◎/☰
+  const btnShape=document.createElement('button');
+  btnShape.id='btn-view';
+  btnShape.className='btn-view-shape';
+  btnShape.textContent=isCircle?'◎':'☰';
+  btnShape.title=isCircle?'Vue circulaire':'Vue linéaire';
+  btnShape.addEventListener('click',()=>setView(isCircle?'linear':'circle'));
+  bar.appendChild(btnShape);
+
+  // Séparateur
+  const sep=document.createElement('span');
+  sep.className='view-bar-sep';sep.textContent='|';
+  bar.appendChild(sep);
+
+  // Boutons contextuels
   const opts = isCircle
-    ? [['pattern','↺ Pattern'],['measure','↺ Mesure']]
-    : [['pattern','↺ Pattern'],['cycle','↺ Cycle']];
+    ? [['pattern','Motif'],['measure','Mesure']]
+    : [['pattern','Pas'],['cycle','Cycle']];
   const curCycle = isCircle ? viewCycleCircle : viewCycleLinear;
   opts.forEach(([val,label])=>{
     const btn=document.createElement('button');
@@ -10201,8 +10211,10 @@ function renderAuthUI() {
     document.getElementById('auth-btn-logout').addEventListener('click', sbLogout);
     document.getElementById('auth-btn-sync').addEventListener('click', sbSyncSchoolPool);
     updateSettingsBadge();
+    _updateAuthStatusIcon();
   } else if (authSession) {
     container.innerHTML = '<div style="font-size:10px;color:#888">Connexion en cours…</div>';
+    _updateAuthStatusIcon();
   } else {
     container.innerHTML =
       '<button id="auth-btn-login" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:#333">' +
@@ -10216,6 +10228,7 @@ function renderAuthUI() {
       '</button>' +
       '<div style="font-size:10px;color:#aaa;text-align:center;margin-top:4px">Compte Google de l\'école pour synchroniser la base</div>';
     document.getElementById('auth-btn-login').addEventListener('click', sbLoginWithGoogle);
+    _updateAuthStatusIcon();
   }
 }
 
@@ -10249,7 +10262,6 @@ let dialogCallback=null;
 function setMode(mode){
   currentMode=mode;
   document.body.classList.toggle('mode-tx',mode==='tx');
-  document.getElementById('btn-sx-tx').textContent=mode.toUpperCase();
   buildLayers();
   // Rebuild le select encyclo (SX masque les entrées vides)
   buildEncycloSection();
@@ -11887,13 +11899,26 @@ function attachEvents(){
   updateSwingDisplay();
 
   // ── Vue circulaire / linéaire ──
-  // btn-view créé et écouté dans buildGrooveSection()
+  // btn-view est dans updateViewModeBar()
+  document.getElementById('btn-groove-name')?.addEventListener('click', ()=>{
+    openPresetModal({
+      type:'groove', currentId:currentGrooveId, label:'Groove', accent:'#8B6914', bg:'#faf3e0',
+      onSelect:(id)=>{ applyGroove(id); }
+    });
+  });
+  document.getElementById('btn-sig-top')?.addEventListener('click', ()=>{
+    openPresetModal({
+      type:'sig', currentId:currentSig?.id||'4/4',
+      label:'Signature', accent:'#3A5A8A', bg:'#F2F5F9', compact:true,
+      onSelect:(id)=>changeSig(id)
+    });
+  });
   window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); });
 
   // btn-sons remplacé par btn-vol (géré dans le bloc Btn Vol ci-dessus)
 
   // ── Titre BoomTchak → encyclo ──
-  document.getElementById('btn-app-title').addEventListener('click',()=>{
+  document.getElementById('btn-app-title')?.addEventListener('click',()=>{
     showEncycloEntry('poumtchak');
     if(!encycloOuvert)toggleEncyclo(true);
   });
@@ -11987,7 +12012,7 @@ function attachEvents(){
   });
 
   // ── Mode TX (requiert connexion Google) ──
-  document.getElementById('btn-sx-tx').addEventListener('click',()=>{
+  document.getElementById('btn-sx-tx')?.addEventListener('click',()=>{
     if(currentMode==='sx'&&!authProfile){showToast('Connexion Google requise pour le mode TX','info');return;}
     setMode(currentMode==='tx'?'sx':'tx');
   });
@@ -12089,7 +12114,7 @@ function start(){
   // Appliquer le mode initial (URL param ou défaut SX)
   if(currentMode==='tx'){
     document.body.classList.add('mode-tx');
-    document.getElementById('btn-sx-tx').textContent='TX';
+    const _bst=document.getElementById('btn-sx-tx'); if(_bst) _bst.textContent='TX';
   }
 
   // Groove aléatoire au démarrage (fallback PTK_DEFAULT si packCours vide)
