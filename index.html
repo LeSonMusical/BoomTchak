@@ -30,7 +30,8 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:5px;padding:5px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:16px;padding:2px 6px;flex-shrink:0}
-.btn-groove-name{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;color:#8B6914;overflow:hidden}
+.btn-groove-name{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;overflow:hidden}
+.btn-top.btn-groove-name{color:#8B6914}
 .groove-name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
 .groove-name-arr{font-size:8px;opacity:.5;flex-shrink:0}
 .top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0}
@@ -48,7 +49,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
 .settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
+.settings-menu{position:absolute;top:calc(100% + 4px);left:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -1137,7 +1138,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <!-- LEFT: auth/settings -->
   <div class="settings-menu-wrap">
-    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages / Connexion"><span id="auth-status-icon">👤</span><span class="app-version">v3.14.44</span></button>
+    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages / Connexion"><span id="auth-status-icon">👤</span><span class="app-version">v3.14.45</span></button>
     <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
     <div class="settings-menu" id="panel-settings">
         <!-- Ligne 1 : Thème -->
@@ -1216,7 +1217,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </div>
       </div>
     </div>
-  </div>
   <!-- CENTER: groove name -->
   <button class="btn-top btn-groove-name" id="btn-groove-name" title="Changer de groove">
     <span id="groove-name-lbl" class="groove-name-txt">—</span><span class="groove-name-arr">▾</span>
