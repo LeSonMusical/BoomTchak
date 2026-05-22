@@ -514,6 +514,65 @@ Bouton toggle `↺ Pattern` / `↺ Mesure` / `↺ Cycle` affiché au-dessus du c
 
 `checkModPanelSize(li)` mesure `mp.clientWidth` et pose `lmp-large` / `lmp-narrow`. Attaché via `attachModPanelObserver(li)` (partage le tableau `layerObservers`).
 
+---
+
+### Design system — Top bar / Zone centrale / Bottom bar (v3.14.47+)
+
+#### Rôle de chaque zone
+
+| Zone | Rôle sémantique | Contenu |
+|------|----------------|---------|
+| **Top bar** (fixe, ~44px) | Identité + accès global | Logo + version, contrôles globaux (sig, tempo, vol), réglages |
+| **Zone centrale** (scrollable) | Espace de travail | Sections : Temps, Band, Groove, Layers, Encyclo |
+| **Bottom bar** (fixe) | Navigation + transport | Tabs nav (Métro/Sons/Encyclo), playback (▶/■), Jouer |
+
+#### Règles de design top bar
+
+```
+[BoomTchak v3.x]  ←flex-shrink:0    [sig][♩=N][🔊]  ←flex:1,centered    [👤]  ←flex-shrink:0
+```
+
+- **Gauche** : identité marque. Cliquable → toggle article BoomTchak (Encyclo). Jamais de contrôle fonctionnel ici.
+- **Centre** : contrôles globaux de lecture (signature, tempo, volume). `flex:1; justify-content:center` — toujours au milieu quelle que soit la largeur de l'écran.
+- **Droite** : accès aux réglages/connexion. Icône dynamique selon le rôle (👤 / 🎵 / 🎓 / 👑). Modal s'ouvre `right:0` (vers la gauche, dans l'écran).
+- Tous les `btn-top` dans la top bar : `height:30px; box-sizing:border-box`.
+- Bouton auth : `font-size:19px; height:30px` — dépasse visuellement pour la lisibilité de l'emoji.
+
+#### Règles de design view-mode-bar (barre de vues)
+
+Positionnée entre `#section-groove` et `#layers-wrap`. Cachée si `!layersOuverts`.
+
+```
+[Motif]  [Mesure]          [◎]     ← ou [Pas] [Cycle]  [☰]
+         ← gap 10px →
+```
+
+- Boutons contextuels (Motif/Mesure ou Pas/Cycle) : `min-width:44px; text-align:center` — largeur fixe, pas de resize.
+- Bouton forme (◎/☰) : **toujours violet** (#6B5FA5), séparé par `margin-left:10px`. Indique la vue courante ET est le toggle.
+- La barre entière est `justify-content:center` → groupe toujours centré.
+
+#### Animation 2 temps des volets (band + metro, v3.14.49+)
+
+Principe : la *section bar* (barre de titre) apparaît/disparaît **instantanément**, le *contenu* (sous-volets) slide via `max-height` transition.
+
+**Ouverture :**
+1. `wrap.style.display = ''` → la barre apparaît immédiatement
+2. `requestAnimationFrame(() => content.classList.add('open'))` → contenu slide in (220ms ease)
+
+**Fermeture :**
+1. `content.classList.remove('open')` → contenu slide out (220ms ease)
+2. `setTimeout(() => wrap.style.display = 'none', 230)` → barre disparaît après transition
+
+CSS requis sur le contenu : `overflow:hidden; transition:max-height .22s ease; max-height:0` / `.open{max-height:900px}`
+
+#### Première visite (v3.14.49+)
+
+Au premier chargement (`!localStorage.getItem('ptk_visited')`), l'article BoomTchak s'ouvre automatiquement dans le volet Encyclo. Le flag `ptk_visited` est posé immédiatement pour ne pas répéter ce comportement.
+
+Les visites suivantes n'ouvrent pas le volet Encyclo automatiquement — l'utilisateur y accède via tap sur `BoomTchak` (top bar) ou l'onglet Encyclo (bottom bar).
+
+---
+
 ### Mode Mesure — formules clés
 ```
 measureSec = (60/spm) * stepsPerBeat * beatsPerMeasure
@@ -854,3 +913,4 @@ body.drawer-open         /* volet Jouer ouvert : padding-bottom scroll */
 | v3.14.4 | Modal sauvegarde preset métronome unifié avec `#psp-box` (même UX que tous les autres types) |
 | v3.14.5 | Suppression presets 6/8, 9/8, 12/8, 3/8 + migration SQL DELETE ; `_DELETED_PRESET_IDS` pour purge cache |
 | v3.14.6 | **Suppression `source:'base'`** : tous les presets métronome → `source:'school'` ; condition seeding `metroPres.length===0` ; migration SQL UPDATE |
+| v3.14.43–50 | **Refonte top bar** : suppression SX/RX ; ⚙ droite (modale right:0) ; BoomTchak gauche cliquable→article ; contrôles [sig][♩][🔊] centrés (flex:1) ; icône rôle 👤/🎵/🎓/👑 ; boutons height:30px uniformes. **View bar** : Motif/Mesure/Pas/Cycle min-width:44px + ◎/☰ violet droite gap 10px centré. **Metro animation** 2 temps (comme band). **Première visite** : ptk_visited localStorage. **Encyclo preset** max-width:none. |

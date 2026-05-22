@@ -77,7 +77,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.14.15** (session 2026-05-18)
+**v3.14.50** (session 2026-05-22)
 ---
 
 ## CHANTIER SUIVANT — Rédaction des articles encyclopédie
@@ -117,6 +117,14 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.14.50 | View bar : boutons Motif/Mesure/Pas/Cycle largeur fixe 44px, centrés, ◎/☰ à droite avec gap 10px, toujours violet ; encyclo preset bar sans max-width |
+| v3.14.49 | Top bar : boutons même hauteur 30px, contrôles centrés (flex:1), BoomTchak cliquable toggle article ; view bar ◎/☰ à droite sans séparateur ; metro animation 2 temps (comme band) ; première visite : encyclo ouvre 1 seule fois (ptk_visited) |
+| v3.14.48 | Top bar : icône rôle dynamique 👤/🎵/🎓/👑, version sous nom appli, hauteur +2px |
+| v3.14.47 | Top bar refonte finale : BoomTchak gauche, contrôles centre, ⚙ droite, groove preset btn restauré en section bar, modal right:0 |
+| v3.14.46 | Top bar : ⚙ fixe, version dans menu, sig format B (nbDivisions/beatUnit), role chip dans menu |
+| v3.14.45 | Fix top bar : </div> en trop, modal left:0→left (bouton gauche), couleur groove name spécificité |
+| v3.14.44 | Top bar redesign : auth icon 👤/🎓/👑, groove name centre, sig + tempo + vol droite, vue ◎/☰ dans view-mode-bar au-dessus canvas ; metro couleur blue-steel #5577A8 densité réduite |
+| v3.14.43 | Metro couleur blue-steel #5577A8 (densité réduite — couleur sur états actifs/ON seulement) |
 | v3.14.15 | Préférences : décalage audio → menu `<select>` sur la même ligne (6 préréglages dans l'ordre Lamberio) + slider + boutons −/+ + valeur ms seule ; `.smenu-pref-row` sépare visuellement les 5 prefs ; `.smenu-select` dark mode pour les 2 selects (métrique + décalage) |
 | v3.14.14 | Audio offset : préréglages (boutons → select en v3.14.15) + −/+ ; dark mode boutons auth (sync/logout/login) ; Export MIDI → "Export MIDI…" ; `_syncMetroToGroove()` : synchro métro sur cycle groove après changement de signature pendant la lecture |
 | v3.14.13 | Fix scroll modal : suppression `touch-action:none` → `e.preventDefault()` dans `pointerdown` (touch only) + simulation manuelle du clic sur `pointerup` |
