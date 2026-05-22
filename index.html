@@ -27,11 +27,11 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:0 .85rem .5rem}
 
 /* ─── TOP BAR ─── */
-.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:5px;padding:5px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.app-title-block{display:flex;align-items:baseline;gap:4px;flex-shrink:0}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:7px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.app-title-block{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;line-height:1.15;gap:0}
 .app-name{font-size:13px;font-weight:700;color:#8B6914;letter-spacing:.01em}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
-.btn-auth-status{font-size:14px;padding:2px 7px;flex-shrink:0}
+.btn-auth-status{font-size:19px;padding:1px 6px;flex-shrink:0;line-height:1}
 .top-bar-controls{display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:auto}
 .btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;color:#3A5A8A;flex-shrink:0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
@@ -1137,7 +1137,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity -->
   <div class="app-title-block">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.14.47</span>
+    <span class="app-version">v3.14.48</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1147,13 +1147,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- FAR RIGHT: settings -->
   <div class="settings-menu-wrap">
-    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages">⚙</button>
+    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages"><span id="auth-status-icon">👤</span></button>
     <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
     <div class="settings-menu" id="panel-settings">
-        <!-- Ligne 0 : Rôle utilisateur -->
-        <div class="smenu-row" style="justify-content:flex-start;gap:8px">
-          <span id="smenu-role-chip" style="font-size:11px;color:#888"></span>
-        </div>
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
           <span id="smenu-theme-ico">🌙</span>
@@ -3138,14 +3134,14 @@ function updateGrooveNameTopBar(){
 }
 
 function _updateAuthStatusIcon(){
-  const chip = document.getElementById('smenu-role-chip');
-  if(!chip) return;
+  const icon = document.getElementById('auth-status-icon');
+  if(!icon) return;
   if(authSession && authProfile){
-    chip.textContent = authProfile.role==='mx' ? '👑 Admin MX'
-                     : authProfile.role==='tx' ? '🎓 Enseignant'
-                     : '🎵 Élève';
+    icon.textContent = authProfile.role==='mx' ? '👑'
+                     : authProfile.role==='tx' ? '🎓'
+                     : '🎵';
   } else {
-    chip.textContent = '';
+    icon.textContent = '👤';
   }
 }
 
