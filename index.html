@@ -34,7 +34,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;flex-shrink:0;color:#999;border-color:#ccc;background:#f0f0f0}
+.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0;color:#999;border-color:#ccc;background:#f0f0f0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
@@ -528,7 +528,9 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 #pm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:flex-end;justify-content:center;touch-action:none;overscroll-behavior:none;}
 .pm-sheet{width:100%;max-width:600px;height:72vh;display:flex;flex-direction:column;background:#fff;border-radius:14px 14px 0 0;overflow:hidden;box-shadow:0 -4px 24px rgba(0,0,0,.2);transform:translateY(100%);transition:transform .22s ease-out;}
 .pm-sheet.pm-open{transform:translateY(0);}
-.pm-handle{width:36px;height:4px;background:#ccc;border-radius:2px;margin:8px auto 0;flex-shrink:0;}
+.pm-handle{flex-shrink:0;padding:10px 0 6px;display:flex;justify-content:center;cursor:ns-resize;user-select:none;-webkit-user-select:none;touch-action:none;width:100%}
+.pm-handle::after{content:'';display:block;width:36px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
+.pm-handle:hover::after{background:#aaa}
 .pm-header{display:flex;align-items:center;gap:6px;padding:10px 14px 8px;border-bottom:1px solid #e0ddd8;font-weight:600;font-size:13px;flex-shrink:0;color:var(--pm-ac,#4a3d8a);}
 .pm-close{background:none;border:1px solid #ccc;cursor:pointer;font-size:14px;color:#666;padding:2px 8px;border-radius:4px;margin-left:auto;line-height:1.4;}
 .pm-close:hover{border-color:#999;color:#333;}
@@ -1140,7 +1142,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.14.51</span>
+    <span class="app-version">v3.14.52</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3379,12 +3381,50 @@ function openPresetModal(cfg){
 
   const sheet=document.createElement('div');
   sheet.className='pm-sheet';
-  if(cfg.compact) sheet.style.height='45vh';
+  const _defH=cfg.compact?45:72;
+  sheet.style.height=_defH+'vh';
   sheet.style.setProperty('--pm-ac', cfg.accent||'#4a3d8a');
   sheet.style.setProperty('--pm-bg2', cfg.bg||'#f5f3f0');
 
   const handle=document.createElement('div');handle.className='pm-handle';
   sheet.appendChild(handle);
+
+  // ── Resize par drag sur la poignée ───────────────────────────────────────
+  const _PM_SNAPS=[35,55,72,90], _PM_CLOSE=20;
+  let _pmDrag=false,_pmStartY=0,_pmStartH=0;
+  handle.addEventListener('pointerdown',e=>{
+    if(e.button&&e.button!==0)return;
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    _pmDrag=true;_pmStartY=e.clientY;
+    _pmStartH=parseFloat(sheet.style.height)||_defH;
+    sheet.style.transition='none';
+  },{passive:false});
+  handle.addEventListener('pointermove',e=>{
+    if(!_pmDrag)return;
+    const dy=_pmStartY-e.clientY;
+    const nh=Math.max(18,Math.min(95,_pmStartH+dy/window.innerHeight*100));
+    sheet.style.height=nh+'vh';
+  },{passive:false});
+  const _pmSnap=()=>{
+    if(!_pmDrag)return;_pmDrag=false;
+    const cur=parseFloat(sheet.style.height)||_defH;
+    sheet.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    if(cur<_PM_CLOSE){ _closeOverlay(); }
+    else {
+      let best=_PM_SNAPS[0],minD=Infinity;
+      _PM_SNAPS.forEach(s=>{const d=Math.abs(cur-s);if(d<minD){minD=d;best=s;}});
+      sheet.style.height=best+'vh';
+    }
+    setTimeout(()=>{sheet.style.transition='';},300);
+  };
+  handle.addEventListener('pointerup',_pmSnap);
+  handle.addEventListener('pointercancel',()=>{
+    if(!_pmDrag)return;_pmDrag=false;
+    sheet.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    sheet.style.height=_defH+'vh';
+    setTimeout(()=>{sheet.style.transition='';},300);
+  });
 
   const hdr=document.createElement('div');hdr.className='pm-header';
   const htitle=document.createElement('span');htitle.textContent=cfg.label||'Sélectionner';
