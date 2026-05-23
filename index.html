@@ -1186,7 +1186,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.0</span>
+    <span class="app-version">v3.15.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4925,24 +4925,63 @@ const _modPadState=[{x:0.5,y:0.5},{x:0.5,y:0.5},{x:0.5,y:0.5}];
 const _modSoftState=[0,0,0];
 function _getStepWeights(li){
   const L=state[li].pattern.length;
-  const mp=currentSig?.metroPattern||[];
-  const mpLen=mp.length||4;
+  const mp=(currentSig?.metroPattern)||[];
+  const mpLen=mp.length;
   const weights=[];
   for(let si=0;si<L;si++){
-    const sym=mp[Math.floor(si*mpLen/L)%mpLen]||'P';
+    // Si pas de metro pattern : tous les steps ont le même poids (0.5)
+    const sym=mpLen?mp[Math.floor(si*mpLen/L)%mpLen]||'P':'P';
     weights.push(sym==='A'?1.0:sym==='P'?0.5:0.1);
   }
   return weights;
+}
+function _euclidean(k,L){
+  // Bresenham : distribue k beats sur L steps, sans collision garantie
+  const pos=[];
+  for(let i=0;i<k;i++)pos.push(Math.floor(i*L/k));
+  return pos;
 }
 function generatePatternFromPad(li,x,y,s){
   const L=state[li].pattern.length;if(!L)return;
   const weights=_getStepWeights(li);
   const nFortes=Math.max(0,Math.min(L,Math.round(x*L)));
-  const effW=weights.map((w,i)=>w*(1-y)+(1-w)*y+1e-4*(i+1)/L);
-  const order=effW.map((w,i)=>({w,i})).sort((a,b)=>b.w-a.w);
   const arr=Array(L).fill('.');
-  for(let k=0;k<nFortes;k++)arr[order[k].i]='X';
-  if(s>0){const silences=order.slice(nFortes);const nSoft=Math.round(s*silences.length);for(let k=0;k<nSoft;k++)arr[silences[k].i]='x';}
+
+  if(nFortes>0){
+    const eucPos=_euclidean(nFortes,L);
+    const placed=new Set();
+    // Rayon de recherche max = moitié de l'intervalle inter-beat
+    const maxRadius=Math.max(1,Math.floor(L/(2*nFortes)));
+    // Rayon effectif proportionnel à y (floor → 0 à petit y = pur euclidien)
+    const searchR=Math.floor(maxRadius*y);
+
+    eucPos.forEach(base=>{
+      let best=base;
+      if(searchR>0){
+        // Score = weights[p]*y + (|d|/searchR)*(1-y)
+        // y=0 → préfère d=0 (position euclidienne) ; y=1 → préfère step le plus léger
+        let bestScore=Infinity;
+        for(let d=-searchR;d<=searchR;d++){
+          const p=(base+d+L)%L;
+          if(placed.has(p))continue;
+          const score=weights[p]*y+(Math.abs(d)/searchR)*(1-y);
+          if(score<bestScore){bestScore=score;best=p;}
+        }
+      }
+      // Sécurité anti-collision (ne devrait pas arriver avec Euclidean pur)
+      if(placed.has(best)){for(let d=1;d<L;d++){const p=(best+d)%L;if(!placed.has(p)){best=p;break;}}}
+      placed.add(best);arr[best]='X';
+    });
+  }
+
+  // Notes douces : remplir les silences, en commençant par les steps les plus légers
+  if(s>0){
+    const silences=[];
+    for(let i=0;i<L;i++)if(arr[i]==='.')silences.push(i);
+    silences.sort((a,b)=>weights[a]-weights[b]);
+    const nSoft=Math.round(s*silences.length);
+    for(let k=0;k<nSoft;k++)arr[silences[k]]='x';
+  }
   state[li].pattern=arr;
 }
 
