@@ -1186,7 +1186,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.1</span>
+    <span class="app-version">v3.15.2</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4948,33 +4948,43 @@ function generatePatternFromPad(li,x,y,s){
   const arr=Array(L).fill('.');
 
   if(nFortes>0){
+    // Positions euclidiennes de base (Bresenham, sans collision)
     const eucPos=_euclidean(nFortes,L);
-    const placed=new Set();
-    // Rayon de recherche max = moitié de l'intervalle inter-beat
-    const maxRadius=Math.max(1,Math.floor(L/(2*nFortes)));
-    // Rayon effectif proportionnel à y (floor → 0 à petit y = pur euclidien)
-    const searchR=Math.floor(maxRadius*y);
 
-    eucPos.forEach(base=>{
-      let best=base;
-      if(searchR>0){
-        // Score = weights[p]*y + (|d|/searchR)*(1-y)
-        // y=0 → préfère d=0 (position euclidienne) ; y=1 → préfère step le plus léger
-        let bestScore=Infinity;
-        for(let d=-searchR;d<=searchR;d++){
-          const p=(base+d+L)%L;
-          if(placed.has(p))continue;
-          const score=weights[p]*y+(Math.abs(d)/searchR)*(1-y);
-          if(score<bestScore){bestScore=score;best=p;}
+    // Trier par poids DÉCROISSANT : les beats sur les steps les plus lourds bougent en premier
+    // (beat sur A bouge avant P, P avant p)
+    const ordered=eucPos.map(pos=>({pos,w:weights[pos]})).sort((a,b)=>b.w-a.w);
+
+    // Nombre de beats à déplacer — croît avec y (0 à y=0, tous à y=1)
+    const nToMove=Math.round(y*nFortes);
+
+    // Rayon de recherche = moitié de l'intervalle inter-beat
+    const maxRadius=Math.max(1,Math.floor(L/(2*nFortes)));
+
+    const placed=new Set();
+
+    ordered.forEach(({pos:base},rank)=>{
+      let target=base;
+
+      if(rank<nToMove){
+        // Ce beat doit se déplacer vers le step disponible le plus léger dans ±maxRadius
+        let lightestW=weights[base]; // on cherche moins lourd que la position actuelle
+        for(let d=1;d<=maxRadius;d++){
+          const pR=(base+d)%L;
+          const pL=(base-d+L)%L;
+          if(!placed.has(pR)&&weights[pR]<lightestW){lightestW=weights[pR];target=pR;}
+          if(!placed.has(pL)&&weights[pL]<lightestW){lightestW=weights[pL];target=pL;}
         }
+        // Si aucun step plus léger trouvé, le beat reste sur sa position euclidienne
       }
-      // Sécurité anti-collision (ne devrait pas arriver avec Euclidean pur)
-      if(placed.has(best)){for(let d=1;d<L;d++){const p=(best+d)%L;if(!placed.has(p)){best=p;break;}}}
-      placed.add(best);arr[best]='X';
+
+      // Sécurité anti-collision
+      if(placed.has(target)){for(let d=1;d<L;d++){const p=(base+d+L)%L;if(!placed.has(p)){target=p;break;}}}
+      placed.add(target);arr[target]='X';
     });
   }
 
-  // Notes douces : remplir les silences, en commençant par les steps les plus légers
+  // Notes douces : remplir les silences en commençant par les steps les plus légers
   if(s>0){
     const silences=[];
     for(let i=0;i<L;i++)if(arr[i]==='.')silences.push(i);
