@@ -1186,7 +1186,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.2</span>
+    <span class="app-version">v3.15.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4948,43 +4948,58 @@ function generatePatternFromPad(li,x,y,s){
   const arr=Array(L).fill('.');
 
   if(nFortes>0){
-    // Positions euclidiennes de base (Bresenham, sans collision)
     const eucPos=_euclidean(nFortes,L);
-
-    // Trier par poids DÉCROISSANT : les beats sur les steps les plus lourds bougent en premier
-    // (beat sur A bouge avant P, P avant p)
-    const ordered=eucPos.map(pos=>({pos,w:weights[pos]})).sort((a,b)=>b.w-a.w);
-
-    // Nombre de beats à déplacer — croît avec y (0 à y=0, tous à y=1)
     const nToMove=Math.round(y*nFortes);
 
-    // Rayon de recherche = moitié de l'intervalle inter-beat
-    const maxRadius=Math.max(1,Math.floor(L/(2*nFortes)));
+    // ── Zones de Voronoi : chaque step appartient au beat euclidien le plus proche ──
+    // Garantit que les beats ne se croisent pas → espacement toujours proche d'euclidien
+    const zones=Array.from({length:nFortes},()=>[]);
+    for(let si=0;si<L;si++){
+      let minD=Infinity,bestBi=0;
+      eucPos.forEach((ep,bi)=>{
+        const d=Math.min(Math.abs(si-ep),L-Math.abs(si-ep));
+        if(d<minD){minD=d;bestBi=bi;}
+      });
+      zones[bestBi].push(si);
+    }
 
+    // ── Ordre de déplacement : beats les plus lourds en premier ──
+    const ordered=eucPos.map((pos,bi)=>({pos,w:weights[pos],bi})).sort((a,b)=>b.w-a.w);
     const placed=new Set();
 
-    ordered.forEach(({pos:base},rank)=>{
+    ordered.forEach(({pos:base,bi},rank)=>{
       let target=base;
 
       if(rank<nToMove){
-        // Ce beat doit se déplacer vers le step disponible le plus léger dans ±maxRadius
-        let lightestW=weights[base]; // on cherche moins lourd que la position actuelle
-        for(let d=1;d<=maxRadius;d++){
-          const pR=(base+d)%L;
-          const pL=(base-d+L)%L;
-          if(!placed.has(pR)&&weights[pR]<lightestW){lightestW=weights[pR];target=pR;}
-          if(!placed.has(pL)&&weights[pL]<lightestW){lightestW=weights[pL];target=pL;}
+        // 1. Trouver le poids minimum disponible dans la zone
+        let lightestW=weights[base];
+        for(const si of zones[bi])if(!placed.has(si)&&weights[si]<lightestW)lightestW=weights[si];
+
+        // 2. Parmi les steps de poids minimum, choisir le plus éloigné des autres positions euclidiennes
+        //    → évite de coller au bord de la zone, maintient l'espacement global
+        if(lightestW<weights[base]){
+          let bestDist=-1;
+          for(const si of zones[bi]){
+            if(placed.has(si)||weights[si]!==lightestW)continue;
+            let minD=Infinity;
+            eucPos.forEach((ep,bi2)=>{
+              if(bi2!==bi){const d=Math.min(Math.abs(si-ep),L-Math.abs(si-ep));minD=Math.min(minD,d);}
+            });
+            if(minD>bestDist){bestDist=minD;target=si;}
+          }
         }
-        // Si aucun step plus léger trouvé, le beat reste sur sa position euclidienne
       }
 
-      // Sécurité anti-collision
-      if(placed.has(target)){for(let d=1;d<L;d++){const p=(base+d+L)%L;if(!placed.has(p)){target=p;break;}}}
+      // Sécurité anti-collision (ne devrait pas arriver avec zones Voronoi disjointes)
+      if(placed.has(target)){
+        for(const si of zones[bi])if(!placed.has(si)){target=si;break;}
+        if(placed.has(target)){for(let d=1;d<L;d++){const p=(base+d+L)%L;if(!placed.has(p)){target=p;break;}}}
+      }
       placed.add(target);arr[target]='X';
     });
   }
 
-  // Notes douces : remplir les silences en commençant par les steps les plus légers
+  // Notes douces : steps les plus légers disponibles
   if(s>0){
     const silences=[];
     for(let i=0;i<L;i++)if(arr[i]==='.')silences.push(i);
