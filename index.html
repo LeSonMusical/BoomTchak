@@ -34,7 +34,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;color:#3A5A8A;flex-shrink:0}
+.btn-sig-top{font-size:11px;font-weight:700;padding:2px 5px;flex-shrink:0;color:#999;border-color:#ccc;background:#f0f0f0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
@@ -924,7 +924,7 @@ body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
-body.dark-mode .btn-sig-top{color:#6A8EC0}
+body.dark-mode .btn-sig-top{color:#666;border-color:#444;background:#222220}
 body.dark-mode .btn-view-shape{background:#5a4f94;border-color:#5a4f94;color:#fff}
 body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
@@ -1140,12 +1140,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.14.50</span>
+    <span class="app-version">v3.14.51</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
     <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">🔕</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
+    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">⏱</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
     <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
   </div>
   <!-- FAR RIGHT: settings -->
@@ -7065,7 +7065,7 @@ function setMetroGlobal(on){
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
     const icon=btnTop.querySelector('.metro-icon');
-    if(icon) icon.textContent=on?'🔔':'🔕';
+    if(icon) icon.textContent='⏱';
   }
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
