@@ -692,59 +692,45 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* mod panel v3.15 — 3 zones : A (config) · B (générateur) · C (outils) */
 .layer-mod-panel{border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none!important}
-/* Zone A — Configuration */
-.mod-zone-a{display:flex;align-items:center;gap:6px;padding:6px 8px;flex-wrap:wrap}
-.mod-za-group{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.mod-za-sep{width:1px;height:20px;background:var(--cs);flex-shrink:0;margin:0 2px}
+/* Dual Strip — Strip 1 actions, Strip 2 contrôles fins */
+.mod-strip-1{display:flex;align-items:center;gap:4px;padding:4px 8px;flex-wrap:nowrap}
+.mod-strip-2{display:flex;align-items:stretch;gap:6px;padding:3px 8px 5px;border-top:1px solid var(--cs)}
+.mod-za-group{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.mod-za-sep{width:1px;height:18px;background:var(--cs);flex-shrink:0;margin:0 2px}
 .btn-mod-a{padding:3px 8px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.4;flex-shrink:0;touch-action:none;user-select:none}
 .btn-mod-a:hover:not(:disabled){filter:brightness(.9)}
 .btn-mod-a.on{background:var(--cc);color:#fff;border-color:var(--cb)}
 .btn-mod-a:disabled{opacity:.3;cursor:default}
+.btn-mod-sm{padding:3px 6px!important;font-size:12px!important}
 .mod-sel-unit{font-size:11px;padding:2px 4px;border:1px solid var(--cs);border-radius:4px;background:#fff;color:var(--cb);cursor:pointer}
 .mod-pas-num{min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--cb);flex-shrink:0}
-/* Knob rotatif décalage */
-.mod-knob-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
-.mod-knob{width:38px;height:38px;border-radius:50%;border:2px solid var(--cs);background:#fff;position:relative;cursor:ns-resize;touch-action:none;box-sizing:border-box}
-.mod-knob:active{border-color:var(--cc)}
-.mod-knob-indicator{position:absolute;top:5px;left:50%;width:2px;height:10px;background:var(--cc);border-radius:2px;transform:translateX(-50%) rotate(0deg);transform-origin:bottom center}
-.mod-knob-val{font-size:9px;color:var(--cb);opacity:.65;text-align:center;min-width:22px}
-/* Zone B — Générateur (collapsible) */
-.mod-zone-b-toggle{display:flex;align-items:center;padding:4px 10px;gap:6px;cursor:pointer;font-size:11px;color:var(--cb);opacity:.65;border-top:1px solid var(--cs);user-select:none}
-.mod-zone-b-toggle:hover{opacity:1;background:rgba(107,95,165,.06)}
-.mod-zb-arrow{font-size:9px;transition:transform .22s ease;display:inline-block}
-.mod-zone-b-toggle.open .mod-zb-arrow{transform:rotate(180deg)}
-.mod-zone-b-content{overflow:hidden;max-height:0;transition:max-height .22s ease}
-.mod-zone-b-content.open{max-height:280px}
-.mod-zone-b-inner{display:flex;align-items:stretch;gap:8px;padding:6px 8px 8px}
-/* Slider sons doux */
-.mod-soft-slider-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:30px}
-.mod-soft-slider-label{font-size:8px;color:var(--cb);opacity:.55;text-align:center;line-height:1.2}
-.mod-soft-slider-track{flex:1;width:10px;border-radius:5px;border:1.5px solid var(--cs);background:#f0f0ee;position:relative;cursor:ns-resize;touch-action:none;min-height:90px}
-.mod-soft-slider-fill{position:absolute;bottom:0;left:0;right:0;background:var(--cc);opacity:.45;border-radius:3px}
-.mod-soft-slider-thumb{position:absolute;left:50%;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--cc);transform:translate(-50%,50%);bottom:0;pointer-events:none}
-/* Pad 2D */
-.mod-pad-wrap{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
-.mod-pad-axis-row{display:flex;justify-content:space-between;align-items:center;font-size:9px;opacity:.45;color:var(--cb);padding:0 3px}
-.mod-pad-center-row{display:flex;align-items:stretch;gap:4px;flex:1}
-.mod-pad-axis-y{display:flex;flex-direction:column;justify-content:space-between;font-size:9px;opacity:.45;color:var(--cb);padding:2px 0;text-align:center;width:10px;flex-shrink:0}
-.mod-pad{flex:1;border-radius:6px;border:1.5px solid var(--cs);position:relative;overflow:hidden;cursor:crosshair;touch-action:none;min-height:110px;background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820}
-.mod-pad-cursor{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--cc);box-shadow:0 0 8px var(--cc);transform:translate(-50%,-50%);pointer-events:none}
-.mod-pad-preview{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:2px;padding:0 8px;pointer-events:none;flex-wrap:wrap}
-.mod-pad-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
-.mod-pad-dot.forte{background:var(--cc);box-shadow:0 0 4px var(--cc)}
+/* Shift rotatif fluide (horizontal) */
+.mod-shift-wrap{flex:1.3;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mod-shift-label{font-size:8px;color:var(--cb);opacity:.5;text-align:center;line-height:1}
+.mod-shift-track{flex:1;border-radius:4px;border:1.5px solid var(--cs);background:#f0f0ee;position:relative;cursor:ew-resize;touch-action:none}
+.mod-shift-fill{position:absolute;top:0;left:0;bottom:0;background:var(--cc);opacity:.3;border-radius:3px}
+.mod-shift-thumb{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cc);transform:translate(-50%,-50%);pointer-events:none}
+/* Pad 2D mini */
+.mod-pad-mini-wrap{flex:1;display:flex;min-width:60px}
+.mod-pad{border-radius:6px;border:1.5px solid var(--cs);position:relative;overflow:hidden;cursor:crosshair;touch-action:none;background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820;flex:1}
+.mod-pad-cursor{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--cc);box-shadow:0 0 6px var(--cc);transform:translate(-50%,-50%);pointer-events:none}
+.mod-pad-preview{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:2px;padding:0 6px;pointer-events:none;flex-wrap:wrap}
+.mod-pad-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
+.mod-pad-dot.forte{background:var(--cc);box-shadow:0 0 3px var(--cc)}
 .mod-pad-dot.soft{background:var(--cc);opacity:.45}
-/* Zone C — Outils */
-.mod-zone-c{display:flex;align-items:center;gap:5px;padding:5px 8px;border-top:1px solid var(--cs);flex-wrap:wrap}
-.btn-mod-c{padding:3px 9px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.4;flex-shrink:0;white-space:nowrap;user-select:none}
-.btn-mod-c:hover{filter:brightness(.9)}
-.btn-mod-c-icon{padding:3px 8px;font-size:14px;line-height:1.4}
-.mod-c-sep{width:1px;height:18px;background:var(--cs);flex-shrink:0;margin:0 1px}
-.mod-more-wrap{position:relative;flex-shrink:0}
-.mod-more-drawer{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:300;min-width:180px}
-.mod-more-drawer.open{display:block}
-.mod-more-item{display:block;width:100%;text-align:left;padding:8px 14px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--cb);white-space:nowrap;user-select:none}
-.mod-more-item:hover{background:rgba(107,95,165,.08)}
-.mod-more-item:disabled{opacity:.3;cursor:default}
+/* Slider doux horizontal */
+.mod-soft-h-wrap{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mod-soft-h-label{font-size:8px;color:var(--cb);opacity:.5;text-align:center;line-height:1}
+.mod-soft-h-track{flex:1;border-radius:4px;border:1.5px solid var(--cs);background:#f0f0ee;position:relative;cursor:ew-resize;touch-action:none}
+.mod-soft-h-fill{position:absolute;top:0;left:0;bottom:0;background:var(--cc);opacity:.3;border-radius:3px}
+.mod-soft-h-thumb{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cc);transform:translate(-50%,-50%);pointer-events:none}
+/* Popup ×÷ et … */
+.mod-mul-wrap{position:relative;flex-shrink:0}
+.mod-mul-popup{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:300}
+.mod-mul-popup.open{display:block}
+.mod-mul-item{display:block;width:100%;text-align:left;padding:7px 12px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--cb);white-space:nowrap;user-select:none}
+.mod-mul-item:hover{background:rgba(107,95,165,.08)}
+.mod-mul-item:disabled{opacity:.3;cursor:default}
 .btn-rec{padding:1px 7px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);opacity:.45;line-height:1.5;flex-shrink:0}
 .btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
@@ -1050,18 +1036,14 @@ body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .btn-mod-a{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
-body.dark-mode .btn-mod-c{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
-body.dark-mode .mod-knob{background:#2a2a28;border-color:rgba(255,255,255,.18)}
-body.dark-mode .mod-soft-slider-track{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
-body.dark-mode .mod-soft-slider-thumb{background:#2a2a28;border-color:var(--cc)}
-body.dark-mode .mod-zone-b-toggle{border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .mod-zone-b-toggle:hover{background:rgba(255,255,255,.04)}
-body.dark-mode .mod-zone-c{border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .mod-more-drawer{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
-body.dark-mode .mod-more-item{color:#d0cec8}
-body.dark-mode .mod-more-item:hover{background:rgba(107,95,165,.15)}
-body.dark-mode .mod-za-sep,.dark-mode .mod-c-sep{background:rgba(255,255,255,.1)}
+body.dark-mode .mod-shift-track,body.dark-mode .mod-soft-h-track{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
+body.dark-mode .mod-shift-thumb,body.dark-mode .mod-soft-h-thumb{background:#2a2a28;border-color:var(--cc)}
+body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
+body.dark-mode .mod-mul-popup{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
+body.dark-mode .mod-mul-item{color:#d0cec8}
+body.dark-mode .mod-mul-item:hover{background:rgba(107,95,165,.15)}
+body.dark-mode .mod-za-sep{background:rgba(255,255,255,.1)}
 body.dark-mode .btn-rec{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-rec.armed{background:rgba(216,90,48,.2);border-color:#D85A30}
 body.dark-mode .btn-rec.recording{background:#D85A30;border-color:#c0391b}
@@ -1186,7 +1168,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.3</span>
+    <span class="app-version">v3.15.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5148,16 +5130,14 @@ function buildLayers(){
     row2.appendChild(stepsDiv);
     layerDiv.appendChild(row2);
 
-    // ── Panneau mod v3.15 — 3 zones (A: config | B: générateur | C: outils) ──
+    // ── Panneau mod v3.15.4 — Dual Strip (strip-1: actions | strip-2: contrôles fins) ──
     const modPanel=document.createElement('div');
     modPanel.className='layer-mod-panel hidden';
     modPanel.id='mod-panel-'+li;
 
-    // ── Resize − N + ─────────────────────────────────────────────────────────
+    // ── Nb de pas : ◀ N ▶ ──────────────────────────────────────────────────────
     const nPas=document.createElement('span');nPas.className='mod-pas-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);
     const shNum=document.createElement('span');shNum.id='shift-num-'+li;shNum.style.display='none';shNum.textContent=String(state[li].shiftN||0);
-    const bMinus=document.createElement('button');bMinus.className='btn-mod-a';bMinus.textContent='−';bMinus.title='Enlever le dernier pas';
-    const bPlus=document.createElement('button');bPlus.className='btn-mod-a';bPlus.textContent='+';bPlus.title='Ajouter un pas vide';
     const updateSwapBtnRef={fn:null};
     const _reszMark=()=>{
       nPas.textContent=String(state[li].pattern.length);
@@ -5165,22 +5145,36 @@ function buildLayers(){
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
     };
+    const _speedMark=()=>{grooveDirty=true;updateGrooveSaveBtn();};
+    const bMinus=document.createElement('button');bMinus.className='btn-mod-a btn-mod-sm';bMinus.textContent='◀';bMinus.title='Enlever le dernier pas';
+    const bPlus=document.createElement('button');bPlus.className='btn-mod-a btn-mod-sm';bPlus.textContent='▶';bPlus.title='Ajouter un pas vide';
     bPlus.addEventListener('click',()=>{state[li].pattern=[...state[li].pattern,'.'];_reszMark();});
     bMinus.addEventListener('click',()=>{
       if(state[li].pattern.length<=1)return;
       const last=state[li].pattern[state[li].pattern.length-1];
-      const doRemove=()=>{
-        state[li].pattern=state[li].pattern.slice(0,-1);
-        if((state[li].shiftN||0)>=state[li].pattern.length)state[li].shiftN=0;
-        _reszMark();
-      };
+      const doRemove=()=>{state[li].pattern=state[li].pattern.slice(0,-1);if((state[li].shiftN||0)>=state[li].pattern.length)state[li].shiftN=0;_reszMark();};
       if(last!=='.')miniConfirm('Le dernier pas est actif. Enlever quand même ?','noWarnLastStep',doRemove);
       else doRemove();
     });
-    const _speedMark=()=>{grooveDirty=true;updateGrooveSaveBtn();};
 
-    // ── Unité (select) + T ────────────────────────────────────────────────────
-    let bTern,_updateStepUnitLbl; // forward déclarations
+    // ── Popup ×÷ ────────────────────────────────────────────────────────────────
+    const mulWrap=document.createElement('div');mulWrap.className='mod-mul-wrap';
+    const bMul=document.createElement('button');bMul.className='btn-mod-a btn-mod-sm';bMul.textContent='×÷';bMul.title='Multiplier / diviser le nombre de pas';
+    const mulPopup=document.createElement('div');mulPopup.className='mod-mul-popup';
+    const _mkMulItem=(lbl,fn)=>{
+      const b=document.createElement('button');b.className='mod-mul-item';b.textContent=lbl;
+      b.addEventListener('click',()=>{mulPopup.classList.remove('open');fn();});return b;
+    };
+    mulPopup.appendChild(_mkMulItem('×2',()=>{state[li].pattern=[...state[li].pattern,...state[li].pattern];_reszMark();}));
+    mulPopup.appendChild(_mkMulItem('÷2',()=>{state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/2)));_reszMark();}));
+    mulPopup.appendChild(_mkMulItem('×3',()=>{state[li].pattern=[...state[li].pattern,...state[li].pattern,...state[li].pattern];_reszMark();}));
+    mulPopup.appendChild(_mkMulItem('÷3',()=>{state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/3)));_reszMark();}));
+    mulWrap.appendChild(bMul);mulWrap.appendChild(mulPopup);
+    bMul.addEventListener('click',e=>{e.stopPropagation();mulPopup.classList.toggle('open');});
+    document.addEventListener('click',e=>{if(!mulWrap.contains(e.target))mulPopup.classList.remove('open');});
+
+    // ── Unité (select) + T ──────────────────────────────────────────────────────
+    let bTern,_updateStepUnitLbl;
     const unitSel=document.createElement('select');unitSel.className='mod-sel-unit';unitSel.title='Unité de temps';
     [['1/8','='],['1/16','×2'],['1/4','÷2']].forEach(([lbl,val])=>{
       const o=document.createElement('option');o.value=val;o.textContent=lbl;unitSel.appendChild(o);
@@ -5201,8 +5195,7 @@ function buildLayers(){
       if(el)el.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
     };
     unitSel.addEventListener('change',()=>{
-      const v=unitSel.value;
-      const dbl=v==='×2',hlf=v==='÷2';
+      const v=unitSel.value;const dbl=v==='×2',hlf=v==='÷2';
       state[li].pendingDouble=dbl;state[li].pendingHalf=hlf;state[li].pendingClear=(!dbl&&!hlf);
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
@@ -5211,98 +5204,13 @@ function buildLayers(){
     bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
     updateSpeedBtns();
 
-    // ── Knob Offset ──────────────────────────────────────────────────────────
-    const knobWrap=document.createElement('div');knobWrap.className='mod-knob-wrap';
-    const knobLbl=document.createElement('div');knobLbl.className='mod-knob-val';knobLbl.style.cssText='font-size:8px;opacity:.45;margin-bottom:2px';knobLbl.textContent='décal.';
-    const knob=document.createElement('div');knob.className='mod-knob';knob.id='mod-knob-'+li;knob.title='Décalage : glisser haut/bas';
-    const knobInd=document.createElement('div');knobInd.className='mod-knob-indicator';knob.appendChild(knobInd);
-    const knobVal=document.createElement('div');knobVal.className='mod-knob-val';
-    knobWrap.appendChild(knobLbl);knobWrap.appendChild(knob);knobWrap.appendChild(knobVal);
-    const _KNB_PX=8;
-    const _refreshKnob=()=>{
-      const L=state[li].pattern.length;const sn=state[li].shiftN||0;
-      const ang=L>1?(sn/L)*270-135:0;
-      knobInd.style.transform=`translateX(-50%) rotate(${ang}deg)`;
-      knobVal.textContent=sn||'';shNum.textContent=String(sn);
-    };
-    _refreshKnob();
-    {
-      let _ky0=0,_kShift0=0,_kPat0=null;
-      knob.addEventListener('pointerdown',e=>{
-        e.preventDefault();knob.setPointerCapture(e.pointerId);
-        _ky0=e.clientY;_kShift0=state[li].shiftN||0;_kPat0=[...state[li].pattern];
-      });
-      knob.addEventListener('pointermove',e=>{
-        if(!knob.hasPointerCapture(e.pointerId))return;
-        const L=state[li].pattern.length;if(L<=1)return;
-        const deltaSteps=Math.round((_ky0-e.clientY)/_KNB_PX);
-        const targetShift=(((_kShift0+deltaSteps)%L)+L)%L;
-        if(targetShift===state[li].shiftN)return;
-        const rotAmt=((-deltaSteps%L)+L)%L;
-        state[li].pattern=rotate(_kPat0,rotAmt);
-        state[li].shiftN=targetShift;
-        _refreshKnob();buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
-      });
-      knob.addEventListener('pointerup',()=>{_speedMark();});
-    }
-
-    // ── ZONE A : [− N +] | [unit T] | [knob] ────────────────────────────────
-    const zA=document.createElement('div');zA.className='mod-zone-a';
-    const _mkZaSep=()=>{const s=document.createElement('div');s.className='mod-za-sep';return s;};
-    const grPas=document.createElement('div');grPas.className='mod-za-group';
-    grPas.appendChild(bMinus);grPas.appendChild(nPas);grPas.appendChild(bPlus);
-    const grUnit=document.createElement('div');grUnit.className='mod-za-group';
-    grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
-    zA.appendChild(grPas);zA.appendChild(_mkZaSep());zA.appendChild(grUnit);zA.appendChild(_mkZaSep());zA.appendChild(knobWrap);
-    modPanel.appendChild(zA);modPanel.appendChild(shNum);
-
-    // ── ZONE B : Générateur 2D (collapsible) ─────────────────────────────────
-    const zbToggle=document.createElement('div');zbToggle.className='mod-zone-b-toggle';
-    zbToggle.innerHTML='<span>Générateur</span><span class="mod-zb-arrow">▼</span>';
-    const zbContent=document.createElement('div');zbContent.className='mod-zone-b-content';
-    const zbInner=document.createElement('div');zbInner.className='mod-zone-b-inner';
-
-    // Soft slider (nuance ○ → x)
-    const softWrap=document.createElement('div');softWrap.className='mod-soft-slider-wrap';
-    const softLblT=document.createElement('div');softLblT.className='mod-soft-slider-label';softLblT.textContent='○';
-    const softTrack=document.createElement('div');softTrack.className='mod-soft-slider-track';
-    const softFill=document.createElement('div');softFill.className='mod-soft-slider-fill';
-    const softThumb=document.createElement('div');softThumb.className='mod-soft-slider-thumb';
-    softTrack.appendChild(softFill);softTrack.appendChild(softThumb);
-    const softLblB=document.createElement('div');softLblB.className='mod-soft-slider-label';softLblB.textContent='~';
-    softWrap.appendChild(softLblT);softWrap.appendChild(softTrack);softWrap.appendChild(softLblB);
-    const _refreshSoft=()=>{
-      const v=_modSoftState[li];
-      softFill.style.height=`${v*100}%`;softThumb.style.bottom=`${v*100}%`;
-    };
-    _refreshSoft();
-    {
-      const _softDrag=e=>{
-        if(!softTrack.hasPointerCapture(e.pointerId))return;
-        const rect=softTrack.getBoundingClientRect();
-        const v=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
-        _modSoftState[li]=v;_refreshSoft();
-        generatePatternFromPad(li,_modPadState[li].x,_modPadState[li].y,v);
-        buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
-      };
-      softTrack.addEventListener('pointerdown',e=>{e.preventDefault();softTrack.setPointerCapture(e.pointerId);_softDrag(e);});
-      softTrack.addEventListener('pointermove',_softDrag);
-      softTrack.addEventListener('pointerup',()=>{_speedMark();});
-    }
-
-    // Pad 2D (axe X = densité forte, axe Y = placement accent/syncope)
-    const padWrap=document.createElement('div');padWrap.className='mod-pad-wrap';
-    const padAxisX=document.createElement('div');padAxisX.className='mod-pad-axis-row';
-    padAxisX.innerHTML='<span>○</span><span>● densité</span>';
-    const padCenterRow=document.createElement('div');padCenterRow.className='mod-pad-center-row';
-    const padAxisY=document.createElement('div');padAxisY.className='mod-pad-axis-y';
-    padAxisY.innerHTML='<span>^</span><span>~</span>';
+    // ── Pad 2D mini ──────────────────────────────────────────────────────────────
+    const padWrap=document.createElement('div');padWrap.className='mod-pad-mini-wrap';
     const pad=document.createElement('div');pad.className='mod-pad';pad.id='mod-pad-'+li;
     const padCursor=document.createElement('div');padCursor.className='mod-pad-cursor';
     const padPreview=document.createElement('div');padPreview.className='mod-pad-preview';
     pad.appendChild(padCursor);pad.appendChild(padPreview);
-    padCenterRow.appendChild(padAxisY);padCenterRow.appendChild(pad);
-    padWrap.appendChild(padCenterRow);padWrap.appendChild(padAxisX);
+    padWrap.appendChild(pad);
     const _refreshPadCursor=()=>{
       const{x,y}=_modPadState[li];
       padCursor.style.left=`${x*100}%`;padCursor.style.top=`${(1-y)*100}%`;
@@ -5330,45 +5238,132 @@ function buildLayers(){
       pad.addEventListener('pointermove',_padDrag);
       pad.addEventListener('pointerup',()=>{_speedMark();});
     }
-    zbInner.appendChild(softWrap);zbInner.appendChild(padWrap);
-    zbContent.appendChild(zbInner);
-    zbToggle.addEventListener('click',()=>{zbToggle.classList.toggle('open');zbContent.classList.toggle('open');});
-    modPanel.appendChild(zbToggle);modPanel.appendChild(zbContent);
 
-    // ── ZONE C : Clipboard | longueur | Opérations avancées ──────────────────
-    const zC=document.createElement('div');zC.className='mod-zone-c';
-    const bCopy=document.createElement('button');bCopy.className='btn-mod-c btn-mod-c-icon';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
-    bCopy.addEventListener('click',()=>{patClipboard=[...state[li].pattern];showToast('Pattern copié','info');});
-    const bPaste=document.createElement('button');bPaste.className='btn-mod-c btn-mod-c-icon';bPaste.textContent='⇩';bPaste.title='Coller le pattern copié';
-    bPaste.addEventListener('click',()=>{
-      if(!patClipboard)return;
-      state[li].pattern=[...patClipboard];nPas.textContent=String(state[li].pattern.length);
-      buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
-      if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();_refreshPadPreview();
+    // ── Shift rotatif fluide (slider horizontal) ────────────────────────────────
+    const shiftWrap=document.createElement('div');shiftWrap.className='mod-shift-wrap';
+    const shiftLbl=document.createElement('div');shiftLbl.className='mod-shift-label';shiftLbl.textContent='décal.';
+    const shiftTrack=document.createElement('div');shiftTrack.className='mod-shift-track';
+    const shiftFill=document.createElement('div');shiftFill.className='mod-shift-fill';
+    const shiftThumb=document.createElement('div');shiftThumb.className='mod-shift-thumb';
+    shiftTrack.appendChild(shiftFill);shiftTrack.appendChild(shiftThumb);
+    shiftWrap.appendChild(shiftLbl);shiftWrap.appendChild(shiftTrack);
+    const _refreshShift=()=>{
+      const L=state[li].pattern.length;const sn=state[li].shiftN||0;
+      const frac=L>1?sn/L:0;
+      shiftFill.style.width=`${frac*100}%`;shiftThumb.style.left=`${frac*100}%`;
+      shiftLbl.textContent=sn?`+${sn}`:'décal.';
+      shNum.textContent=String(sn);
+    };
+    _refreshShift();
+    {
+      let _sx0=0,_sShift0=0,_sPat0=null;
+      shiftTrack.addEventListener('pointerdown',e=>{
+        e.preventDefault();shiftTrack.setPointerCapture(e.pointerId);
+        _sx0=e.clientX;_sShift0=state[li].shiftN||0;_sPat0=[...state[li].pattern];
+      });
+      shiftTrack.addEventListener('pointermove',e=>{
+        if(!shiftTrack.hasPointerCapture(e.pointerId))return;
+        const L=state[li].pattern.length;if(L<=1)return;
+        const rect=shiftTrack.getBoundingClientRect();
+        const deltaSteps=Math.round((e.clientX-_sx0)/rect.width*L);
+        const targetShift=(((_sShift0+deltaSteps)%L)+L)%L;
+        if(targetShift===state[li].shiftN)return;
+        const rotAmt=((-(deltaSteps%L))+L)%L;
+        state[li].pattern=rotate(_sPat0,rotAmt);
+        state[li].shiftN=targetShift;
+        _refreshShift();buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
+      });
+      shiftTrack.addEventListener('pointerup',()=>{_speedMark();});
+    }
+
+    // ── Slider doux horizontal ────────────────────────────────────────────────
+    const softWrap=document.createElement('div');softWrap.className='mod-soft-h-wrap';
+    const softLbl=document.createElement('div');softLbl.className='mod-soft-h-label';softLbl.textContent='○~';
+    const softTrack=document.createElement('div');softTrack.className='mod-soft-h-track';
+    const softFill=document.createElement('div');softFill.className='mod-soft-h-fill';
+    const softThumb=document.createElement('div');softThumb.className='mod-soft-h-thumb';
+    softTrack.appendChild(softFill);softTrack.appendChild(softThumb);
+    softWrap.appendChild(softLbl);softWrap.appendChild(softTrack);
+    const _refreshSoft=()=>{
+      const v=_modSoftState[li];
+      softFill.style.width=`${v*100}%`;softThumb.style.left=`${v*100}%`;
+    };
+    _refreshSoft();
+    {
+      const _softDrag=e=>{
+        if(!softTrack.hasPointerCapture(e.pointerId))return;
+        const rect=softTrack.getBoundingClientRect();
+        const v=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+        _modSoftState[li]=v;_refreshSoft();
+        generatePatternFromPad(li,_modPadState[li].x,_modPadState[li].y,v);
+        buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
+      };
+      softTrack.addEventListener('pointerdown',e=>{e.preventDefault();softTrack.setPointerCapture(e.pointerId);_softDrag(e);});
+      softTrack.addEventListener('pointermove',_softDrag);
+      softTrack.addEventListener('pointerup',()=>{_speedMark();});
+    }
+
+    // ── Boutons d'action ─────────────────────────────────────────────────────
+    const bShuffle=document.createElement('button');bShuffle.className='btn-mod-a btn-mod-sm';bShuffle.textContent='⚅';bShuffle.title='Mélanger aléatoirement';
+    bShuffle.addEventListener('click',()=>{
+      const arr=[...state[li].pattern];
+      for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+      state[li].pattern=arr;state[li].shiftN=0;_refreshShift();
+      buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();_speedMark();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod-c btn-mod-c-icon';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
+    const bMagic=document.createElement('button');bMagic.className='btn-mod-a btn-mod-sm';bMagic.textContent='✨';bMagic.title='Générer un pattern magique';
+    bMagic.addEventListener('click',()=>{
+      const n=state[li].pattern.length;
+      const alpha=Math.sqrt(Math.random());
+      const densAlgo=0.10+0.50*(Math.random()+Math.random())*0.5;
+      const densRand=(1+Math.random()*(n-2))/n;
+      const k=Math.max(1,Math.min(n-1,Math.round(n*(densAlgo*alpha+densRand*(1-alpha)))));
+      const wI=Math.max(0.05,0.85-(k/n)*1.2);
+      const magRot=Math.floor(Math.random()*n);const placed=new Set();
+      for(let i=0;i<k;i++){const ep=(Math.floor(i*n/k)+magRot)%n;placed.add(Math.random()<alpha?ep:Math.floor(Math.random()*n));}
+      let safety=0;while(placed.size<k&&safety++<200)placed.add(Math.floor(Math.random()*n));
+      const arr=Array(n).fill('.');placed.forEach(i=>{arr[i]='X';});
+      let prev=arr[n-1];
+      for(let i=0;i<n;i++){
+        if(arr[i]==='X'){prev='X';continue;}
+        const pM=prev==='X'?0.70:prev==='x'?0.35:0.15;
+        const p=wI*(pM*alpha+0.40*(1-alpha));
+        if(Math.random()<p){arr[i]='x';prev='x';}else prev='.';
+      }
+      state[li].pattern=arr;state[li].shiftN=0;_refreshShift();
+      const rv=Math.random();
+      if(rv<1/3){
+        if(Math.random()<0.5){state[li].pendingHalf=true;state[li].pendingDouble=false;state[li].pendingClear=false;}
+        else{state[li].pendingDouble=true;state[li].pendingHalf=false;state[li].pendingClear=false;}
+        if(Math.random()<0.20)state[li].ternOn=!state[li].ternOn;
+      }
+      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);_refreshPadPreview();_speedMark();
+    });
+    const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
         buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
       });
     });
-    const selStep=document.createElement('select');selStep.className='mod-sel-unit';selStep.title='Multiplier / diviser le nb de pas';
-    ['.','×2','/2','×3','/3'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;selStep.appendChild(o);});
-    selStep.addEventListener('change',()=>{
-      const v=selStep.value;selStep.value='.';if(v==='.')return;
-      if(v==='×2')state[li].pattern=[...state[li].pattern,...state[li].pattern];
-      else if(v==='×3')state[li].pattern=[...state[li].pattern,...state[li].pattern,...state[li].pattern];
-      else if(v==='/2')state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/2)));
-      else if(v==='/3')state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/3)));
-      _reszMark();
+    const bCP=document.createElement('button');bCP.className='btn-mod-a btn-mod-sm';
+    const _refreshCP=()=>{bCP.textContent=patClipboard?'⇩':'⧉';bCP.title=patClipboard?'Coller le pattern':'Copier le pattern';};
+    _refreshCP();
+    bCP.addEventListener('click',()=>{
+      if(patClipboard){
+        state[li].pattern=[...patClipboard];nPas.textContent=String(state[li].pattern.length);
+        buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
+        if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();_refreshPadPreview();_speedMark();
+      }else{patClipboard=[...state[li].pattern];showToast('Pattern copié','info');}
+      _refreshCP();
     });
-    // Drawer "…" — opérations avancées
-    const moreWrap=document.createElement('div');moreWrap.className='mod-more-wrap';
-    const bMore=document.createElement('button');bMore.className='btn-mod-c';bMore.textContent='…';bMore.title="Plus d'opérations";
-    const moreDrawer=document.createElement('div');moreDrawer.className='mod-more-drawer';
+
+    // ── Popup … — Miroir / Inverser / Rotation ───────────────────────────────
+    const moreWrap=document.createElement('div');moreWrap.className='mod-mul-wrap';
+    const bMore=document.createElement('button');bMore.className='btn-mod-a btn-mod-sm';bMore.textContent='…';bMore.title='Opérations';
+    const moreDrawer=document.createElement('div');moreDrawer.className='mod-mul-popup';
     const _mkMoreItem=(lbl,fn)=>{
-      const b=document.createElement('button');b.className='mod-more-item';b.textContent=lbl;
+      const b=document.createElement('button');b.className='mod-mul-item';b.textContent=lbl;
       b.addEventListener('click',()=>{moreDrawer.classList.remove('open');fn();});return b;
     };
     const bSwap=_mkMoreItem('⇄ Miroir',()=>{
@@ -5387,46 +5382,26 @@ function buildLayers(){
       state[li].pattern=state[li].pattern.map(p=>p==='.'?'x':p==='x'?'X':'.');
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
     }));
-    moreDrawer.appendChild(_mkMoreItem('🎲 Shuffle',()=>{
-      const arr=[...state[li].pattern];
-      for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
-      state[li].pattern=arr;state[li].shiftN=0;_refreshKnob();
-      buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
-    }));
-    moreDrawer.appendChild(_mkMoreItem('✨ Magie',()=>{
-      const n=state[li].pattern.length;
-      const alpha=Math.sqrt(Math.random());
-      const densAlgo=0.10+0.50*(Math.random()+Math.random())*0.5;
-      const densRand=(1+Math.random()*(n-2))/n;
-      const k=Math.max(1,Math.min(n-1,Math.round(n*(densAlgo*alpha+densRand*(1-alpha)))));
-      const wI=Math.max(0.05,0.85-(k/n)*1.2);
-      const magRot=Math.floor(Math.random()*n);const placed=new Set();
-      for(let i=0;i<k;i++){const ep=(Math.floor(i*n/k)+magRot)%n;placed.add(Math.random()<alpha?ep:Math.floor(Math.random()*n));}
-      let safety=0;while(placed.size<k&&safety++<200)placed.add(Math.floor(Math.random()*n));
-      const arr=Array(n).fill('.');placed.forEach(i=>{arr[i]='X';});
-      let prev=arr[n-1];
-      for(let i=0;i<n;i++){
-        if(arr[i]==='X'){prev='X';continue;}
-        const pM=prev==='X'?0.70:prev==='x'?0.35:0.15;
-        const p=wI*(pM*alpha+0.40*(1-alpha));
-        if(Math.random()<p){arr[i]='x';prev='x';}else prev='.';
-      }
-      state[li].pattern=arr;state[li].shiftN=0;_refreshKnob();
-      const rv=Math.random();
-      if(rv<1/3){
-        if(Math.random()<0.5){state[li].pendingHalf=true;state[li].pendingDouble=false;state[li].pendingClear=false;}
-        else{state[li].pendingDouble=true;state[li].pendingHalf=false;state[li].pendingClear=false;}
-        if(Math.random()<0.20)state[li].ternOn=!state[li].ternOn;
-      }
-      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);_refreshPadPreview();
-    }));
     moreWrap.appendChild(bMore);moreWrap.appendChild(moreDrawer);
     bMore.addEventListener('click',e=>{e.stopPropagation();moreDrawer.classList.toggle('open');});
     document.addEventListener('click',e=>{if(!moreWrap.contains(e.target))moreDrawer.classList.remove('open');});
-    zC.appendChild(bCopy);zC.appendChild(bPaste);zC.appendChild(bClear);
-    {const cSep=document.createElement('div');cSep.className='mod-c-sep';zC.appendChild(cSep);}
-    zC.appendChild(selStep);zC.appendChild(moreWrap);
-    modPanel.appendChild(zC);
+
+    // ── STRIP 1 : [◀N▶ ×÷] | [unité T] | [⚅ ✨ ⌫ ⧉ …] ──────────────────────
+    const strip1=document.createElement('div');strip1.className='mod-strip-1';
+    const _mkSep=()=>{const s=document.createElement('div');s.className='mod-za-sep';return s;};
+    const grPas=document.createElement('div');grPas.className='mod-za-group';
+    grPas.appendChild(bMinus);grPas.appendChild(nPas);grPas.appendChild(bPlus);grPas.appendChild(mulWrap);
+    const grUnit=document.createElement('div');grUnit.className='mod-za-group';
+    grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
+    const grAct=document.createElement('div');grAct.className='mod-za-group';
+    grAct.appendChild(bShuffle);grAct.appendChild(bMagic);grAct.appendChild(bClear);grAct.appendChild(bCP);grAct.appendChild(moreWrap);
+    strip1.appendChild(grPas);strip1.appendChild(_mkSep());strip1.appendChild(grUnit);strip1.appendChild(_mkSep());strip1.appendChild(grAct);
+
+    // ── STRIP 2 : [shift fluide] | [pad mini] | [doux] ───────────────────────
+    const strip2=document.createElement('div');strip2.className='mod-strip-2';
+    strip2.appendChild(shiftWrap);strip2.appendChild(padWrap);strip2.appendChild(softWrap);
+
+    modPanel.appendChild(strip1);modPanel.appendChild(shNum);modPanel.appendChild(strip2);
 
     layerDiv.appendChild(modPanel);
 
