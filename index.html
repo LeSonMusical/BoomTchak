@@ -693,8 +693,8 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .layer-mod-panel{border-top:1px solid var(--cs);background:var(--cl)}
 .layer-mod-panel.hidden{display:none!important}
 /* Dual Strip — Strip 1 actions, Strip 2 contrôles fins */
-.mod-strip-1{display:flex;align-items:center;gap:4px;padding:4px 8px;flex-wrap:nowrap}
-.mod-strip-2{display:flex;align-items:stretch;gap:6px;padding:3px 8px 5px;border-top:1px solid var(--cs)}
+.mod-strip-1{display:flex;align-items:center;gap:4px;padding:4px 8px;flex-wrap:nowrap;min-height:34px}
+.mod-strip-2{display:flex;align-items:center;gap:6px;padding:4px 8px;border-top:1px solid var(--cs);min-height:34px}
 .mod-za-group{display:flex;align-items:center;gap:3px;flex-shrink:0}
 .mod-za-sep{width:1px;height:18px;background:var(--cs);flex-shrink:0;margin:0 2px}
 .btn-mod-a{padding:3px 8px;font-size:11px;font-weight:600;background:#fff;border:1px solid var(--cs);border-radius:4px;cursor:pointer;color:var(--cb);line-height:1.4;flex-shrink:0;touch-action:none;user-select:none}
@@ -705,13 +705,13 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-sel-unit{font-size:11px;padding:2px 4px;border:1px solid var(--cs);border-radius:4px;background:#fff;color:var(--cb);cursor:pointer}
 .mod-pas-num{min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--cb);flex-shrink:0}
 /* Shift rotatif fluide (horizontal) */
-.mod-shift-wrap{flex:1.3;display:flex;flex-direction:column;gap:2px;min-width:0}
-.mod-shift-label{font-size:8px;color:var(--cb);opacity:.5;text-align:center;line-height:1}
-.mod-shift-track{flex:1;border-radius:4px;border:1.5px solid var(--cs);background:#f0f0ee;position:relative;cursor:ew-resize;touch-action:none}
-.mod-shift-fill{position:absolute;top:0;left:0;bottom:0;background:var(--cc);opacity:.3;border-radius:3px}
-.mod-shift-thumb{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cc);transform:translate(-50%,-50%);pointer-events:none}
+.mod-shift-wrap{flex:1.4;display:flex;align-items:center;gap:5px;min-width:0}
+.mod-shift-label{font-size:9px;color:var(--cb);opacity:.55;flex-shrink:0}
+.mod-shift-track{flex:1;height:2px;border-radius:2px;background:#C0CCD8;position:relative;cursor:ew-resize;touch-action:none}
+.mod-shift-fill{position:absolute;top:0;bottom:0;background:var(--cc);border-radius:2px;opacity:.85}
+.mod-shift-thumb{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:var(--cc);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transform:translate(-50%,-50%);pointer-events:none}
 /* Pad 2D mini */
-.mod-pad-mini-wrap{flex:1;display:flex;min-width:60px}
+.mod-pad-mini-wrap{align-self:stretch;display:flex;min-width:55px;flex-shrink:0}
 .mod-pad{border-radius:6px;border:1.5px solid var(--cs);position:relative;overflow:hidden;cursor:crosshair;touch-action:none;background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820;flex:1}
 .mod-pad-cursor{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--cc);box-shadow:0 0 6px var(--cc);transform:translate(-50%,-50%);pointer-events:none}
 .mod-pad-preview{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:2px;padding:0 6px;pointer-events:none;flex-wrap:wrap}
@@ -719,14 +719,14 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-pad-dot.forte{background:var(--cc);box-shadow:0 0 3px var(--cc)}
 .mod-pad-dot.soft{background:var(--cc);opacity:.45}
 /* Slider doux horizontal */
-.mod-soft-h-wrap{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.mod-soft-h-label{font-size:8px;color:var(--cb);opacity:.5;text-align:center;line-height:1}
-.mod-soft-h-track{flex:1;border-radius:4px;border:1.5px solid var(--cs);background:#f0f0ee;position:relative;cursor:ew-resize;touch-action:none}
-.mod-soft-h-fill{position:absolute;top:0;left:0;bottom:0;background:var(--cc);opacity:.3;border-radius:3px}
-.mod-soft-h-thumb{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--cc);transform:translate(-50%,-50%);pointer-events:none}
+.mod-soft-h-wrap{flex:1;display:flex;align-items:center;gap:5px;min-width:0}
+.mod-soft-h-label{font-size:9px;color:var(--cb);opacity:.55;flex-shrink:0}
+.mod-soft-h-track{flex:1;height:2px;border-radius:2px;background:#C0CCD8;position:relative;cursor:ew-resize;touch-action:none}
+.mod-soft-h-fill{position:absolute;top:0;left:0;bottom:0;background:var(--cc);border-radius:2px;opacity:.85}
+.mod-soft-h-thumb{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:var(--cc);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transform:translate(-50%,-50%);pointer-events:none}
 /* Popup ×÷ et … */
 .mod-mul-wrap{position:relative;flex-shrink:0}
-.mod-mul-popup{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:300}
+.mod-mul-popup{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:300;min-width:80px}
 .mod-mul-popup.open{display:block}
 .mod-mul-item{display:block;width:100%;text-align:left;padding:7px 12px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--cb);white-space:nowrap;user-select:none}
 .mod-mul-item:hover{background:rgba(107,95,165,.08)}
@@ -1037,8 +1037,8 @@ body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#ff
 body.dark-mode .btn-mod-a{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
-body.dark-mode .mod-shift-track,body.dark-mode .mod-soft-h-track{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
-body.dark-mode .mod-shift-thumb,body.dark-mode .mod-soft-h-thumb{background:#2a2a28;border-color:var(--cc)}
+body.dark-mode .mod-shift-track,body.dark-mode .mod-soft-h-track{background:#253045}
+body.dark-mode .mod-shift-thumb,body.dark-mode .mod-soft-h-thumb{border-color:#1A2030}
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .mod-mul-popup{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
 body.dark-mode .mod-mul-item{color:#d0cec8}
@@ -1168,7 +1168,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.4</span>
+    <span class="app-version">v3.15.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5203,6 +5203,9 @@ function buildLayers(){
     bTern=document.createElement('button');bTern.className='btn-mod-a'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
     updateSpeedBtns();
+    const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
+    unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
+    bTern.style.color=_accent;bTern.style.borderColor=_accent;
 
     // ── Pad 2D mini ──────────────────────────────────────────────────────────────
     const padWrap=document.createElement('div');padWrap.className='mod-pad-mini-wrap';
@@ -5245,13 +5248,17 @@ function buildLayers(){
     const shiftTrack=document.createElement('div');shiftTrack.className='mod-shift-track';
     const shiftFill=document.createElement('div');shiftFill.className='mod-shift-fill';
     const shiftThumb=document.createElement('div');shiftThumb.className='mod-shift-thumb';
+    shiftThumb.style.background=_accent;shiftFill.style.background=_accent;
     shiftTrack.appendChild(shiftFill);shiftTrack.appendChild(shiftThumb);
     shiftWrap.appendChild(shiftLbl);shiftWrap.appendChild(shiftTrack);
     const _refreshShift=()=>{
       const L=state[li].pattern.length;const sn=state[li].shiftN||0;
-      const frac=L>1?sn/L:0;
-      shiftFill.style.width=`${frac*100}%`;shiftThumb.style.left=`${frac*100}%`;
-      shiftLbl.textContent=sn?`+${sn}`:'décal.';
+      const half=Math.floor(L/2);const signed=sn<=half?sn:sn-L;
+      const frac=0.5+signed/L;
+      shiftThumb.style.left=`${frac*100}%`;
+      if(signed>=0){shiftFill.style.left='50%';shiftFill.style.width=`${(frac-0.5)*100}%`;}
+      else{shiftFill.style.left=`${frac*100}%`;shiftFill.style.width=`${(0.5-frac)*100}%`;}
+      shiftLbl.textContent=signed>0?`+${signed}`:signed<0?String(signed):'○';
       shNum.textContent=String(sn);
     };
     _refreshShift();
@@ -5282,6 +5289,7 @@ function buildLayers(){
     const softTrack=document.createElement('div');softTrack.className='mod-soft-h-track';
     const softFill=document.createElement('div');softFill.className='mod-soft-h-fill';
     const softThumb=document.createElement('div');softThumb.className='mod-soft-h-thumb';
+    softThumb.style.background=_accent;softFill.style.background=_accent;
     softTrack.appendChild(softFill);softTrack.appendChild(softThumb);
     softWrap.appendChild(softLbl);softWrap.appendChild(softTrack);
     const _refreshSoft=()=>{
@@ -5386,20 +5394,21 @@ function buildLayers(){
     bMore.addEventListener('click',e=>{e.stopPropagation();moreDrawer.classList.toggle('open');});
     document.addEventListener('click',e=>{if(!moreWrap.contains(e.target))moreDrawer.classList.remove('open');});
 
-    // ── STRIP 1 : [◀N▶ ×÷] | [unité T] | [⚅ ✨ ⌫ ⧉ …] ──────────────────────
+    // ── STRIP 1 : [◀N▶ ×÷] | [unité T] ──────────→ [⧉ ⌫] ───────────────────
     const strip1=document.createElement('div');strip1.className='mod-strip-1';
     const _mkSep=()=>{const s=document.createElement('div');s.className='mod-za-sep';return s;};
     const grPas=document.createElement('div');grPas.className='mod-za-group';
     grPas.appendChild(bMinus);grPas.appendChild(nPas);grPas.appendChild(bPlus);grPas.appendChild(mulWrap);
     const grUnit=document.createElement('div');grUnit.className='mod-za-group';
     grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
+    const grSpacer=document.createElement('div');grSpacer.style.flex='1';
     const grAct=document.createElement('div');grAct.className='mod-za-group';
-    grAct.appendChild(bShuffle);grAct.appendChild(bMagic);grAct.appendChild(bClear);grAct.appendChild(bCP);grAct.appendChild(moreWrap);
-    strip1.appendChild(grPas);strip1.appendChild(_mkSep());strip1.appendChild(grUnit);strip1.appendChild(_mkSep());strip1.appendChild(grAct);
+    grAct.appendChild(bCP);grAct.appendChild(bClear);
+    strip1.appendChild(grPas);strip1.appendChild(_mkSep());strip1.appendChild(grUnit);strip1.appendChild(grSpacer);strip1.appendChild(grAct);
 
-    // ── STRIP 2 : [shift fluide] | [pad mini] | [doux] ───────────────────────
+    // ── STRIP 2 : [shift] ⚅ [pad] ✨ [doux] ─────────────────────────────────
     const strip2=document.createElement('div');strip2.className='mod-strip-2';
-    strip2.appendChild(shiftWrap);strip2.appendChild(padWrap);strip2.appendChild(softWrap);
+    strip2.appendChild(shiftWrap);strip2.appendChild(bShuffle);strip2.appendChild(padWrap);strip2.appendChild(bMagic);strip2.appendChild(softWrap);
 
     modPanel.appendChild(strip1);modPanel.appendChild(shNum);modPanel.appendChild(strip2);
 
