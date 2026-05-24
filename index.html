@@ -262,8 +262,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .btn-mute-lbl{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;padding:0 5px;height:24px;min-width:42px;background:var(--cc);color:#fff;transition:background .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .btn-mute-lbl:hover{filter:brightness(.9)}
 .btn-mute-lbl.muted{background:#c8c5c0;color:#777}
-.btn-layer-toggle{margin-left:auto;font-size:10px;font-weight:600;background:transparent;border:none;border-radius:4px;color:var(--cb);cursor:pointer;flex-shrink:0;white-space:nowrap;padding:2px 4px;opacity:.6;line-height:1.2}
-.btn-layer-toggle:hover{opacity:1}
+.btn-layer-toggle{margin-left:auto;font-size:10px;font-weight:700;background:rgba(0,0,0,.04);border:1px solid var(--cs);border-radius:4px;color:var(--cb);cursor:pointer;flex-shrink:0;white-space:nowrap;padding:2px 7px;opacity:.88;line-height:1.4}
+.btn-layer-toggle:hover{opacity:1;background:rgba(0,0,0,.07)}
+.btn-layer-toggle.open{background:var(--cc);color:#fff;border-color:var(--cb);opacity:1}
 /* Ligne 2 : steps + mod */
 .layer-row2{display:flex;align-items:flex-start;gap:4px;padding:5px 6px 5px;min-width:0;overflow:hidden}
 .layer-row2.collapsed{display:none}
@@ -714,13 +715,13 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-shift-thumb{position:absolute;top:50%;width:3px;height:14px;border-radius:2px;background:var(--cc);transform:translate(-50%,-50%);pointer-events:none;cursor:ew-resize}
 /* Pad 2D mini */
 .mod-pad-mini-wrap{align-self:stretch;display:flex;min-width:65px;flex-shrink:0;flex:1.5}
-.mod-pad{border-radius:6px;border:1.5px solid var(--cs);position:relative;overflow:hidden;cursor:crosshair;touch-action:none;background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820;flex:1}
+.mod-pad{border-radius:6px;border:1.5px solid var(--cs);position:relative;overflow:hidden;cursor:crosshair;touch-action:none;background:linear-gradient(to top,rgba(255,175,45,.07) 0%,transparent 50%,rgba(70,120,210,.07) 100%),#eeebe5;flex:1}
 .mod-pad-rect{position:absolute;left:0;bottom:0;border:1.5px solid var(--cc);background:rgba(107,95,165,.18);pointer-events:none;box-sizing:border-box;transition:none}
 .mod-pad-corner{position:absolute;width:16px;height:16px;pointer-events:none;transform:translate(-50%,-50%)}
 .mod-pad-corner::before{content:'';position:absolute;top:50%;left:0;right:0;height:1.5px;transform:translateY(-50%);background:rgba(185,180,172,.55);border-radius:1px}
 .mod-pad-corner::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1.5px;transform:translateX(-50%);background:rgba(185,180,172,.55);border-radius:1px}
 .mod-pad-preview{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:2px;padding:0 6px;pointer-events:none;flex-wrap:wrap}
-.mod-pad-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
+.mod-pad-dot{width:4px;height:4px;border-radius:50%;background:rgba(0,0,0,.15);flex-shrink:0}
 .mod-pad-dot.forte{background:var(--cc);box-shadow:0 0 3px var(--cc)}
 .mod-pad-dot.soft{background:var(--cc);opacity:.45}
 /* Slider doux horizontal */
@@ -1046,11 +1047,14 @@ body.dark-mode .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#
 body.dark-mode .layer-mod-panel .btn-mod-a{background:#1a1a18;border-color:rgba(255,255,255,.06);color:#4e4c49}
 body.dark-mode .layer-mod-panel .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright{color:#7a7875;border-color:rgba(255,255,255,.11)}
+body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright.on{color:#fff}
 body.dark-mode .layer-mod-panel .btn-mod-icon{opacity:.52}
 body.dark-mode .mod-sel-unit{background:#1a1a18;border-color:rgba(255,255,255,.06);color:#4e4c49}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before{background:#253045}
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
+body.dark-mode .mod-pad{background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820}
+body.dark-mode .mod-pad-dot{background:rgba(255,255,255,.18)}
 body.dark-mode .mod-mul-popup{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
 body.dark-mode .mod-mul-item{color:#d0cec8}
 body.dark-mode .mod-mul-item:hover{background:rgba(107,95,165,.15)}
@@ -1179,7 +1183,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.12</span>
+    <span class="app-version">v3.15.13</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3496,7 +3500,7 @@ function openPresetModal(cfg){
   // Filtre famille secondaire pour l'encyclopédie (groove/pattern/band/son/metro)
   let encFamFilter='all';
   // Filtre contenu pour l'encyclopédie : 'all'|'written'|'empty'
-  let encContentFilter='all';
+  let encContentFilter='written';
 
   // Corps 2 colonnes : familles à gauche (fixe), items à droite (scroll)
   const body=document.createElement('div');body.className='pm-body';
@@ -4873,6 +4877,7 @@ function buildGrooveSection(){
   const hasE=hasEncycloContent(groove&&groove.id);
   btnI.style.opacity=hasE?'1':'.3';
   btnI.style.cursor=hasE?'pointer':'default';
+  if(hasE){btnI.style.color='#c8a84a';btnI.style.borderColor='#c8a84a';}
   btnI.addEventListener('click',()=>{
     const g=getGroove(currentGrooveId);
     if(!g||!hasEncycloContent(g.id))return;
@@ -5069,6 +5074,7 @@ function buildLayers(){
       const eKey=p&&(p.encyclo_ref||p.id);
       const has=hasEncycloContent(eKey);
       btnI.style.opacity=has?'1':'.3';btnI.style.cursor=has?'pointer':'default';
+      btnI.style.color=has?_accent:'';btnI.style.borderColor=has?_accent:'';
       btnI.onclick=has?()=>{showEncycloEntry(eKey);if(!encycloOuvert)toggleEncyclo(true);}:null;
     }
     updateBtnI();
@@ -5137,7 +5143,7 @@ function buildLayers(){
     row1.appendChild(bRec);
     // Bouton mod dans row1 (unique, visible dans toutes les vues)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
-    btnMod.style.cssText='font-size:10px;opacity:.55;margin-left:auto;flex-shrink:0;align-self:flex-start';
+    btnMod.style.cssText='margin-left:auto;flex-shrink:0;align-self:flex-start';
     btnMod.textContent='mod ▶';
     row1.appendChild(btnMod);
     {const ro=new ResizeObserver(([e])=>{btnDicePat.classList.toggle('visible',e.contentRect.width>=260);});ro.observe(row1);}
@@ -5158,7 +5164,7 @@ function buildLayers(){
     const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
 
     // ── Nb de pas : ◀ N ▶ ──────────────────────────────────────────────────────
-    const nPas=document.createElement('span');nPas.className='mod-pas-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);
+    const nPas=document.createElement('span');nPas.className='mod-pas-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);nPas.style.color=_accent;
     const shNum=document.createElement('span');shNum.id='shift-num-'+li;shNum.style.display='none';shNum.textContent=String(state[li].shiftN||0);
     const updateSwapBtnRef={fn:null};
     const _reszMark=()=>{
@@ -5441,7 +5447,7 @@ function buildLayers(){
     // toggle mod panel
     btnMod.addEventListener('click',()=>{
       const open=modPanel.classList.toggle('hidden');
-      btnMod.textContent=open?'mod ▶':'mod ▼';
+      btnMod.textContent=open?'mod ▶':'mod ▼';btnMod.classList.toggle('open',!open);
       if(!open){updateSwapBtn();_refreshPadPreview();}
     });
 
