@@ -702,7 +702,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-mod-a.on{background:var(--cc);color:#fff;border-color:var(--cb)}
 .btn-mod-a:disabled{opacity:.3;cursor:default}
 .btn-mod-sm{padding:3px 6px!important;font-size:12px!important}
-.btn-mod-dice{font-size:16px!important;padding:2px 4px!important;line-height:1.2!important;border:none!important;background:transparent!important;box-shadow:none!important}
+.btn-mod-dice{font-size:14px!important;padding:2px 3px!important;line-height:1.2!important;border:none!important;background:transparent!important;box-shadow:none!important;opacity:.52}
 .mod-sel-unit{font-size:11px;padding:2px 4px;border:1px solid var(--cs);border-radius:4px;background:#fff;color:var(--cb);cursor:pointer}
 .mod-pas-num{min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--cb);flex-shrink:0}
 /* Shift rotatif fluide (horizontal) */
@@ -1040,6 +1040,12 @@ body.dark-mode .btn-mod{background:#2a2a28;border-color:rgba(255,255,255,.12)}
 body.dark-mode .btn-mod.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .btn-mod-a{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
+/* Mod panel dark : boutons très mutés sauf .btn-mod-bright */
+body.dark-mode .layer-mod-panel .btn-mod-a{background:#1a1a18;border-color:rgba(255,255,255,.06);color:#4e4c49}
+body.dark-mode .layer-mod-panel .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
+body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright{color:#7a7875;border-color:rgba(255,255,255,.11)}
+body.dark-mode .layer-mod-panel .btn-mod-dice{opacity:.32}
+body.dark-mode .mod-sel-unit{background:#1a1a18!important;border-color:rgba(255,255,255,.06)!important;color:#4e4c49!important}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before{background:#253045}
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
@@ -1171,7 +1177,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.8</span>
+    <span class="app-version">v3.15.9</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5163,7 +5169,7 @@ function buildLayers(){
 
     // ── Popup ×÷ ────────────────────────────────────────────────────────────────
     const mulWrap=document.createElement('div');mulWrap.className='mod-mul-wrap';
-    const bMul=document.createElement('button');bMul.className='btn-mod-a btn-mod-sm';bMul.textContent='×÷';bMul.title='Multiplier / diviser le nombre de pas';
+    const bMul=document.createElement('button');bMul.className='btn-mod-a btn-mod-sm btn-mod-bright';bMul.textContent='×÷';bMul.title='Multiplier / diviser le nombre de pas';
     const mulPopup=document.createElement('div');mulPopup.className='mod-mul-popup';
     const _mkMulItem=(lbl,fn)=>{
       const b=document.createElement('button');b.className='mod-mul-item';b.textContent=lbl;
@@ -5350,7 +5356,7 @@ function buildLayers(){
       state[li].pattern=arr;state[li].shiftN=0;_refreshShift();
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);setLayerDirty(li,true);_refreshPadPreview();_speedMark();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
+    const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm btn-mod-bright';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
