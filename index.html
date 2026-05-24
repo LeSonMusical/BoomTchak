@@ -730,7 +730,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .mod-soft-h-thumb{position:absolute;top:50%;width:3px;height:14px;border-radius:2px;background:var(--cc);transform:translate(-50%,-50%);pointer-events:none}
 /* Popup ×÷ et … */
 .mod-mul-wrap{position:relative;flex-shrink:0}
-.mod-mul-popup{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:300;min-width:120px;width:max-content}
+.mod-mul-popup{display:none;position:fixed;top:0;left:0;background:#fff;border:1px solid var(--cs);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:4px 0;z-index:9999;min-width:120px;width:max-content}
 .mod-mul-popup.open{display:block}
 .mod-mul-item{display:block;text-align:left;padding:7px 14px;font-size:13px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--cb);white-space:nowrap;user-select:none}
 .mod-mul-item:hover{background:rgba(107,95,165,.08)}
@@ -1171,7 +1171,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.7</span>
+    <span class="app-version">v3.15.8</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5174,7 +5174,7 @@ function buildLayers(){
     mulPopup.appendChild(_mkMulItem('×3',()=>{state[li].pattern=[...state[li].pattern,...state[li].pattern,...state[li].pattern];_reszMark();}));
     mulPopup.appendChild(_mkMulItem('÷3',()=>{state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/3)));_reszMark();}));
     mulWrap.appendChild(bMul);mulWrap.appendChild(mulPopup);
-    bMul.addEventListener('click',e=>{e.stopPropagation();mulPopup.classList.toggle('open');});
+    bMul.addEventListener('click',e=>{e.stopPropagation();const isOpen=mulPopup.classList.toggle('open');if(isOpen){const r=bMul.getBoundingClientRect();mulPopup.style.top=(r.bottom+4)+'px';mulPopup.style.left=r.left+'px';}});
     document.addEventListener('click',e=>{if(!mulWrap.contains(e.target))mulPopup.classList.remove('open');});
 
     // ── Unité (select) + T ──────────────────────────────────────────────────────
@@ -5357,17 +5357,17 @@ function buildLayers(){
         buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
       });
     });
-    const bCP=document.createElement('button');bCP.className='btn-mod-a btn-mod-sm';
-    const _refreshCP=()=>{bCP.textContent=patClipboard?'⇩':'⧉';bCP.title=patClipboard?'Coller le pattern':'Copier le pattern';};
+    const bCopy=document.createElement('button');bCopy.className='btn-mod-a btn-mod-sm';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
+    const bPaste=document.createElement('button');bPaste.className='btn-mod-a btn-mod-sm';bPaste.textContent='⇩';bPaste.title='Coller le pattern';
+    const _refreshCP=()=>{bPaste.disabled=!patClipboard;};
     _refreshCP();
-    bCP.addEventListener('click',()=>{
-      if(patClipboard){
-        state[li].pattern=[...patClipboard];nPas.textContent=String(state[li].pattern.length);
-        buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
-        if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();_refreshPadPreview();_speedMark();
-        patClipboard=null;
-      }else{patClipboard=[...state[li].pattern];showToast('Pattern copié','info');}
-      _refreshCP();
+    bCopy.addEventListener('click',()=>{patClipboard=[...state[li].pattern];showToast('Pattern copié','info');_refreshCP();});
+    bPaste.addEventListener('click',()=>{
+      if(!patClipboard)return;
+      state[li].pattern=[...patClipboard];nPas.textContent=String(state[li].pattern.length);
+      buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
+      if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();_refreshPadPreview();_speedMark();
+      patClipboard=null;_refreshCP();
     });
 
     // ── Popup … — Miroir / Inverser / Rotation ───────────────────────────────
@@ -5395,7 +5395,7 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
     }));
     moreWrap.appendChild(bMore);moreWrap.appendChild(moreDrawer);
-    bMore.addEventListener('click',e=>{e.stopPropagation();moreDrawer.classList.toggle('open');});
+    bMore.addEventListener('click',e=>{e.stopPropagation();const isMoreOpen=moreDrawer.classList.toggle('open');if(isMoreOpen){const r=bMore.getBoundingClientRect();moreDrawer.style.top=(r.bottom+4)+'px';moreDrawer.style.left=r.left+'px';}});
     document.addEventListener('click',e=>{if(!moreWrap.contains(e.target))moreDrawer.classList.remove('open');});
 
     // ── STRIP 1 : [◀N▶ ×÷] | [unité T] ──────────→ [⧉ ⌫] ───────────────────
@@ -5407,7 +5407,7 @@ function buildLayers(){
     grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
     const grSpacer=document.createElement('div');grSpacer.style.flex='1';
     const grAct=document.createElement('div');grAct.className='mod-za-group';
-    grAct.appendChild(bCP);grAct.appendChild(bClear);
+    grAct.appendChild(bCopy);grAct.appendChild(bPaste);grAct.appendChild(bClear);
     strip1.appendChild(grPas);strip1.appendChild(_mkSep());strip1.appendChild(grUnit);strip1.appendChild(grSpacer);strip1.appendChild(grAct);
 
     // ── STRIP 2 : [shift] ⚅ [pad] ✨ [doux] ─────────────────────────────────
