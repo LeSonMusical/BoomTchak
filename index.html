@@ -1049,7 +1049,6 @@ body.dark-mode .layer-mod-panel .btn-mod-a.on{background:var(--cc);border-color:
 body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright{color:#7a7875;border-color:rgba(255,255,255,.11)}
 body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright.on{color:#fff}
 body.dark-mode .layer-mod-panel .btn-mod-icon{opacity:.52}
-body.dark-mode .mod-sel-unit{background:#1a1a18;border-color:rgba(255,255,255,.06);color:#4e4c49}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before{background:#253045}
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
@@ -1183,7 +1182,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.14</span>
+    <span class="app-version">v3.15.15</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3175,12 +3174,14 @@ function updateGrooveSaveBtn(){
 }
 
 function updateGrooveNameTopBar(){
-  const lbl = document.getElementById('groove-name-lbl');
-  if(!lbl) return;
+  const btn = document.getElementById('groove-preset-btn');
+  if(!btn) return;
   const g = getGroove(currentGrooveId);
   let name = g ? (g.nom || '—') : '—';
+  if(g && g.source==='teacher') name += ' ✎';
+  if(g && g.source==='pending') name += ' 👁';
   if(grooveDirty || metroDirty || bandDirty) name += ' ✎';
-  lbl.textContent = name;
+  btn.textContent = name;
 }
 
 function _updateAuthStatusIcon(){
@@ -5033,6 +5034,7 @@ function buildLayers(){
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
     layerDiv.id='layer-div-'+li;
+    try{
     // Marquer section-teacher si le pattern courant est source:'teacher'
     function refreshLayerClass(){
       const p=state[li].patternId?getPattern(state[li].patternId):null;
@@ -5463,6 +5465,7 @@ function buildLayers(){
     setTimeout(()=>checkModPanelSize(li),0);
     attachLayerObserver(li);
     attachModPanelObserver(li);
+    }catch(e){console.error('BoomTchak buildLayers L'+li+':',e);cont.appendChild(layerDiv);}
   });
   updateRhythmInfoBar();
 }
@@ -12355,7 +12358,7 @@ function start(){
   pendingGlobalMult=globalSpeedMult;
 
   // Construire le DOM
-  render();
+  try{ render(); }catch(e){ console.error('BoomTchak render() err:',e); }
 
   // Sélectionner le groove courant dans l'encyclopédie
   updateEncycloPresetBtn(currentGrooveId);
