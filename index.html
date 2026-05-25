@@ -1183,7 +1183,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.19</span>
+    <span class="app-version">v3.15.20</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5038,6 +5038,7 @@ function buildLayers(){
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
     layerDiv.id='layer-div-'+li;
     try{
+    const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
     // Marquer section-teacher si le pattern courant est source:'teacher'
     function refreshLayerClass(){
       const p=state[li].patternId?getPattern(state[li].patternId):null;
@@ -5167,7 +5168,6 @@ function buildLayers(){
     const modPanel=document.createElement('div');
     modPanel.className='layer-mod-panel hidden';
     modPanel.id='mod-panel-'+li;
-    const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
 
     // ── Nb de pas : ◀ N ▶ ──────────────────────────────────────────────────────
     const nPas=document.createElement('span');nPas.className='mod-pas-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);nPas.style.color=_accent;
