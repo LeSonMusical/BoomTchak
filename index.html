@@ -34,7 +34,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0;color:#999;border-color:#ccc;background:#f0f0f0}
+.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0;color:#999;border-color:transparent;background:transparent}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
@@ -354,22 +354,22 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-edit-row.hidden{display:none}
 /* Top bar : couleurs volets */
 /* Top bar VOL / Metro */
-#btn-vol{color:#bbb;border-color:#ddd;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.7}
-#btn-vol.active{background:#eef4f8;color:#2d5f80;border-color:#4A7FA5;opacity:1}
-#btn-vol.muted{color:#bbb;border-color:#ddd;background:#f5f5f5;opacity:.7}
+#btn-vol{color:#777;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;touch-action:none;user-select:none;-webkit-user-select:none;opacity:1}
+#btn-vol.active{background:rgba(74,127,165,.1);border-color:#4A7FA5;color:#2d5f80;opacity:1}
+#btn-vol.muted{opacity:.6;color:#aaa;border-color:#ddd;background:#f5f5f5}
 .sons-row{display:flex;align-items:center;gap:3px;line-height:1}
 #sons-icon{font-size:14px}
 .sons-lbl{font-size:11px;letter-spacing:.02em;color:inherit}
 .sons-vol-track{width:44px;height:2px;background:rgba(0,0,0,.12);border-radius:1px;overflow:hidden}
 #sons-vol-fill{height:100%;width:100%;background:currentColor;border-radius:1px}
-#btn-tempo{color:#999;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
+#btn-tempo{color:#999;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.6}
 #btn-tempo .metro-row{display:flex;align-items:center;gap:3px;line-height:1}
 #btn-tempo .metro-icon{font-size:14px}
 #btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
 #btn-tempo .metro-track{width:44px;height:2px;background:rgba(0,0,0,.12);border-radius:1px;overflow:hidden}
 #btn-tempo .metro-track-fill{height:100%;width:50%;background:currentColor;border-radius:1px;transition:width .08s linear}
-#btn-tempo.active{background:#F2F5F9;color:#8899BB;border-color:#B8C8DC}
-#btn-tempo.metro-on,#btn-tempo.active.metro-on{background:#F2F5F9;color:#3A5A8A;border-color:#5577A8;opacity:1}
+#btn-tempo.metro-on{opacity:1;color:#777;border-color:#ccc;background:#f0f0f0}
+#btn-tempo.active{background:rgba(85,119,168,.1);border-color:#5577A8;color:#3A5A8A;opacity:1}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:8px 20px;border-radius:20px;pointer-events:none;z-index:9999;display:none;text-align:center;line-height:1.4}
 .sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:none;border-color:var(--cs);color:var(--cb)}
@@ -949,7 +949,7 @@ body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
-body.dark-mode .btn-sig-top{color:#666;border-color:#444;background:#222220}
+body.dark-mode .btn-sig-top{color:#666;border-color:transparent;background:transparent}
 body.dark-mode .btn-view-shape{background:#5a4f94;border-color:#5a4f94;color:#fff}
 body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
@@ -1078,14 +1078,14 @@ body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
 body.dark-mode .nav-cap-ann{background:#a0302b}
 body.dark-mode .nav-cap-val{background:#1a8a66}
-body.dark-mode #btn-vol{color:#555;border-color:#444;background:#1c1c1a;opacity:.6}
-body.dark-mode #btn-vol.active{background:#1e2830;color:#8ab4d0;border-color:#4A7FA5;opacity:1}
+body.dark-mode #btn-vol{color:#777;border-color:#444;background:#222220;opacity:1}
+body.dark-mode #btn-vol.active{background:rgba(74,127,165,.15);color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
 body.dark-mode .sons-vol-track{background:rgba(255,255,255,.08)}
-body.dark-mode #btn-tempo{color:#666;border-color:#444;background:#222220}
+body.dark-mode #btn-tempo{color:#666;border-color:#444;background:#222220;opacity:.5}
 body.dark-mode #btn-tempo .metro-track{background:rgba(255,255,255,.08)}
-body.dark-mode #btn-tempo.active{background:#1A2230;color:#4A6888;border-color:#253045}
-body.dark-mode #btn-tempo.metro-on,body.dark-mode #btn-tempo.active.metro-on{background:#1A2230;color:#7A90A8;border-color:#5577A8;opacity:1}
+body.dark-mode #btn-tempo.metro-on{opacity:1;color:#777;border-color:#444;background:#222220}
+body.dark-mode #btn-tempo.active{background:rgba(85,119,168,.18);color:#8AAAC8;border-color:#5577A8;opacity:1}
 body.dark-mode .metro-bloc{border-left-color:#253045}
 body.dark-mode .metro-3col-lbl{color:#555}
 body.dark-mode .metro-3col-top{color:#777}
@@ -1182,7 +1182,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.15</span>
+    <span class="app-version">v3.15.16</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4754,7 +4754,7 @@ function buildBandSection(){
   const bar=document.createElement('div');
   bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🔈';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🔈';lbl.style.cursor='pointer';
   bar.appendChild(lbl);
 
   // Bouton preset band (remplace filtre famille + select)
@@ -4802,7 +4802,7 @@ function buildBandSection(){
   });
   bar.appendChild(btnVolet);
   bar.addEventListener('click',e=>{
-    if(e.target===bar||e.target===lbl){
+    if(e.target===lbl){
       instrOuvert=!instrOuvert;
       const bc=document.getElementById('band-content');
       if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
@@ -4831,7 +4831,7 @@ function buildGrooveSection(){
   }
   refreshGrooveClass();
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';
+  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';lbl.style.cursor='pointer';
   bar.appendChild(lbl);
 
   const curGroove=getGroove(currentGrooveId);
@@ -4907,7 +4907,7 @@ function buildGrooveSection(){
   });
   bar.appendChild(btnVolet);
   bar.addEventListener('click',e=>{
-    if(e.target===bar||e.target===lbl){
+    if(e.target===lbl){
       layersOuverts=!layersOuverts;
       const lw=document.getElementById('layers-wrap');
       const cv=document.getElementById('circle-view');
@@ -7258,7 +7258,7 @@ function setMetroGlobal(on){
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
     const icon=btnTop.querySelector('.metro-icon');
-    if(icon) icon.textContent='⏱';
+    if(icon) icon.textContent=on?'⏱':'🔇';
   }
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
 }
