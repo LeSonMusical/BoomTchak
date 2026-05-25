@@ -931,6 +931,8 @@ body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 body.step-seq #step-rows-wrap{display:flex}
 /* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
+/* Layer muté : steps actifs atténués (comme vue circulaire) */
+#step-rows-wrap .layer-row2.muted .step.on,#step-rows-wrap .layer-row2.muted .step.soft{opacity:.3}
 /* Strip info gauche en step-seq (nb pas, unité, durée) */
 .step-seq-info{display:none;width:54px;flex-shrink:0;padding:2px 3px 2px;font-size:9px;line-height:1.4;align-self:center;box-sizing:border-box}
 body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
@@ -1180,7 +1182,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.22</span>
+    <span class="app-version">v3.15.23</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1423,10 +1425,10 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="section-groove"></div>
   <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
   <div id="view-mode-bar" style="display:none"></div>
-  <!-- Layers (3 couches rythmiques) — #rhythm-info-bar injecté en tête par buildLayers -->
-  <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Vue Pas (step sequencer) — row2 de chaque layer déplacé ici via _moveRow2ToStepView -->
   <div id="step-rows-wrap"></div>
+  <!-- Layers (3 couches rythmiques) — #rhythm-info-bar injecté en tête par buildLayers -->
+  <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <canvas id="rhythm-canvas"></canvas>
@@ -3066,6 +3068,18 @@ function startPlay(){
   visualRafID=requestAnimationFrame(visualLoop);
 }
 
+let _recNewBlinkRaf=null;
+function _startRecNewBlinkLoop(){
+  if(_recNewBlinkRaf||playing)return;
+  function _tick(){
+    const hasNew=LAYERS.some((_,li)=>(state[li].recNewSteps?.size||0)>0);
+    if(!hasNew||playing){_recNewBlinkRaf=null;return;}
+    if(circleView)drawCircles();
+    _recNewBlinkRaf=requestAnimationFrame(_tick);
+  }
+  _recNewBlinkRaf=requestAnimationFrame(_tick);
+}
+
 function stopPlay(){
   playing=false;
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
@@ -3074,6 +3088,7 @@ function stopPlay(){
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
     drawCircles();
+    _startRecNewBlinkLoop();
   } else {
     LAYERS.forEach(l=>{
       const d=document.getElementById('steps-'+l.id);
@@ -5524,12 +5539,15 @@ function buildStepsDOM(li,wrap){
       div.appendChild(br);
     }
     const s=document.createElement('div');
-    const isNew=state[li].recNewSteps?.has(si)&&state[li].recording;
+    const isNew=!!state[li].recNewSteps?.has(si);
     s.className='step'+(p==='X'?' on':p==='x'?' soft':'')+(isNew?' rec-new':'');
     s.addEventListener('click',()=>onStepClick(li,si,s));
     div.appendChild(s);
   });
   state[li].wrapped=wrap;
+  // Mute : synchronise la classe .muted sur row2 (pour le CSS atténué en step view)
+  const _r2=div.closest('.layer-row2');
+  if(_r2) _r2.classList.toggle('muted',!!state[li].muted);
   if(circleView) drawCircles();
   updateStepSeqInfo(li);
 }
@@ -7446,7 +7464,7 @@ function drawCircles(){
       const isSoft = pat[si]==='x';
       const isRepeat = rep > 0;
       const isPlaying = playing && si===flashStep[li] && rep===currentRepM;
-      const isNew = rep===0 && state[li].recNewSteps?.has(si) && state[li].recording;
+      const isNew = rep===0 && !!state[li].recNewSteps?.has(si);
       if(isNew) ctx.globalAlpha=blinkAlpha;
 
       // Répétition son fort : pièce trouée — même rayon ext. que le disque plein isOn
@@ -7670,7 +7688,7 @@ function drawLinear(){
         const uPos=(si+rep*n)*s; if(uPos>=dispU) break;
         const x=marginX+uW*(uPos+DENOM/2);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
-        const isNewL=rep===0&&state[li].recNewSteps?.has(si)&&state[li].recording;
+        const isNewL=rep===0&&!!state[li].recNewSteps?.has(si);
         if(isNewL) ctx.globalAlpha=blinkAlphaL;
         if(isOn){
           ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
