@@ -1182,7 +1182,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.16</span>
+    <span class="app-version">v3.15.17</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3283,14 +3283,15 @@ function applyGroove(grooveId){
   const _wasMutedAll=_btnV?.classList.contains('muted');
 
   LAYERS.forEach((layer,li)=>{
+    try{
     const gl=groove.layers[li];if(!gl)return;
     if(gl.sequence){
-      // Séquence embarquée dans le groove (layer était dirty à la sauvegarde)
       state[li].pattern=gl.sequence.split('');
       state[li].patternId=gl.patternId||null;
-      state[li].shiftN=0; // shift déjà intégré dans la séquence embarquée
+      state[li].shiftN=0;
     } else {
-      const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
+      const pat=getPattern(gl.patternId);
+      if(!pat||!pat.sequence){state[li].patternId=gl.patternId||null;return;}
       let seq=pat.sequence.split('');
       if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
       state[li].pattern=seq;
@@ -3307,6 +3308,7 @@ function applyGroove(grooveId){
     state[li].pendingClear=false;
     state[li].nextSpeedDir=gl.doubleOn?'half':'double';
     state[li].wrapped=false;
+    }catch(e){console.error('applyGroove L'+li+':',e);}
   });
 
   // Appliquer le band — band_embed si dirty à la sauvegarde, sinon preset par défaut
@@ -8420,6 +8422,7 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   (patterns || []).slice().sort(byOrdre).forEach(p => {
     if (schoolIdsWithForkP.has(p.id)) return; // fork TX actif — ne pas réimporter l'original
     if (localDirtyPIds.has(p.id)) return; // modif MX en attente — garder version locale
+    if (!p.sequence) { console.warn('BoomTchak: pattern "'+p.id+'" sequence null — ignoré'); return; }
     packCours.patterns = packCours.patterns.filter(x => x.id !== p.id);
     packCours.patterns.push({
       id: p.id, nom: p.nom, sequence: p.sequence, pas: p.pas,
@@ -12339,12 +12342,12 @@ function start(){
   // Initialiser le state audio depuis le groove
   LAYERS.forEach((layer,li)=>{
     const gl=randomGroove.layers[li];if(!gl)return;
-    const pat=getPattern(gl.patternId);if(!pat){state[li].patternId=gl.patternId;return;}
-    let seq=pat.sequence.split('');
-    if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
-    state[li].pattern=seq;
-    state[li].patternId=gl.patternId;
-    state[li].muted=gl.mute||false;
+      const pat=getPattern(gl.patternId);if(!pat||!pat.sequence){state[li].patternId=gl.patternId||null;return;}
+      let seq=pat.sequence.split('');
+      if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
+      state[li].pattern=seq;
+      state[li].patternId=gl.patternId;
+      state[li].muted=gl.mute||false;
     state[li].halfOn=gl.halfOn||false;
     state[li].doubleOn=gl.doubleOn||false;
   });
