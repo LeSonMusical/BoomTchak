@@ -926,14 +926,11 @@ body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
 body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
-/* Layout sans display:contents (incompatible iOS Safari) : chaque .layer = flex-col,
-   row2 (steps) remonte via order:-1 pour apparaître avant row1 (contrôles) */
-body.step-seq #layers{display:flex;flex-direction:column;gap:6px}
-body.step-seq .layer{display:flex;flex-direction:column;border-radius:4px;overflow:visible}
-/* Steps en premier (order:-1), contrôles en second (order:0 = défaut) */
-body.step-seq .layer-row2{order:-1;display:flex!important;align-items:center;border-left:3px solid var(--cs);margin-bottom:1px}
-body.step-seq .layer-row1{border-left:3px solid var(--cs)}
-body.step-seq .layer-mod-panel{border-left:3px solid var(--cs)}
+/* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
+#step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
+body.step-seq #step-rows-wrap{display:flex}
+/* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
+#step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Strip info gauche en step-seq (nb pas, unité, durée) */
 .step-seq-info{display:none;width:54px;flex-shrink:0;padding:2px 3px 2px;font-size:9px;line-height:1.4;align-self:center;box-sizing:border-box}
 body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
@@ -1183,7 +1180,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.21</span>
+    <span class="app-version">v3.15.22</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1428,7 +1425,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="view-mode-bar" style="display:none"></div>
   <!-- Layers (3 couches rythmiques) — #rhythm-info-bar injecté en tête par buildLayers -->
   <div id="layers-wrap"><div id="layers"></div></div>
-  <!-- Modal : sauvegarde preset métronome -->
+  <!-- Vue Pas (step sequencer) — row2 de chaque layer déplacé ici via _moveRow2ToStepView -->
+  <div id="step-rows-wrap"></div>
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <canvas id="rhythm-canvas"></canvas>
@@ -5157,7 +5155,7 @@ function buildLayers(){
     layerDiv.appendChild(row1);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
-    const row2=document.createElement('div');row2.className='layer-row2';
+    const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     row2.appendChild(seqInfo);
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
@@ -5479,6 +5477,7 @@ function buildLayers(){
       showToast('Layer '+LAYERS[li].label+' — erreur: '+String(e&&e.message||e).slice(0,80),'error');
     }
   });
+  if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   updateRhythmInfoBar();
 }
 
@@ -7831,6 +7830,16 @@ function setViewCycle(cycle){
   _applyView();
 }
 
+// ── _moveRow2ToStepView() : déplace les layer-row2 dans #step-rows-wrap ──
+function _moveRow2ToStepView(){
+  const wrap=document.getElementById('step-rows-wrap'); if(!wrap) return;
+  LAYERS.forEach((_,li)=>{
+    const d=document.getElementById('steps-'+LAYERS[li].id); if(!d) return;
+    const r2=d.closest('.layer-row2'); if(!r2) return;
+    wrap.appendChild(r2); // appendChild déplace le nœud s'il est déjà dans le DOM
+  });
+}
+
 // ── _applyView() : applique viewShape + viewCycle* au DOM ─────────────────
 function _applyView(){
   const isCircle    = viewShape === 'circle';
@@ -7868,6 +7877,7 @@ function _applyView(){
   } else {
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
+    if(isStepSeq) _moveRow2ToStepView();
     setTimeout(()=>updateRhythmInfoBar(),0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
