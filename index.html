@@ -1192,7 +1192,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.26</span>
+    <span class="app-version">v3.15.27</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7548,11 +7548,11 @@ function drawCircles(){
         ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0'; ctx.lineWidth=isDark?1:0.75; ctx.stroke();
       }
 
-      // Anneau "grossi" sur le step en cours de lecture
+      // Step en cours de lecture : contour blanc discret, sans grossir le point
       if(isPlaying && (isOn || isSoft) && !isMuted){
         const dotSz = isOn ? dotR : dotR*0.72;
-        ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
-        ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.beginPath(); ctx.arc(dx, dy, dotSz, 0, 2*Math.PI);
+        ctx.strokeStyle='rgba(255,255,255,0.82)'; ctx.lineWidth=2; ctx.stroke();
       }
       if(isNew) ctx.globalAlpha=1;
     }
