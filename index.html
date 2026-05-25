@@ -1182,7 +1182,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.23</span>
+    <span class="app-version">v3.15.24</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2978,17 +2978,15 @@ function recTap(tapTime,isRight){
 }
 
 function stopRec(li,validate){
+  // 1. Appliquer ou annuler le pattern
   if(!validate&&state[li].originalPattern){
     state[li].pattern=state[li].originalPattern;
-    buildStepsDOM(li,state[li].wrapped);
-    if(circleView)drawCircles();
   } else if(validate&&state[li].recMode==='replace'&&state[li].recBuffer!==null){
     // Appliquer le dernier cycle partiel s'il contient des taps
     state[li].pattern=[...state[li].recBuffer];
-    buildStepsDOM(li,state[li].wrapped);
-    if(circleView)drawCircles();
     setLayerDirty(li,true);
   }
+  // 2. Vider l'état rec AVANT le DOM rebuild (recNewSteps vide → pas de .rec-new résiduel)
   state[li].originalPattern=null;
   state[li].prevPattern=null;
   state[li].lastCommitted=null;
@@ -2997,6 +2995,10 @@ function stopRec(li,validate){
   state[li].recNewSteps=new Set();
   state[li].recArmed=false;
   state[li].recording=false;
+  // 3. Rebuild DOM une seule fois (couvre replace, overdub, cancel)
+  buildStepsDOM(li,state[li].wrapped);
+  if(circleView)drawCircles();
+  // 4. UI cleanup
   recLayers=recLayers.filter(x=>x!==li);
   updateRecBtn(li);
   if(recLayers.length===0){
@@ -5073,6 +5075,10 @@ function buildLayers(){
       btnMute.classList.toggle('muted',state[li].muted);
       btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
       layerDiv.classList.toggle('muted-layer',state[li].muted);
+      // Synchronise aussi row2 dans #step-rows-wrap (hors du layerDiv)
+      const _sd=document.getElementById('steps-'+layer.id);
+      const _r2=_sd?.closest('.layer-row2');
+      if(_r2) _r2.classList.toggle('muted',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
       if(circleView) drawCircles();
