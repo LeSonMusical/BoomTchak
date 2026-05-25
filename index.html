@@ -867,18 +867,16 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 /* ─── VUE CIRCULAIRE ─── */
 #circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
-/* ── Indicateur page mesure ── */
-#measure-page-indicator{position:absolute;bottom:8px;right:6px;display:flex;flex-direction:column;gap:3px;align-items:center;background:rgba(248,245,240,.92);border:1px solid #d8d0c0;border-radius:6px;padding:4px 7px;pointer-events:auto}
-.mpi-layers{display:flex;flex-direction:column;gap:1px;width:100%;align-items:center}
-.mpi-layer{font-size:9px;font-weight:700;color:var(--cs);line-height:1.4;min-width:28px;text-align:center}
-.mpi-nav{display:flex;align-items:center;gap:3px}
-.mpi-btn{background:none;border:1px solid #ccc;border-radius:3px;padding:0 5px;font-size:9px;cursor:pointer;line-height:1.7;color:#666}
-.mpi-btn:disabled{opacity:.3;cursor:default}
-#mpi-label{font-size:9px;font-weight:700;min-width:44px;text-align:center;color:#6B5FA5;white-space:nowrap}
-body.dark-mode #measure-page-indicator{background:rgba(35,33,30,.92);border-color:#484440}
-body.dark-mode .mpi-btn{border-color:#555;color:#999}
+/* ── Indicateur page mesure (haut-droite, sans cadre) ── */
+#measure-page-indicator{position:absolute;top:8px;right:6px;display:flex;flex-direction:column;gap:2px;align-items:flex-end;pointer-events:auto}
+.mpi-layers{display:flex;flex-direction:column;gap:2px;align-items:flex-end}
+.mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
+.mpi-nav{display:flex;align-items:center;gap:1px}
+.mpi-btn{background:none;border:none;padding:0 3px;font-size:9px;cursor:pointer;color:#999;line-height:1.6}
+.mpi-btn:disabled{opacity:.2;cursor:default}
+#mpi-label{font-size:9px;font-weight:700;min-width:36px;text-align:center;color:#6B5FA5;white-space:nowrap}
+body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
-body.dark-mode .mpi-layer{opacity:.85}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1194,7 +1192,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.25</span>
+    <span class="app-version">v3.15.26</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1446,15 +1444,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <canvas id="rhythm-canvas"></canvas>
     <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
     <div id="measure-page-indicator" style="display:none">
+      <div class="mpi-nav" id="mpi-nav-row">
+        <button class="mpi-btn" id="mpi-prev">◀</button>
+        <span id="mpi-label">Mes 1</span>
+        <button class="mpi-btn" id="mpi-next">▶</button>
+      </div>
       <div class="mpi-layers">
         <span class="mpi-layer c-low"   id="mpi-l0"></span>
         <span class="mpi-layer c-high"  id="mpi-l1"></span>
         <span class="mpi-layer c-noise" id="mpi-l2"></span>
-      </div>
-      <div class="mpi-nav">
-        <button class="mpi-btn" id="mpi-prev">◀</button>
-        <span id="mpi-label">Mes 1</span>
-        <button class="mpi-btn" id="mpi-next">▶</button>
       </div>
     </div>
   </div>
@@ -7348,6 +7346,7 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
+let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
 let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
@@ -7439,6 +7438,7 @@ function drawCircles(){
       if(elG >= 0){
         fracMeasure = ((elG % _mPageSec) + _mPageSec) % _mPageSec / _mPageSec;
         _mGlobalPage = Math.floor(elG / _mPageSec);
+        _mGlobalPageLast = _mGlobalPage;
       }
     }
   }
@@ -7640,7 +7640,7 @@ function drawCircles(){
   ctx.fillStyle='#1a1a18'; ctx.fill();
   _circleBadge=null;
   // Indicateur de page mesure (mis à jour chaque frame)
-  _updateMeasurePageIndicator(_mGlobalPage, _mPageSec);
+  _updateMeasurePageIndicator(_mGlobalPage);
 }
 
 // ── Polymétrie ───────────────────────────────────────────────────────────────
@@ -7849,7 +7849,7 @@ function circleHitTest(x, y){
             }
         } else {
           const pagesForLayer = Math.ceil(n/spm_li);
-          const layerPage = _measureViewPage % pagesForLayer;
+          const layerPage = (playing ? _mGlobalPageLast : _measureViewPage) % pagesForLayer;
           const pageStart = layerPage * spm_li;
           const pageEnd = Math.min(pageStart + spm_li, n);
           for(let si=pageStart; si<pageEnd; si++){
@@ -7926,44 +7926,48 @@ function _moveRow2ToStepView(){
   });
 }
 
-// ── _updateMeasurePageIndicator(globalPage, mPageSec) ─────────────────────
-function _updateMeasurePageIndicator(globalPage, mPageSec){
+// ── _updateMeasurePageIndicator(globalPage) ────────────────────────────────
+function _updateMeasurePageIndicator(globalPage){
   const el=document.getElementById('measure-page-indicator'); if(!el) return;
   const show = circleModeView==='measure' && layersOuverts && circleView;
   el.style.display = show ? 'flex' : 'none';
   if(!show) return;
 
+  // Calcul mPageSec interne
+  const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
+  const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
+
   // Calcul des pages par layer
   let maxPages=1;
   const pageInfos=[];
   LAYERS.forEach((_,li)=>{
-    const spm_li = mPageSec>0 ? Math.max(1, Math.round(mPageSec/getBeatSec(li))) : state[li].pattern.length;
+    const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
     const n=state[li].pattern.length;
-    const pages = n>spm_li ? Math.ceil(n/spm_li) : 1;
+    const pages=Math.ceil(n/Math.max(1,spm_li));
     if(pages>maxPages) maxPages=pages;
-    const layerPage = pages>1 ? (globalPage%pages)+1 : 0;
-    pageInfos.push({pages, layerPage});
+    pageInfos.push({pages});
   });
 
-  // Mise à jour des labels layer
+  // Mise à jour des labels layer : toujours ● Xmes
   LAYERS.forEach((_,li)=>{
     const m=document.getElementById('mpi-l'+li); if(!m) return;
-    const {pages, layerPage}=pageInfos[li];
-    if(pages>1){ m.textContent=layerPage+'/'+pages; m.style.opacity='1'; }
-    else { m.textContent='—'; m.style.opacity='.35'; }
+    const {pages}=pageInfos[li];
+    m.textContent='● '+pages+'mes';
   });
 
-  // Label global Mes N/max
-  const displayPage=(globalPage%maxPages)+1;
-  const lbl=document.getElementById('mpi-label');
-  if(lbl) lbl.textContent='Mes '+displayPage+(maxPages>1?'/'+maxPages:'');
+  // Nav row : visible seulement si > 1 page
+  const navRow=document.getElementById('mpi-nav-row');
+  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
 
-  // Boutons : désactivés si en lecture ou si 1 seule page
-  const prev=document.getElementById('mpi-prev');
-  const next=document.getElementById('mpi-next');
-  const canNav=!playing&&maxPages>1;
-  if(prev){ prev.disabled=!canNav; }
-  if(next){ next.disabled=!canNav; }
+  if(maxPages>1){
+    const displayPage=(globalPage%maxPages)+1;
+    const lbl=document.getElementById('mpi-label');
+    if(lbl) lbl.textContent='Mes '+displayPage+'/'+maxPages;
+    const prev=document.getElementById('mpi-prev');
+    const next=document.getElementById('mpi-next');
+    if(prev) prev.disabled=playing||globalPage<=0;
+    if(next) next.disabled=playing||globalPage>=(maxPages-1);
+  }
 }
 
 // ── _applyView() : applique viewShape + viewCycle* au DOM ─────────────────
@@ -7998,10 +8002,10 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage,0); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
-    _updateMeasurePageIndicator(_measureViewPage, 0); // cache l'indicateur hors vue cercle
+    _updateMeasurePageIndicator(_measureViewPage); // cache l'indicateur hors vue cercle
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
     if(isStepSeq) _moveRow2ToStepView();
