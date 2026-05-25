@@ -44,7 +44,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #6B5FA5;background:#6B5FA5;color:#fff;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:700}
 .btn-view-shape:hover{background:#5a4f94;border-color:#5a4f94}
 /* Barre de contrôle des vues (au-dessus du canvas) */
-#view-mode-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 8px;background:#f5f4f0;border-bottom:1px solid #e0ddd8;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#view-mode-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 8px;background:#FFF0B3;border-bottom:1px solid #E8CC60;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
@@ -230,8 +230,8 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar{background:#FFF0B3;border-bottom:1px solid #E8CC60;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
-.btn-volet-groove{color:#d4c080 !important}
-.btn-volet-groove:hover,.btn-volet-groove.open{color:#C8961A !important}
+.btn-volet-groove{color:#9A7020 !important}
+.btn-volet-groove:hover,.btn-volet-groove.open{color:#6B4C10 !important}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
@@ -251,9 +251,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .encyclo-content.open{max-height:3000px}
 
 /* ─── LAYERS ─── */
-#layers-wrap{display:flex;align-items:flex-start;gap:0}
+#layers-wrap{display:flex;align-items:flex-start;gap:0;background:#FFF0B3;padding:4px 4px 6px}
 /* Indent visuel : les layers appartiennent au groove */
-#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #e0d090;padding-left:6px}
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
@@ -549,6 +549,10 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 /* Bouton preset (remplace les 2 selects) */
 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:160px;padding:2px 5px;border-radius:4px;background:#fff;border:1px solid #ccc;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1a1a18;}
 .groove-bar .pm-preset-btn,.encyclo-bar .pm-preset-btn{max-width:none}
+.groove-bar .pm-preset-btn{border-color:#C8961A;background:rgba(255,248,210,.7);color:#6B4C10}
+.groove-bar .btn-info-ico{border-color:#C8961A;color:#9A7020}
+.groove-bar .btn-info-ico:hover{background:rgba(200,150,26,.15)}
+.groove-bar .btn-dice-rng{opacity:.65}
 .pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
 .pm-preset-dirty{border-color:#D85A30!important;color:#D85A30!important;}
 .pm-preset-dirty::before{content:'● ';}
@@ -881,19 +885,19 @@ body.view-circle .layer-row2{display:none!important}   /* grille steps masquée 
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
-#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #e0d090;padding-left:4px}
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #C8961A;padding-left:4px;background:#FFF0B3}
 
 .circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
 .circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
-body.dark-mode #view-mode-bar{border-left-color:#4a4020}
+body.dark-mode #view-mode-bar{border-left-color:#8B6914}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
 /* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #e0d090}
+body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
@@ -961,7 +965,7 @@ body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
 body.dark-mode .btn-sig-top{color:#666;border-color:transparent;background:transparent}
 body.dark-mode .btn-view-shape{background:#5a4f94;border-color:#5a4f94;color:#fff}
-body.dark-mode #view-mode-bar{background:#1e1e1c;border-bottom-color:#333330}
+body.dark-mode #view-mode-bar{background:#2C2710;border-bottom-color:#3E3518}
 body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
 body.dark-mode .btn-top:hover{background:#333330}
@@ -989,8 +993,9 @@ body.dark-mode .encyclo-bar .section-bar-lbl{color:#888}
 body.dark-mode .encyclo-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
-body.dark-mode #layers{border-left-color:#4a4020}
-body.dark-mode.view-circle #circle-view{border-left-color:#4a4020}
+body.dark-mode #layers{border-left-color:#8B6914}
+body.dark-mode #layers-wrap{background:#2C2710}
+body.dark-mode.view-circle #circle-view{border-left-color:#8B6914}
 body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
@@ -1099,8 +1104,11 @@ body.dark-mode #btn-tempo.active{background:rgba(58,140,110,.2);color:#5AAA8A;bo
 body.dark-mode .metro-bloc{border-left-color:#2A4A40}
 body.dark-mode .metro-3col-lbl{color:#555}
 body.dark-mode .metro-3col-top{color:#777}
-body.dark-mode .btn-volet-groove{color:#7a6020 !important}
+body.dark-mode .btn-volet-groove{color:#A07830 !important}
 body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{color:#C8961A !important}
+body.dark-mode .groove-bar .btn-info-ico{border-color:#8B6914;color:#A07830}
+body.dark-mode .groove-bar .btn-info-ico:hover{background:rgba(139,105,20,.2)}
+body.dark-mode .groove-bar .pm-preset-btn{border-color:#8B6914;background:rgba(40,37,20,.8);color:#C8961A}
 body.dark-mode .btn-volet-band{color:#444 !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
 body.dark-mode .btn-volet-encyclo{color:#444 !important}
@@ -1192,7 +1200,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.28</span>
+    <span class="app-version">v3.15.29</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
