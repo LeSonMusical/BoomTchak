@@ -1183,7 +1183,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.20</span>
+    <span class="app-version">v3.15.21</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5839,6 +5839,7 @@ function pspDoOverwriteGroove(){
 }
 
 function pspDoSaveNewGroove(){
+  if(!authProfile){ showToast('Connexion requise pour créer un groove','warn'); closePatSavePop(); return; }
   const btn = _pspBtn;
   const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
   const nom = document.getElementById('psp-name-input').value.trim() || groove.nom+' (copie)';
@@ -7394,6 +7395,10 @@ function drawCircles(){
     return ((el % cyc) + cyc) % cyc / cyc;
   });
 
+  // Alpha clignotant pour steps capturés (rec-new) — même période que CSS rec-ovr-new
+  const blinkPhase=(Date.now()%650)/650;
+  const blinkAlpha=0.625+0.375*Math.cos(blinkPhase*2*Math.PI);
+
   // Dessin extérieur → intérieur (outer on top visuellement)
   [2,1,0].forEach(li=>{
     const pat = state[li].pattern;
@@ -7442,6 +7447,8 @@ function drawCircles(){
       const isSoft = pat[si]==='x';
       const isRepeat = rep > 0;
       const isPlaying = playing && si===flashStep[li] && rep===currentRepM;
+      const isNew = rep===0 && state[li].recNewSteps?.has(si) && state[li].recording;
+      if(isNew) ctx.globalAlpha=blinkAlpha;
 
       // Répétition son fort : pièce trouée — même rayon ext. que le disque plein isOn
       if(isRepeat && isOn){
@@ -7478,6 +7485,7 @@ function drawCircles(){
         ctx.beginPath(); ctx.arc(dx, dy, dotSz + 3.5, 0, 2*Math.PI);
         ctx.strokeStyle = col.stroke; ctx.lineWidth=1.5; ctx.stroke();
       }
+      if(isNew) ctx.globalAlpha=1;
     }
   });
 
@@ -7655,12 +7663,16 @@ function drawLinear(){
       ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
       ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
     }
+    const blinkPhaseL=(Date.now()%650)/650;
+    const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
     const numReps=Math.ceil(dispU/cu);
     for(let rep=0;rep<numReps;rep++){
       for(let si=0;si<n;si++){
         const uPos=(si+rep*n)*s; if(uPos>=dispU) break;
         const x=marginX+uW*(uPos+DENOM/2);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
+        const isNewL=rep===0&&state[li].recNewSteps?.has(si)&&state[li].recording;
+        if(isNewL) ctx.globalAlpha=blinkAlphaL;
         if(isOn){
           ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
           ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
@@ -7675,6 +7687,7 @@ function drawLinear(){
           ctx.fillStyle=isDark?'#2c2a28':'#e8e5e0'; ctx.fill();
           ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
         }
+        if(isNewL) ctx.globalAlpha=1;
       }
     }
   });
@@ -7953,8 +7966,9 @@ function _toggleMetroPanel(){
 
 // ── Navigation tabs ──────────────────────────────────────────────────────────
 function _syncNavTabs(){
-  const metroWrap=document.getElementById('temps-wrap');
-  const metroOpen=metroWrap&&metroWrap.style.display!=='none';
+  // btn-tempo.active est mis à jour de façon synchrone dans _navSetMetro → source de vérité fiable
+  const btnT=document.getElementById('btn-tempo');
+  const metroOpen=btnT&&btnT.classList.contains('active');
   const tmM=document.getElementById('nav-tab-metro');
   const tmS=document.getElementById('nav-tab-sons');
   const tmE=document.getElementById('nav-tab-encyclo');
@@ -8001,8 +8015,8 @@ function _navCloseJouer(){
   if(bj)bj.classList.remove('active');
 }
 function setNavSection(name){
-  const metroWrap=document.getElementById('temps-wrap');
-  const isMetroOpen=metroWrap&&metroWrap.style.display!=='none';
+  const _btnT=document.getElementById('btn-tempo');
+  const isMetroOpen=_btnT&&_btnT.classList.contains('active');
   // Toggle off if already active
   if(name==='metro'&&isMetroOpen){_navSetMetro(false);_syncNavTabs();return;}
   if(name==='sons'&&sonsOuvert){_navSetSons(false);_syncNavTabs();return;}
