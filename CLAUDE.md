@@ -4,6 +4,15 @@
 App web pédagogique rythme, single-file `index.html` (~10500 lignes), vanilla JS, Supabase.
 Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 
+## Principe WYSIWYH (What You See Is What You Hear) — règle absolue
+
+**Tout ce qui est affiché dans l'interface doit correspondre exactement à ce qui est joué.**
+
+- La vue Mesure affiche la tranche du pattern en cours de lecture (système de pages tournantes). Si le pattern fait 3 mesures, la page 1 montre ce qu'on entend à la mesure 1, la page 2 ce qu'on entend à la mesure 2, etc.
+- La vue Motif affiche toujours le cycle complet du pattern.
+- La vue Cycle affiche le PPCM de tous les layers (ce qu'on entend sur un cycle complet).
+- Toute modification qui casserait ce principe doit être soumise à Lamberio avant d'être implémentée.
+
 ## Règles de collaboration
 - Lamberio = product owner. Questions archi importantes → soumettre AVANT de coder.
 - Langue : français. Variables/fonctions : camelCase anglais.
