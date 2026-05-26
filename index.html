@@ -243,11 +243,11 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-acc-gauge:disabled{opacity:.22;cursor:not-allowed;pointer-events:none}
 /* Tap layout */
 .metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0;justify-content:center}
-.metro-tap-btn-row .btn-tap-tempo{flex:0 0 auto;min-width:90px}
+.metro-tap-btn-row .btn-tap-tempo{flex:0 0 auto;min-width:180px}
 /* Tempo 2-row grid */
 .metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;justify-items:center;padding:.1rem 0 .05rem}
 /* Métrique 3-col grid */
-.metro-metric-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
+.metro-metric-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
 .metro-metric-col{display:flex;flex-direction:column;gap:3px;align-items:center}
 /* Métronome flex layout */
 .metro-metro-layout{display:flex;gap:6px;align-items:stretch;padding:.1rem 0 .05rem}
@@ -1274,7 +1274,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.3</span>
+    <span class="app-version">v3.16.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3156,6 +3156,8 @@ function recTap(tapTime,isRight){
     if(!state[li].recBuffer) state[li].recBuffer=Array(n).fill('.');
     state[li].recBuffer[si]=note;
     state[li].pattern[si]=note;
+    if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
+    state[li].recNewSteps.add(si);
   }
   setLayerDirty(li,true);
   if(!state[li].hasEverTapped){state[li].hasEverTapped=true;_updateGarderEff();}
@@ -3278,9 +3280,11 @@ function stopPlay(){
     drawCircles(); // met à jour l'indicateur via son appel interne
     _startRecNewBlinkLoop();
   } else {
-    LAYERS.forEach(l=>{
+    LAYERS.forEach((l,li)=>{
       const d=document.getElementById('steps-'+l.id);
       if(d)d.querySelectorAll('.step').forEach(s=>s.classList.remove('cur'));
+      // Reconstruire le DOM steps pour appliquer .rec-new sur les steps capturés
+      if((state[li].recNewSteps?.size||0)>0) buildStepsDOM(li,state[li].wrapped);
     });
   }
 }
@@ -3425,6 +3429,7 @@ let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
 let recLayers = [];            // file FIFO des layers en rec (max 2)
 let _recDomUpdateLi = -1;     // li dont le DOM steps doit être reconstruit au prochain rAF
+let _layerMuteSnapshot = null; // snapshot des états mute individuels avant mute-all via btn-vol
 let _recPrevJouerOpen = false;// état du volet jouer avant ouverture par startRec
 let patClipboard = null;      // presse-papiers pattern (cross-layer)
 const _layerCPRefreshers = [];  // callbacks bPaste.disabled par layer
@@ -5075,15 +5080,17 @@ function buildGrooveSection(){
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   const groove=getGroove(currentGrooveId);
-  const hasE=hasEncycloContent(groove&&groove.id);
+  const _grooveEncyRef=groove&&(groove.encyclo_ref||groove.id);
+  const hasE=hasEncycloContent(_grooveEncyRef);
   btnI.style.opacity=hasE?'1':'.3';
   btnI.style.cursor=hasE?'pointer':'default';
-  if(hasE){btnI.style.color='#c8a84a';btnI.style.borderColor='#c8a84a';}
+  if(hasE){btnI.style.color='#c8a84a';btnI.style.borderColor='#c8a84a';btnI.style.background='rgba(200,168,74,.15)';btnI.style.fontWeight='700';}
   btnI.addEventListener('click',()=>{
     const g=getGroove(currentGrooveId);
-    if(!g||!hasEncycloContent(g.id))return;
-    if(encycloOuvert&&currentEncycloId===g.id){toggleEncyclo(false);}
-    else{showEncycloEntry(g.id);if(!encycloOuvert)toggleEncyclo(true);}
+    const _ref=g&&(g.encyclo_ref||g.id);
+    if(!g||!hasEncycloContent(_ref))return;
+    if(encycloOuvert&&currentEncycloId===_ref){toggleEncyclo(false);}
+    else{showEncycloEntry(_ref);if(!encycloOuvert)toggleEncyclo(true);}
   });
   bar.appendChild(btnI);
 
@@ -7867,8 +7874,8 @@ function _metroBeatMarks(viewMode){
   if(viewMode === 'measure'){
     let beatNum = 0;
     mp.forEach((ch, i) => {
-      if(ch === 'A'){ beatNum++;
-        marks.push({ frac: i / mpLen, beatNum, isFirst: i === 0 }); }
+      if(ch === 'A' || ch === 'P'){ beatNum++;
+        marks.push({ frac: i / mpLen, beatNum, isFirst: ch === 'A' }); }
     });
   } else if(viewMode === 'cycle'){
     const n0 = Math.max(1, state[0]?.pattern?.length || 1);
@@ -11993,13 +12000,20 @@ function attachEvents(){
       if(now-_lastTap<300){ toggleBandSection(); _lastTap=0; }
       else {
         const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
+        if(anyUnmuted){
+          // Mute all : sauvegarder l'état individuel avant
+          _layerMuteSnapshot=LAYERS.map((_,li)=>state[li].muted);
+        }
         LAYERS.forEach((_,li)=>{
-          state[li].muted=anyUnmuted;
+          // Unmute all : restaurer l'état individuel depuis le snapshot, sinon unmute
+          const targetMuted=anyUnmuted?true:(_layerMuteSnapshot?_layerMuteSnapshot[li]:false);
+          state[li].muted=targetMuted;
           const layerDiv=document.querySelector('.layer.'+LAYERS[li].cls);
-          if(layerDiv)layerDiv.classList.toggle('muted-layer',anyUnmuted);
+          if(layerDiv)layerDiv.classList.toggle('muted-layer',targetMuted);
           const btnM=document.getElementById('btn-mute-lbl-'+li);
-          if(btnM){btnM.classList.toggle('muted',anyUnmuted);btnM.title=(anyUnmuted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+          if(btnM){btnM.classList.toggle('muted',targetMuted);btnM.title=(targetMuted?'Activer : ':'Muet : ')+LAYERS[li].label;}
         });
+        if(!anyUnmuted) _layerMuteSnapshot=null; // snapshot consommé
         setBandMuted(anyUnmuted, true);
         _lastTap=now;
       }
