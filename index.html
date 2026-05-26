@@ -131,9 +131,9 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .mpv-beats-ctrl{display:inline-flex;align-items:center;gap:2px;flex-shrink:0}
 .mpv-beats-btn{width:18px;height:22px;border-radius:4px;border:1.5px solid rgba(0,0,0,.2);background:rgba(0,0,0,.07);color:#444;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;font-weight:900}
 .mpv-beats-btn:active{background:rgba(0,0,0,.15)}
-.mpv-beats-val{font-size:10px;font-weight:600;color:#111;min-width:20px;text-align:center;flex-shrink:0;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.14);border-radius:4px;padding:2px 4px;display:inline-block}
+.mpv-beats-val{font-size:14px;font-weight:700;color:#111;min-width:24px;text-align:center;flex-shrink:0;background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.14);border-radius:4px;padding:2px 6px;display:inline-block}
 .mpv-sel{font-size:10px;padding:2px 4px;border:1px solid #C0C8D0;border-radius:4px;background:transparent;color:#333;cursor:pointer;flex-shrink:0}
-.mpv-sel-sm{font-size:10px;padding:2px 3px;border:1px solid #C0C8D0;border-radius:4px;background:transparent;color:#333;cursor:pointer;flex-shrink:0}
+.mpv-sel-sm{font-size:13px;padding:3px 4px;border:1px solid #C0C8D0;border-radius:4px;background:transparent;color:#333;cursor:pointer;flex-shrink:0}
 /* ── L2 : pattern ── */
 .metro-pat-row{display:flex;align-items:center;gap:6px;padding:.4rem 0;margin:.1rem 0}
 .mpv-sig-label{font-size:10px;font-weight:600;color:#999;white-space:nowrap;flex-shrink:0;min-width:24px;text-align:center;background:transparent;line-height:1.4;opacity:.7}
@@ -240,14 +240,14 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-acc-gauge{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;cursor:pointer;outline:none;border:none;background:linear-gradient(to right,var(--gc,#3A8C6E) var(--pct,70%),rgba(0,0,0,.12) var(--pct,70%))}
 .metro-acc-gauge::-webkit-slider-thumb{-webkit-appearance:none;width:0;height:0}
 .metro-acc-gauge::-moz-range-thumb{width:0;height:0;background:transparent;border:none}
-.metro-acc-gauge:disabled{opacity:.22;cursor:not-allowed;pointer-events:none}
+.metro-acc-gauge:disabled{opacity:.22;cursor:pointer}
 /* Tap layout */
 .metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0;justify-content:center}
 .metro-tap-btn-row .btn-tap-tempo{flex:0 0 auto;min-width:180px}
 /* Tempo 2-row grid */
 .metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;justify-items:center;padding:.1rem 0 .05rem}
 /* Métrique 3-col grid */
-.metro-metric-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
+.metro-metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 8px;align-items:start;justify-items:center;padding:.1rem 0 .05rem}
 .metro-metric-col{display:flex;flex-direction:column;gap:3px;align-items:center}
 /* Métronome flex layout */
 .metro-metro-layout{display:flex;gap:6px;align-items:stretch;padding:.1rem 0 .05rem}
@@ -1274,7 +1274,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.4</span>
+    <span class="app-version">v3.16.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2803,21 +2803,20 @@ function computeSigLabel() {
 function _sigDescription(){
   const nb=currentSig?.nbDivisions||4;
   const unit=currentSig?.beatUnit||4;
+  const eqv=currentSig?.equivalence||currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
   const lbl=computeSigLabel();
   if(!lbl)return '';
-  const isAsym=lbl.includes('+');
+  const noteIco={1:'○',2:'♩♩',4:'♩',8:'♪',16:'♬'}[unit]||'♩';
   const noteNames={1:'ronde',2:'blanche',4:'noire',8:'croche',16:'double-croche'};
+  const isAsym=lbl.includes('+');
   if(isAsym){
-    const unitName=noteNames[unit]||('1/'+unit);
-    return lbl+' — irrégulier ('+unitName+'s)';
+    const groups=lbl.split('/')[0];
+    const uName=noteNames[unit]||('1/'+unit);
+    return nb+'='+groups+' '+uName+'s, mesure à temps irréguliers';
   }
-  const isCompound=unit===8&&nb%3===0&&nb>=6;
-  if(isCompound){
-    const nBeats=nb/3;
-    return nb+'/'+unit+' — '+nBeats+' temps (noire'+(nBeats>1?'s':'')+' point'+(nBeats>1?'ées':'ée')+')';
-  }
-  const noteName=noteNames[unit]||('1/'+unit);
-  return nb+'/'+unit+' — '+nb+' temps ('+noteName+(nb>1?'s':'')+')';
+  const beatUnitsPerBeat=(eqv*unit)/8;
+  const buStr=Number.isInteger(beatUnitsPerBeat)?beatUnitsPerBeat:beatUnitsPerBeat.toFixed(1);
+  return nb+'/'+unit+' : mesure à '+nb+' '+noteIco+' (1 temps = '+buStr+' '+noteIco+')';
 }
 
 function _sigFracHtml(lbl) {
@@ -2845,7 +2844,7 @@ function updateSigDisplays() {
   if (metricDescEl) metricDescEl.textContent = 'Mesure divisée en '+nb+' '+noteIco;
   // Résumé header Métronome
   const metroDescEl = document.getElementById('metro-metro-desc');
-  if (metroDescEl) metroDescEl.textContent = _sigDescription().replace(' — ', ', ');
+  if (metroDescEl) metroDescEl.textContent = _sigDescription();
 }
 
 function renderMetroPatternViz() {
@@ -12149,6 +12148,16 @@ function attachEvents(){
     const sl=document.getElementById('metro-vol-'+lv);
     const ve=document.getElementById('metro-vol-'+lv+'-val');
     if(!sl)return;
+    // Glisser sur un slider désactivé → activer le type de step correspondant
+    sl.addEventListener('pointerdown',e=>{
+      if(!sl.disabled)return;
+      e.preventDefault();
+      const togId={A:'mpv-tog-A',P:'mpv-tog-P',p:'mpv-tog-p'}[lv];
+      if(lv==='A'){metro.accentOn=true;}else if(lv==='P'){metro.tempsOn=true;}else{metro.subdivOn=true;}
+      sl.disabled=false;
+      const tog=document.getElementById(togId);if(tog)tog.classList.add('on');
+      renderMetroPatternViz();setMetroDirty(true);updateMetroSaveBtn();
+    });
     sl.addEventListener('input',e=>{
       const v=parseInt(e.target.value);
       if(lv==='A')metro.volA=v; else if(lv==='P')metro.volP=v; else metro.volp=v;
@@ -12360,36 +12369,23 @@ function attachEvents(){
       _tapReset();
     });
 
-    tapBtn.addEventListener('pointerdown',e=>{
-      e.preventDefault();
-      const now=performance.now();
-
-      // Annuler tout timer en cours
+    let _tapDragMode=false,_tapStartX=0,_tapStartY=0,_tapPendingTime=null,_tapDragStartN=_tapN;
+    function _doTap(now){
       clearTimeout(_tapSilenceTimer); _tapSilenceTimer=null;
       clearTimeout(_tapLaunchTimer);  _tapLaunchTimer=null;
-
-      // Si en attente de lancement (▶) : ce tap repart à 1 dans une nouvelle séquence
       if(_tapCalculated){
-        _tapTimes=[now];
-        _tapCalculated=false;
+        _tapTimes=[now]; _tapCalculated=false;
         tapCount.textContent='1/'+_tapN;
-        _scheduleSilenceReset();
-        return;
+        _scheduleSilenceReset(); return;
       }
-
-      // Premier tap de la séquence : sauvegarder l'état metro et le muter
       if(_tapTimes.length===0){
-        _metroSavedMuted=metro.muted;
-        metro.muted=true;
+        _metroSavedMuted=metro.muted; metro.muted=true;
         const mb=document.getElementById('btn-metro-main');
         if(mb) mb.classList.remove('on');
       }
-
       _tapTimes.push(now);
       const numTaps=_tapTimes.length;
       tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
-
-      // ── N taps atteints : calculer le tempo ──
       if(numTaps>=_tapN){
         const recent=_tapTimes.slice(-_tapN);
         const intervals=[];
@@ -12399,35 +12395,52 @@ function attachEvents(){
         const spm=Math.round((60000/avgMs)*equiv);
         document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*equiv,Math.min(_BPM_MAX*equiv,spm)));
         updateBeatDisplay();
-        _tapCalculated=true;
-        tapCount.textContent='▶';
-
-        // ── Lancement auto 1 temps (avgMs) après le Nième tap ──
+        _tapCalculated=true; tapCount.textContent='▶';
         _tapLaunchTimer=setTimeout(()=>{
-          // Restaurer l'état metro
           metro.muted=_metroSavedMuted;
           const mb=document.getElementById('btn-metro-main');
           if(mb) mb.classList.toggle('on',!_metroSavedMuted);
-          // Sync des horloges
-          if(!playing){
-            startPlay(); // startPlay fixe nextStepTime=now et lance le scheduler
-          }
+          if(!playing){ startPlay(); }
           const acNow=getAC().currentTime;
           LAYERS.forEach((_lyr,li)=>{state[li].stepPos=0; state[li].nextStepTime=acNow;});
           metroBeatPos=0; metroStepPos=0; metroNextBeatTime=acNow;
-          // Mettre à jour le bouton Play si on vient de le lancer
           if(!document.getElementById('btn-play').classList.contains('active')){
             document.getElementById('btn-play').textContent='■';
             document.getElementById('btn-play').classList.add('active');
           }
-          _tapTimes=[]; _tapCalculated=false;
-          tapCount.textContent='';
+          _tapTimes=[]; _tapCalculated=false; tapCount.textContent='';
         }, avgMs);
-        return; // pas de silence timer pendant le lancement
+        return;
       }
-
       _scheduleSilenceReset();
+    }
+    tapBtn.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      tapBtn.setPointerCapture(e.pointerId);
+      _tapStartX=e.clientX; _tapStartY=e.clientY;
+      _tapDragMode=false; _tapPendingTime=performance.now(); _tapDragStartN=_tapN;
     },{passive:false});
+    tapBtn.addEventListener('pointermove',e=>{
+      if(_tapPendingTime===null)return;
+      const dx=e.clientX-_tapStartX, dy=e.clientY-_tapStartY;
+      if(!_tapDragMode&&(Math.abs(dx)>8||Math.abs(dy)>8)){
+        _tapDragMode=true;
+        if(_tapTimes.length>0||_tapCalculated) _tapReset();
+      }
+      if(_tapDragMode){
+        const delta=Math.round((dx-dy)/14);
+        const newN=Math.max(2,Math.min(16,_tapDragStartN+delta));
+        if(newN!==_tapN){
+          _tapN=newN; tapNInput.value=_tapN;
+          tapBtn.textContent='Tap '+_tapN; tapCount.textContent='';
+        }
+      }
+    });
+    ['pointerup','pointercancel'].forEach(ev=>tapBtn.addEventListener(ev,e=>{
+      const t=_tapPendingTime; _tapPendingTime=null;
+      if(_tapDragMode){_tapDragMode=false;return;}
+      if(t!==null) _doTap(t);
+    }));
   }
 
   // ── Volume métronome ──
