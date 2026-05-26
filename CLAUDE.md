@@ -86,7 +86,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.14.50** (session 2026-05-22)
+**v3.15.32** (session 2026-05-26)
 ---
 
 ## CHANTIER SUIVANT — Rédaction des articles encyclopédie
@@ -126,6 +126,13 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.15.32 | Vue Step.seq : `#step-rows-wrap` reçoit `margin-left:4px; border-left:2px solid #C8961A; padding-left:6px` → ligne verticale jaune Groove continue sans interruption ; dark mode `border-left-color:#8B6914` |
+| v3.15.31 | Bouton Signature top-bar → ouvre modal métro.preset avec famille "Tout" (`famFilter:'all'`) ; `#rhythm-info-bar` toujours au-dessus des layers en vue Step.seq (`order:-1`) ; marques de temps en vue Cycle/Mesure issues de `metroPattern` (positions 'A') via `_metroBeatMarks(viewMode)` |
+| v3.15.30 | Correction jaune : `#layers-wrap` et `#view-mode-bar` repassent transparent (fond = canvas) ; suppression `padding:4px` sur `#layers-wrap` qui décalait la ligne verticale |
+| v3.15.29 | Volet Groove franchement jaune : fond `#FFF0B3`, bordures `#C8961A`/`#E8CC60`, boutons volet/info adaptés ; dark mode `#2C2710` |
+| v3.15.28 | Couleurs différenciées : Groove → jaune `#FFF0B3/#C8961A`, Métro → sarcelle `#3A8C6E` (remplace blue-steel `#5577A8`), Band → blue-steel conservé, Encyclo → gris |
+| v3.15.27 | Vue circulaire : step en cours de lecture = contour blanc discret `rgba(255,255,255,0.82)` au rayon exact du point (sans halo ni agrandissement) |
+| v3.15.26 | Indicateur de page mesure redessiné : nav `◀ Mes n/p ▶` en 1re ligne, infos layer `● Xmes` en dessous sans cadre ; `_mGlobalPageLast` pour hit-test en lecture ; édition sur toutes les pages |
 | v3.14.50 | View bar : boutons Motif/Mesure/Pas/Cycle largeur fixe 44px, centrés, ◎/☰ à droite avec gap 10px, toujours violet ; encyclo preset bar sans max-width |
 | v3.14.49 | Top bar : boutons même hauteur 30px, contrôles centrés (flex:1), BoomTchak cliquable toggle article ; view bar ◎/☰ à droite sans séparateur ; metro animation 2 temps (comme band) ; première visite : encyclo ouvre 1 seule fois (ptk_visited) |
 | v3.14.48 | Top bar : icône rôle dynamique 👤/🎵/🎓/👑, version sous nom appli, hauteur +2px |

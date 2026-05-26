@@ -942,7 +942,8 @@ body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
 #step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
-body.step-seq #step-rows-wrap{display:flex}
+body.step-seq #step-rows-wrap{display:flex;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
+body.dark-mode.step-seq #step-rows-wrap{border-left-color:#8B6914}
 /* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Layer muté : steps actifs atténués (comme vue circulaire) */
@@ -1199,7 +1200,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.31</span>
+    <span class="app-version">v3.15.32</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
