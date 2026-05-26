@@ -224,11 +224,11 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-acc-vol-val{font-size:8px;color:#aaa;line-height:1;margin-top:1px}
 .metro-acc-vol-slider{width:100%;cursor:pointer;accent-color:#3A8C6E}
 /* Tap layout */
-.metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0}
+.metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0;justify-content:center}
 /* Tempo 2-row grid */
-.metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;padding:.1rem 0 .05rem}
+.metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;justify-items:center;padding:.1rem 0 .05rem}
 /* Métrique 3-col grid */
-.metro-metric-grid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
+.metro-metric-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
 .metro-metric-col{display:flex;flex-direction:column;gap:3px;align-items:center}
 /* Métronome flex layout */
 .metro-metro-layout{display:flex;gap:6px;align-items:stretch;padding:.1rem 0 .05rem}
@@ -1250,7 +1250,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.1</span>
+    <span class="app-version">v3.16.2</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1361,10 +1361,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="temps-content metro-off" id="temps-content">
   <!-- ── Sous-volet 1 : Tempo ──────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-temps" style="display:block">
-  <div class="metro-sub-hdr"><span class="metro-sub-chip">Tempo</span></div>
+  <div class="metro-sub-hdr">
+    <span class="metro-sub-chip">Tempo</span>
+    <span class="metro-sub-desc" id="metro-tempo-desc">120 à la ♩, Moderato</span>
+  </div>
   <div class="metro-bloc">
     <div class="metro-tempo-grid">
-      <!-- Ligne 1 : battue-sel | nom tempo (vert) | "Swing %" -->
+      <!-- Ligne 1 : battue-sel | nom tempo (vert) | Swing label+%+nom -->
       <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
         <option value="1">♪</option>
         <option value="2" selected>♩</option>
@@ -1372,26 +1375,39 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <option value="4">♩♩</option>
       </select>
       <span id="metro-desc-tempo" style="font-size:10px;font-weight:600;color:#3A8C6E;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</span>
-      <span style="font-size:9px;color:#888;font-weight:600;text-align:center;white-space:nowrap;line-height:1.3">Swing<br><span class="swing-pct" id="swing-display" style="cursor:pointer;color:#3A8C6E;font-size:9px" title="Tap : réinitialiser (Straight)">50%</span></span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;text-align:center">
+        <span style="font-size:9px;color:#888;font-weight:600;white-space:nowrap">Swing <span class="swing-pct" id="swing-display" style="cursor:pointer;color:#3A8C6E" title="Tap : réinitialiser (Straight)">50%</span></span>
+        <span id="swing-name" style="font-size:7px;color:#aaa">Straight</span>
+      </div>
       <!-- Ligne 2 : BPM drag | slider −/+ | swing-slider -->
       <span id="metro-bpm-val" class="metro-bpm-drag" title="Glisser ↕ pour changer le tempo · Double-clic : entrer">100 BPM</span>
-      <div class="metro-3col-slider">
+      <div class="metro-3col-slider" style="width:100%;justify-self:stretch">
         <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
         <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
         <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
       </div>
       <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
     </div>
-    <div style="text-align:right;font-size:8px;color:#888;padding-right:2px;margin-top:-1px"><span id="swing-name">Straight</span></div>
     <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" aria-hidden="true" style="display:none">
   </div>
   </div><!-- /metro-sub-temps -->
   <!-- ── Sous-volet 2 : Métrique ────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-sign" style="display:block">
-  <div class="metro-sub-hdr"><span class="metro-sub-chip">Métrique</span></div>
+  <div class="metro-sub-hdr">
+    <span class="metro-sub-chip">Métrique</span>
+    <span class="metro-sub-desc" id="metro-metric-desc">Mesure divisée en 4 ♩</span>
+  </div>
   <div class="metro-bloc">
     <div class="metro-metric-grid">
-      <!-- Col 1 : Division -->
+      <!-- Col 1 : Signature simplifiée -->
+      <div class="metro-metric-col">
+        <span class="metro-3col-lbl">Signature</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+          <span class="sig-edit-val" id="sig-unit-display" style="font-size:14px;font-weight:700;color:#3A8C6E;line-height:1.2">4/4</span>
+          <span class="metro-sig-desc-text" id="metro-sig-description" style="font-size:8px;color:#aaa;font-style:italic;text-align:center">4 temps (noires)</span>
+        </div>
+      </div>
+      <!-- Col 2 : Division -->
       <div class="metro-metric-col">
         <span class="metro-3col-lbl">Division</span>
         <div class="mpv-beats-ctrl" style="gap:4px">
@@ -1400,7 +1416,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Col 2 : Unité -->
+      <!-- Col 3 : Unité -->
       <div class="metro-metric-col">
         <span class="metro-3col-lbl">Unité</span>
         <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0">
@@ -1411,20 +1427,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <option value="16">♬</option>
         </select>
       </div>
-      <!-- Col 3 : Signature (plus large) -->
-      <div class="metro-metric-col" style="align-items:flex-start">
-        <span class="metro-sig-desc-title">Signature</span>
-        <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;min-width:0">
-          <span class="sig-edit-val" id="sig-unit-display" style="font-size:13px;font-weight:700;color:#3A8C6E;white-space:nowrap">4/4</span>
-          <span class="metro-sig-desc-text" id="metro-sig-description" style="font-style:italic">4 temps (noires)</span>
-        </div>
-      </div>
     </div>
   </div>
   </div><!-- /metro-sub-sign -->
   <!-- ── Sous-volet 3 : Métronome ───────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-pat" style="display:none">
-  <div class="metro-sub-hdr"><span class="metro-sub-chip">Métronome</span></div>
+  <div class="metro-sub-hdr">
+    <span class="metro-sub-chip">Métronome</span>
+    <span class="metro-sub-desc" id="metro-metro-desc">4/4, 4 temps (noires)</span>
+  </div>
   <div class="metro-bloc">
     <div class="metro-metro-layout">
       <!-- Gauche : boutons accent empilés -->
@@ -1462,26 +1473,26 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="metro-bloc">
     <div class="metro-vol-row2">
-      <!-- Tiers gauche : volume global -->
+      <!-- Tiers gauche : volume global (slider teal simple) -->
       <div class="metro-vol-global">
         <span class="metro-3col-lbl">Global</span>
-        <input type="range" class="temps-slider" id="metro-vol" min="0" max="100" value="80" style="width:100%;max-width:72px">
+        <input type="range" class="metro-acc-vol-slider" id="metro-vol" min="0" max="100" value="80" style="width:100%;max-width:72px">
       </div>
-      <!-- Deux tiers droite : 3 volumes par accent -->
+      <!-- Deux tiers droite : 3 volumes par accent (slider violet) -->
       <div class="metro-vol-accents">
         <div class="metro-acc-vol">
           <span class="metro-acc-vol-lbl">^</span>
-          <input type="range" class="metro-acc-vol-slider" id="metro-vol-A" min="0" max="100" value="100" title="Volume accent fort (^)">
+          <input type="range" class="temps-slider" id="metro-vol-A" min="0" max="100" value="100" title="Volume accent fort (^)" style="width:100%">
           <span class="metro-acc-vol-val" id="metro-vol-A-val">100%</span>
         </div>
         <div class="metro-acc-vol">
           <span class="metro-acc-vol-lbl">&gt;</span>
-          <input type="range" class="metro-acc-vol-slider" id="metro-vol-P" min="0" max="100" value="70" title="Volume temps (>)">
+          <input type="range" class="temps-slider" id="metro-vol-P" min="0" max="100" value="70" title="Volume temps (>)" style="width:100%">
           <span class="metro-acc-vol-val" id="metro-vol-P-val">70%</span>
         </div>
         <div class="metro-acc-vol">
           <span class="metro-acc-vol-lbl">-</span>
-          <input type="range" class="metro-acc-vol-slider" id="metro-vol-p" min="0" max="100" value="40" title="Volume subdivisions (-)">
+          <input type="range" class="temps-slider" id="metro-vol-p" min="0" max="100" value="40" title="Volume subdivisions (-)" style="width:100%">
           <span class="metro-acc-vol-val" id="metro-vol-p-val">40%</span>
         </div>
       </div>
@@ -2787,15 +2798,24 @@ function _sigFracHtml(lbl) {
 
 // Met à jour l'affichage de la signature dans le volet Métrique et dans le volet Métronome
 function updateSigDisplays() {
-  const frac = _sigFracHtml(computeSigLabel());
+  const nb = currentSig?.nbDivisions||4;
+  const unit = currentSig?.beatUnit||4;
+  const simpleFrac = nb+'/'+unit;
   const sigDisp = document.getElementById('sig-unit-display');
-  if (sigDisp) sigDisp.innerHTML = frac;
+  if (sigDisp) sigDisp.innerHTML = _sigFracHtml(simpleFrac);
   const mpvLbl = document.getElementById('mpv-sig-label');
   if (mpvLbl) mpvLbl.textContent = _sigDescription();
   const sigTop = document.getElementById('sig-top-lbl');
-  if (sigTop) sigTop.textContent = (currentSig?.nbDivisions||4)+'/'+(currentSig?.beatUnit||4);
+  if (sigTop) sigTop.textContent = simpleFrac;
   const sigDescEl = document.getElementById('metro-sig-description');
   if (sigDescEl) sigDescEl.textContent = _sigDescription().replace(/^[^—]+—\s*/,'');
+  // Résumé header Métrique : "Mesure divisée en N [note]"
+  const noteIco = {1:'○',2:'♩♩',4:'♩',8:'♪',16:'♬'}[unit]||'♩';
+  const metricDescEl = document.getElementById('metro-metric-desc');
+  if (metricDescEl) metricDescEl.textContent = 'Mesure divisée en '+nb+' '+noteIco;
+  // Résumé header Métronome
+  const metroDescEl = document.getElementById('metro-metro-desc');
+  if (metroDescEl) metroDescEl.textContent = _sigDescription().replace(' — ', ', ');
 }
 
 function renderMetroPatternViz() {
@@ -7430,6 +7450,9 @@ function updateBeatDisplay(){
   if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
   const descTempoEl=document.getElementById('metro-desc-tempo');
   if(descTempoEl) descTempoEl.textContent=getTempoName(bpm);
+  // Résumé header Tempo : "120 à la ♩, Andante[, Light shuffle]"
+  const tempoDescEl=document.getElementById('metro-tempo-desc');
+  if(tempoDescEl){const swPct=50+swingVal*25;const swTxt=swingVal>0.01?', '+getSwingName(swPct):'';tempoDescEl.textContent=bpm+' à la '+sym+', '+getTempoName(bpm)+swTxt;}
   // SPM (croches/min)
   const spmValEl=document.getElementById('metro-spm-val');
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
