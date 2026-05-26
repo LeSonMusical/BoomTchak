@@ -225,6 +225,15 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-acc-vol-slider{width:100%;cursor:pointer;accent-color:#3A8C6E}
 /* Tap layout */
 .metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0}
+/* Tempo 2-row grid */
+.metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;padding:.1rem 0 .05rem}
+/* Métrique 3-col grid */
+.metro-metric-grid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:4px 8px;align-items:start;padding:.1rem 0 .05rem}
+.metro-metric-col{display:flex;flex-direction:column;gap:3px;align-items:center}
+/* Métronome flex layout */
+.metro-metro-layout{display:flex;gap:6px;align-items:stretch;padding:.1rem 0 .05rem}
+.metro-metro-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.metro-metro-phrase{display:flex;align-items:center;gap:4px}
 
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#2A6A50!important}
 /* ── Modal save preset ── */
@@ -1137,6 +1146,7 @@ body.dark-mode .metro-3col-lbl{color:#555}
 body.dark-mode .metro-3col-top{color:#777}
 body.dark-mode .metro-sub-chip{background:#2A6A50}
 body.dark-mode .metro-sub-desc{color:#555}
+body.dark-mode #metro-desc-tempo{color:#6AB8A0}
 body.dark-mode .metro-bpm-drag{background:rgba(58,140,110,.12);border-color:rgba(58,140,110,.28);color:#6AB8A0}
 body.dark-mode .metro-sig-left{border-right-color:rgba(255,255,255,.1)}
 body.dark-mode .metro-vol-global{border-right-color:rgba(255,255,255,.1)}
@@ -1240,7 +1250,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.0</span>
+    <span class="app-version">v3.16.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1342,120 +1352,105 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="sb-spacer"></div>
     <div id="btn-metro-volets-group">
     <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Métrique</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-pat">Métronome</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-vol">Volumes</button>
+    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Metric.</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-pat">Métro.</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol.</button>
     <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
     </div>
   </div>
   <div class="temps-content metro-off" id="temps-content">
   <!-- ── Sous-volet 1 : Tempo ──────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-temps" style="display:block">
-  <div class="metro-sub-hdr">
-    <span class="metro-sub-chip">Tempo</span>
-    <span class="metro-sub-desc" id="metro-desc-tempo">—</span>
-  </div>
+  <div class="metro-sub-hdr"><span class="metro-sub-chip">Tempo</span></div>
   <div class="metro-bloc">
-    <div class="metro-3col" style="align-items:center">
-      <!-- Col gauche : battue + BPM draggable -->
-      <div class="metro-col-left">
-        <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
-          <option value="1">♪</option>
-          <option value="2" selected>♩</option>
-          <option value="3">♩.</option>
-          <option value="4">♩♩</option>
-        </select>
-        <span id="metro-bpm-val" class="metro-bpm-drag" title="Glisser ↕ pour changer le tempo · Double-clic : entrer">100 BPM</span>
+    <div class="metro-tempo-grid">
+      <!-- Ligne 1 : battue-sel | nom tempo (vert) | "Swing %" -->
+      <select class="battue-sel" id="battue-sel" title="Valeur de la battue (temps ressenti)">
+        <option value="1">♪</option>
+        <option value="2" selected>♩</option>
+        <option value="3">♩.</option>
+        <option value="4">♩♩</option>
+      </select>
+      <span id="metro-desc-tempo" style="font-size:10px;font-weight:600;color:#3A8C6E;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</span>
+      <span style="font-size:9px;color:#888;font-weight:600;text-align:center;white-space:nowrap;line-height:1.3">Swing<br><span class="swing-pct" id="swing-display" style="cursor:pointer;color:#3A8C6E;font-size:9px" title="Tap : réinitialiser (Straight)">50%</span></span>
+      <!-- Ligne 2 : BPM drag | slider −/+ | swing-slider -->
+      <span id="metro-bpm-val" class="metro-bpm-drag" title="Glisser ↕ pour changer le tempo · Double-clic : entrer">100 BPM</span>
+      <div class="metro-3col-slider">
+        <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
+        <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
+        <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
       </div>
-      <!-- Col centre : slider BPM + −/+ -->
-      <div class="metro-3col-bpm" style="flex:2">
-        <div class="metro-3col-slider">
-          <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
-          <input type="range" class="temps-slider" id="bpm" min="0" max="1000" value="400" step="1" style="flex:1;min-width:0">
-          <button class="mpv-tempo-adj" id="metro-bpm-plus">+</button>
-        </div>
-      </div>
-      <!-- Col droite : Swing -->
-      <div class="metro-3col-sw" style="flex:0 0 28%;max-width:28%">
-        <span class="metro-3col-lbl">Swing</span>
-        <span class="swing-pct" id="swing-display" style="cursor:pointer" title="Tap : réinitialiser (Straight)">50%</span>
-        <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
-        <span class="swing-name" id="swing-name">Straight</span>
-      </div>
+      <input type="range" class="temps-slider" id="swing-slider" min="0" max="100" value="0" step="1" style="width:100%">
     </div>
+    <div style="text-align:right;font-size:8px;color:#888;padding-right:2px;margin-top:-1px"><span id="swing-name">Straight</span></div>
     <input type="number" class="beat-val-inp" id="beat-val-input" min="20" max="300" value="100" aria-hidden="true" style="display:none">
   </div>
   </div><!-- /metro-sub-temps -->
   <!-- ── Sous-volet 2 : Métrique ────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-sign" style="display:block">
-  <div class="metro-sub-hdr">
-    <span class="metro-sub-chip">Métrique</span>
-  </div>
+  <div class="metro-sub-hdr"><span class="metro-sub-chip">Métrique</span></div>
   <div class="metro-bloc">
-    <div class="metro-sig-layout">
-      <!-- Gauche : signature + division + unité -->
-      <div class="metro-sig-left">
-        <div style="display:flex;align-items:center;gap:4px">
-          <span class="metro-3col-lbl" style="flex-shrink:0">Sig.</span>
-          <span class="sig-edit-val" id="sig-unit-display" style="font-size:13px;font-weight:700;color:#3A8C6E">4/4</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px">
-          <span class="metro-3col-lbl" style="min-width:40px;flex-shrink:0">Divis.</span>
-          <div class="mpv-beats-ctrl" style="gap:4px">
-            <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
-            <span class="mpv-beats-val" id="mpv-beats-val">4</span>
-            <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px">
-          <span class="metro-3col-lbl" style="min-width:40px;flex-shrink:0">Unité</span>
-          <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0">
-            <option value="4">♩</option>
-            <option value="8">♪</option>
-            <option value="2">♩♩</option>
-            <option value="1">○</option>
-            <option value="16">♬</option>
-          </select>
+    <div class="metro-metric-grid">
+      <!-- Col 1 : Division -->
+      <div class="metro-metric-col">
+        <span class="metro-3col-lbl">Division</span>
+        <div class="mpv-beats-ctrl" style="gap:4px">
+          <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
+          <span class="mpv-beats-val" id="mpv-beats-val">4</span>
+          <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
         </div>
       </div>
-      <!-- Droite : titre + description -->
-      <div class="metro-sig-right">
+      <!-- Col 2 : Unité -->
+      <div class="metro-metric-col">
+        <span class="metro-3col-lbl">Unité</span>
+        <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" title="Unité de temps du métronome" style="min-width:0">
+          <option value="4">♩</option>
+          <option value="8">♪</option>
+          <option value="2">♩♩</option>
+          <option value="1">○</option>
+          <option value="16">♬</option>
+        </select>
+      </div>
+      <!-- Col 3 : Signature (plus large) -->
+      <div class="metro-metric-col" style="align-items:flex-start">
         <span class="metro-sig-desc-title">Signature</span>
-        <span class="metro-sig-desc-text" id="metro-sig-description">4/4 · 4 temps (noires)</span>
+        <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;min-width:0">
+          <span class="sig-edit-val" id="sig-unit-display" style="font-size:13px;font-weight:700;color:#3A8C6E;white-space:nowrap">4/4</span>
+          <span class="metro-sig-desc-text" id="metro-sig-description" style="font-style:italic">4 temps (noires)</span>
+        </div>
       </div>
     </div>
   </div>
   </div><!-- /metro-sub-sign -->
   <!-- ── Sous-volet 3 : Métronome ───────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-pat" style="display:none">
-  <div class="metro-sub-hdr">
-    <span class="metro-sub-chip">Métronome</span>
-  </div>
+  <div class="metro-sub-hdr"><span class="metro-sub-chip">Métronome</span></div>
   <div class="metro-bloc">
-    <div class="metro-ctrl-row2">
+    <div class="metro-metro-layout">
       <!-- Gauche : boutons accent empilés -->
       <div class="metro-ctrl-accents-v">
         <button class="mpv-word-btn on" id="mpv-tog-A">^</button>
         <button class="mpv-word-btn on" id="mpv-tog-P">&gt;</button>
         <button class="mpv-word-btn" id="mpv-tog-p">-</button>
       </div>
-      <!-- Centre : sig label -->
-      <div class="metro-ctrl-center">
-        <span class="mpv-sig-label" id="mpv-sig-label" style="font-size:12px;font-weight:700;color:#3A8C6E;opacity:1">4/4</span>
+      <!-- Droite : phrase sig (ligne 1) + pattern (ligne 2) -->
+      <div class="metro-metro-right">
+        <div class="metro-metro-phrase">
+          <span id="mpv-sig-label" style="font-size:11px;font-weight:600;color:#3A8C6E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">4/4 — 4 temps (noires)</span>
+          <div class="metro-ctrl-subdiv" style="flex-shrink:0">
+            <span class="metro-subdiv-lbl">÷</span>
+            <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+              <option value="1">×1</option>
+              <option value="2">×2</option>
+              <option value="3">×3</option>
+              <option value="4">×4</option>
+            </select>
+          </div>
+        </div>
+        <div class="metro-pat-row">
+          <div class="metro-pat-viz" id="metro-pattern-viz"></div>
+        </div>
       </div>
-      <!-- Droite : subdivision -->
-      <div class="metro-ctrl-subdiv">
-        <span class="metro-subdiv-lbl">subdiv. :</span>
-        <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-          <option value="1">×1</option>
-          <option value="2">×2</option>
-          <option value="3">×3</option>
-          <option value="4">×4</option>
-        </select>
-      </div>
-    </div>
-    <div class="metro-pat-row">
-      <div class="metro-pat-viz" id="metro-pattern-viz"></div>
     </div>
   </div>
   </div><!-- /metro-sub-pat -->
@@ -2796,11 +2791,11 @@ function updateSigDisplays() {
   const sigDisp = document.getElementById('sig-unit-display');
   if (sigDisp) sigDisp.innerHTML = frac;
   const mpvLbl = document.getElementById('mpv-sig-label');
-  if (mpvLbl) mpvLbl.innerHTML = frac;
+  if (mpvLbl) mpvLbl.textContent = _sigDescription();
   const sigTop = document.getElementById('sig-top-lbl');
   if (sigTop) sigTop.textContent = (currentSig?.nbDivisions||4)+'/'+(currentSig?.beatUnit||4);
   const sigDescEl = document.getElementById('metro-sig-description');
-  if (sigDescEl) sigDescEl.textContent = _sigDescription();
+  if (sigDescEl) sigDescEl.textContent = _sigDescription().replace(/^[^—]+—\s*/,'');
 }
 
 function renderMetroPatternViz() {
@@ -7434,7 +7429,7 @@ function updateBeatDisplay(){
   const bpmValEl=document.getElementById('metro-bpm-val');
   if(bpmValEl&&bpmValEl.tagName==='SPAN') bpmValEl.textContent=bpm+' BPM';
   const descTempoEl=document.getElementById('metro-desc-tempo');
-  if(descTempoEl){const swPct=50+swingVal*25;descTempoEl.textContent=getTempoName(bpm)+(swingVal>0.01?' · '+getSwingName(swPct):'');}
+  if(descTempoEl) descTempoEl.textContent=getTempoName(bpm);
   // SPM (croches/min)
   const spmValEl=document.getElementById('metro-spm-val');
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
