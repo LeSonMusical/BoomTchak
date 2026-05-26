@@ -484,7 +484,7 @@ openPresetModal(cfg)
 ### Structure d'un article (8 sections)
 
 | # | Titre de section | Contenu |
-|---|-----------------|---------|
+|---|-----------------|----------|
 | 1 | **En bref** | L'essentiel en 3 phrases courtes, accessible à tous |
 | 2 | **En théorie** | Définition formelle, terminologie précise |
 | 3 | **En pratique** | En situation de musicien — exemples, ressenti, analogies |
