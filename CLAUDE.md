@@ -87,6 +87,7 @@ Merger vers : `main` après chaque session
 
 ## Version courante
 **v3.15.34** (session 2026-05-26)
+
 ---
 
 ## CHANTIER SUIVANT — Rédaction des articles encyclopédie
