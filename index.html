@@ -902,7 +902,7 @@ body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
 body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px)}
-body.view-circle #layers-wrap{order:4;display:block;width:100%}
+body.view-circle #layers-wrap{order:5;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
 @media(min-width:600px){
@@ -922,9 +922,13 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px);flex-shrink:0}
 }
 
-/* ─── BARRE INFO RYTHMIQUE GLOBALE (dans #layers, toutes vues) ─── */
-/* Vues circulaire/linéaire : premier enfant de #layers → au-dessus des volets */
-/* Step-seq : order:1 → entre les step rows (0) et les contrôles (1, après par DOM) */
+/* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
+/* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
+#rhythm-info-wrap{display:none}
+body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px}
+body.step-seq #rhythm-info-wrap{display:block}
+/* Desktop ≥600px : pleine largeur sous canvas+layers */
+@media(min-width:600px){body.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 /* Signature : violet clair, cliquable → toggle Metro */
@@ -934,7 +938,7 @@ body.view-circle #section-encyclo{order:5}
 #rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic}
 #rhythm-info-bar .rib-col4{font-weight:600}
 #rhythm-info-bar .rib-col4-sep{color:#aaa;margin:0 1px}
-body.step-seq #rhythm-info-bar{order:-1}
+/* step-seq : rhythm-info-wrap est en flux normal (block), pas besoin d'order */
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
 body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
@@ -1200,7 +1204,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.15.33</span>
+    <span class="app-version">v3.15.34</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1312,13 +1316,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 1 : Temps ─────────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-temps" style="display:block">
   <div class="metro-bloc">
-    <!-- Ligne 1 : BPM (large) | Battement -->
+    <!-- Ligne 1 : label Tempo | BPM (centré) | Battement -->
     <div class="metro-3col">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;flex-shrink:0;gap:1px;padding-top:1px">
+        <span class="metro-3col-lbl" style="color:#3A8C6E;letter-spacing:.06em">Tempo</span>
+      </div>
       <div class="metro-3col-bpm" style="flex:2">
-        <div class="metro-3col-top">
+        <div class="metro-3col-top" style="justify-content:center">
           <span id="metro-tempo-name">—</span>
           <span style="color:#ccc;font-size:9px">·</span>
-          <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted">100 BPM</span>
+          <span id="metro-bpm-val" title="Double-clic : entrer le tempo" style="cursor:pointer;text-decoration:underline dotted;color:#5AAA8A;font-weight:700">100 BPM</span>
         </div>
         <div class="metro-3col-slider">
           <button class="mpv-tempo-adj" id="metro-bpm-minus">−</button>
@@ -1445,7 +1452,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="view-mode-bar" style="display:none"></div>
   <!-- Vue Pas (step sequencer) — row2 de chaque layer déplacé ici via _moveRow2ToStepView -->
   <div id="step-rows-wrap"></div>
-  <!-- Layers (3 couches rythmiques) — #rhythm-info-bar injecté en tête par buildLayers -->
+  <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
+  <div id="rhythm-info-wrap"></div>
+  <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
@@ -4925,8 +4934,8 @@ function buildGrooveSection(){
   btnI.addEventListener('click',()=>{
     const g=getGroove(currentGrooveId);
     if(!g||!hasEncycloContent(g.id))return;
-    showEncycloEntry(g.id);
-    if(!encycloOuvert)toggleEncyclo(true);
+    if(encycloOuvert&&currentEncycloId===g.id){toggleEncyclo(false);}
+    else{showEncycloEntry(g.id);if(!encycloOuvert)toggleEncyclo(true);}
   });
   bar.appendChild(btnI);
 
@@ -5078,9 +5087,13 @@ function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
   const cont=document.getElementById('layers');if(!cont)return;
   cont.innerHTML='';_layerCPRefreshers.length=0;
-  // Barre info rythmique (premier enfant → au-dessus des volets en vues circulaire/linéaire)
-  const ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
-  cont.appendChild(ribDiv);
+  // Barre info rythmique : placée dans #rhythm-info-wrap (sous la groove view)
+  let ribDiv=document.getElementById('rhythm-info-bar');
+  if(!ribDiv){
+    ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
+    const riWrap=document.getElementById('rhythm-info-wrap');
+    if(riWrap) riWrap.appendChild(ribDiv); else cont.appendChild(ribDiv);
+  }
 
   LAYERS.forEach((layer,li)=>{
     const layerDiv=document.createElement('div');
@@ -5116,6 +5129,7 @@ function buildLayers(){
       grooveDirty=true; updateGrooveSaveBtn();
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
       if(circleView) drawCircles();
+      _syncBtnVolAllMuted();
     });
     row1.appendChild(btnMute);
 
@@ -5135,7 +5149,10 @@ function buildLayers(){
       const has=hasEncycloContent(eKey);
       btnI.style.opacity=has?'1':'.3';btnI.style.cursor=has?'pointer':'default';
       btnI.style.color=has?_accent:'';btnI.style.borderColor=has?_accent:'';
-      btnI.onclick=has?()=>{showEncycloEntry(eKey);if(!encycloOuvert)toggleEncyclo(true);}:null;
+      btnI.onclick=has?()=>{
+        if(encycloOuvert&&currentEncycloId===eKey){toggleEncyclo(false);}
+        else{showEncycloEntry(eKey);if(!encycloOuvert)toggleEncyclo(true);}
+      }:null;
     }
     updateBtnI();
 
@@ -7319,6 +7336,16 @@ function updateBeatDisplay(){
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
   // Recalibrer startTime → synchro visuelle après changement de tempo
   recalibrateStartTimes();
+}
+function _syncBtnVolAllMuted(){
+  const btnV=document.getElementById('btn-vol');if(!btnV)return;
+  const allMuted=LAYERS.every((_,li)=>state[li].muted);
+  if(bandMuted===allMuted)return;
+  bandMuted=allMuted;
+  const icon=document.getElementById('sons-icon');
+  if(icon)icon.textContent=allMuted?'🔇':'🔊';
+  btnV.classList.toggle('muted',allMuted);
+  if(circleView)drawCircles();
 }
 function setMetroGlobal(on){
   metro.muted=!on;

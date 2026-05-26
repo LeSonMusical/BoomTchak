@@ -86,7 +86,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.15.33** (session 2026-05-26)
+**v3.15.34** (session 2026-05-26)
 ---
 
 ## CHANTIER SUIVANT — Rédaction des articles encyclopédie
@@ -126,6 +126,7 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.15.34 | Metro volet BPM : label "Tempo" gauche + BPM centré couleur teal clair `#5AAA8A` ; toutes pistes mutées → btn-vol passe en off (`_syncBtnVolAllMuted`) ; `#rhythm-info-bar` déplacé hors `#layers` → `#rhythm-info-wrap` (sous groove view, au-dessus des layers) ; bouton `i` Encyclo = toggle |
 | v3.15.33 | Modal capture : pad doux = `filter:brightness(1.4) saturate(.55)` (plus de grisé) ; sons à plein volume quand transport stoppé ; modal preset ✕ en couleur accent ; bouton ✕ fermeture ajouté au panel Encyclo ; overlay Métronome on/off + Sons on/off + labels "Tempo" / "Volume Groove" sur overlays drag ; redraw canvas au toggle Son on/off |
 | v3.15.32 | Vue Step.seq : `#step-rows-wrap` reçoit `margin-left:4px; border-left:2px solid #C8961A; padding-left:6px` → ligne verticale jaune Groove continue sans interruption ; dark mode `border-left-color:#8B6914` |
 | v3.15.31 | Bouton Signature top-bar → ouvre modal métro.preset avec famille "Tout" (`famFilter:'all'`) ; `#rhythm-info-bar` toujours au-dessus des layers en vue Step.seq (`order:-1`) ; marques de temps en vue Cycle/Mesure issues de `metroPattern` (positions 'A') via `_metroBeatMarks(viewMode)` |
