@@ -78,7 +78,7 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .temps-bar{background:#EDF7F4;border-bottom:1px solid #B8D8CE;border-left:3px solid #3A8C6E}
 .temps-bar .section-bar-lbl{color:#555}
 .sig-sel{display:none}
-.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #C0C8D0;border-radius:4px;background:#fff;color:#444;flex:1;cursor:pointer;min-width:38px;max-width:160px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
+.sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #C0C8D0;border-radius:4px;background:#fff;color:#444;flex:1;cursor:pointer;min-width:48px;max-width:160px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
 .sig-sel-btn::after{content:' ▸';opacity:.4;font-size:8px;}
 .beat-display{font-size:11px;font-weight:700;color:#444;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center;border:none;background:transparent;cursor:pointer;padding:0;border-radius:4px}
 .beat-display:hover{background:rgba(0,0,0,.06)}
@@ -250,10 +250,12 @@ body.dark-mode .sig-edit-val{color:#666}
 /* Métrique 3-col grid */
 .metro-metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 8px;align-items:start;justify-items:center;padding:.1rem 0 .05rem}
 .metro-metric-col{display:flex;flex-direction:column;gap:3px;align-items:center}
-/* Métronome flex layout */
+/* Battue flex layout */
 .metro-metro-layout{display:flex;flex-direction:column;gap:4px;padding:.1rem 0 .05rem}
+.metro-metro-top{display:flex;align-items:center;gap:8px}
 .metro-metro-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .metro-metro-phrase{display:flex;align-items:center;gap:4px}
+#metro-sub-pat .metro-sub-desc{white-space:normal;overflow:visible;text-overflow:initial;line-height:1.35}
 
 .mpv-mgr-active .lib-item-name{font-weight:700!important;color:#2A6A50!important}
 /* ── Modal save preset ── */
@@ -1276,7 +1278,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.7</span>
+    <span class="app-version">v3.16.8</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1378,9 +1380,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="sb-spacer"></div>
     <div id="btn-metro-volets-group">
     <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Metric.</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-pat">Métro.</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol.</button>
+    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Metric</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-pat">Beat</button>
+    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
     <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
     </div>
   </div>
@@ -1453,36 +1455,34 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
   </div>
   </div><!-- /metro-sub-sign -->
-  <!-- ── Sous-volet 3 : Métronome ───────────────────────────────────── -->
+  <!-- ── Sous-volet 3 : Battue ────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-pat" style="display:none">
   <div class="metro-sub-hdr">
-    <span class="metro-sub-chip">Métronome</span>
+    <span class="metro-sub-chip">Battue</span>
     <span class="metro-sub-desc" id="metro-metro-desc">4/4, 4 temps (noires)</span>
   </div>
   <div class="metro-bloc">
     <div class="metro-metro-layout">
-      <!-- Gauche : boutons accent empilés -->
-      <div class="metro-ctrl-accents-v">
-        <button class="mpv-word-btn on" id="mpv-tog-A">^</button>
-        <button class="mpv-word-btn on" id="mpv-tog-P">&gt;</button>
-        <button class="mpv-word-btn" id="mpv-tog-p">-</button>
+      <!-- Ligne 1 : boutons type (gauche) + subdivision (droite) -->
+      <div class="metro-metro-top">
+        <div class="metro-ctrl-accents-v">
+          <button class="mpv-word-btn on" id="mpv-tog-A">^</button>
+          <button class="mpv-word-btn on" id="mpv-tog-P">&gt;</button>
+          <button class="mpv-word-btn" id="mpv-tog-p">-</button>
+        </div>
+        <div class="metro-ctrl-subdiv">
+          <span class="metro-subdiv-lbl">Subdivision</span>
+          <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+            <option value="1">×1</option>
+            <option value="2">×2</option>
+            <option value="3">×3</option>
+            <option value="4">×4</option>
+          </select>
+        </div>
       </div>
-      <!-- Droite : phrase sig (ligne 1) + pattern (ligne 2) -->
-      <div class="metro-metro-right">
-        <div class="metro-metro-phrase">
-          <div class="metro-ctrl-subdiv">
-            <span class="metro-subdiv-lbl">Subdivision</span>
-            <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-              <option value="1">×1</option>
-              <option value="2">×2</option>
-              <option value="3">×3</option>
-              <option value="4">×4</option>
-            </select>
-          </div>
-        </div>
-        <div class="metro-pat-row">
-          <div class="metro-pat-viz" id="metro-pattern-viz"></div>
-        </div>
+      <!-- Ligne 2 : pattern viz -->
+      <div class="metro-pat-row">
+        <div class="metro-pat-viz" id="metro-pattern-viz"></div>
       </div>
     </div>
   </div>
@@ -2803,22 +2803,58 @@ function computeSigLabel() {
 }
 
 function _sigDescription(){
-  const nb=currentSig?.nbDivisions||4;
-  const unit=currentSig?.beatUnit||4;
-  const eqv=currentSig?.equivalence||currentSig?.felBeatSteps||currentSig?.stepsPerBeat||2;
-  const lbl=computeSigLabel();
-  if(!lbl)return '';
-  const noteIco={1:'○',2:'♩♩',4:'♩',8:'♪',16:'♬'}[unit]||'♩';
-  const noteNames={1:'ronde',2:'blanche',4:'noire',8:'croche',16:'double-croche'};
-  const isAsym=lbl.includes('+');
-  if(isAsym){
-    const groups=lbl.split('/')[0];
-    const uName=noteNames[unit]||('1/'+unit);
-    return nb+'='+groups+' '+uName+'s, mesure à temps irréguliers';
+  const mp=currentSig?.metroPattern;
+  if(!mp||mp.length===0)return '';
+  const n=mp.length;
+  const fortPos=[],beatPos=[];
+  for(let i=0;i<n;i++){
+    if(mp[i]==='A'){fortPos.push(i);beatPos.push(i);}
+    else if(mp[i]==='P'){beatPos.push(i);}
   }
-  const beatUnitsPerBeat=(eqv*unit)/8;
-  const buStr=Number.isInteger(beatUnitsPerBeat)?beatUnitsPerBeat:beatUnitsPerBeat.toFixed(1);
-  return nb+'/'+unit+' : mesure à '+nb+' '+noteIco+' (1 temps = '+buStr+' '+noteIco+')';
+  if(beatPos.length===0)return '';
+  function circGaps(pos){
+    return pos.map((p,i)=>{const nxt=pos[(i+1)%pos.length];return((nxt-p+n)%n)||n;});
+  }
+  function noteStr(g){
+    if(g===1)return 'une croche';
+    if(g===2)return 'une noire';
+    if(g===3)return 'une noire pointée';
+    if(g===4)return 'une blanche';
+    if(g===6)return 'une blanche pointée';
+    if(g===8)return 'une ronde';
+    return g+' croches';
+  }
+  function isReg(gps){return gps.length<=1||gps.every(g=>g===gps[0]);}
+  const bGaps=circGaps(beatPos);
+  const bReg=isReg(bGaps);
+  const parts=[];
+  if(fortPos.length>0){
+    const fGaps=circGaps(fortPos);
+    const fReg=isReg(fGaps);
+    if(fortPos.length===1){
+      parts.push('1 temps fort');
+    } else if(fReg){
+      parts.push(fortPos.length+' temps forts réguliers (1 temps fort = '+noteStr(fGaps[0])+')');
+    } else {
+      parts.push(fortPos.length+' temps forts irréguliers : '+fGaps.join('+'));
+    }
+  }
+  if(beatPos.length>fortPos.length){
+    const nb=beatPos.length;
+    if(bReg){
+      parts.push(nb+' accents réguliers (1 accent = '+noteStr(bGaps[0])+')');
+    } else {
+      parts.push(nb+' accents irréguliers : '+bGaps.join('+'));
+    }
+  } else if(fortPos.length===0){
+    if(bReg){
+      parts.push(beatPos.length+' temps réguliers (1 temps = '+noteStr(bGaps[0])+')');
+    } else {
+      parts.push(beatPos.length+' temps irréguliers : '+bGaps.join('+'));
+    }
+  }
+  if(parts.length===0)return '';
+  return 'Mesure à '+parts.join(' et à ');
 }
 
 function _sigFracHtml(lbl) {
@@ -6124,7 +6160,7 @@ function openMetroSavePop(btn){
   let lbl = box.querySelector('.psp-type-label');
   if(!lbl){ lbl=document.createElement('div'); lbl.className='psp-type-label'; box.prepend(lbl); }
   lbl.style.color = 'var(--c-groove,#6B5FA5)';
-  lbl.textContent = 'Métronome';
+  lbl.textContent = 'Battue';
 
   const ovBtn = document.getElementById('psp-btn-overwrite');
   ovBtn.textContent = '✓ Écraser «' + (s.label || s.id || 'preset') + '»';
