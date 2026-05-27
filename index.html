@@ -290,6 +290,22 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#6B4C10 !important}
+/* Groove bar redesign v3.16.11 — layout 2 lignes */
+.groove-header{display:flex;flex-direction:column;border-radius:4px;margin-bottom:4px;overflow:hidden}
+.groove-l1{display:flex;align-items:center;gap:3px;padding:.25rem .5rem .15rem}
+.groove-l2{display:flex;align-items:center;gap:4px;padding:.1rem .5rem .2rem;border-top:1px solid rgba(200,150,26,.2)}
+.groove-name-btn{flex:1;text-align:center;font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;line-height:1.4}
+.groove-name-btn:hover{color:#3A2000}
+.groove-name-btn::after{display:none}
+.groove-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;color:#9A7020;padding:2px 5px;flex-shrink:0;opacity:.6;line-height:1;border-radius:3px}
+.groove-nav-btn:hover{opacity:1;background:rgba(200,150,26,.12)}
+.groove-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#C8961A;padding:2px 4px;flex-shrink:0;opacity:.3;line-height:1;margin-left:2px}
+.groove-collapse-btn:hover{opacity:.7}
+.groove-fam-btn{background:transparent;border:none;cursor:pointer;font-size:10px;font-style:italic;color:#9A7020;padding:1px 3px;flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
+.groove-fam-btn:hover{opacity:1}
+.groove-view-sep{color:#C8961A;opacity:.35;padding:0 3px;flex-shrink:0;font-size:14px;line-height:1;user-select:none}
+.groove-view-bar{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.groove-l1 .btn-dice-rng{display:inline-flex;opacity:.55}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
@@ -1187,6 +1203,16 @@ body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{col
 body.dark-mode .groove-bar .btn-info-ico{border-color:#8B6914;color:#A07830}
 body.dark-mode .groove-bar .btn-info-ico:hover{background:rgba(139,105,20,.2)}
 body.dark-mode .groove-bar .pm-preset-btn{border-color:#8B6914;background:rgba(40,37,20,.8);color:#C8961A}
+body.dark-mode .groove-name-btn{color:#C8961A}
+body.dark-mode .groove-name-btn:hover{color:#E8B030}
+body.dark-mode .groove-nav-btn{color:#A07830}
+body.dark-mode .groove-nav-btn:hover{color:#C8961A}
+body.dark-mode .groove-collapse-btn{color:#A07830}
+body.dark-mode .groove-fam-btn{color:#A07830}
+body.dark-mode .groove-fam-btn:hover{color:#C8961A}
+body.dark-mode .groove-view-sep{color:#8B6914}
+body.dark-mode .groove-l2{border-top-color:rgba(139,105,20,.3)}
+body.dark-mode .groove-header{background:#2C2710;border-bottom-color:#3E3518;border-left-color:#8B6914}
 body.dark-mode .btn-volet-band{color:#444 !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
 body.dark-mode .btn-volet-encyclo{color:#444 !important}
@@ -1278,7 +1304,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.10</span>
+    <span class="app-version">v3.16.11</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3434,6 +3460,15 @@ function updateGrooveNameTopBar(){
   if(isDirty) name += ' modifié';
   btn.textContent = name;
   btn.style.fontStyle = isDirty ? 'italic' : '';
+  // Nom de famille (ligne 2)
+  const famBtn = document.getElementById('groove-fam-btn');
+  if(famBtn){
+    const famId = g && g.familles_ids && g.familles_ids[0];
+    const fams = (packCours.familles||[]).filter(f=>f.type!=='metro'&&f.type!=='band'&&f.type!=='sound');
+    const fam = famId ? fams.find(f=>f.id===famId) : null;
+    famBtn.textContent = fam ? fam.nom : '';
+    famBtn.style.display = fam ? '' : 'none';
+  }
 }
 
 function _updateAuthStatusIcon(){
@@ -5080,61 +5115,140 @@ function buildBandSection(){
   if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
 }
 
-// ── Section Groove ────────────────────────────────────────────────────────
+// ── Section Groove ─── v3.16.11 redesign 2 lignes ─────────────────────────
 function buildGrooveSection(){
   const cont=document.getElementById('section-groove');
   if(!cont)return;
   cont.innerHTML='';
 
-  const bar=document.createElement('div');
-  bar.className='section-bar groove-bar';
-  bar.id='groove-bar';
+  const header=document.createElement('div');
+  header.className='groove-header groove-bar';
+  header.id='groove-bar';
   function refreshGrooveClass(){
     const g=getGroove(currentGrooveId);
-    bar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));
+    header.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));
   }
   refreshGrooveClass();
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🥁';lbl.style.cursor='pointer';
-  bar.appendChild(lbl);
+  // ── Ligne 1 : ◀ [NOM GROOVE] ▶ 🎲 ˅ ──────────────────────────────────
+  const l1=document.createElement('div');
+  l1.className='groove-l1';
 
-  const curGroove=getGroove(currentGrooveId);
+  const btnPrev=document.createElement('button');
+  btnPrev.className='groove-nav-btn';btnPrev.id='groove-nav-prev';btnPrev.textContent='◀';btnPrev.title='Groove précédent';
   const groovePresetBtn=document.createElement('button');
-  groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='pm-preset-btn';
-  groovePresetBtn.style.cssText='color:#C8961A;font-weight:600;border-color:#ddd';
-  groovePresetBtn.textContent=curGroove?curGroove.nom+(curGroove.source==='teacher'?' ✎':'')+(curGroove.source==='pending'?' 👁':''):'—';
-  const _grooveOnSelect=(id)=>{
-    applyGroove(id);refreshGrooveClass();
-    const pb=document.getElementById('groove-preset-btn');
-    const g=getGroove(id);
-    if(pb&&g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');
-  };
-  groovePresetBtn.addEventListener('click',()=>{
-    openPresetModal({
-      type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',
-      onSelect:_grooveOnSelect
-    });
-  });
-  attachSwipe(groovePresetBtn,
-    ()=>_sortByFamille((packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending'),packCours.familles),
-    ()=>currentGrooveId, _grooveOnSelect
-  );
-  bar.appendChild(groovePresetBtn);
+  groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='groove-name-btn';
+  const btnNext=document.createElement('button');
+  btnNext.className='groove-nav-btn';btnNext.id='groove-nav-next';btnNext.textContent='▶';btnNext.title='Groove suivant';
+  const btnDiceGroove=document.createElement('button');
+  btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
+  const btnCollapse=document.createElement('button');
+  btnCollapse.className='groove-collapse-btn btn-volet-groove'+(layersOuverts?' open':'');
+  btnCollapse.id='groove-collapse';
+  btnCollapse.textContent=layersOuverts?'˅':'˄';
+  btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
 
+  l1.appendChild(btnPrev);l1.appendChild(groovePresetBtn);l1.appendChild(btnNext);
+  l1.appendChild(btnDiceGroove);l1.appendChild(btnCollapse);
+  header.appendChild(l1);
+
+  // ── Ligne 2 : [famille] ··· [💾][i] | [vue] ───────────────────────────
+  const l2=document.createElement('div');
+  l2.className='groove-l2';l2.id='groove-l2';
+  if(!layersOuverts)l2.style.display='none';
+
+  const btnFam=document.createElement('button');
+  btnFam.className='groove-fam-btn';btnFam.id='groove-fam-btn';
+  const spacer=document.createElement('span');spacer.style.cssText='flex:1;min-width:0';
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
-  saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
-  bar.appendChild(saveBtnGroove);
-
-  // Bouton i (lien vers entrée encyclo propre du groove, clé = groove.id)
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
-  const groove=getGroove(currentGrooveId);
-  const _grooveEncyRef=groove&&(groove.encyclo_ref||groove.id);
-  const hasE=hasEncycloContent(_grooveEncyRef);
-  btnI.style.opacity=hasE?'1':'.3';
-  btnI.style.cursor=hasE?'pointer':'default';
-  if(hasE){btnI.style.color='#c8a84a';btnI.style.borderColor='#c8a84a';btnI.style.background='rgba(200,168,74,.15)';btnI.style.fontWeight='700';}
+  const viewSep=document.createElement('span');
+  viewSep.className='groove-view-sep';viewSep.textContent='|';
+  const viewBar=document.createElement('div');
+  viewBar.className='groove-view-bar';viewBar.id='groove-view-bar';
+
+  l2.appendChild(btnFam);l2.appendChild(spacer);l2.appendChild(saveBtnGroove);
+  l2.appendChild(btnI);l2.appendChild(viewSep);l2.appendChild(viewBar);
+  header.appendChild(l2);
+  cont.appendChild(header);
+
+  // ── Handlers ──────────────────────────────────────────────────────────
+  const _getGrooveList=()=>_sortByFamille(
+    (packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending'),
+    packCours.familles
+  );
+  const _grooveOnSelect=(id)=>{
+    applyGroove(id);refreshGrooveClass();
+    updateGrooveNameTopBar();
+  };
+
+  // Nom groove → modal sélection
+  groovePresetBtn.addEventListener('click',()=>{
+    openPresetModal({type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',onSelect:_grooveOnSelect});
+  });
+  attachSwipe(groovePresetBtn,_getGrooveList,()=>currentGrooveId,_grooveOnSelect);
+
+  // Boutons nav ◀ ▶
+  const _navGroove=(dir)=>{
+    const list=_getGrooveList();if(!list.length)return;
+    const idx=list.findIndex(g=>g.id===currentGrooveId);
+    const ni=idx<0?0:(idx+dir+list.length)%list.length;
+    _grooveOnSelect(list[ni].id);
+  };
+  btnPrev.addEventListener('click',e=>{e.stopPropagation();_navGroove(-1);});
+  btnNext.addEventListener('click',e=>{e.stopPropagation();_navGroove(1);});
+
+  // Dé aléatoire
+  btnDiceGroove.addEventListener('click',e=>{
+    e.stopPropagation();
+    const list=(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending');
+    if(!list.length)return;
+    _grooveOnSelect(list[Math.floor(Math.random()*list.length)].id);
+  });
+
+  // Collapse ˅/˄
+  const _toggleLayers=()=>{
+    layersOuverts=!layersOuverts;
+    const lw=document.getElementById('layers-wrap');
+    const cv=document.getElementById('circle-view');
+    const hd=document.querySelector('.hdivider');
+    const ri=document.getElementById('rhythm-info-wrap');
+    const sr=document.getElementById('step-rows-wrap');
+    const l2el=document.getElementById('groove-l2');
+    if(lw)lw.style.display=layersOuverts?'':'none';
+    if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
+    if(hd)hd.style.display=layersOuverts?'':'none';
+    if(ri)ri.style.display=layersOuverts?'':'none';
+    if(sr)sr.style.display=layersOuverts?'':'none';
+    if(l2el)l2el.style.display=layersOuverts?'':'none';
+    btnCollapse.textContent=layersOuverts?'˅':'˄';
+    btnCollapse.classList.toggle('open',layersOuverts);
+    btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+    updateViewModeBar();
+  };
+  btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
+
+  // Famille → ouvre modal
+  btnFam.addEventListener('click',()=>{
+    openPresetModal({type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',onSelect:_grooveOnSelect});
+  });
+
+  // Sauvegarde
+  saveBtnGroove.addEventListener('click',()=>saveGroovePattern(saveBtnGroove));
+
+  // Info encyclo
+  const _initInfoBtn=()=>{
+    const g=getGroove(currentGrooveId);
+    const _ref=g&&(g.encyclo_ref||g.id);
+    const hasE=hasEncycloContent(_ref);
+    btnI.style.opacity=hasE?'1':'.3';
+    btnI.style.cursor=hasE?'pointer':'default';
+    if(hasE){btnI.style.color='#c8a84a';btnI.style.borderColor='#c8a84a';btnI.style.background='rgba(200,168,74,.15)';btnI.style.fontWeight='700';}
+    else{btnI.style.color='';btnI.style.borderColor='';btnI.style.background='';btnI.style.fontWeight='';}
+  };
+  _initInfoBtn();
   btnI.addEventListener('click',()=>{
     const g=getGroove(currentGrooveId);
     const _ref=g&&(g.encyclo_ref||g.id);
@@ -5142,60 +5256,10 @@ function buildGrooveSection(){
     if(encycloOuvert&&currentEncycloId===_ref){toggleEncyclo(false);}
     else{showEncycloEntry(_ref);if(!encycloOuvert)toggleEncyclo(true);}
   });
-  bar.appendChild(btnI);
 
-  const btnDiceGroove=document.createElement('button');btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
-  btnDiceGroove.addEventListener('click',e=>{
-    e.stopPropagation();
-    const list=(packCours.grooves||[]).filter(g=>!g.localDeletePending&&g.source!=='pending');
-    if(!list.length)return;
-    const pick=list[Math.floor(Math.random()*list.length)];
-    _grooveOnSelect(pick.id);
-  });
-  bar.appendChild(btnDiceGroove);
-
-
-  const btnVolet=document.createElement('button');
-  btnVolet.className='btn-volet btn-volet-groove'+(layersOuverts?' open':'');
-  btnVolet.style.marginLeft='auto';
-  btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-  btnVolet.addEventListener('click',()=>{
-    layersOuverts=!layersOuverts;
-    const lw=document.getElementById('layers-wrap');
-    const cv=document.getElementById('circle-view');
-    const hd=document.querySelector('.hdivider');
-    const ri=document.getElementById('rhythm-info-wrap');
-    const sr=document.getElementById('step-rows-wrap');
-    if(lw)lw.style.display=layersOuverts?'':'none';
-    if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-    if(hd)hd.style.display=layersOuverts?'':'none';
-    if(ri)ri.style.display=layersOuverts?'':'none';
-    if(sr)sr.style.display=layersOuverts?'':'none';
-    btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-    btnVolet.classList.toggle('open',layersOuverts);
-    updateViewModeBar();
-  });
-  bar.appendChild(btnVolet);
-  bar.addEventListener('click',e=>{
-    if(e.target===lbl){
-      layersOuverts=!layersOuverts;
-      const lw=document.getElementById('layers-wrap');
-      const cv=document.getElementById('circle-view');
-      const hd=document.querySelector('.hdivider');
-      const ri=document.getElementById('rhythm-info-wrap');
-      const sr=document.getElementById('step-rows-wrap');
-      if(lw)lw.style.display=layersOuverts?'':'none';
-      if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-      if(hd)hd.style.display=layersOuverts?'':'none';
-      if(ri)ri.style.display=layersOuverts?'':'none';
-      if(sr)sr.style.display=layersOuverts?'':'none';
-      btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
-      btnVolet.classList.toggle('open',layersOuverts);
-      updateViewModeBar();
-    }
-  });
-  cont.appendChild(bar);
-  {const ro=new ResizeObserver(([e])=>{btnDiceGroove.classList.toggle('visible',e.contentRect.width>=280);});ro.observe(bar);}
+  // Init nom + famille + vue
+  updateGrooveNameTopBar();
+  updateViewModeBar();
 }
 
 // ── Volet mod v3.15 — état pad/soft par layer ────────────────────────────
@@ -7409,10 +7473,7 @@ function mkBtnMenu(onClick){
 
 // ── Mises à jour partielles (sans rebuild complet) ─────────────────────────
 function updateGrooveSelect(){
-  // Mettre à jour le label du bouton preset groove
-  const pb=document.getElementById('groove-preset-btn');
-  if(pb&&currentGrooveId){const g=getGroove(currentGrooveId);if(g)pb.textContent=g.nom+(g.source==='teacher'?' ✎':'')+(g.source==='pending'?' 👁':'');}
-  // Mettre à jour le marquage perso sur la barre groove
+  updateGrooveNameTopBar();
   const grooveBar=document.getElementById('groove-bar');
   if(grooveBar){const g=getGroove(currentGrooveId);grooveBar.classList.toggle('section-teacher',!!(g&&g.source==='teacher'));}
 }
@@ -8313,13 +8374,12 @@ function _applyView(){
   }
 }
 
-// ── updateViewModeBar() : reconstruit les 2 boutons contextuels ──────────
+// ── updateViewModeBar() : reconstruit les boutons contextuels dans groove-l2 ──
 function updateViewModeBar(){
-  const bar = document.getElementById('view-mode-bar');
+  const bar = document.getElementById('groove-view-bar');
   if(!bar) return;
-  if(!layersOuverts){ bar.style.display='none'; return; }
-  bar.style.display='flex';
   bar.innerHTML='';
+  if(!layersOuverts) return;
   const isCircle = viewShape === 'circle';
 
   // Boutons contextuels (en premier)
