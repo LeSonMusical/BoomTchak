@@ -213,7 +213,7 @@ body.dark-mode .sig-edit-val{color:#666}
 /* Métronome layout */
 .metro-ctrl-row2{display:flex;align-items:center;gap:5px;padding:.12rem 0 .05rem}
 .metro-ctrl-accents-v{display:flex;flex-direction:row;gap:3px;flex-shrink:0}
-.metro-ctrl-accents-v .mpv-word-btn{font-size:12px;font-weight:800;padding:2px 8px;text-align:center;line-height:1.4}
+.metro-ctrl-accents-v .mpv-word-btn{font-size:12px;font-weight:800;padding:2px 3px;text-align:center;line-height:1.4}
 .metro-ctrl-center{flex:1;display:flex;align-items:center;justify-content:center;padding:0 3px}
 /* Volumes layout */
 .metro-vol-row2{display:flex;gap:6px;align-items:center;padding:.18rem 0}
@@ -1278,7 +1278,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.8</span>
+    <span class="app-version">v3.16.9</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2825,33 +2825,40 @@ function _sigDescription(){
     return g+' croches';
   }
   function isReg(gps){return gps.length<=1||gps.every(g=>g===gps[0]);}
+  function ordStr(k){return k===1?'1er':k+'e';}
   const bGaps=circGaps(beatPos);
   const bReg=isReg(bGaps);
+  // Cas 1 : battue GLOBALEMENT régulière (tous ^ et > à intervalles égaux)
+  if(bReg){
+    const nb=beatPos.length;
+    let desc='Battue régulière à '+nb+' temps';
+    if(fortPos.length>0&&fortPos.length<nb){
+      const fortIdx=beatPos.map((p,i)=>fortPos.includes(p)?i+1:-1).filter(i=>i>=0);
+      const strs=fortIdx.map(ordStr);
+      const joined=strs.length===1?strs[0]:strs.slice(0,-1).join(', ')+' et '+strs[strs.length-1];
+      desc+=' (temps fort sur le '+joined+' temps)';
+    } else if(fortPos.length===nb){
+      desc+=' forts';
+    }
+    return desc;
+  }
+  // Cas 2 : battue irrégulière — analyse forts + accents globaux
+  const fGaps=fortPos.length>0?circGaps(fortPos):[];
+  const fReg=isReg(fGaps);
   const parts=[];
   if(fortPos.length>0){
-    const fGaps=circGaps(fortPos);
-    const fReg=isReg(fGaps);
     if(fortPos.length===1){
-      parts.push('1 temps fort');
+      parts.push('1 temps fort');
     } else if(fReg){
-      parts.push(fortPos.length+' temps forts réguliers (1 temps fort = '+noteStr(fGaps[0])+')');
+      parts.push(fortPos.length+' temps forts réguliers (1 temps fort = '+noteStr(fGaps[0])+')');
     } else {
-      parts.push(fortPos.length+' temps forts irréguliers : '+fGaps.join('+'));
+      parts.push(fortPos.length+' temps forts irréguliers : '+fGaps.join('+'));
     }
   }
   if(beatPos.length>fortPos.length){
-    const nb=beatPos.length;
-    if(bReg){
-      parts.push(nb+' accents réguliers (1 accent = '+noteStr(bGaps[0])+')');
-    } else {
-      parts.push(nb+' accents irréguliers : '+bGaps.join('+'));
-    }
+    parts.push(beatPos.length+' accents irréguliers : '+bGaps.join('+'));
   } else if(fortPos.length===0){
-    if(bReg){
-      parts.push(beatPos.length+' temps réguliers (1 temps = '+noteStr(bGaps[0])+')');
-    } else {
-      parts.push(beatPos.length+' temps irréguliers : '+bGaps.join('+'));
-    }
+    parts.push(beatPos.length+' temps irréguliers : '+bGaps.join('+'));
   }
   if(parts.length===0)return '';
   return 'Mesure à '+parts.join(' et à ');
@@ -3912,10 +3919,8 @@ function openPresetModal(cfg){
       return patternFams().filter(f=>used.has(f.id));
     }
     if(cfg.type==='sig'){
-      if(manageMode||reorderMode||paletteTarget) return getMetroFamilles();
-      // Fallback sur .famille si familles_ids pas encore normalisé (mode hors connexion)
-      const used=new Set(metroPresets.flatMap(p=>p.familles_ids?.length?p.familles_ids:(p.famille?[p.famille]:[])));
-      return getMetroFamilles().filter(f=>used.has(f.id));
+      // Toujours toutes les familles (évite le vide quand IDs DB ≠ IDs fallback)
+      return getMetroFamilles();
     }
     if(cfg.type==='sound'){
       // Palette mode et manage/reorder : toutes les soundFamilles
@@ -4005,8 +4010,11 @@ function openPresetModal(cfg){
     } else if(cfg.type==='sig'){
       const base=metroPresets.filter(p=>p.source!=='teacher');
       const teacher=metroPresets.filter(p=>p.source==='teacher');
-      if(searchQuery){const q=searchQuery.toLowerCase();return [...base,...teacher].filter(i=>i.nom.toLowerCase().includes(q));}
-      const filtered=famFilter&&famFilter!=='all'?base.filter(p=>(p.familles_ids||[]).includes(famFilter)):base;
+      // Recherche sur label||nom (les presets metro utilisent label pas nom)
+      if(searchQuery){const q=searchQuery.toLowerCase();return [...base,...teacher].filter(i=>(i.label||i.nom||'').toLowerCase().includes(q));}
+      // Filtre famille : match familles_ids ET le champ legacy famille (pour les presets JS fallback)
+      const matchFam=p=>(p.familles_ids||[]).includes(famFilter)||(p.famille===famFilter);
+      const filtered=famFilter&&famFilter!=='all'?base.filter(matchFam):base;
       result=[...filtered,...teacher.filter(p=>!filtered.some(i=>i.id===p.id))];
     } else {
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
