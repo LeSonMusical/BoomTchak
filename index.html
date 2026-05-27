@@ -309,7 +309,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
 /* Barre de vue — top du canvas (circle) ou top des step rows (linear) */
 #canvas-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:3px 6px;flex-shrink:0}
-#linear-view-bar{display:none;align-items:center;gap:4px;padding:2px 0 4px}
+#linear-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:2px 0 4px;width:100%}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
@@ -963,11 +963,11 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:.5rem 0 1.25rem;flex-shrink:0}
+#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:0 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
 #measure-page-indicator{position:absolute;top:8px;right:6px;display:flex;flex-direction:column;gap:2px;align-items:flex-end;pointer-events:auto}
-.mpi-layers{display:flex;flex-direction:column;gap:2px;align-items:flex-end}
+.mpi-layers{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
 .mpi-nav{display:flex;align-items:center;gap:1px}
 .mpi-btn{background:none;border:none;padding:0 3px;font-size:9px;cursor:pointer;color:#999;line-height:1.6}
@@ -1019,7 +1019,8 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A;margin-top:10px}
+body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
 body.dark-mode.view-circle #rhythm-info-wrap,body.dark-mode.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
@@ -1331,7 +1332,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.15</span>
+    <span class="app-version">v3.16.16</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1616,15 +1617,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <canvas id="rhythm-canvas"></canvas>
     <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
     <div id="measure-page-indicator" style="display:none">
-      <div class="mpi-nav" id="mpi-nav-row">
-        <button class="mpi-btn" id="mpi-prev">◀</button>
-        <span id="mpi-label">Mes 1</span>
-        <button class="mpi-btn" id="mpi-next">▶</button>
-      </div>
       <div class="mpi-layers">
         <span class="mpi-layer c-low"   id="mpi-l0"></span>
         <span class="mpi-layer c-high"  id="mpi-l1"></span>
         <span class="mpi-layer c-noise" id="mpi-l2"></span>
+      </div>
+      <div class="mpi-nav" id="mpi-nav-row">
+        <button class="mpi-btn" id="mpi-prev">◀</button>
+        <span id="mpi-label">Mes 1</span>
+        <button class="mpi-btn" id="mpi-next">▶</button>
       </div>
     </div>
   </div>
@@ -7734,7 +7735,7 @@ function resizeCanvas(){
   const dotR = 10;
   const r0 = 16*dotR/Math.PI;    // rayon cercle intérieur (~50.9px)
   const r2 = r0 + dotR*4;        // rayon cercle extérieur
-  const szNatural = Math.round(2*(r2+dotR+30));  // +24px marge haut/bas pour numéros de temps
+  const szNatural = Math.round(2*(r2+dotR+20));  // topPad≈14px pour numéros de temps
   const szW = szNatural + 2 * CIRC_LABEL_W;       // canvas symétrique : cercle centré (cx = szW/2)
 
   // Desktop ≥600px : canvas partage la ligne avec les layers
@@ -7758,6 +7759,14 @@ function resizeCanvas(){
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
   wrap.style.height = (physH + toggleH) + 'px';
+  // Aligner #measure-page-indicator avec les labels couche du strip gauche
+  {
+    const topPad = Math.round(szNatural/2 - (r2+dotR+6));
+    const mpiEl = document.getElementById('measure-page-indicator');
+    const barEl = document.getElementById('canvas-view-bar');
+    const barH = (barEl && barEl.offsetHeight > 4) ? barEl.offsetHeight : 28;
+    if(mpiEl) mpiEl.style.top = Math.round(barH + (topPad + 12) * scale) + 'px';
+  }
   drawCircles();
 }
 
