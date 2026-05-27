@@ -1278,7 +1278,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.9</span>
+    <span class="app-version">v3.16.10</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5164,9 +5164,13 @@ function buildGrooveSection(){
     const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
     const hd=document.querySelector('.hdivider');
+    const ri=document.getElementById('rhythm-info-wrap');
+    const sr=document.getElementById('step-rows-wrap');
     if(lw)lw.style.display=layersOuverts?'':'none';
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(hd)hd.style.display=layersOuverts?'':'none';
+    if(ri)ri.style.display=layersOuverts?'':'none';
+    if(sr)sr.style.display=layersOuverts?'':'none';
     btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
     btnVolet.classList.toggle('open',layersOuverts);
     updateViewModeBar();
@@ -5178,9 +5182,13 @@ function buildGrooveSection(){
       const lw=document.getElementById('layers-wrap');
       const cv=document.getElementById('circle-view');
       const hd=document.querySelector('.hdivider');
+      const ri=document.getElementById('rhythm-info-wrap');
+      const sr=document.getElementById('step-rows-wrap');
       if(lw)lw.style.display=layersOuverts?'':'none';
       if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
       if(hd)hd.style.display=layersOuverts?'':'none';
+      if(ri)ri.style.display=layersOuverts?'':'none';
+      if(sr)sr.style.display=layersOuverts?'':'none';
       btnVolet.textContent=layersOuverts?'Patterns ▼':'Patterns ▶';
       btnVolet.classList.toggle('open',layersOuverts);
       updateViewModeBar();
