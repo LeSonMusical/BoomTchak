@@ -290,22 +290,26 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
 .btn-volet-groove:hover,.btn-volet-groove.open{color:#6B4C10 !important}
-/* Groove bar redesign v3.16.11 — layout 2 lignes */
+/* Groove bar redesign v3.16.12 — layout 2 lignes, nom centré */
 .groove-header{display:flex;flex-direction:column;border-radius:4px;margin-bottom:4px;overflow:hidden}
-.groove-l1{display:flex;align-items:center;gap:3px;padding:.25rem .5rem .15rem}
-.groove-l2{display:flex;align-items:center;gap:4px;padding:.1rem .5rem .2rem;border-top:1px solid rgba(200,150,26,.2)}
-.groove-name-btn{flex:1;text-align:center;font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;line-height:1.4}
+.groove-l1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:.25rem .4rem .15rem;gap:0}
+.groove-l1-left{display:flex;align-items:center;gap:3px;justify-content:flex-start}
+.groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
+.groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+.groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem;border-top:1px solid rgba(200,150,26,.15)}
+.groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
-.groove-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;color:#9A7020;padding:2px 5px;flex-shrink:0;opacity:.6;line-height:1;border-radius:3px}
+.groove-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;color:#9A7020;padding:2px 4px;flex-shrink:0;opacity:.6;line-height:1;border-radius:3px}
 .groove-nav-btn:hover{opacity:1;background:rgba(200,150,26,.12)}
-.groove-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#C8961A;padding:2px 4px;flex-shrink:0;opacity:.3;line-height:1;margin-left:2px}
+.groove-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#C8961A;padding:2px 3px;flex-shrink:0;opacity:.3;line-height:1}
 .groove-collapse-btn:hover{opacity:.7}
-.groove-fam-btn{background:transparent;border:none;cursor:pointer;font-size:10px;font-style:italic;color:#9A7020;padding:1px 3px;flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
+.groove-fam-btn{background:transparent;border:none;cursor:pointer;font-size:10px;font-style:italic;color:#9A7020;padding:1px 3px;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
 .groove-fam-btn:hover{opacity:1}
-.groove-view-sep{color:#C8961A;opacity:.35;padding:0 3px;flex-shrink:0;font-size:14px;line-height:1;user-select:none}
-.groove-view-bar{display:flex;align-items:center;gap:3px;flex-shrink:0}
-.groove-l1 .btn-dice-rng{display:inline-flex;opacity:.55}
+.groove-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
+/* Barre de vue — top du canvas (circle) ou top des step rows (linear) */
+#canvas-view-bar{display:none;position:absolute;top:3px;left:0;right:0;justify-content:center;align-items:center;gap:4px;z-index:5;padding:2px 6px;pointer-events:auto}
+#linear-view-bar{display:none;align-items:center;gap:4px;padding:2px 0 4px}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
@@ -971,7 +975,7 @@ body.dark-mode #view-mode-bar{border-left-color:#8B6914}
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
 /* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A;position:relative}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
@@ -1210,9 +1214,10 @@ body.dark-mode .groove-nav-btn:hover{color:#C8961A}
 body.dark-mode .groove-collapse-btn{color:#A07830}
 body.dark-mode .groove-fam-btn{color:#A07830}
 body.dark-mode .groove-fam-btn:hover{color:#C8961A}
-body.dark-mode .groove-view-sep{color:#8B6914}
-body.dark-mode .groove-l2{border-top-color:rgba(139,105,20,.3)}
+body.dark-mode .groove-l2{border-top-color:rgba(139,105,20,.2)}
 body.dark-mode .groove-header{background:#2C2710;border-bottom-color:#3E3518;border-left-color:#8B6914}
+body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
+body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .btn-volet-band{color:#444 !important}
 body.dark-mode .btn-volet-band:hover,body.dark-mode .btn-volet-band.open{color:#4A7FA5 !important}
 body.dark-mode .btn-volet-encyclo{color:#444 !important}
@@ -1304,7 +1309,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.11</span>
+    <span class="app-version">v3.16.12</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1578,13 +1583,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
   <div id="view-mode-bar" style="display:none"></div>
   <!-- Vue Pas (step sequencer) — row2 de chaque layer déplacé ici via _moveRow2ToStepView -->
-  <div id="step-rows-wrap"></div>
+  <div id="step-rows-wrap"><div id="linear-view-bar"></div></div>
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
+    <div id="canvas-view-bar"></div>
     <canvas id="rhythm-canvas"></canvas>
     <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
     <div id="measure-page-indicator" style="display:none">
@@ -5130,47 +5136,50 @@ function buildGrooveSection(){
   }
   refreshGrooveClass();
 
-  // ── Ligne 1 : ◀ [NOM GROOVE] ▶ 🎲 ˅ ──────────────────────────────────
+  // ── Ligne 1 : [🎲] | [◀ NOM ▶] | [💾 i ˅]  (grille 1fr auto 1fr) ──────
   const l1=document.createElement('div');
   l1.className='groove-l1';
 
+  // Groupe gauche : dé
+  const gLeft=document.createElement('div');gLeft.className='groove-l1-left';
+  const btnDiceGroove=document.createElement('button');
+  btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
+  gLeft.appendChild(btnDiceGroove);
+
+  // Groupe centre : ◀ nom ▶
+  const gCenter=document.createElement('div');gCenter.className='groove-l1-center';
   const btnPrev=document.createElement('button');
   btnPrev.className='groove-nav-btn';btnPrev.id='groove-nav-prev';btnPrev.textContent='◀';btnPrev.title='Groove précédent';
   const groovePresetBtn=document.createElement('button');
   groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='groove-name-btn';
   const btnNext=document.createElement('button');
   btnNext.className='groove-nav-btn';btnNext.id='groove-nav-next';btnNext.textContent='▶';btnNext.title='Groove suivant';
-  const btnDiceGroove=document.createElement('button');
-  btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
+  gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);
+
+  // Groupe droit : 💾 i ˅
+  const gRight=document.createElement('div');gRight.className='groove-l1-right';
+  const saveBtnGroove=document.createElement('button');
+  saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
+  const btnI=document.createElement('button');
+  btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   const btnCollapse=document.createElement('button');
   btnCollapse.className='groove-collapse-btn btn-volet-groove'+(layersOuverts?' open':'');
   btnCollapse.id='groove-collapse';
   btnCollapse.textContent=layersOuverts?'˅':'˄';
   btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+  gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);gRight.appendChild(btnCollapse);
 
-  l1.appendChild(btnPrev);l1.appendChild(groovePresetBtn);l1.appendChild(btnNext);
-  l1.appendChild(btnDiceGroove);l1.appendChild(btnCollapse);
+  l1.appendChild(gLeft);l1.appendChild(gCenter);l1.appendChild(gRight);
   header.appendChild(l1);
 
-  // ── Ligne 2 : [famille] ··· [💾][i] | [vue] ───────────────────────────
+  // ── Ligne 2 : [famille seulement] ─────────────────────────────────────
   const l2=document.createElement('div');
   l2.className='groove-l2';l2.id='groove-l2';
   if(!layersOuverts)l2.style.display='none';
 
   const btnFam=document.createElement('button');
   btnFam.className='groove-fam-btn';btnFam.id='groove-fam-btn';
-  const spacer=document.createElement('span');spacer.style.cssText='flex:1;min-width:0';
-  const saveBtnGroove=document.createElement('button');
-  saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
-  const btnI=document.createElement('button');
-  btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
-  const viewSep=document.createElement('span');
-  viewSep.className='groove-view-sep';viewSep.textContent='|';
-  const viewBar=document.createElement('div');
-  viewBar.className='groove-view-bar';viewBar.id='groove-view-bar';
-
-  l2.appendChild(btnFam);l2.appendChild(spacer);l2.appendChild(saveBtnGroove);
-  l2.appendChild(btnI);l2.appendChild(viewSep);l2.appendChild(viewBar);
+  l2.appendChild(btnFam);
   header.appendChild(l2);
   cont.appendChild(header);
 
@@ -8374,13 +8383,18 @@ function _applyView(){
   }
 }
 
-// ── updateViewModeBar() : reconstruit les boutons contextuels dans groove-l2 ──
+// ── updateViewModeBar() : reconstruit les boutons de vue (top canvas ou top step-rows) ──
 function updateViewModeBar(){
-  const bar = document.getElementById('groove-view-bar');
-  if(!bar) return;
-  bar.innerHTML='';
-  if(!layersOuverts) return;
   const isCircle = viewShape === 'circle';
+  const circleBar = document.getElementById('canvas-view-bar');
+  const linearBar = document.getElementById('linear-view-bar');
+  // Vider les deux barres
+  if(circleBar){ circleBar.innerHTML=''; circleBar.style.display='none'; }
+  if(linearBar){ linearBar.innerHTML=''; linearBar.style.display='none'; }
+  if(!layersOuverts) return;
+  const bar = isCircle ? circleBar : linearBar;
+  if(!bar) return;
+  bar.style.display='flex';
 
   // Boutons contextuels (en premier)
   const opts = isCircle
