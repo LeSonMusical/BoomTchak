@@ -92,9 +92,9 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;color:#888;transition:color .15s;line-height:1}
 .btn-metro-main.on{color:#444}
 /* Bouton Pulse (panel toggle) */
-.btn-metro-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:1px solid transparent;border-radius:4px;color:#999;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
-.btn-metro-volet:hover{color:#555}
-.btn-metro-volet.open{color:#2A6A50;background:rgba(58,140,110,.12);border-color:rgba(58,140,110,.28);font-weight:700}
+.btn-metro-volet{padding:1px 5px 2px;cursor:pointer;font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:transparent;border:1px solid transparent;border-radius:3px;color:#aaa;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
+.btn-metro-volet:hover{color:#3A8C6E}
+.btn-metro-volet.open{color:#fff;background:#3A8C6E;border-color:#2A6A50}
 #btn-metro-volets-group{display:flex;gap:0}
 .metro-3col-sw .metro-3col-lbl{text-align:center}
 .pm-item.pm-pressing{background:rgba(107,95,165,.12)!important;transform:scale(.98);transition:transform .1s}
@@ -242,8 +242,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-acc-gauge::-moz-range-thumb{width:0;height:0;background:transparent;border:none}
 .metro-acc-gauge:disabled{opacity:.22;cursor:pointer}
 /* Tap layout */
-.metro-tap-btn-row{display:flex;align-items:center;gap:6px;padding:.18rem 0;justify-content:center}
+.metro-tap-btn-row{display:flex;align-items:center;padding:.18rem 0;justify-content:center;position:relative}
 .metro-tap-btn-row .btn-tap-tempo{flex:0 0 auto;min-width:180px}
+.metro-tap-btn-row .tap-count{position:absolute;right:6px;pointer-events:none}
 /* Tempo 2-row grid */
 .metro-tempo-grid{display:grid;grid-template-columns:auto 1fr 26%;gap:3px 6px;align-items:center;justify-items:center;padding:.1rem 0 .05rem}
 /* Métrique 3-col grid */
@@ -1076,9 +1077,9 @@ body.dark-mode .temps-slider::-moz-range-track{background:#2A4A40}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#5AAA8A;border-color:#1A2820}
 body.dark-mode .btn-metro-main{background:transparent;color:#4A8A70}
 body.dark-mode .btn-metro-main.on{color:#70B898}
-body.dark-mode .btn-metro-volet{color:#3A7060}
+body.dark-mode .btn-metro-volet{color:#3A5A50}
 body.dark-mode .btn-metro-volet:hover{color:#5AAA8A}
-body.dark-mode .btn-metro-volet.open{color:#80C8A8;background:rgba(58,140,110,.2);border-color:rgba(70,160,120,.3);font-weight:700}
+body.dark-mode .btn-metro-volet.open{color:#fff;background:#2A6A50;border-color:#1A5040}
 body.dark-mode .metro-panel{border-left-color:#2A4A40}
 body.dark-mode .metro-row-lbl{color:#555}
 body.dark-mode .btn-metro-on{background:#1A2820;color:#5AAA8A;border-color:#2A4A40}
@@ -1274,7 +1275,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.5</span>
+    <span class="app-version">v3.16.6</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3385,8 +3386,10 @@ function updateGrooveNameTopBar(){
   let name = g ? (g.nom || '—') : '—';
   if(g && g.source==='teacher') name += ' ✎';
   if(g && g.source==='pending') name += ' 👁';
-  if(grooveDirty || metroDirty || bandDirty) name += ' ✎';
+  const isDirty = grooveDirty || metroDirty || bandDirty;
+  if(isDirty) name += ' modifié';
   btn.textContent = name;
+  btn.style.fontStyle = isDirty ? 'italic' : '';
 }
 
 function _updateAuthStatusIcon(){
@@ -5005,12 +5008,12 @@ function buildBandSection(){
   bar.appendChild(_spacerBand);
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-band'+(instrOuvert?' open':'');
-  btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+  btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
   btnVolet.addEventListener('click',()=>{
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+    btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
     btnVolet.classList.toggle('open',instrOuvert);
   });
   bar.appendChild(btnVolet);
@@ -5019,7 +5022,7 @@ function buildBandSection(){
       instrOuvert=!instrOuvert;
       const bc=document.getElementById('band-content');
       if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-      btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+      btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
       btnVolet.classList.toggle('open',instrOuvert);
     }
   });
@@ -5627,6 +5630,7 @@ function buildLayers(){
       state[li].pattern=[...patClipboard];nPas.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();_refreshPadPreview();_speedMark();
+      showToast('Pattern collé ⇩','info');
       patClipboard=null;_layerCPRefreshers.forEach(f=>f());
     });
 
@@ -6067,7 +6071,6 @@ function pspDoOverwriteGroove(){
 }
 
 function pspDoSaveNewGroove(){
-  if(!authProfile){ showToast('Connexion requise pour créer un groove','warn'); closePatSavePop(); return; }
   const btn = _pspBtn;
   const groove = getGroove(_pspGrooveId); if(!groove){ closePatSavePop(); return; }
   const nom = document.getElementById('psp-name-input').value.trim() || groove.nom+' (copie)';
@@ -8372,7 +8375,7 @@ function _navSetSons(open){
   if(bar){
     bar.classList.toggle('visible',open);
     const btnInstr=bar.querySelector('.btn-volet-band');
-    if(btnInstr){btnInstr.textContent=instrOuvert?'Instru ▼':'Instru ▶';btnInstr.classList.toggle('open',instrOuvert);}
+    if(btnInstr){btnInstr.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';btnInstr.classList.toggle('open',instrOuvert);}
   }
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('active',open);
