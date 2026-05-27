@@ -340,6 +340,8 @@ body.dark-mode .sig-edit-val{color:#666}
 .encyclo-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#777;padding:2px 3px;flex-shrink:0;opacity:.3;line-height:1}
 .encyclo-collapse-btn:hover{opacity:.7}
 .encyclo-cat-lbl{font-size:10px;font-style:italic;color:#777;padding:1px 3px;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
+.encyclo-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
+#encyclo-panel .encyclo-l1-right{padding-right:44px}
 
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;align-items:flex-start;gap:0}
@@ -1017,7 +1019,7 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A;margin-top:10px}
 body.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
 body.dark-mode.view-circle #rhythm-info-wrap,body.dark-mode.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
@@ -1329,7 +1331,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.14</span>
+    <span class="app-version">v3.16.15</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7921,7 +7923,7 @@ function drawCircles(){
       ctx.stroke();
     }
     // Numéros des temps en bordure extérieure
-    const rLabel = Math.min(rOuter + 16, H/2 - 3);
+    const rLabel = Math.min(rOuter + 10, H/2 - 3);
     ctx.textAlign='center'; ctx.textBaseline='middle';
     for(const {frac, beatNum, isFirst} of beatMarks){
       const a = -Math.PI/2 + 2*Math.PI * frac;
