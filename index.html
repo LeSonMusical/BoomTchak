@@ -308,7 +308,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-fam-btn:hover{opacity:1}
 .groove-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
 /* Barre de vue — top du canvas (circle) ou top des step rows (linear) */
-#canvas-view-bar{display:none;position:absolute;top:3px;left:0;right:0;justify-content:center;align-items:center;gap:4px;z-index:5;padding:2px 6px;pointer-events:auto}
+#canvas-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:3px 6px;flex-shrink:0}
 #linear-view-bar{display:none;align-items:center;gap:4px;padding:2px 0 4px}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
@@ -975,7 +975,7 @@ body.dark-mode #view-mode-bar{border-left-color:#8B6914}
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
 /* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A;position:relative}
+body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
@@ -1309,7 +1309,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.12</span>
+    <span class="app-version">v3.16.13</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7909,7 +7909,7 @@ function drawCircles(){
       ctx.stroke();
     }
     // Numéros des temps en bordure extérieure
-    const rLabel = Math.min(rOuter + 9, H/2 - 3);
+    const rLabel = Math.min(rOuter + 16, H/2 - 3);
     ctx.textAlign='center'; ctx.textBaseline='middle';
     for(const {frac, beatNum, isFirst} of beatMarks){
       const a = -Math.PI/2 + 2*Math.PI * frac;
@@ -8392,7 +8392,7 @@ function updateViewModeBar(){
   if(circleBar){ circleBar.innerHTML=''; circleBar.style.display='none'; }
   if(linearBar){ linearBar.innerHTML=''; linearBar.style.display='none'; }
   if(!layersOuverts) return;
-  const bar = isCircle ? circleBar : linearBar;
+  const bar = circleView ? circleBar : linearBar;
   if(!bar) return;
   bar.style.display='flex';
 
@@ -12442,18 +12442,21 @@ function attachEvents(){
     this.classList.toggle('on', metro.accentOn);
     renderMetroPatternViz(); _syncMetroVolDisabled();
     if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
+    if(circleView) drawCircles();
   });
   document.getElementById('mpv-tog-P').addEventListener('click', function() {
     metro.tempsOn = !metro.tempsOn;
     this.classList.toggle('on', metro.tempsOn);
     renderMetroPatternViz(); _syncMetroVolDisabled();
     if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
+    if(circleView) drawCircles();
   });
   document.getElementById('mpv-tog-p').addEventListener('click', function() {
     metro.subdivOn = !metro.subdivOn;
     this.classList.toggle('on', metro.subdivOn);
     renderMetroPatternViz(); _syncMetroVolDisabled();
     if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
+    if(circleView) drawCircles();
   });
   // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
   document.getElementById('metro-pattern-viz').addEventListener('click', e => {
@@ -12465,6 +12468,7 @@ function attachEvents(){
     currentSig.metroPattern[idx] = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
     setMetroDirty(true); updateMetroSaveBtn();
     renderMetroPatternViz();
+    if(circleView) drawCircles();
   });
   // ── L2 : Sauver preset → popover psp-box (même procédure que groove/pattern/band) ──
   document.getElementById('btn-metro-save').addEventListener('click', e => {
