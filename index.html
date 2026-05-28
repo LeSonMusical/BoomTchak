@@ -652,8 +652,10 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .groove-bar .btn-info-ico:hover{background:rgba(200,150,26,.15)}
 .groove-bar .btn-dice-rng{opacity:.65}
 .pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
-.pm-preset-dirty{border-color:#D85A30!important;color:#D85A30!important;}
-.pm-preset-dirty::before{content:'● ';}
+.pm-preset-dirty::before{content:'● ';color:#c0392b}
+.pm-preset-dirty::after{content:' modifié';font-size:9px;font-style:italic;color:#999}
+/* Groove : pseudo-éléments supprimés (gérés par updateGrooveNameTopBar) */
+#groove-preset-btn.pm-preset-dirty::before,#groove-preset-btn.pm-preset-dirty::after{content:none}
 /* Mode gérer / réordonner */
 .pm-mode-btn{background:none;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:13px;padding:2px 7px;color:#666;margin-right:4px;}
 .pm-mode-btn.active{background:var(--pm-ac,#4a3d8a);color:#fff;border-color:var(--pm-ac,#4a3d8a);}
@@ -1258,6 +1260,7 @@ body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{col
 body.dark-mode .groove-bar .btn-info-ico{border-color:#8B6914;color:#A07830}
 body.dark-mode .groove-bar .btn-info-ico:hover{background:rgba(139,105,20,.2)}
 body.dark-mode .groove-bar .pm-preset-btn{border-color:#8B6914;background:rgba(40,37,20,.8);color:#C8961A}
+body.dark-mode .pm-preset-dirty::after{color:#777}
 body.dark-mode .groove-name-btn{color:#C8961A}
 body.dark-mode .groove-name-btn:hover{color:#E8B030}
 body.dark-mode .groove-nav-btn{color:#A07830}
@@ -1360,7 +1363,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.30</span>
+    <span class="app-version">v3.16.31</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
