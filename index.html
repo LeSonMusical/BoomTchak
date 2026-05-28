@@ -34,15 +34,15 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0;color:#999;border-color:transparent;background:transparent}
+.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
 /* Bouton forme dans la barre de vues — toujours violet */
-.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #6B5FA5;background:#6B5FA5;color:#fff;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:700}
-.btn-view-shape:hover{background:#5a4f94;border-color:#5a4f94}
+.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #A07010;background:#C8961A;color:#fff;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:700}
+.btn-view-shape:hover{background:#A07010;border-color:#A07010}
 /* Barre de contrôle des vues (au-dessus du canvas) */
 #view-mode-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 8px;background:transparent;border-bottom:1px solid #e0ddd8;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
@@ -1021,6 +1021,7 @@ body.view-circle #section-encyclo{order:5}
 #rhythm-info-wrap{display:none}
 body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
 body.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
+body.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
 body.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
 body.dark-mode.view-circle #rhythm-info-wrap,body.dark-mode.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
@@ -1064,8 +1065,8 @@ body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
-body.dark-mode .btn-sig-top{color:#666;border-color:transparent;background:transparent}
-body.dark-mode .btn-view-shape{background:#5a4f94;border-color:#5a4f94;color:#fff}
+body.dark-mode .btn-sig-top{}
+body.dark-mode .btn-view-shape{background:#A07010;border-color:#8B6010;color:#fff}
 body.dark-mode #view-mode-bar{background:transparent;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
@@ -1332,7 +1333,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.17</span>
+    <span class="app-version">v3.16.18</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3936,10 +3937,10 @@ function openPresetModal(cfg){
       modeSearch.classList.toggle('active',open);
       if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
     });
-    // Groupe : [✎][☰][🔍][champ]
+    // Groupe : [☰][✎][🔍][champ] à gauche du titre
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
-    hdr.insertBefore(modeGroup,hclose);
+    modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    hdr.insertBefore(modeGroup,htitle);
     // Exposer _addLongPress pour buildItems
     sheet._addLongPress=_addLongPress;
   }
@@ -8423,28 +8424,35 @@ function updateViewModeBar(){
   if(!bar) return;
   bar.style.display='flex';
 
-  // Boutons contextuels (en premier)
+  // Boutons contextuels + bouton forme jaune entre les deux
   const opts = isCircle
     ? [['pattern','Motif'],['measure','Mesure']]
     : [['pattern','Pas'],['cycle','Cycle']];
   const curCycle = isCircle ? viewCycleCircle : viewCycleLinear;
-  opts.forEach(([val,label])=>{
-    const btn=document.createElement('button');
-    btn.className='circle-mode-btn'+(curCycle===val?' active':'');
-    btn.textContent=label;
-    btn.addEventListener('click',()=>setViewCycle(val));
-    bar.appendChild(btn);
-  });
 
-  // Bouton forme ◎/☰ tout à droite, toujours violet
+  // 1er bouton mode (Motif ou Pas)
+  const btn0=document.createElement('button');
+  btn0.className='circle-mode-btn'+(curCycle===opts[0][0]?' active':'');
+  btn0.textContent=opts[0][1];
+  btn0.addEventListener('click',()=>setViewCycle(opts[0][0]));
+  bar.appendChild(btn0);
+
+  // Bouton forme ◎/☰ jaune Groove, entre les deux modes
   const btnShape=document.createElement('button');
   btnShape.id='btn-view';
   btnShape.className='btn-view-shape';
   btnShape.textContent=isCircle?'◎':'☰';
   btnShape.title=isCircle?'Vue circulaire':'Vue linéaire';
-  btnShape.style.marginLeft='10px';
+  btnShape.style.margin='0 4px';
   btnShape.addEventListener('click',()=>setView(isCircle?'linear':'circle'));
   bar.appendChild(btnShape);
+
+  // 2e bouton mode (Mesure ou Cycle)
+  const btn1=document.createElement('button');
+  btn1.className='circle-mode-btn'+(curCycle===opts[1][0]?' active':'');
+  btn1.textContent=opts[1][1];
+  btn1.addEventListener('click',()=>setViewCycle(opts[1][0]));
+  bar.appendChild(btn1);
 }
 
 // ── Fractions Unicode lisibles (demi, tiers, quarts…) ──
@@ -12402,7 +12410,7 @@ function attachEvents(){
   document.getElementById('sig-sel-btn').addEventListener('click',()=>{
     openPresetModal({
       type:'sig', currentId:currentSig?.id||'4/4',
-      label:'Signature', accent:'#2A6A50', bg:'#EDF7F4', compact:true,
+      label:'Métrique', accent:'#2A6A50', bg:'#EDF7F4', compact:true,
       onSelect:(id)=>changeSig(id)
     });
   });
@@ -12758,7 +12766,7 @@ function attachEvents(){
   document.getElementById('btn-sig-top')?.addEventListener('click', ()=>{
     openPresetModal({
       type:'sig', currentId:currentSig?.id||'4/4',
-      label:'Signature', accent:'#2A6A50', bg:'#EDF7F4', compact:true,
+      label:'Métrique', accent:'#2A6A50', bg:'#EDF7F4', compact:true,
       famFilter:'all',
       onSelect:(id)=>changeSig(id)
     });
