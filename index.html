@@ -41,8 +41,8 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .btn-top.active{background:#d0cec7;border-color:#888;color:#1a1a18}
 .btn-tempo-display{font-size:11px;min-width:64px;letter-spacing:.02em;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
 /* Bouton forme dans la barre de vues — toujours violet */
-.btn-view-shape{font-size:14px;padding:2px 8px;border-radius:8px;border:1px solid #A07010;background:#C8961A;color:#fff;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:700}
-.btn-view-shape:hover{background:#A07010;border-color:#A07010}
+.btn-view-shape{font-size:13px;padding:2px 6px;border-radius:8px;border:1px solid #C0C8D0;background:#F5F5F5;color:#555;cursor:pointer;transition:background .12s;flex-shrink:0;line-height:1.4;font-weight:600}
+.btn-view-shape:hover{background:#e0e8f0;border-color:#a0b8c8}
 /* Barre de contrôle des vues (au-dessus du canvas) */
 #view-mode-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 8px;background:transparent;border-bottom:1px solid #e0ddd8;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
@@ -981,10 +981,10 @@ body.view-circle .hdivider{display:none}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
 #view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #C8961A;padding-left:4px;background:transparent}
 
-.circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.6;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
-.circle-mode-btn.active{opacity:1;background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+.circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
+.circle-mode-btn.active{opacity:1;background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
-body.dark-mode .circle-mode-btn.active{background:#6B5FA5;color:#fff;border-color:#6B5FA5}
+body.dark-mode .circle-mode-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
 body.dark-mode #view-mode-bar{border-left-color:#8B6914}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
@@ -1066,7 +1066,7 @@ body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
 body.dark-mode .btn-sig-top{}
-body.dark-mode .btn-view-shape{background:#A07010;border-color:#8B6010;color:#fff}
+body.dark-mode .btn-view-shape{background:#1A2820;border-color:#2A4A40;color:#5AAA8A}
 body.dark-mode #view-mode-bar{background:transparent;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
 body.dark-mode .btn-top{background:#2a2a28;border-color:#444440;color:#aaa}
@@ -1333,7 +1333,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.18</span>
+    <span class="app-version">v3.16.19</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3937,10 +3937,13 @@ function openPresetModal(cfg){
       modeSearch.classList.toggle('active',open);
       if(open){searchInp.focus();}else{searchInp.value='';searchQuery='';buildItems();}
     });
-    // Groupe : [☰][✎][🔍][champ] à gauche du titre
+    // Groupe gauche [☰][✎] à gauche du titre ; groupe droit [🔍][champ] à droite du titre
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
+    modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeManage);
     hdr.insertBefore(modeGroup,htitle);
+    const searchGroup=document.createElement('div');searchGroup.className='pm-mode-group';
+    searchGroup.appendChild(modeSearch);searchGroup.appendChild(searchInp);
+    hdr.insertBefore(searchGroup,hclose);
     // Exposer _addLongPress pour buildItems
     sheet._addLongPress=_addLongPress;
   }
@@ -3964,9 +3967,13 @@ function openPresetModal(cfg){
       modeManage.classList.toggle('active',manageMode);
       buildFamCol();buildItems();
     });
+    // Encyclo : [✎] à gauche du titre, [🔍][champ] à droite du titre
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeManage);modeGroup.appendChild(modeSearch);modeGroup.appendChild(searchInp);
-    hdr.insertBefore(modeGroup,hclose);
+    modeGroup.appendChild(modeManage);
+    hdr.insertBefore(modeGroup,htitle);
+    const searchGroup=document.createElement('div');searchGroup.className='pm-mode-group';
+    searchGroup.appendChild(modeSearch);searchGroup.appendChild(searchInp);
+    hdr.insertBefore(searchGroup,hclose);
   }
 
   function getFams(){
@@ -7769,7 +7776,14 @@ function resizeCanvas(){
     const mpiEl = document.getElementById('measure-page-indicator');
     const barEl = document.getElementById('canvas-view-bar');
     const barH = (barEl && barEl.offsetHeight > 4) ? barEl.offsetHeight : 28;
-    if(mpiEl) mpiEl.style.top = Math.round(barH + (topPad + 12) * scale) + 'px';
+    if(mpiEl){
+      // Aligner le centre visuel des mpi-layers avec les canvas label centers (textBaseline='middle')
+      // Les items flex ont lineHeight≈14.4px → centre visuel est à +7px du top de l'item
+      mpiEl.style.top = Math.round(barH + (topPad + 12) * scale - 7) + 'px';
+      // Ajuster le gap pour que chaque layer coïncide avec la y canvas (22px*scale par layer)
+      const mpiLayers = mpiEl.querySelector('.mpi-layers');
+      if(mpiLayers) mpiLayers.style.gap = Math.max(1, Math.round(22*scale - 14)) + 'px';
+    }
   }
   drawCircles();
 }
@@ -7968,14 +7982,14 @@ function drawCircles(){
       const topPad = Math.round(cy - (radii[2]+dotR+6));
       const y1 = topPad + 12 + li * 22;
       const y2 = y1 + 11;
-      ctx.beginPath(); ctx.arc(5, y1, 3.5, 0, 2*Math.PI);
+      ctx.beginPath(); ctx.arc(11, y1, 3.5, 0, 2*Math.PI);
       ctx.fillStyle = col.fill; ctx.fill();
       ctx.font = 'bold 9px sans-serif';
       ctx.fillStyle = isDark2 ? col.fill : col.stroke;
-      ctx.fillText(n + 'p ' + unit, 11, y1);
+      ctx.fillText(n + 'p ' + unit, 17, y1);
       ctx.font = '9px sans-serif';
       ctx.fillStyle = isDark2 ? '#aaa' : '#666';
-      ctx.fillText(durStr, 11, y2);
+      ctx.fillText(durStr, 17, y2);
     });
   }
 
