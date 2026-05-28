@@ -853,16 +853,16 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
 .rms-btn.active-rpl,.rms-btn.active-ovr{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
-.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:56px;min-width:68px;padding:0 16px;border:3px solid #C8961A;border-radius:14px;background:rgba(200,150,26,.08);color:#C8961A;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:48px;min-width:64px;padding:0 16px;border:3px solid #C8961A;border-radius:14px;background:rgba(200,150,26,.08);color:#C8961A;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .rms-retake:active{background:rgba(200,150,26,.22)}
-.rec-mode-strip.frozen .rms-btn{pointer-events:none}
-.rec-mode-strip.frozen .rms-btn:not(.active-rpl):not(.active-ovr){opacity:.22}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 /* Replace mode : step passé sans note → effacé visuellement */
 .step.rec-past{opacity:.18 !important}
 /* Overdub mode : note tapée cette session → clignotement */
 @keyframes rec-ovr-new{0%,100%{opacity:1}50%{opacity:.25}}
 .step.rec-new{animation:rec-ovr-new .65s ease-in-out infinite}
+@keyframes rec-new-exit{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.5)}}
+.step.rec-new-exit{animation:rec-new-exit .15s ease-in forwards!important}
 .btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:1px 4px;line-height:1.2;opacity:.6;color:var(--cb);flex-shrink:0}
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:12px}
@@ -1348,7 +1348,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.26</span>
+    <span class="app-version">v3.16.27</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3222,9 +3222,8 @@ function _updateGarderEff(){
   const anyEverTapped=recLayers.some(li=>state[li].hasEverTapped);
   const frozen=recLayers.length>0&&anyEverTapped;
   document.body.classList.toggle('rec-tapped',frozen);
-  const strip=document.getElementById('rec-mode-strip');
-  if(strip)strip.classList.toggle('frozen',frozen);
 }
+
 
 function _applyRecModeUI(){
   if(recLayers.length===0)return;
@@ -3250,11 +3249,13 @@ function retakeRec(){
     // Signal 3 : micro-fade sur les steps avant rebuild
     const stepsEl=document.getElementById('steps-'+LAYERS[li].id);
     if(stepsEl){
-      stepsEl.style.transition='opacity .12s';stepsEl.style.opacity='0';
+      // Anim sortie sur les steps capturés (clignotants)
+      stepsEl.querySelectorAll('.rec-new').forEach(s=>s.classList.add('rec-new-exit'));
+      stepsEl.style.transition='opacity .15s';stepsEl.style.opacity='0';
       setTimeout(()=>{
         buildStepsDOM(li,state[li].wrapped);
         stepsEl.style.opacity='';stepsEl.style.transition='';
-      },110);
+      },140);
     } else {
       buildStepsDOM(li,state[li].wrapped);
     }
@@ -3368,7 +3369,6 @@ function stopRec(li,validate){
     document.getElementById('play-btns').classList.remove('rec-mode');
     const _pd=document.getElementById('play-drawer');
     _pd.classList.remove('rec-mode','rec-mode-rpl','rec-mode-ovr');
-    const _strip=document.getElementById('rec-mode-strip');if(_strip)_strip.classList.remove('frozen');
     _updateBtnJouerRec();
     _updateGarderEff(); // retire body.rec-tapped
     if(!_recPrevJouerOpen){
