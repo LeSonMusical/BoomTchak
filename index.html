@@ -563,7 +563,7 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 body.rec-tapped .nav-pair{display:none}
 @keyframes cap-fade-in{from{opacity:0}to{opacity:1}}
 body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
-body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val,body.rec-tapped .rms-retake{animation:cap-fade-in .6s ease-out both}
+body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val,body.rec-tapped .rms-retake{animation:cap-fade-in 1.8s ease-out both}
 body.rec-tapped .rms-retake{visibility:visible}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -1360,7 +1360,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.29</span>
+    <span class="app-version">v3.16.30</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1645,15 +1645,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <canvas id="rhythm-canvas"></canvas>
     <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
     <div id="measure-page-indicator" style="display:none">
-      <div class="mpi-layers">
-        <span class="mpi-layer c-low"   id="mpi-l0"></span>
-        <span class="mpi-layer c-high"  id="mpi-l1"></span>
-        <span class="mpi-layer c-noise" id="mpi-l2"></span>
-      </div>
       <div class="mpi-nav" id="mpi-nav-row">
         <button class="mpi-btn" id="mpi-prev">◀</button>
         <span id="mpi-label">Mes 1</span>
         <button class="mpi-btn" id="mpi-next">▶</button>
+      </div>
+      <div class="mpi-layers">
+        <span class="mpi-layer c-low"   id="mpi-l0"></span>
+        <span class="mpi-layer c-high"  id="mpi-l1"></span>
+        <span class="mpi-layer c-noise" id="mpi-l2"></span>
       </div>
     </div>
   </div>
@@ -3575,9 +3575,15 @@ function updateGrooveNameTopBar(){
   if(g && g.source==='teacher') name += ' ✎';
   if(g && g.source==='pending') name += ' 👁';
   const isDirty = grooveDirty || metroDirty || bandDirty;
-  if(isDirty) name += ' modifié';
-  btn.textContent = name;
-  btn.style.fontStyle = isDirty ? 'italic' : '';
+  if(isDirty){
+    const esc=name.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    btn.innerHTML='<span style="color:#c0392b">&#9679; </span>'
+      +'<span style="color:#C8961A">'+esc+'</span>'
+      +'<span style="font-size:9px;font-style:italic;color:#999;margin-left:3px"> modifié</span>';
+  } else {
+    btn.textContent=name;
+  }
+  btn.style.fontStyle='';
   // Nom de famille (ligne 2)
   const famBtn = document.getElementById('groove-fam-btn');
   if(famBtn){
