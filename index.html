@@ -696,6 +696,8 @@ body.dark-mode .pm-fam-section-hdr{color:#666;border-color:#2a2a28;}
 .pm-fam-manage-row.pm-fam-dragging{opacity:.35;}
 .pm-fam-manage-row.pm-fam-drag-over{border-top:3px solid var(--pm-ac,#4a3d8a);background:rgba(74,61,138,.07);}
 .pm-mode-group{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+.pm-mode-reorder{font-size:9px!important;padding:1px 4px!important;opacity:.55}
+.pm-mode-reorder.active{opacity:1}
 .pm-header-search{font-size:11px;border:1px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 8px;background:#fff;display:none;width:min(180px,45vw);outline:none;}
 .pm-header-search.pm-search-open{display:block;}
 .pm-header-search:focus{border-color:var(--pm-ac,#4a3d8a);}
@@ -1333,7 +1335,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.19</span>
+    <span class="app-version">v3.16.20</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3843,7 +3845,7 @@ function openPresetModal(cfg){
   // Boutons mode gérer/réordonner dans le header (groove, pattern, sig et band)
   if(cfg.type==='groove'||cfg.type==='pattern'||cfg.type==='sig'||cfg.type==='band'||cfg.type==='sound'){
     const modeManage=document.createElement('button');modeManage.className='pm-mode-btn';modeManage.title='Gérer';modeManage.textContent='✎';
-    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn';modeReorder.title='Réordonner';modeReorder.textContent='☰';
+    const modeReorder=document.createElement('button');modeReorder.className='pm-mode-btn pm-mode-reorder';modeReorder.title='Réordonner';modeReorder.textContent='☰';
     // Fonction toggle réordonner (appelée par appui long sur item OU bouton ☰)
     const _toggleReorder=()=>{
       reorderMode=!reorderMode;if(reorderMode)manageMode=false;paletteTarget=null;
@@ -3872,6 +3874,7 @@ function openPresetModal(cfg){
         _lt=setTimeout(()=>{
           _lt=null;
           el.classList.remove('pm-pressing');
+          if(authProfile?.role!=='mx')return;
           reorderMode=true;manageMode=false;paletteTarget=null;
           modeManage.classList.toggle('active',false);
           modeReorder.classList.toggle('active',true);
@@ -3939,7 +3942,8 @@ function openPresetModal(cfg){
     });
     // Groupe gauche [☰][✎] à gauche du titre ; groupe droit [🔍][champ] à droite du titre
     const modeGroup=document.createElement('div');modeGroup.className='pm-mode-group';
-    modeGroup.appendChild(modeReorder);modeGroup.appendChild(modeManage);
+    if(authProfile?.role==='mx')modeGroup.appendChild(modeReorder);
+    modeGroup.appendChild(modeManage);
     hdr.insertBefore(modeGroup,htitle);
     const searchGroup=document.createElement('div');searchGroup.className='pm-mode-group';
     searchGroup.appendChild(modeSearch);searchGroup.appendChild(searchInp);
@@ -4101,6 +4105,7 @@ function openPresetModal(cfg){
   function cancelPalette(){paletteTarget=null;if(_paletteOutHandler){itemsWrap.removeEventListener('click',_paletteOutHandler);_paletteOutHandler=null;}buildFamCol();buildItems();}
 
   function pmNewFamille(){
+    if(authProfile?.role!=='mx'){showToast('Seul un MX peut créer une famille école','warn');return;}
     const nom=prompt('Nom de la nouvelle famille :');if(!nom?.trim())return;
     if(cfg.type==='sig'){
       const fam={id:'mfam_'+Date.now(),nom:nom.trim(),source:'school',ordre:(packCours.metroFamilles||[]).length};
@@ -4141,6 +4146,7 @@ function openPresetModal(cfg){
     if(cfg.type==='sound'){
       const count=(packCours.soundPresets||[]).filter(sp=>(sp.familles_ids||[]).includes(fam.id)).length;
       if(fam.source==='school'){
+        if(authProfile?.role!=='mx'){showToast('Seul un MX peut supprimer une famille école','warn');return;}
         // Famille école → suppression différée via section Publier
         const msg=count>0?`Marquer "${fam.nom}" pour suppression ?\n(utilisée par ${count} preset(s))`:`Marquer "${fam.nom}" pour suppression ?`;
         if(!confirm(msg))return;
@@ -4155,6 +4161,7 @@ function openPresetModal(cfg){
       saveToStorage();buildFamCol();buildItems();return;
     }
     if(cfg.type==='sig'){
+      if(authProfile?.role!=='mx'){showToast('Seul un MX peut supprimer une famille métrique','warn');return;}
       const count=metroPresets.filter(p=>(p.familles_ids||[]).includes(fam.id)).length;
       if(!confirm(`Supprimer la famille "${fam.nom}"${count?' (utilisée par '+count+' preset(s))':''}?`))return;
       packCours.metroFamilles=(packCours.metroFamilles||[]).filter(f=>f.id!==fam.id);
@@ -4168,6 +4175,7 @@ function openPresetModal(cfg){
     if(cfg.type==='band'){
       const count=(packCours.bands||[]).filter(b=>(b.familles||[]).includes(fam.id)).length;
       if(fam.source==='school'){
+        if(authProfile?.role!=='mx'){showToast('Seul un MX peut supprimer une famille école','warn');return;}
         const msg=count>0?`Marquer "${fam.nom}" pour suppression ?\n(utilisée par ${count} band(s))`:`Marquer "${fam.nom}" pour suppression ?`;
         if(!confirm(msg))return;
         fam._deletePending=true;
@@ -4186,6 +4194,7 @@ function openPresetModal(cfg){
   }
 
   function pmDropFam(srcId,tgtId){
+    if(authProfile?.role!=='mx'){showToast('Seul un MX peut réordonner les familles','warn');return;}
     if(cfg.type==='sig'){
       const fams=packCours.metroFamilles||[];
       const si=fams.findIndex(f=>f.id===srcId);if(si<0)return;
@@ -4244,6 +4253,7 @@ function openPresetModal(cfg){
       const newNom=nameEl.textContent.trim();
       if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
       if(newNom===nameEl.dataset.orig)return;
+      if(fam.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer une famille école','warn');return;}
       fam.nom=newNom;
       // Mise à jour dans packCours (band ou sound selon table)
       const arr=table==='band_familles'?(packCours.bandFamilles||[]):(packCours.soundFamilles||[]);
@@ -4270,6 +4280,7 @@ function openPresetModal(cfg){
       const newNom=nameEl.textContent.trim();
       if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
       if(newNom===nameEl.dataset.orig)return;
+      if(authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer une famille métrique','warn');return;}
       fam.nom=newNom;
       const cp=(packCours.metroFamilles||[]).find(f=>f.id===fam.id);
       if(cp)cp.nom=newNom;
@@ -4347,10 +4358,10 @@ function openPresetModal(cfg){
         famCol.style.touchAction='';
         bfams.forEach(f=>{
           const row=document.createElement('div');row.className='pm-fam-manage-row'+(famFilter===f.id?' pm-fam-active':'');
-          if(reorderMode){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
+          if(reorderMode&&(isMx||f.source!=='school')){row.setAttribute('draggable','true');row.dataset.famId=f.id;}
           const nameEl=document.createElement('span');nameEl.className='pm-fam-name-el';nameEl.textContent=f.nom;
           nameEl.addEventListener('click',()=>_setFam(f.id));row.appendChild(nameEl);
-          if(manageMode){
+          if(manageMode&&(isMx||f.source!=='school')){
             const renBtn=document.createElement('button');renBtn.className='pm-fam-ren-btn';renBtn.textContent='✎';renBtn.title='Renommer';
             renBtn.addEventListener('click',e=>{e.stopPropagation();_pmStartRenameFamille(nameEl,f,'sound_familles');});
             const delBtn=document.createElement('button');delBtn.className='pm-fam-del-btn';delBtn.textContent='🗑';delBtn.title='Supprimer';
@@ -4701,6 +4712,7 @@ function openPresetModal(cfg){
       if(!newNom){nameEl.textContent=nameEl.dataset.orig;return;}
       if(newNom===nameEl.dataset.orig)return;
       if(cfg.type==='sig'){
+        if(item.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer un preset métrique école','warn');return;}
         item.label=newNom;
         const cp=(packCours.metroPresets||[]).find(p=>p.id===item.id);
         if(cp)cp.label=newNom;
@@ -4710,11 +4722,13 @@ function openPresetModal(cfg){
         saveToStorage();buildSigSelector();buildItems();return;
       }
       if(cfg.type==='sound'){
+        if(item.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer un preset son école','warn');return;}
         item.nom=newNom;
         item.localDirty=true;item.localChangeType=item.localChangeType||'update';
         saveToStorage();buildPublishSection();buildSoundPanel();buildItems();return;
       }
       if(cfg.type==='band'){
+        if(item.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer un band école','warn');return;}
         item.nom=newNom;
         item.localChangeType=item.localChangeType||'update';
         if(!item.localChangedFields)item.localChangedFields=[];
@@ -4781,6 +4795,11 @@ function openPresetModal(cfg){
   }
 
   function pmDrop(srcId,tgtId){
+    if(authProfile?.role!=='mx'){
+      const _allItems=cfg.type==='sig'?metroPresets:cfg.type==='sound'?(packCours.soundPresets||[]):cfg.type==='band'?(packCours.bands||[]):cfg.type==='groove'?(packCours.grooves||[]):(packCours.patterns||[]);
+      const _src=_allItems.find(x=>x.id===srcId);
+      if(_src?.source==='school'){showToast('Seul un MX peut réordonner les items école','warn');return;}
+    }
     if(cfg.type==='sig'){
       // Réordonner les metro presets (dans packCours.metroPresets et metroPresets runtime)
       const dropIn=(arr)=>{
@@ -4938,9 +4957,12 @@ function openPresetModal(cfg){
         if(manageMode){
           const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
           const row1=document.createElement('div');row1.className='pm-item-name-row';
+          const _isSoundSchool=item.source==='school',_canEditSound=authProfile?.role==='mx'||!_isSoundSchool;
           const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=item.nom;
-          nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+          if(_canEditSound)nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+          else nameEl.style.opacity='0.6';
           const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';
+          if(!_canEditSound){delBtn.disabled=true;delBtn.style.opacity='0.2';delBtn.title='Réservé au MX';}
           delBtn.addEventListener('click',e=>{e.stopPropagation();
             if(!confirm(`Supprimer le preset "${item.nom}" ?`))return;
             item.localDeletePending=true;item.localChangeType='delete';
@@ -5034,9 +5056,12 @@ function openPresetModal(cfg){
         // Mode gérer : 2 lignes (nom+🗑 / chips tags)
         const div=document.createElement('div');div.className='pm-item pm-manage';div.dataset.pmId=item.id;
         const row1=document.createElement('div');row1.className='pm-item-name-row';
+        const _isSchool=item.source==='school',_canEdit=authProfile?.role==='mx'||!_isSchool;
         const nameEl=document.createElement('span');nameEl.className='pm-item-name';nameEl.textContent=displayNom;
-        nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+        if(_canEdit)nameEl.addEventListener('click',e=>{e.stopPropagation();pmStartRename(nameEl,item);});
+        else nameEl.style.opacity='0.6';
         const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';
+        if(!_canEdit){delBtn.disabled=true;delBtn.style.opacity='0.2';delBtn.title='Réservé au MX';}
         delBtn.addEventListener('click',e=>{e.stopPropagation();
           if(cfg.type==='sig')_deleteMetroPreset(item);
           else if(cfg.type==='groove')libDeleteGroove(item.id);
