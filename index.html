@@ -558,10 +558,12 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 .nav-tab .nav-tab-ico{font-size:18px;line-height:1.1}
 .nav-tab .nav-tab-lbl{font-size:8.5px;font-weight:700;letter-spacing:.01em}
 .nav-play-wrap{display:flex;align-items:center;justify-content:center;padding:0 6px;flex-shrink:0}
-.nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:#c0392b;color:#fff;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
-.nav-cap-val{flex:1;display:none;align-items:center;justify-content:center;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
+.nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(192,57,43,.1);color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
+.nav-cap-val{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(29,158,117,.1);color:#1D9E75;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
+.nav-cap-retake-bar{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(200,150,26,.1);color:#C8961A;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
 body.rec-tapped .nav-pair{display:none}
-body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
+body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val,body.rec-tapped .nav-cap-retake-bar{display:flex}
+body.rec-tapped .nav-play-wrap{display:none}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .btn-play-main:hover{background:#f0ede8}
@@ -573,7 +575,7 @@ body.rec-active .btn-play-main:not(.active)::after{content:'';position:absolute;
 body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 
 /* ─── VOLET JOUER ─── */
-.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 18px;display:none}
+.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 4px;display:none}
 .play-drawer.open{display:block}
 .play-drawer.rec-mode-rpl{border-top-color:#5577A8}
 .play-drawer.rec-mode-ovr{border-top-color:#4A9A70}
@@ -845,22 +847,15 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-rec.armed{opacity:1;border:2px solid var(--cs);background:var(--cl);color:#c0392b}
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 /* Mode rec — toggle ⊘/＋ */
-/* Mode rec — strip sous les thumbs, grid 3 col : [Rpl] [Retake] [Ovr] */
-.rec-mode-strip{display:none;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:10px;padding:0 8px}
-.play-drawer.rec-mode .rec-mode-strip{display:grid}
-/* Boutons mode : plats, icône + texte sur une ligne, icônes face à face au centre */
+/* Mode rec — strip sous les thumbs, 2 boutons centrés */
+.rec-mode-strip{display:none;justify-content:center;align-items:center;gap:12px;margin-top:8px;padding:0 8px}
+.play-drawer.rec-mode .rec-mode-strip{display:flex}
 .rms-btn{display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:2px solid rgba(255,255,255,.1);background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
-#rec-mode-btn-rpl{justify-self:end}
-#rec-mode-btn-ovr{justify-self:start}
 .rms-ico{font-size:18px;line-height:1}
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
-.rms-btn.active-rpl{border-color:#5577A8;background:rgba(85,119,168,.28);color:#8AAAD8}
-.rms-btn.active-ovr{border-color:#4A9A70;background:rgba(74,154,112,.28);color:#7ACC9A}
-/* rec-tapped : labels cachés — boutons NE BOUGENT PAS (Retake toujours en col 2) */
+/* Actif : éclat blanc neutre — ni bleu ni vert */
+.rms-btn.active-rpl,.rms-btn.active-ovr{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
 body.rec-tapped .rms-lbl{display:none}
-/* Retake — invisible (garde l'espace) avant rec-tapped, visible ensuite */
-.rms-retake{visibility:hidden;display:flex;align-items:center;gap:5px;border:2px solid #C8961A;border-radius:8px;background:transparent;color:#C8961A;font-size:12px;font-weight:700;padding:5px 13px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}
-body.rec-tapped .rms-retake{visibility:visible}
 .rec-mode-strip.frozen .rms-btn{pointer-events:none}
 .rec-mode-strip.frozen .rms-btn:not(.active-rpl):not(.active-ovr){opacity:.22}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -873,10 +868,10 @@ body.rec-tapped .rms-retake{visibility:visible}
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:12px}
 .play-btns.rec-mode .play-thumb{flex:1}
-@keyframes retake-btn-flash{0%{background:transparent;border-color:#C8961A}40%{background:rgba(200,150,26,.22);border-color:#E8C040;box-shadow:0 0 0 5px rgba(200,150,26,.18)}100%{background:transparent;border-color:#C8961A}}
-.rms-retake.retake-anim{animation:retake-btn-flash .32s ease-out}
+@keyframes retake-btn-flash{0%{background:rgba(200,150,26,.1)}40%{background:rgba(200,150,26,.35);box-shadow:0 0 0 4px rgba(200,150,26,.2)}100%{background:rgba(200,150,26,.1)}}
+.nav-cap-retake-bar.retake-anim{animation:retake-btn-flash .32s ease-out}
 @keyframes retake-icon-spin{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
-.rms-retake.retake-anim .retake-ico{display:inline-block;animation:retake-icon-spin .32s ease-out}
+.nav-cap-retake-bar.retake-anim .retake-ico{display:inline-block;animation:retake-icon-spin .32s ease-out}
 @keyframes retake-thumb-pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.75)}55%{box-shadow:0 0 0 11px rgba(255,255,255,.0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,.0)}}
 .play-thumb.retake-pulse{animation:retake-thumb-pulse .38s ease-out}
 .play-thumb-layer-name{display:block;font-size:9px;font-weight:700;min-height:12px;line-height:1.3;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
@@ -1219,8 +1214,9 @@ body.dark-mode .btn-play-main:hover{background:#333330}
 body.dark-mode .btn-play-main.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color:#D85A30;background:#2a2a28}
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
-body.dark-mode .nav-cap-ann{background:#a0302b}
-body.dark-mode .nav-cap-val{background:#1a8a66}
+body.dark-mode .nav-cap-ann{background:rgba(192,57,43,.2);color:#ff7060}
+body.dark-mode .nav-cap-val{background:rgba(29,158,117,.2);color:#2ddea0}
+body.dark-mode .nav-cap-retake-bar{background:rgba(200,150,26,.2);color:#E8B840}
 body.dark-mode #btn-vol{color:#777;border-color:#444;background:#222220;opacity:1}
 body.dark-mode #btn-vol.active{background:rgba(74,127,165,.15);color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1354,7 +1350,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.24</span>
+    <span class="app-version">v3.16.25</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1673,12 +1669,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
   </div>
-  <!-- Strip mode rec — grid 3 col : [Remplacer ⊘] [↺ Reprendre] [＋ Empiler] -->
+  <!-- Strip mode rec — 2 boutons mode, juste au-dessus de la bottom bar -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
       <span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span>
     </button>
-    <button class="rms-retake" id="btn-retake"><span class="retake-ico">↺</span> Reprendre</button>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
       <span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span>
     </button>
@@ -1792,7 +1787,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <!-- Capture Annuler — remplace la paire gauche en rec-tapped -->
   <button class="nav-cap-ann" id="btn-jouer-ann">✗ Annuler</button>
-  <!-- Center: Play (FAB) -->
+  <!-- Capture Reprendre — centre du triangle, visible en rec-tapped -->
+  <button class="nav-cap-retake-bar" id="btn-retake"><span class="retake-ico">↺</span> Reprendre</button>
+  <!-- Center: Play (FAB) — masqué en rec-tapped -->
   <div class="nav-play-wrap">
     <button class="btn-play-main" id="btn-play">▶</button>
   </div>
