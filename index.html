@@ -562,6 +562,7 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 .nav-cap-val{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(29,158,117,.1);color:#1D9E75;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
 body.rec-tapped .nav-pair{display:none}
 body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
+body.rec-tapped .rms-retake{visibility:visible}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .btn-play-main:hover{background:#f0ede8}
@@ -853,7 +854,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
 .rms-btn.active-rpl,.rms-btn.active-ovr{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
-.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:48px;min-width:64px;padding:0 16px;border:3px solid #C8961A;border-radius:14px;background:rgba(200,150,26,.08);color:#C8961A;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,150,26,.1);color:#C8961A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 .rms-retake:active{background:rgba(200,150,26,.22)}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 /* Replace mode : step passé sans note → effacé visuellement */
@@ -1215,6 +1216,7 @@ body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
 body.dark-mode .nav-cap-ann{background:rgba(192,57,43,.2);color:#ff7060}
 body.dark-mode .nav-cap-val{background:rgba(29,158,117,.2);color:#2ddea0}
+body.dark-mode .rms-retake{background:rgba(200,150,26,.2);color:#E8B840}
 body.dark-mode #btn-vol{color:#777;border-color:#444;background:#222220;opacity:1}
 body.dark-mode #btn-vol.active{background:rgba(74,127,165,.15);color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1348,7 +1350,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.27</span>
+    <span class="app-version">v3.16.28</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
