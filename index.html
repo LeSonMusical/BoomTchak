@@ -561,7 +561,9 @@ body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7
 .nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(192,57,43,.1);color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
 .nav-cap-val{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(29,158,117,.1);color:#1D9E75;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
 body.rec-tapped .nav-pair{display:none}
+@keyframes cap-fade-in{from{opacity:0}to{opacity:1}}
 body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
+body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val,body.rec-tapped .rms-retake{animation:cap-fade-in .6s ease-out both}
 body.rec-tapped .rms-retake{visibility:visible}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -1186,6 +1188,14 @@ body.dark-mode .layer-mod-panel .btn-mod-a{background:#1a1a18;border-color:rgba(
 body.dark-mode .layer-mod-panel .btn-mod-a.on{background:var(--cc);border-color:var(--cb);color:#fff}
 body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright{color:#7a7875;border-color:rgba(255,255,255,.11)}
 body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright.on{color:#fff}
+/* T (ternaire) : neutre en off, couleur layer en on */
+.btn-mod-tern{border-color:rgba(0,0,0,.25)!important;color:rgba(0,0,0,.38)!important}
+.btn-mod-tern.on{border-color:var(--cb)!important;color:#fff!important}
+body.dark-mode .layer-mod-panel .btn-mod-tern{border-color:rgba(255,255,255,.22)!important;color:rgba(255,255,255,.38)!important}
+body.dark-mode .layer-mod-panel .btn-mod-tern.on{border-color:var(--cb)!important;color:#fff!important}
+/* Bouton supprimer (⌫) : cadre bleu */
+.btn-mod-del{border-color:#4A80C4!important}
+body.dark-mode .btn-mod-del{border-color:#6A9FD8!important}
 body.dark-mode .layer-mod-panel .btn-mod-icon{opacity:.52}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before{background:#253045}
@@ -1350,7 +1360,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.28</span>
+    <span class="app-version">v3.16.29</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5723,11 +5733,10 @@ function buildLayers(){
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
     });
-    bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
+    bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
-    bTern.style.borderColor=_accent;
 
     // ── Pad 2D mini ──────────────────────────────────────────────────────────────
     const padWrap=document.createElement('div');padWrap.className='mod-pad-mini-wrap';
@@ -5871,7 +5880,7 @@ function buildLayers(){
       });
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();_speedMark();
     });
-    const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm btn-mod-bright';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
+    const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm btn-mod-bright btn-mod-del';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
@@ -12964,8 +12973,14 @@ function attachEvents(){
   document.getElementById('btn-retake').addEventListener('click', retakeRec);
   // Toggle ⊘ Remplacer / ＋ Empiler (bloqué après le 1er tap)
   const _setRecMode=(mode)=>{
-    if(recLayers.some(li=>state[li].hasEverTapped))return;
-    recLayers.forEach(li=>{state[li].recMode=mode;});
+    recLayers.forEach(li=>{
+      // replace→overdub : applique le buffer en attente pour ne pas perdre les sons capturés
+      if(mode==='overdub'&&state[li].recMode==='replace'&&state[li].recBuffer){
+        state[li].pattern=[...state[li].recBuffer];state[li].recBuffer=null;
+        buildStepsDOM(li,state[li].wrapped);
+      }
+      state[li].recMode=mode;
+    });
     prefs.recMode=mode;localStorage.setItem('btk_prefs',JSON.stringify(prefs));
     _applyRecModeUI();
   };
