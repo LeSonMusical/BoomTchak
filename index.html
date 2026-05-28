@@ -380,7 +380,7 @@ body.mode-tx [contenteditable="true"]:hover{background:rgba(216,90,48,.07);curso
 body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-shadow:0 0 0 2px rgba(216,90,48,.3)}
 
 /* ─── DIRTY STATE ─── */
-.btn-sec-save.dirty{color:#D85A30;opacity:1;background:#fff5f2;border-radius:4px}
+.btn-sec-save.dirty{visibility:visible;pointer-events:auto;color:#D85A30;opacity:1;background:#fff5f2;border-radius:4px}
 .btn-sec-save.dirty::after{content:'!';font-size:8px;vertical-align:super;margin-left:1px}
 
 /* ─── SAVE SHEET ─── */
@@ -596,7 +596,7 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .step.on:hover,.step.soft:hover{filter:brightness(.85)}
 
 /* ─── BOUTONS DE SECTION (💾 et ≡) ─── */
-.btn-sec-save{cursor:pointer;font-size:12px;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.6;flex-shrink:0;color:inherit}
+.btn-sec-save{cursor:pointer;font-size:12px;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.6;flex-shrink:0;color:inherit;visibility:hidden;pointer-events:none}
 .btn-sec-save:hover{opacity:1}
 .btn-sec-menu{cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:1px 4px;line-height:1.2;opacity:.65;flex-shrink:0;color:inherit;display:inline-block}
 .btn-sec-menu:hover{opacity:1}
@@ -1332,7 +1332,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.16</span>
+    <span class="app-version">v3.16.17</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1434,7 +1434,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="sb-spacer"></div>
     <div id="btn-metro-volets-group">
     <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Metric</button>
+    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
     <button class="btn-metro-volet" id="btn-metro-volet-pat">Beat</button>
     <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
     <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
@@ -1476,7 +1476,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- ── Sous-volet 2 : Métrique ────────────────────────────────────── -->
   <div class="metro-sub" id="metro-sub-sign" style="display:block">
   <div class="metro-sub-hdr">
-    <span class="metro-sub-chip">Métrique</span>
+    <span class="metro-sub-chip">Mesure</span>
     <span class="metro-sub-desc" id="metro-metric-desc">Mesure divisée en 4 ♩</span>
   </div>
   <div class="metro-bloc">
@@ -3528,6 +3528,7 @@ function setSoundDirtySlot(key,v){
   soundDirty[key]=v;
   const row=document.querySelector('[data-sound-key="'+key+'"]');
   if(row){const pb=row.querySelector('.pm-preset-btn');if(pb)pb.classList.toggle('pm-preset-dirty',v);}
+  const sb=document.getElementById('save-btn-sound-'+key);if(sb)sb.classList.toggle('dirty',v);
 }
 function refreshMenuBtnStates(){
   // Boutons ≡ groove/pattern supprimés (gestion intégrée dans openPresetModal)
@@ -5111,7 +5112,7 @@ function buildBandSection(){
 
   // Bouton 💾 sauvegarder band
   const saveBtn=document.createElement('button');
-  saveBtn.id='save-btn-band';saveBtn.className='btn-sec-ico';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
+  saveBtn.id='save-btn-band';saveBtn.className='btn-sec-save';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
   bar.appendChild(saveBtn);
@@ -6924,9 +6925,11 @@ function buildSoundRow(key,label,cls,ss){
   arrow.title='Réglages son';
   arrow.textContent=soundPanelOpen[key]?'régl. ▼':'régl. ▶';
 
-  // Bouton 💾 toujours visible dans le header
-  const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-ico';saveIcoHdr.textContent='💾';
+  // Bouton 💾 son : visible seulement quand dirty
+  const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-save';saveIcoHdr.textContent='💾';
+  saveIcoHdr.id='save-btn-sound-'+key;
   saveIcoHdr.title='Sauvegarder preset son';saveIcoHdr.style.cssText='font-size:11px;padding:1px 4px';
+  if(soundDirty[key])saveIcoHdr.classList.add('dirty');
   saveIcoHdr.addEventListener('click',e=>{e.stopPropagation();openSoundPresetSavePop(key,ss,saveIcoHdr);});
 
   r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(arrow);
