@@ -572,6 +572,13 @@ body.dark-mode .enc-section{border-top-color:#333}
 body.dark-mode .enc-sec-titre{color:#c8c4be}
 body.dark-mode .enc-sec-titre[contenteditable]{border-bottom-color:#555}
 body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7}
+/* Table des matières sections encyclopédie */
+.enc-toc{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e8e5e0}
+.enc-toc-item{font-size:10px;padding:3px 9px;border:1px solid #c8c5c0;border-radius:12px;background:#f5f4f0;color:#555;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;line-height:1.5;font-family:inherit;transition:background .1s,border-color .1s}
+.enc-toc-item:hover{background:#e0ddd8;color:#222;border-color:#999}
+body.dark-mode .enc-toc{border-bottom-color:#333}
+body.dark-mode .enc-toc-item{background:#2a2926;border-color:#444;color:#aaa}
+body.dark-mode .enc-toc-item:hover{background:#353330;color:#ddd;border-color:#666}
 
 /* ─── BOTTOM BAR ─── */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #aaa;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
@@ -1432,7 +1439,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.57</span>
+    <span class="app-version">v3.16.58</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7544,9 +7551,14 @@ function toggleEncyclo(open){
   encycloOuvert=open;
   const panel=document.getElementById('encyclo-panel');
   if(panel){
-    if(open) _encPanelH=_calcEncycloSnapH(); // recalcul à chaque ouverture
     panel.classList.toggle('open',open);
-    panel.style.height=open?_encPanelH+'vh':'0';
+    if(!open){
+      panel.style.height='0';
+    } else {
+      // Garder le panel à 0 pendant le rendu pour éviter le double-amorçage
+      panel.style.transition='none';
+      panel.style.height='0';
+    }
   }
   // Compatibilité : encyclo-content toujours visible dans le panel (override CSS), mais synced pour code tiers
   const content=document.getElementById('encyclo-content');
@@ -7556,6 +7568,16 @@ function toggleEncyclo(open){
   if(!open){const tb=document.getElementById('enc-floating-toolbar');if(tb)tb.classList.remove('visible');}
   const _cb=document.querySelector('.encyclo-collapse-btn');if(_cb)_cb.textContent=open?'˅':'˄';
   if(typeof _syncNavTabs==='function')_syncNavTabs();
+  // Après rendu : animer vers la hauteur qui laisse apparaître le chapo + table
+  if(open&&panel){
+    requestAnimationFrame(()=>{
+      const h=_fitEncyloPanelToIntro(panel);
+      _encPanelH=h;
+      panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
+      panel.style.height=h+'vh';
+      setTimeout(()=>{panel.style.transition='';},300);
+    });
+  }
 }
 
 function showEncycloEntry(key, _fromHistory){
@@ -7607,6 +7629,44 @@ function wrapMdSelection(el,marker){
 }
 
 let _savedRange=null; // sauvegarde de sélection pour le picker lien
+
+function _encEmptyMsg(key){
+  if(packCours.grooves?.find(g=>g.id===key))return 'Aucun article n\'a encore été rédigé pour ce groove.';
+  if(packCours.patterns?.find(p=>(p.encyclo_ref||p.id)===key))return 'Aucun article n\'a encore été rédigé pour ce pattern.';
+  if(packCours.metroPresets?.find(m=>m.id===key))return 'Aucun article n\'a encore été rédigé pour ce preset métronome.';
+  return 'Aucun article n\'a encore été rédigé pour cette entrée.';
+}
+
+function _encScrollToSection(id){
+  const target=document.getElementById(id);if(!target)return;
+  const panel=document.getElementById('encyclo-panel');
+  if(panel&&parseFloat(panel.style.height)<60){
+    _encPanelH=88;
+    panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    panel.style.height='88vh';
+    setTimeout(()=>{panel.style.transition='';target.scrollIntoView({behavior:'smooth',block:'start'});},270);
+  }else{
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
+
+function _fitEncyloPanelToIntro(panel){
+  const hw=document.getElementById('encyclo-panel-handle');
+  const header=panel?.querySelector('.encyclo-header');
+  const encBody=document.getElementById('encyclo-body');
+  const chapo=encBody?.querySelector('.encyclo-chapo');
+  const toc=encBody?.querySelector('.enc-toc');
+  const vide=encBody?.querySelector('.encyclo-vide');
+  let h=16;
+  if(hw)h+=hw.offsetHeight;
+  if(header)h+=header.offsetHeight;
+  if(chapo)h+=chapo.offsetHeight+20;
+  if(toc)h+=toc.offsetHeight+16;
+  if(vide&&!chapo&&!toc)h+=vide.offsetHeight+16;
+  const pct=Math.ceil(h/window.innerHeight*100)+3;
+  return Math.max(28,Math.min(60,pct));
+}
+
 function renderEncyclo(key){
   const body=document.getElementById('encyclo-body');if(!body)return;
   body.innerHTML='';
@@ -7622,7 +7682,7 @@ function renderEncyclo(key){
   const entry = rawEntry;
   if(!entry || (!isPreview && !isEditable && !hasEncycloContent(key))){
     const p=document.createElement('p');p.className='encyclo-vide';
-    p.textContent=isEditable?'Entrée vide — cliquer pour rédiger.':'Aucune entrée disponible.';
+    p.textContent=isEditable?'Entrée vide — cliquer pour rédiger.':_encEmptyMsg(key);
     body.appendChild(p);return;
   }
   if(isPreview){
@@ -7752,9 +7812,20 @@ function renderEncyclo(key){
     }
     if(entry.chapo||isEditable)body.appendChild(chapoEl);
 
+    // Table des sections (lecture seule, ≥ 2 sections)
+    if(!isEditable&&sections.length>1){
+      const toc=document.createElement('div');toc.className='enc-toc';
+      sections.forEach(sec=>{
+        const chip=document.createElement('button');chip.className='enc-toc-item';chip.textContent=sec.titre;
+        chip.addEventListener('click',()=>_encScrollToSection('enc-sec-'+sec.id));
+        toc.appendChild(chip);
+      });
+      body.appendChild(toc);
+    }
+
     // Sections
     sections.forEach((sec,i)=>{
-      const secDiv=document.createElement('div');secDiv.className='enc-section';
+      const secDiv=document.createElement('div');secDiv.className='enc-section';secDiv.id='enc-sec-'+sec.id;
       const hdr=document.createElement('div');hdr.className='enc-sec-hdr';
       const titrEl=document.createElement('span');titrEl.className='enc-sec-titre';
       if(isEditable){
@@ -7829,9 +7900,20 @@ function renderEncyclo(key){
   }
   body.appendChild(chapo);
 
+  // Table des sections (format héritage, lecture seule, ≥ 2 bullets)
+  if(!isEditable&&entry.bullets&&entry.bullets.length>1){
+    const toc=document.createElement('div');toc.className='enc-toc';
+    (entry.bullets||[]).forEach(([bk],i)=>{
+      const chip=document.createElement('button');chip.className='enc-toc-item';chip.textContent=bk;
+      chip.addEventListener('click',()=>_encScrollToSection('enc-bul-'+i));
+      toc.appendChild(chip);
+    });
+    body.appendChild(toc);
+  }
+
   const ul=document.createElement('ul');ul.className='encyclo-bullets';
   (entry.bullets||[]).forEach(([bk,bv],i)=>{
-    const li=document.createElement('li');
+    const li=document.createElement('li');li.id='enc-bul-'+i;
     const k=document.createElement('span');k.className='encyclo-bkey';
     const v=document.createElement('span');v.className='encyclo-bval';
     if(isEditable){
