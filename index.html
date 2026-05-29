@@ -875,7 +875,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-rec.recording{opacity:1;border:2px solid var(--cs);background:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 /* Mode rec — toggle ⊘/＋ */
 /* Mode rec — strip sous les thumbs, 2 boutons centrés */
-.rec-mode-strip{display:none;align-items:center;margin-top:8px;padding:0 4px;gap:8px}
+.rec-mode-strip{display:none;align-items:center;justify-content:center;margin-top:8px;padding:0 4px;gap:8px}
 .play-drawer.rec-mode .rec-mode-strip{display:flex}
 .rms-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:90px;box-sizing:border-box}
 .rms-btn-main{display:flex;align-items:center;gap:6px}
@@ -1432,7 +1432,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.51</span>
+    <span class="app-version">v3.16.52</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3142,35 +3142,43 @@ function _miniVuDraw(){
   const W=cv.width,H=cv.height;
   ctx.clearRect(0,0,W,H);
   const now=performance.now();
-  const xs=[W*0.22,W*0.5,W*0.78];
+  // Disposition : bleu(0)=gauche, vert(2)=centre, rouge(1)=droite
+  const xIdx=[0,2,1]; // xIdx[li] → position dans xPos[]
+  const xPos=[W*0.2,W*0.5,W*0.8];
   const cols=CIRCLE_COLORS.map(c=>c.fill);
-  LAYERS.forEach((_, li)=>{
+  function hexRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+  let anyActive=false;
+  LAYERS.forEach((_,li)=>{
     if(li>=3)return;
-    const x=xs[li],y=H*0.5;
-    const r0=Math.min(H*0.28,10); // inner dot radius
+    const x=xPos[xIdx[li]],y=H*0.5;
+    const r0=Math.min(H*0.32,11);
     const elapsed=now-(_miniVuHit[li]||0);
-    const t=Math.max(0,1-elapsed/MINI_VU_DECAY); // 1→0
-    // Inner dot (always present, gentle idle breath)
-    const breathT=(Math.sin(now*0.002+li*2.1)+1)*0.5; // 0→1 slow
-    const dotR=r0*(0.6+breathT*0.25);
+    const t=Math.max(0,1-elapsed/MINI_VU_DECAY);
+    if(t<=0)return;
+    anyActive=true;
+    const col=cols[li]||'#888';
+    // Dot : flash at hit, fades with t
+    const dotR=r0*(0.45+t*0.55);
     ctx.beginPath();ctx.arc(x,y,dotR,0,Math.PI*2);
-    ctx.fillStyle=cols[li]||'#888';
-    ctx.globalAlpha=0.55+breathT*0.2;
-    ctx.fill();
-    // Halo on hit
-    if(t>0){
-      const hr=r0+t*(Math.min(H*0.9,H-2)*0.5-r0); // expands outward
-      const grad=ctx.createRadialGradient(x,y,dotR,x,y,hr);
-      grad.addColorStop(0,cols[li]+'bb');
-      grad.addColorStop(1,cols[li]+'00');
-      ctx.beginPath();ctx.arc(x,y,hr,0,Math.PI*2);
-      ctx.fillStyle=grad;
-      ctx.globalAlpha=t*0.75;
-      ctx.fill();
+    ctx.fillStyle=col;ctx.globalAlpha=t*0.92;ctx.fill();
+    // Traînée horizontale : s'étend en largeur au fil du decay, s'efface en hauteur et alpha
+    const maxHalf=Math.min(x,W-x)*0.95;
+    const trailHalf=(1-t*t)*maxHalf;  // grandit de 0 → maxHalf
+    if(trailHalf>1){
+      const trailH=Math.max(1.5,H*0.22*t);
+      const grad=ctx.createLinearGradient(x-trailHalf,y,x+trailHalf,y);
+      grad.addColorStop(0,hexRgba(col,0));
+      grad.addColorStop(0.35,hexRgba(col,t*0.55));
+      grad.addColorStop(0.5,hexRgba(col,t*0.80));
+      grad.addColorStop(0.65,hexRgba(col,t*0.55));
+      grad.addColorStop(1,hexRgba(col,0));
+      ctx.fillStyle=grad;ctx.globalAlpha=1;
+      ctx.fillRect(x-trailHalf,y-trailH/2,trailHalf*2,trailH);
     }
     ctx.globalAlpha=1;
   });
-  _miniVuRafId=requestAnimationFrame(_miniVuDraw);
+  if(anyActive)_miniVuRafId=requestAnimationFrame(_miniVuDraw);
+  else _miniVuRafId=null;
 }
 
 function _miniVuStart(){
@@ -3250,7 +3258,7 @@ function scheduler(){
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
       if(stepVal!=='.'&&!state[li].muted){
         scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
-        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;}
+        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;if(!_miniVuRafId)_miniVuDraw();}
       }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
