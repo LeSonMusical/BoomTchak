@@ -587,7 +587,7 @@ body.rec-tapped .nav-pair{display:none}
 @keyframes cap-fade-in{from{opacity:0}to{opacity:1}}
 body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val{display:flex}
 body.rec-tapped .nav-cap-ann,body.rec-tapped .nav-cap-val,body.rec-tapped .rms-retake{animation:cap-fade-in 1.8s ease-out both}
-body.rec-tapped .rms-retake{display:flex}
+body.rec-tapped .rms-retake{visibility:visible}
 .step-unit-lbl{font-size:10px;color:var(--cc);font-weight:700;padding:0 2px;align-self:center;white-space:nowrap;letter-spacing:.02em;line-height:1}
 .btn-play-main{height:50px;min-width:60px;padding:0 20px;font-size:26px;font-weight:700;border:3px solid #1a1a18;border-radius:14px;background:#fff;color:#1a1a18;cursor:pointer;transition:background .1s,color .1s,border-color .1s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .btn-play-main:hover{background:#f0ede8}
@@ -888,13 +888,17 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Actif : bordure épaisse couleur */
 #rec-mode-btn-rpl.active-rpl{border:2px solid #7B5EA7;background:rgba(123,94,167,.14);color:#7B5EA7}
 #rec-mode-btn-ovr.active-ovr{border:2px solid #C8961A;background:rgba(200,150,26,.12);color:#C8961A}
-.rms-retake{display:none;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
-.btn-rec-clear{display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:40px;min-width:50px;padding:2px 8px;border:1px dashed rgba(216,90,48,.45);border-radius:6px;background:none;color:#D85A30;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .12s}
+.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
+/* Bouton Effacer : centré au-dessus des pouces play */
+.btn-rec-clear{display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 18px;border:1px dashed rgba(216,90,48,.45);border-radius:8px;background:none;color:#D85A30;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;margin:0 auto 6px;width:fit-content}
 .btn-rec-clear:hover{background:rgba(216,90,48,.07)}
 .btn-rec-clear:active{background:rgba(216,90,48,.16)}
-.rcc-ico{font-size:15px;line-height:1}
-.rcc-layers{display:flex;gap:3px;align-items:center}
-.rcc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* icône poubelle + pastilles empilées verticalement en arrière-plan */
+.rcc-wrap{position:relative;width:28px;height:30px;display:flex;align-items:flex-start;justify-content:center}
+.rcc-ico{position:absolute;top:0;left:0;right:0;text-align:center;font-size:22px;line-height:1;z-index:2}
+.rcc-layers{position:absolute;bottom:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.rcc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;opacity:.85}
+.rcc-lbl{font-size:9px;font-weight:600;letter-spacing:.2px}
 /* Visible en rec-mode, avant 1er tap */
 .play-drawer.rec-mode .btn-rec-clear{display:flex}
 body.rec-tapped .btn-rec-clear{display:none!important}
@@ -1421,7 +1425,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.48</span>
+    <span class="app-version">v3.16.49</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1740,6 +1744,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
   </div>
+  <!-- Bouton Effacer centré (au-dessus des pouces, avant 1er tap) -->
+  <button class="btn-rec-clear" id="btn-rec-clear" title="Effacer le pattern avant d'enregistrer">
+    <span class="rcc-wrap">
+      <span class="rcc-layers" id="rcc-layers"></span>
+      <span class="rcc-ico">🗑</span>
+    </span>
+    <span class="rcc-lbl">Effacer</span>
+  </button>
   <!-- Strip mode rec — Remplacer | Reprendre (centré) | Empiler, flush bas du drawer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
@@ -1748,10 +1760,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </button>
     <button class="rms-retake" id="btn-retake" title="Reprendre depuis le début">
       <span class="retake-ico">↺</span> Reprendre
-    </button>
-    <button class="btn-rec-clear" id="btn-rec-clear" title="Effacer le pattern avant d'enregistrer">
-      <span class="rcc-ico">🗑</span>
-      <span class="rcc-layers" id="rcc-layers"></span>
     </button>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
       <span class="rms-mode-lbl">mode</span>
@@ -5630,6 +5638,16 @@ function buildLayerEditBar(){
   const patLbl=document.createElement('span');patLbl.className='leb-pat-lbl';
   patLbl.textContent=LAYERS.length+' patterns :';
   bar.appendChild(patLbl);
+  // Nb de pas par layer coloré (16:8:8)
+  const stepsWrap=document.createElement('span');stepsWrap.className='leb-steps';
+  LAYERS.forEach((_,li)=>{
+    if(li>0){const sp=document.createElement('span');sp.className='leb-step-sep';sp.textContent=':';stepsWrap.appendChild(sp);}
+    const cnt=document.createElement('span');cnt.className='leb-cnt';cnt.id='leb-cnt-'+li;
+    cnt.style.color=CIRCLE_COLORS[li].fill;
+    cnt.textContent=state[li]?String(state[li].pattern.length):'–';
+    stepsWrap.appendChild(cnt);
+  });
+  bar.appendChild(stepsWrap);
   // | + signature (vert, ouvre modal preset métrique)
   const p1=document.createElement('span');p1.className='leb-pipe';p1.textContent='|';bar.appendChild(p1);
   const sigBtn=document.createElement('span');sigBtn.className='leb-sig';sigBtn.id='leb-sig';
@@ -9014,16 +9032,9 @@ function updateRhythmInfoBar(){
   // ── Rhythm info bar : visible uniquement si phénomène poly/hémiole ──
   document.body.classList.toggle('has-poly-rhythm',!!phenoLabel);
   if(!phenoLabel){el.style.display='none';return;}
-  // ── Assemblage (phénomène + col4 seulement) ──
-  const sep='<span class="rib-sep">|</span>';
-  const parts=[];
-  parts.push(`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`);
-  if(showCol4){
-    const col4spans=LAYERS.map((_,li)=>`<span style="color:${CIRCLE_COLORS[li].fill}">${ratioC[li]}</span>`).join('<span class="rib-col4-sep">:</span>');
-    parts.push(`<span class="rib-col4" title="Rapport par couche">${col4spans}</span>`);
-  }
+  // ── Assemblage (phénomène uniquement — col4 retiré car info redondante) ──
   el.style.display='flex';
-  el.innerHTML=parts.join(sep);
+  el.innerHTML=`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`;
 }
 
 function visualLoopCircle(){
