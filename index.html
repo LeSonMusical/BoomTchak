@@ -1432,7 +1432,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.55</span>
+    <span class="app-version">v3.16.56</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3151,13 +3151,16 @@ function _miniVuDraw(){
     const x=xPos[xIdx[li]],y=H*0.5;
     const r0=Math.min(H*0.3,10);
     const elapsed=now-(_miniVuHit[li]||0);
-    // t clamped [0,1] : 1 = au moment du son, 0 = éteint
-    const t=Math.min(1,Math.max(0,1-elapsed/MINI_VU_DECAY));
+    // vert/noise (li=2) : decay court = réactif, pas de respiration idle
+    const decay=li===2?200:MINI_VU_DECAY;
+    const t=Math.min(1,Math.max(0,1-elapsed/decay));
     const col=cols[li]||'#888';
-    // Respiration idle (intensité modérée)
-    const breathT=(Math.sin(now*0.0018+li*2.1)+1)*0.5;
-    ctx.beginPath();ctx.arc(x,y,r0*(0.45+breathT*0.25),0,Math.PI*2);
-    ctx.fillStyle=col;ctx.globalAlpha=0.18+breathT*0.16;ctx.fill();
+    // Respiration idle (bleu/rouge seulement)
+    if(li!==2){
+      const breathT=(Math.sin(now*0.0018+li*2.1)+1)*0.5;
+      ctx.beginPath();ctx.arc(x,y,r0*(0.45+breathT*0.25),0,Math.PI*2);
+      ctx.fillStyle=col;ctx.globalAlpha=0.18+breathT*0.16;ctx.fill();
+    }
     // Sur hit : dot flash + halo (circulaire sauf vert/noise centre = elliptique)
     if(t>0){
       ctx.beginPath();ctx.arc(x,y,r0*(0.5+t*0.5),0,Math.PI*2);
