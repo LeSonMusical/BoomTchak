@@ -298,6 +298,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
 .groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
+.gvb-spacer{flex-shrink:0;width:24px}
+.gvb-collapse-btn{flex-shrink:0;font-size:11px;background:none;border:none;color:#aaa;cursor:pointer;padding:2px 4px;line-height:1;-webkit-tap-highlight-color:transparent;width:24px;text-align:center;border-radius:4px}
+.gvb-collapse-btn:hover{color:#777;background:rgba(0,0,0,.05)}
 .gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -875,8 +878,8 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-mode-lbl{font-size:8px;color:#bbb;font-weight:400;line-height:1.2;text-align:center}
 /* Remplacer : violet plein ; Empiler : jaune plein */
 /* OFF : gris neutre, couleur réservée à l'état actif */
-#rec-mode-btn-rpl{border-color:rgba(0,0,0,.18);color:#999}
-#rec-mode-btn-ovr{border-color:rgba(0,0,0,.18);color:#999}
+#rec-mode-btn-rpl{border-color:rgba(0,0,0,.22);color:#999;background:rgba(0,0,0,.03)}
+#rec-mode-btn-ovr{border-color:rgba(0,0,0,.22);color:#999;background:rgba(0,0,0,.03)}
 .rms-ico{font-size:18px;line-height:1}
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
@@ -1014,10 +1017,10 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 #circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:0 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
-#measure-page-indicator{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:auto}
-.mpi-layers{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#measure-page-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.mpi-layers{position:absolute;right:6px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
-.mpi-nav{display:flex;align-items:center;gap:1px}
+#mpi-nav-row{position:absolute;top:5px;left:0;right:0;display:none;justify-content:center;align-items:center;gap:1px;pointer-events:auto}
 .mpi-btn{background:none;border:none;padding:0 3px;font-size:9px;cursor:pointer;color:#999;line-height:1.6}
 .mpi-btn:disabled{opacity:.2;cursor:default}
 #mpi-label{font-size:9px;font-weight:700;min-width:36px;text-align:center;color:#6B5FA5;white-space:nowrap}
@@ -1402,7 +1405,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.40</span>
+    <span class="app-version">v3.16.41</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1724,15 +1727,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Strip mode rec — Remplacer | Reprendre (centré) | Empiler, flush bas du drawer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
-      <span class="rms-btn-main"><span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span></span>
       <span class="rms-mode-lbl">mode</span>
+      <span class="rms-btn-main"><span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span></span>
     </button>
     <button class="rms-retake" id="btn-retake" title="Reprendre depuis le début">
       <span class="retake-ico">↺</span> Reprendre
     </button>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
-      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span></span>
       <span class="rms-mode-lbl">mode</span>
+      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span></span>
     </button>
   </div>
 </div>
@@ -5360,18 +5363,19 @@ function buildGrooveSection(){
   btnNext.className='groove-nav-btn';btnNext.id='groove-nav-next';btnNext.textContent='▶';btnNext.title='Groove suivant';
   gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);
 
-  // Groupe droit : 💾 i ˅
+  // Groupe droit : 💾 i
   const gRight=document.createElement('div');gRight.className='groove-l1-right';
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
+  gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);
+  // Chevron collapse — attaché à la groove-view-bar (créé ici pour la closure _toggleLayers)
   const btnCollapse=document.createElement('button');
-  btnCollapse.className='groove-collapse-btn btn-volet-groove'+(layersOuverts?' open':'');
+  btnCollapse.className='gvb-collapse-btn'+(layersOuverts?' open':'');
   btnCollapse.id='groove-collapse';
   btnCollapse.textContent=layersOuverts?'˅':'˄';
   btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
-  gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);gRight.appendChild(btnCollapse);
 
   l1.appendChild(gLeft);l1.appendChild(gCenter);l1.appendChild(gRight);
   header.appendChild(l1);
@@ -5386,22 +5390,27 @@ function buildGrooveSection(){
   l2.appendChild(btnFam);
   header.appendChild(l2);
 
-  // ── Ligne 3 : Groove.View bar (4 boutons vue) ———————————————————————
+  // ── Ligne 3 : Groove.View bar (spacer + 4 boutons vue + chevron collapse) ─
   const l3=document.createElement('div');
   l3.className='groove-view-bar';l3.id='groove-view-bar';
-  if(!layersOuverts)l3.style.display='none';
+  // l3 toujours visible (le chevron reste accessible même quand collapsed)
   const _viewDefs=[
     {key:'motif', label:'◎ Motif', shape:'circle', cycle:'pattern'},
     {key:'mesure',label:'◎ Mesure',shape:'circle', cycle:'measure'},
     {key:'pas',   label:'☰ Pas',   shape:'linear', cycle:'pattern'},
     {key:'cycle', label:'↺ Cycle', shape:'linear', cycle:'cycle'}
   ];
+  const gvbSpacer=document.createElement('div');gvbSpacer.className='gvb-spacer';
+  if(!layersOuverts)gvbSpacer.style.display='none';
+  l3.appendChild(gvbSpacer);
   _viewDefs.forEach(d=>{
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
+    if(!layersOuverts)b.style.display='none';
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     l3.appendChild(b);
   });
+  l3.appendChild(btnCollapse);
   header.appendChild(l3);
   cont.appendChild(header);
 
@@ -5455,7 +5464,11 @@ function buildGrooveSection(){
     if(sr)sr.style.display=layersOuverts?'':'none';
     if(l2el)l2el.style.display=layersOuverts?'':'none';
     const l3el=document.getElementById('groove-view-bar');
-    if(l3el)l3el.style.display=layersOuverts?'':'none';
+    if(l3el){
+      l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
+      const sp=l3el.querySelector('.gvb-spacer');
+      if(sp)sp.style.display=layersOuverts?'':'none';
+    }
     btnCollapse.textContent=layersOuverts?'˅':'˄';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
@@ -8048,12 +8061,12 @@ function resizeCanvas(){
     const barEl = document.getElementById('canvas-view-bar');
     const barH = (barEl && barEl.offsetHeight > 4) ? barEl.offsetHeight : 28;
     if(mpiEl){
-      // Aligner le centre visuel des mpi-layers avec les canvas label centers (textBaseline='middle')
-      // Les items flex ont lineHeight≈14.4px → centre visuel est à +7px du top de l'item
-      mpiEl.style.top = Math.round(barH + (topPad + 12) * scale - 7) + 'px';
-      // Ajuster le gap pour que chaque layer coïncide avec la y canvas (22px*scale par layer)
+      // Aligner .mpi-layers avec les canvas label centers
       const mpiLayers = mpiEl.querySelector('.mpi-layers');
-      if(mpiLayers) mpiLayers.style.gap = Math.max(1, Math.round(22*scale - 14)) + 'px';
+      if(mpiLayers){
+        mpiLayers.style.top = Math.round(barH + (topPad + 12) * scale - 7) + 'px';
+        mpiLayers.style.gap = Math.max(1, Math.round(22*scale - 14)) + 'px';
+      }
     }
   }
   drawCircles();
@@ -8264,16 +8277,16 @@ function drawCircles(){
     const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
 
     const isDarkN = document.body.classList.contains('dark-mode');
-    const isMeasureLight = circleModeView === 'measure' && !isDarkN;
-    const nCol = isMeasureLight ? col.stroke : col.fill;
+    const isMeasure = circleModeView === 'measure';
+    const nCol = isMeasure ? (isDarkN ? '#b0aac0' : '#6a6075') : col.fill;
     const grad = ctx.createLinearGradient(cx, cy, ex, ey);
     grad.addColorStop(0,    nCol+'00');
-    grad.addColorStop(0.4,  nCol+(isMeasureLight?'55':'cc'));
-    grad.addColorStop(1,    nCol+(isMeasureLight?'cc':'ff'));
+    grad.addColorStop(0.4,  nCol+(isMeasure ? '66' : 'cc'));
+    grad.addColorStop(1,    nCol+(isMeasure ? 'cc' : 'ff'));
 
     ctx.save();
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
-    ctx.strokeStyle = grad; ctx.lineWidth = isMeasureLight ? 2 : 3;
+    ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
     ctx.lineCap = 'round'; ctx.stroke();
     ctx.restore();
   });
@@ -8607,7 +8620,7 @@ function _moveRow2ToStepView(){
 function _updateMeasurePageIndicator(globalPage){
   const el=document.getElementById('measure-page-indicator'); if(!el) return;
   const show = circleModeView==='measure' && layersOuverts && circleView;
-  el.style.display = show ? 'flex' : 'none';
+  el.style.display = show ? 'block' : 'none';
   if(!show) return;
 
   // Calcul mPageSec interne
@@ -8634,7 +8647,7 @@ function _updateMeasurePageIndicator(globalPage){
 
   // Nav row : visible seulement si > 1 page
   const navRow=document.getElementById('mpi-nav-row');
-  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
+  if(navRow){ navRow.style.display=maxPages>1?'flex':'none'; }
 
   if(maxPages>1){
     const displayPage=(globalPage%maxPages)+1;
