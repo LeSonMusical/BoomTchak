@@ -297,17 +297,19 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
-.groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(200,150,26,.22)}
-.gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(200,150,26,.4);background:rgba(200,150,26,.08);color:#7B6010;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.gvb-btn:hover{background:rgba(200,150,26,.18)}
-.gvb-btn.active{background:#6B5010;color:#fff;border-color:#6B5010}
+.groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
+.gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.gvb-btn:hover{background:rgba(123,94,167,.15)}
+.gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
 #layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08)}
-.leb-layer-dots{display:flex;align-items:center;gap:4px}
+.leb-layer-dots{display:flex;align-items:center;gap:0}
 .leb-dot-item{display:inline-flex;align-items:center;gap:1px;font-size:9px;font-weight:700}
 .leb-dot-sym{font-size:10px}
 .leb-cnt{font-size:9px;opacity:.8}
 .leb-bar-sep{color:#ccc;margin:0 2px;font-size:10px}
-.leb-info{flex:1;color:#888;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leb-sig{color:#3A8C6E;cursor:pointer;font-weight:700;font-size:9px;text-decoration:underline dotted;text-underline-offset:2px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.leb-sig:hover{color:#1D6B50}
+.leb-cycle{flex:1;color:#888;font-size:9px;padding-left:5px}
 .leb-mod-btn{font-size:9px;padding:2px 8px;border-radius:8px;border:1px solid rgba(0,0,0,.18);background:transparent;color:#666;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .leb-mod-btn.active{background:rgba(123,94,167,.12);border-color:#7B5EA7;color:#7B5EA7}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
@@ -1057,13 +1059,13 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
-body.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
-body.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
-body.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
-body.dark-mode.view-circle #rhythm-info-wrap,body.dark-mode.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
+body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
+body.has-poly-rhythm.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
+body.has-poly-rhythm.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
+body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
+body.dark-mode.has-poly-rhythm.view-circle #rhythm-info-wrap,body.dark-mode.has-poly-rhythm.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
-@media(min-width:600px){body.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
+@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 /* Signature : violet clair, cliquable → toggle Metro */
@@ -1287,11 +1289,13 @@ body.dark-mode .groove-collapse-btn{color:#A07830}
 body.dark-mode .groove-fam-btn{color:#A07830}
 body.dark-mode .groove-fam-btn:hover{color:#C8961A}
 body.dark-mode .groove-header{background:#2C2710;border-left-color:#8B6914}
-body.dark-mode .gvb-btn{border-color:rgba(200,150,26,.3);background:rgba(200,150,26,.06);color:#C8961A}
-body.dark-mode .gvb-btn.active{background:#5A4008;color:#FFE080;border-color:#8B6914}
+body.dark-mode .gvb-btn{border-color:rgba(123,94,167,.3);background:rgba(123,94,167,.06);color:#9B8FD5}
+body.dark-mode .gvb-btn.active{background:#3A3060;color:#C0B8FF;border-color:#5A4F94}
 body.dark-mode #layer-edit-bar{border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .leb-bar-sep{color:#444}
-body.dark-mode .leb-info{color:#777}
+body.dark-mode .leb-sig{color:#5AAA8A}
+body.dark-mode .leb-sig:hover{color:#7BCCAA}
+body.dark-mode .leb-cycle{color:#666}
 body.dark-mode .leb-mod-btn{color:#888;border-color:rgba(255,255,255,.15)}
 body.dark-mode .leb-mod-btn.active{color:#a090d0;border-color:#7B5EA7}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -1387,7 +1391,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.35</span>
+    <span class="app-version">v3.16.36</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5574,7 +5578,6 @@ function buildLayerEditBar(){
   bar.innerHTML='';
   const dots=document.createElement('div');dots.className='leb-layer-dots';
   LAYERS.forEach((_,li)=>{
-    if(li>0){const sp=document.createElement('span');sp.className='leb-bar-sep';sp.textContent=':';dots.appendChild(sp);}
     const item=document.createElement('span');item.className='leb-dot-item';
     const sym=document.createElement('span');sym.className='leb-dot-sym';sym.style.color=CIRCLE_COLORS[li].fill;sym.textContent='●';
     const cnt=document.createElement('span');cnt.className='leb-cnt';cnt.id='leb-cnt-'+li;cnt.style.color=CIRCLE_COLORS[li].fill;
@@ -5582,10 +5585,13 @@ function buildLayerEditBar(){
     item.appendChild(sym);item.appendChild(cnt);dots.appendChild(item);
   });
   bar.appendChild(dots);
-  const sep=document.createElement('span');sep.className='leb-bar-sep';sep.textContent='|';bar.appendChild(sep);
-  const info=document.createElement('span');info.className='leb-info';info.id='leb-sig-info';
-  info.textContent=typeof computeSigLabel==='function'?computeSigLabel():'';
-  bar.appendChild(info);
+  const sigBtn=document.createElement('span');sigBtn.className='leb-sig';sigBtn.id='leb-sig';
+  sigBtn.title='Signature — cliquer pour ouvrir le volet Métrique';
+  sigBtn.textContent=typeof computeSigLabel==='function'?computeSigLabel():'';
+  sigBtn.addEventListener('click',_openMetroUnitFromSig);
+  bar.appendChild(sigBtn);
+  const cycleEl=document.createElement('span');cycleEl.className='leb-cycle';cycleEl.id='leb-cycle';
+  bar.appendChild(cycleEl);
   const modBtn=document.createElement('button');modBtn.className='leb-mod-btn';modBtn.id='leb-mod-btn';
   modBtn.title='Afficher/masquer les panneaux mod';modBtn.textContent='mod';
   const _refreshModBtn=()=>{
@@ -5614,7 +5620,7 @@ function updateLayerEditBar(){
     const el=document.getElementById('leb-cnt-'+li);
     if(el&&state[li])el.textContent=String(state[li].pattern.length);
   });
-  const sigEl=document.getElementById('leb-sig-info');
+  const sigEl=document.getElementById('leb-sig');
   if(sigEl&&typeof computeSigLabel==='function')sigEl.textContent=computeSigLabel();
   const lebMod=document.getElementById('leb-mod-btn');
   if(lebMod){
@@ -8672,40 +8678,6 @@ function updateViewModeBar(){
   // Vider les deux barres
   if(circleBar){ circleBar.innerHTML=''; circleBar.style.display='none'; }
   if(linearBar){ linearBar.innerHTML=''; linearBar.style.display='none'; }
-  if(!layersOuverts) return;
-  const bar = circleView ? circleBar : linearBar;
-  if(!bar) return;
-  bar.style.display='flex';
-
-  // Boutons contextuels + bouton forme jaune entre les deux
-  const opts = isCircle
-    ? [['pattern','Motif'],['measure','Mesure']]
-    : [['pattern','Pas'],['cycle','Cycle']];
-  const curCycle = isCircle ? viewCycleCircle : viewCycleLinear;
-
-  // 1er bouton mode (Motif ou Pas)
-  const btn0=document.createElement('button');
-  btn0.className='circle-mode-btn'+(curCycle===opts[0][0]?' active':'');
-  btn0.textContent=opts[0][1];
-  btn0.addEventListener('click',()=>setViewCycle(opts[0][0]));
-  bar.appendChild(btn0);
-
-  // Bouton forme ◎/☰ jaune Groove, entre les deux modes
-  const btnShape=document.createElement('button');
-  btnShape.id='btn-view';
-  btnShape.className='btn-view-shape';
-  btnShape.textContent=isCircle?'◎':'☰';
-  btnShape.title=isCircle?'Vue circulaire':'Vue linéaire';
-  btnShape.style.margin='0 4px';
-  btnShape.addEventListener('click',()=>setView(isCircle?'linear':'circle'));
-  bar.appendChild(btnShape);
-
-  // 2e bouton mode (Mesure ou Cycle)
-  const btn1=document.createElement('button');
-  btn1.className='circle-mode-btn'+(curCycle===opts[1][0]?' active':'');
-  btn1.textContent=opts[1][1];
-  btn1.addEventListener('click',()=>setViewCycle(opts[1][0]));
-  bar.appendChild(btn1);
 }
 
 // ── Fractions Unicode lisibles (demi, tiers, quarts…) ──
@@ -8977,20 +8949,22 @@ function updateRhythmInfoBar(){
   const phenoLabel=phenoParts.join(' · ');
   // ── Col 4 : détail par layer avec couleurs (si ratio significatif) ──
   const showCol4=hasSignificantRatio;
-  // ── Assemblage ──
+  // ── leb-cycle : toujours mis à jour ──
+  const lebCycleEl=document.getElementById('leb-cycle');
+  if(lebCycleEl)lebCycleEl.innerHTML=`↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps`;
+  // ── Rhythm info bar : visible uniquement si phénomène poly/hémiole ──
+  document.body.classList.toggle('has-poly-rhythm',!!phenoLabel);
+  if(!phenoLabel){el.style.display='none';return;}
+  // ── Assemblage (phénomène + col4 seulement) ──
   const sep='<span class="rib-sep">|</span>';
   const parts=[];
-  if(sigLabel)parts.push(`<span class="rib-sig" title="Signature — cliquer pour ouvrir/fermer le volet Métro">${sigLabel}</span>`);
-  parts.push(`<span title="Longueur du cycle">↺ ${cycMesStr}&thinsp;mes.&thinsp;·&thinsp;${cycTpsStr}&thinsp;tps</span>`);
-  if(phenoLabel)parts.push(`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`);
+  parts.push(`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`);
   if(showCol4){
     const col4spans=LAYERS.map((_,li)=>`<span style="color:${CIRCLE_COLORS[li].fill}">${ratioC[li]}</span>`).join('<span class="rib-col4-sep">:</span>');
     parts.push(`<span class="rib-col4" title="Rapport par couche">${col4spans}</span>`);
   }
   el.style.display='flex';
   el.innerHTML=parts.join(sep);
-  const sigEl=el.querySelector('.rib-sig');
-  if(sigEl)sigEl.addEventListener('click',_openMetroUnitFromSig);
 }
 
 function visualLoopCircle(){
