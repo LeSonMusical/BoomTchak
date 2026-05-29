@@ -578,8 +578,8 @@ body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;co
 /* ─── VOLET JOUER ─── */
 .play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 0;display:none}
 .play-drawer.open{display:block}
-.play-drawer.rec-mode-rpl{border-top-color:#5577A8}
-.play-drawer.rec-mode-ovr{border-top-color:#4A9A70}
+.play-drawer.rec-mode-rpl{border-top-color:#7B5EA7}
+.play-drawer.rec-mode-ovr{border-top-color:#C8961A}
 .play-drawer-close{position:absolute;top:8px;right:10px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:none;border:none;color:#888;cursor:pointer}
 .play-drawer-close:hover{color:#fff;background:#333}
 .play-btns{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:4px}
@@ -653,7 +653,7 @@ body.mode-tx .btn-sx-tx{background:#D85A30;color:#fff;border-color:#993C1D}
 .groove-bar .btn-dice-rng{opacity:.65}
 .pm-preset-btn::after{content:' ▸';opacity:.45;font-size:9px;}
 .pm-preset-dirty::before{content:'● ';color:#c0392b}
-.pm-preset-dirty::after{content:' modifié';font-size:9px;font-style:italic;color:#999}
+.pm-preset-dirty::after{content:' modifié';font-size:10px;font-weight:600;font-style:italic;color:#666}
 /* Groove : pseudo-éléments supprimés (gérés par updateGrooveNameTopBar) */
 #groove-preset-btn.pm-preset-dirty::before,#groove-preset-btn.pm-preset-dirty::after{content:none}
 /* Mode gérer / réordonner */
@@ -858,6 +858,8 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
 .rms-btn.active-rpl,.rms-btn.active-ovr{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
+#rec-mode-btn-rpl .rms-ico{color:#7B5EA7}
+#rec-mode-btn-ovr .rms-ico{color:#C8961A}
 .rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,150,26,.1);color:#C8961A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 .rms-retake:active{background:rgba(200,150,26,.22)}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -1196,8 +1198,8 @@ body.dark-mode .layer-mod-panel .btn-mod-a.btn-mod-bright.on{color:#fff}
 body.dark-mode .layer-mod-panel .btn-mod-tern{border-color:rgba(255,255,255,.22)!important;color:rgba(255,255,255,.38)!important}
 body.dark-mode .layer-mod-panel .btn-mod-tern.on{border-color:var(--cb)!important;color:#fff!important}
 /* Bouton supprimer (⌫) : cadre bleu */
-.btn-mod-del{border-color:#4A80C4!important}
-body.dark-mode .btn-mod-del{border-color:#6A9FD8!important}
+.btn-mod-del{border-color:rgba(0,0,0,.22)!important}
+body.dark-mode .btn-mod-del{border-color:rgba(255,255,255,.18)!important}
 body.dark-mode .layer-mod-panel .btn-mod-icon{opacity:.52}
 body.dark-mode .mod-sel-unit{background:#2a2a28;border-color:rgba(255,255,255,.12);color:#d0cec8}
 body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before{background:#253045}
@@ -1260,7 +1262,7 @@ body.dark-mode .btn-volet-groove:hover,body.dark-mode .btn-volet-groove.open{col
 body.dark-mode .groove-bar .btn-info-ico{border-color:#8B6914;color:#A07830}
 body.dark-mode .groove-bar .btn-info-ico:hover{background:rgba(139,105,20,.2)}
 body.dark-mode .groove-bar .pm-preset-btn{border-color:#8B6914;background:rgba(40,37,20,.8);color:#C8961A}
-body.dark-mode .pm-preset-dirty::after{color:#777}
+body.dark-mode .pm-preset-dirty::after{color:#999}
 body.dark-mode .groove-name-btn{color:#C8961A}
 body.dark-mode .groove-name-btn:hover{color:#E8B030}
 body.dark-mode .groove-nav-btn{color:#A07830}
@@ -1363,7 +1365,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.31</span>
+    <span class="app-version">v3.16.32</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1685,13 +1687,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Strip mode rec — Remplacer | Reprendre (centré) | Empiler, flush bas du drawer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
-      <span class="rms-ico">⊘</span><span class="rms-lbl">Remplacer</span>
+      <span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span>
     </button>
     <button class="rms-retake" id="btn-retake" title="Reprendre depuis le début">
       <span class="retake-ico">↺</span> Reprendre
     </button>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
-      <span class="rms-lbl">Empiler</span><span class="rms-ico">＋</span>
+      <span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span>
     </button>
   </div>
 </div>
@@ -3207,26 +3209,31 @@ function _updateThumbColors(){
     lL.style.background='';lR.style.background='';
     lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
     lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
-    if(nL)nL.textContent='';if(nR)nR.textContent='';
-    if(sL)sL.textContent='main gauche';if(sR)sR.textContent='main droite';
+    if(nL){nL.textContent='';nL.style.cssText='';}
+    if(nR){nR.textContent='';nR.style.cssText='';}
+    if(sL){sL.textContent='main gauche';sL.style.cssText='font-size:10px;font-weight:400;opacity:.7';}
+    if(sR){sR.textContent='main droite';sR.style.cssText='font-size:10px;font-weight:400;opacity:.7';}
     return;
   }
   const sorted=[...recLayers].sort((a,b)=>a-b);
   if(sorted.length===1){
     const c=_LAYER_REC_COLORS[sorted[0]];lL.style.background=c;lR.style.background=c;
     const name=LAYERS[sorted[0]].label;
-    if(nL)nL.textContent=name;if(nR)nR.textContent=name;
-    // 1 layer : gauche = fort (X), droite = doux (x)
-    if(sL)sL.textContent='fort';if(sR)sR.textContent='doux';
+    if(nL){nL.textContent=name;nL.style.cssText='font-size:9px;opacity:.5';}
+    if(nR){nR.textContent=name;nR.style.cssText='font-size:9px;opacity:.5';}
+    // 1 layer : gauche = fort (X), droite = doux (x) — fort/doux plus lisible que le nom
+    if(sL){sL.textContent='fort';sL.style.cssText='font-size:13px;font-weight:700;opacity:1';}
+    if(sR){sR.textContent='doux';sR.style.cssText='font-size:13px;font-weight:700;opacity:1';}
     lL.classList.add('rec-thumb-fort');lR.classList.add('rec-thumb-doux');
   } else {
     lL.style.background=_LAYER_REC_COLORS[sorted[0]];
     lR.style.background=_LAYER_REC_COLORS[sorted[1]];
     lL.classList.remove('rec-thumb-fort','rec-thumb-doux');
     lR.classList.remove('rec-thumb-fort','rec-thumb-doux');
-    if(nL)nL.textContent=LAYERS[sorted[0]].label;
-    if(nR)nR.textContent=LAYERS[sorted[1]].label;
-    if(sL)sL.textContent='';if(sR)sR.textContent='';
+    if(nL){nL.textContent=LAYERS[sorted[0]].label;nL.style.cssText='';}
+    if(nR){nR.textContent=LAYERS[sorted[1]].label;nR.style.cssText='';}
+    if(sL){sL.textContent='';sL.style.cssText='font-size:10px;font-weight:400;opacity:.7';}
+    if(sR){sR.textContent='';sR.style.cssText='font-size:10px;font-weight:400;opacity:.7';}
   }
 }
 function _updateBtnJouerRec(){
@@ -3582,7 +3589,7 @@ function updateGrooveNameTopBar(){
     const esc=name.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     btn.innerHTML='<span style="color:#c0392b">&#9679; </span>'
       +'<span style="color:#C8961A">'+esc+'</span>'
-      +'<span style="font-size:9px;font-style:italic;color:#999;margin-left:3px"> modifié</span>';
+      +'<span style="font-size:10px;font-weight:600;font-style:italic;color:#888;margin-left:3px"> modifié</span>';
   } else {
     btn.textContent=name;
   }
@@ -5712,6 +5719,7 @@ function buildLayers(){
     mulPopup.appendChild(_mkMulItem('×3',()=>{state[li].pattern=[...state[li].pattern,...state[li].pattern,...state[li].pattern];_reszMark();}));
     mulPopup.appendChild(_mkMulItem('÷3',()=>{state[li].pattern=state[li].pattern.slice(0,Math.max(1,Math.floor(state[li].pattern.length/3)));_reszMark();}));
     mulWrap.appendChild(bMul);mulWrap.appendChild(mulPopup);
+    bMul.style.color=_accent;
     bMul.addEventListener('click',e=>{e.stopPropagation();const isOpen=mulPopup.classList.toggle('open');if(isOpen){const r=bMul.getBoundingClientRect();mulPopup.style.top=(r.bottom+4)+'px';mulPopup.style.left=r.left+'px';}});
     document.addEventListener('click',e=>{if(!mulWrap.contains(e.target))mulPopup.classList.remove('open');});
 
@@ -5851,7 +5859,7 @@ function buildLayers(){
     const softThumb=document.createElement('div');softThumb.className='mod-soft-h-thumb';
     softThumb.style.background=_accent;softFill.style.background=_accent;
     softTrack.appendChild(softFill);softTrack.appendChild(softThumb);
-    softWrap.appendChild(softLbl);softWrap.appendChild(softTrack);
+    softWrap.appendChild(softTrack);
     const _refreshSoft=()=>{
       const v=_modSoftState[li];
       softFill.style.width=`${v*100}%`;softThumb.style.left=`${v*100}%`;
@@ -5872,7 +5880,7 @@ function buildLayers(){
     }
 
     // ── Boutons d'action ─────────────────────────────────────────────────────
-    const bShuffle=document.createElement('button');bShuffle.className='btn-mod-a btn-mod-sm btn-mod-icon';bShuffle.textContent='↻';bShuffle.title='Mélanger aléatoirement';bShuffle.style.color=_accent;
+    const bShuffle=document.createElement('button');bShuffle.className='btn-mod-a btn-mod-sm btn-mod-bright';bShuffle.textContent='↻';bShuffle.title='Mélanger aléatoirement';bShuffle.style.color=_accent;
     bShuffle.addEventListener('click',()=>{
       const arr=[...state[li].pattern];
       for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
@@ -5881,7 +5889,7 @@ function buildLayers(){
     });
     // [Magie-Markov mis de côté — code conservé mais non branché sur un bouton]
     // const _doMagicMarkov = () => { /* ...ancien code bMagic... */ };
-    const bRandAccent=document.createElement('button');bRandAccent.className='btn-mod-a btn-mod-sm btn-mod-icon';bRandAccent.textContent='◉';bRandAccent.title='Aléatoire accents (forte ↔ douce)';bRandAccent.style.color=_accent;
+    const bRandAccent=document.createElement('button');bRandAccent.className='btn-mod-a btn-mod-sm btn-mod-bright';bRandAccent.textContent='◉';bRandAccent.title='Aléatoire accents (forte ↔ douce)';bRandAccent.style.color=_accent;
     bRandAccent.addEventListener('click',()=>{
       state[li].pattern=state[li].pattern.map(s=>{
         if(s==='.')return '.';
@@ -5890,13 +5898,14 @@ function buildLayers(){
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();_speedMark();
     });
     const bClear=document.createElement('button');bClear.className='btn-mod-a btn-mod-sm btn-mod-bright btn-mod-del';bClear.textContent='⌫';bClear.title='Effacer tout le pattern';
+    bClear.style.color=_accent;
     bClear.addEventListener('click',()=>{
       miniConfirm('Effacer tout le pattern ?','noWarnClearPat',()=>{
         state[li].pattern=state[li].pattern.map(()=>'.');
         buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
       });
     });
-    const bCopy=document.createElement('button');bCopy.className='btn-mod-a btn-mod-sm';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
+    const bCopy=document.createElement('button');bCopy.className='btn-mod-a btn-mod-sm btn-mod-bright';bCopy.textContent='⧉';bCopy.title='Copier le pattern';
     const bPaste=document.createElement('button');bPaste.className='btn-mod-a btn-mod-sm';bPaste.textContent='⇩';bPaste.title='Coller le pattern';
     const _refreshCP=()=>{bPaste.disabled=!patClipboard;};
     _layerCPRefreshers.push(_refreshCP);
