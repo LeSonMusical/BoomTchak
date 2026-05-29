@@ -299,8 +299,8 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
 .groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
 .gvb-spacer{flex-shrink:0;width:24px}
-.gvb-collapse-btn{flex-shrink:0;font-size:11px;background:none;border:none;color:#aaa;cursor:pointer;padding:2px 4px;line-height:1;-webkit-tap-highlight-color:transparent;width:24px;text-align:center;border-radius:4px}
-.gvb-collapse-btn:hover{color:#777;background:rgba(0,0,0,.05)}
+.gvb-collapse-btn{flex-shrink:0;font-size:11px;background:none;border:none;color:#7B5EA7;cursor:pointer;padding:2px 4px;line-height:1;-webkit-tap-highlight-color:transparent;width:24px;text-align:center;border-radius:4px;margin-left:auto}
+.gvb-collapse-btn:hover{color:#5A4F94;background:rgba(123,94,167,.08)}
 .gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -1072,11 +1072,11 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px;border-left:2px solid #C8961A}
+body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px}
 body.has-poly-rhythm.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.has-poly-rhythm.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
-body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;border-left:2px solid #C8961A;margin-left:4px;width:calc(100% - 4px)}
-body.dark-mode.has-poly-rhythm.view-circle #rhythm-info-wrap,body.dark-mode.has-poly-rhythm.step-seq #rhythm-info-wrap{border-left-color:#8B6914}
+body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;margin-left:4px;width:calc(100% - 4px)}
+/* border-left supprimé sur #rhythm-info-wrap (v3.16.43) */
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
 @media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
@@ -1407,7 +1407,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.42</span>
+    <span class="app-version">v3.16.43</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
