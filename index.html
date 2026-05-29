@@ -297,14 +297,15 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
-.groove-view-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
-.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 6px;transition:color .12s,border-color .12s,opacity .12s}
+.groove-view-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09);position:relative;overflow:hidden}
+#mini-visu{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none}
+.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 6px;transition:color .12s,border-color .12s,opacity .12s;position:relative;z-index:2}
 /* Replié : jaune vif, bordure franche — sans fond */
 .gvb-collapse-btn:not(.open){border-color:#C8961A;color:#8B6914;font-weight:700;background:none}
 /* Déplié : violet discret */
 .gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
 .gvb-collapse-btn:hover{opacity:.85}
-.gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+.gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
 #layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08);width:100%;box-sizing:border-box}
@@ -1431,7 +1432,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.50</span>
+    <span class="app-version">v3.16.51</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3129,6 +3130,66 @@ let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
 let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33};
 let schedTimerID=null, visualRafID=null;
+// Mini-VU (collapsed groove-view-bar)
+let _miniVuRafId=null;
+const _miniVuHit=[0,0,0]; // performance.now() timestamp of next beat per layer
+const MINI_VU_DECAY=420;  // ms halo fade duration
+
+function _miniVuDraw(){
+  const cv=document.getElementById('mini-visu');
+  if(!cv||cv.style.display==='none'){_miniVuRafId=null;return;}
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const now=performance.now();
+  const xs=[W*0.22,W*0.5,W*0.78];
+  const cols=CIRCLE_COLORS.map(c=>c.fill);
+  LAYERS.forEach((_, li)=>{
+    if(li>=3)return;
+    const x=xs[li],y=H*0.5;
+    const r0=Math.min(H*0.28,10); // inner dot radius
+    const elapsed=now-(_miniVuHit[li]||0);
+    const t=Math.max(0,1-elapsed/MINI_VU_DECAY); // 1→0
+    // Inner dot (always present, gentle idle breath)
+    const breathT=(Math.sin(now*0.002+li*2.1)+1)*0.5; // 0→1 slow
+    const dotR=r0*(0.6+breathT*0.25);
+    ctx.beginPath();ctx.arc(x,y,dotR,0,Math.PI*2);
+    ctx.fillStyle=cols[li]||'#888';
+    ctx.globalAlpha=0.55+breathT*0.2;
+    ctx.fill();
+    // Halo on hit
+    if(t>0){
+      const hr=r0+t*(Math.min(H*0.9,H-2)*0.5-r0); // expands outward
+      const grad=ctx.createRadialGradient(x,y,dotR,x,y,hr);
+      grad.addColorStop(0,cols[li]+'bb');
+      grad.addColorStop(1,cols[li]+'00');
+      ctx.beginPath();ctx.arc(x,y,hr,0,Math.PI*2);
+      ctx.fillStyle=grad;
+      ctx.globalAlpha=t*0.75;
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  });
+  _miniVuRafId=requestAnimationFrame(_miniVuDraw);
+}
+
+function _miniVuStart(){
+  const cv=document.getElementById('mini-visu');
+  if(!cv)return;
+  const bar=document.getElementById('groove-view-bar');
+  if(bar){
+    cv.width=bar.offsetWidth||200;
+    cv.height=bar.offsetHeight||30;
+  }
+  cv.style.display='block';
+  if(!_miniVuRafId)_miniVuDraw();
+}
+
+function _miniVuStop(){
+  const cv=document.getElementById('mini-visu');
+  if(cv)cv.style.display='none';
+  if(_miniVuRafId){cancelAnimationFrame(_miniVuRafId);_miniVuRafId=null;}
+}
 const STEP_W=22;
 const LOOKAHEAD=0.1;
 const SCHED_MS=25;
@@ -3187,7 +3248,10 @@ function scheduler(){
       // Swing MPC : swingVal 0-1 → MPC 50-75% ; offset = swingVal*0.5*step
       // swingVal=0.667 → MPC 66.6% (triolet) ; swingVal=1.0 → MPC 75% (croche pointée)
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
-      if(stepVal!=='.'&&!state[li].muted)scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
+      if(stepVal!=='.'&&!state[li].muted){
+        scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
+        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;}
+      }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
     }
@@ -5439,6 +5503,8 @@ function buildGrooveSection(){
   // ── Ligne 3 : Groove.View bar (4 boutons vue avec chevron collapse au centre) ─
   const l3=document.createElement('div');
   l3.className='groove-view-bar';l3.id='groove-view-bar';
+  // Canvas mini-VU (derrière tout, pointer-events:none)
+  const miniCv=document.createElement('canvas');miniCv.id='mini-visu';l3.appendChild(miniCv);
   // l3 toujours visible (le chevron reste accessible même quand collapsed)
   const _viewDefs=[
     {key:'motif', label:'Pattern', shape:'circle', cycle:'pattern'},
@@ -5506,6 +5572,7 @@ function buildGrooveSection(){
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
+    if(layersOuverts)_miniVuStop(); else _miniVuStart();
     updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
