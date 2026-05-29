@@ -285,7 +285,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .btn-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#bbb;flex-shrink:0;white-space:nowrap;transition:color .12s}
 .btn-volet:hover,.btn-volet.open{color:#555}
 /* barre groove : dorée */
-.groove-bar{background:#FFF0B3;border-bottom:1px solid #E8CC60;border-left:3px solid #C8961A}
+.groove-bar{background:#FFF0B3;border-left:3px solid #C8961A}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
@@ -296,7 +296,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-left{display:flex;align-items:center;gap:3px;justify-content:flex-start}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
-.groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem;border-top:1px solid rgba(200,150,26,.15)}
+.groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
@@ -550,7 +550,7 @@ body.dark-mode .enc-sec-titre[contenteditable]{border-bottom-color:#555}
 body.dark-mode .enc-section-body,body.dark-mode .enc-sec-body-edit{color:#c0bdb7}
 
 /* ─── BOTTOM BAR ─── */
-.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #d0cec7;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:#fff;border-top:2px solid #aaa;display:flex;align-items:stretch;height:60px;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
 .nav-pair{flex:1;display:flex;align-items:stretch}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:none;background:transparent;cursor:pointer;color:#999;padding:4px 0;transition:color .12s,background .12s;-webkit-tap-highlight-color:transparent}
 .nav-tab:active{opacity:.7}
@@ -853,13 +853,15 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Mode rec — strip sous les thumbs, 2 boutons centrés */
 .rec-mode-strip{display:none;align-items:center;margin-top:8px;padding:0 4px;gap:8px}
 .play-drawer.rec-mode .rec-mode-strip{display:flex}
-.rms-btn{display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:2px solid rgba(255,255,255,.1);background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+.rms-btn{display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+/* Remplacer : violet plein ; Empiler : jaune plein */
+#rec-mode-btn-rpl{border-color:rgba(123,94,167,.45);color:#7B5EA7}
+#rec-mode-btn-ovr{border-color:rgba(200,150,26,.5);color:#C8961A}
 .rms-ico{font-size:18px;line-height:1}
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
-.rms-btn.active-rpl,.rms-btn.active-ovr{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff}
-#rec-mode-btn-rpl .rms-ico{color:#7B5EA7}
-#rec-mode-btn-ovr .rms-ico{color:#C8961A}
+#rec-mode-btn-rpl.active-rpl{border-color:#7B5EA7;background:rgba(123,94,167,.18);color:#7B5EA7}
+#rec-mode-btn-ovr.active-ovr{border-color:#C8961A;background:rgba(200,150,26,.15);color:#C8961A}
 .rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,150,26,.1);color:#C8961A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 .rms-retake:active{background:rgba(200,150,26,.22)}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -1105,7 +1107,7 @@ body.dark-mode .btn-theme:hover{background:#333330}
 body.dark-mode .btn-theme.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color:#444}
 body.dark-mode .section-bar-lbl{color:inherit}
-body.dark-mode .groove-bar{background:#2C2710;border-bottom-color:#3E3518}
+body.dark-mode .groove-bar{background:#2C2710}
 body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
 body.dark-mode .groove-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
@@ -1270,8 +1272,7 @@ body.dark-mode .groove-nav-btn:hover{color:#C8961A}
 body.dark-mode .groove-collapse-btn{color:#A07830}
 body.dark-mode .groove-fam-btn{color:#A07830}
 body.dark-mode .groove-fam-btn:hover{color:#C8961A}
-body.dark-mode .groove-l2{border-top-color:rgba(139,105,20,.2)}
-body.dark-mode .groove-header{background:#2C2710;border-bottom-color:#3E3518;border-left-color:#8B6914}
+body.dark-mode .groove-header{background:#2C2710;border-left-color:#8B6914}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .btn-volet-band{color:#444 !important}
@@ -1365,7 +1366,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.32</span>
+    <span class="app-version">v3.16.33</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
