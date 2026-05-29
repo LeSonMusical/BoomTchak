@@ -301,7 +301,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
-#layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08)}
+#layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08);width:100%;box-sizing:border-box}
 .leb-layer-dots{display:flex;align-items:center;gap:0}
 .leb-dot-item{display:inline-flex;align-items:center;gap:1px;font-size:9px;font-weight:700}
 .leb-dot-sym{font-size:10px}
@@ -310,8 +310,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .leb-sig{color:#3A8C6E;cursor:pointer;font-weight:700;font-size:9px;text-decoration:underline dotted;text-underline-offset:2px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .leb-sig:hover{color:#1D6B50}
 .leb-cycle{flex:1;color:#888;font-size:9px;padding-left:5px}
-.leb-mod-btn{font-size:9px;padding:2px 8px;border-radius:8px;border:1px solid rgba(0,0,0,.18);background:transparent;color:#666;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.leb-mod-btn.active{background:rgba(123,94,167,.12);border-color:#7B5EA7;color:#7B5EA7}
+.leb-mod-btn{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid rgba(0,0,0,.18);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.leb-mod-btn:hover{opacity:1;background:rgba(0,0,0,.07)}
+.leb-mod-btn.active{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.25);opacity:1}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
@@ -359,7 +360,7 @@ body.dark-mode .sig-edit-val{color:#666}
 #encyclo-panel .encyclo-l1-right{padding-right:44px}
 
 /* ─── LAYERS ─── */
-#layers-wrap{display:flex;align-items:flex-start;gap:0}
+#layers-wrap{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0}
 /* Indent visuel : les layers appartiennent au groove */
 #layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
@@ -1296,8 +1297,8 @@ body.dark-mode .leb-bar-sep{color:#444}
 body.dark-mode .leb-sig{color:#5AAA8A}
 body.dark-mode .leb-sig:hover{color:#7BCCAA}
 body.dark-mode .leb-cycle{color:#666}
-body.dark-mode .leb-mod-btn{color:#888;border-color:rgba(255,255,255,.15)}
-body.dark-mode .leb-mod-btn.active{color:#a090d0;border-color:#7B5EA7}
+body.dark-mode .leb-mod-btn{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+body.dark-mode .leb-mod-btn.active{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);opacity:1}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .btn-volet-band{color:#444 !important}
@@ -1391,7 +1392,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.36</span>
+    <span class="app-version">v3.16.37</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5593,7 +5594,8 @@ function buildLayerEditBar(){
   const cycleEl=document.createElement('span');cycleEl.className='leb-cycle';cycleEl.id='leb-cycle';
   bar.appendChild(cycleEl);
   const modBtn=document.createElement('button');modBtn.className='leb-mod-btn';modBtn.id='leb-mod-btn';
-  modBtn.title='Afficher/masquer les panneaux mod';modBtn.textContent='mod';
+  modBtn.title='Afficher/masquer les panneaux mod';
+  modBtn.innerHTML='<span style="color:#378ADD">M</span><span style="color:#D85A30">O</span><span style="color:#1D9E75">D</span>';
   const _refreshModBtn=()=>{
     const anyOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
     modBtn.classList.toggle('active',anyOpen);
