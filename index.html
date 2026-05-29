@@ -297,6 +297,19 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
+.groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(200,150,26,.22)}
+.gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(200,150,26,.4);background:rgba(200,150,26,.08);color:#7B6010;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.gvb-btn:hover{background:rgba(200,150,26,.18)}
+.gvb-btn.active{background:#6B5010;color:#fff;border-color:#6B5010}
+#layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08)}
+.leb-layer-dots{display:flex;align-items:center;gap:4px}
+.leb-dot-item{display:inline-flex;align-items:center;gap:1px;font-size:9px;font-weight:700}
+.leb-dot-sym{font-size:10px}
+.leb-cnt{font-size:9px;opacity:.8}
+.leb-bar-sep{color:#ccc;margin:0 2px;font-size:10px}
+.leb-info{flex:1;color:#888;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leb-mod-btn{font-size:9px;padding:2px 8px;border-radius:8px;border:1px solid rgba(0,0,0,.18);background:transparent;color:#666;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.leb-mod-btn.active{background:rgba(123,94,167,.12);border-color:#7B5EA7;color:#7B5EA7}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
@@ -1274,6 +1287,13 @@ body.dark-mode .groove-collapse-btn{color:#A07830}
 body.dark-mode .groove-fam-btn{color:#A07830}
 body.dark-mode .groove-fam-btn:hover{color:#C8961A}
 body.dark-mode .groove-header{background:#2C2710;border-left-color:#8B6914}
+body.dark-mode .gvb-btn{border-color:rgba(200,150,26,.3);background:rgba(200,150,26,.06);color:#C8961A}
+body.dark-mode .gvb-btn.active{background:#5A4008;color:#FFE080;border-color:#8B6914}
+body.dark-mode #layer-edit-bar{border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .leb-bar-sep{color:#444}
+body.dark-mode .leb-info{color:#777}
+body.dark-mode .leb-mod-btn{color:#888;border-color:rgba(255,255,255,.15)}
+body.dark-mode .leb-mod-btn.active{color:#a090d0;border-color:#7B5EA7}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .btn-volet-band{color:#444 !important}
@@ -1367,7 +1387,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.34</span>
+    <span class="app-version">v3.16.35</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1645,7 +1665,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
   <!-- Layers (3 couches rythmiques) -->
-  <div id="layers-wrap"><div id="layers"></div></div>
+  <div id="layers-wrap"><div id="layer-edit-bar"></div><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <div id="canvas-view-bar"></div>
@@ -5342,6 +5362,24 @@ function buildGrooveSection(){
   btnFam.className='groove-fam-btn';btnFam.id='groove-fam-btn';
   l2.appendChild(btnFam);
   header.appendChild(l2);
+
+  // ── Ligne 3 : Groove.View bar (4 boutons vue) ———————————————————————
+  const l3=document.createElement('div');
+  l3.className='groove-view-bar';l3.id='groove-view-bar';
+  if(!layersOuverts)l3.style.display='none';
+  const _viewDefs=[
+    {key:'motif', label:'◎ Motif', shape:'circle', cycle:'pattern'},
+    {key:'mesure',label:'◎ Mesure',shape:'circle', cycle:'measure'},
+    {key:'pas',   label:'☰ Pas',   shape:'linear', cycle:'pattern'},
+    {key:'cycle', label:'↺ Cycle', shape:'linear', cycle:'cycle'}
+  ];
+  _viewDefs.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
+    b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
+    l3.appendChild(b);
+  });
+  header.appendChild(l3);
   cont.appendChild(header);
 
   // ── Handlers ──────────────────────────────────────────────────────────
@@ -5393,6 +5431,8 @@ function buildGrooveSection(){
     if(ri)ri.style.display=layersOuverts?'':'none';
     if(sr)sr.style.display=layersOuverts?'':'none';
     if(l2el)l2el.style.display=layersOuverts?'':'none';
+    const l3el=document.getElementById('groove-view-bar');
+    if(l3el)l3el.style.display=layersOuverts?'':'none';
     btnCollapse.textContent=layersOuverts?'˅':'˄';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
@@ -5528,6 +5568,60 @@ function generatePatternFromPad(li,x,y,s){
   state[li].pattern=arr;
 }
 
+// ── buildLayerEditBar / updateLayerEditBar ───────────────────────────────
+function buildLayerEditBar(){
+  const bar=document.getElementById('layer-edit-bar');if(!bar)return;
+  bar.innerHTML='';
+  const dots=document.createElement('div');dots.className='leb-layer-dots';
+  LAYERS.forEach((_,li)=>{
+    if(li>0){const sp=document.createElement('span');sp.className='leb-bar-sep';sp.textContent=':';dots.appendChild(sp);}
+    const item=document.createElement('span');item.className='leb-dot-item';
+    const sym=document.createElement('span');sym.className='leb-dot-sym';sym.style.color=CIRCLE_COLORS[li].fill;sym.textContent='●';
+    const cnt=document.createElement('span');cnt.className='leb-cnt';cnt.id='leb-cnt-'+li;cnt.style.color=CIRCLE_COLORS[li].fill;
+    cnt.textContent=state[li]?String(state[li].pattern.length):'–';
+    item.appendChild(sym);item.appendChild(cnt);dots.appendChild(item);
+  });
+  bar.appendChild(dots);
+  const sep=document.createElement('span');sep.className='leb-bar-sep';sep.textContent='|';bar.appendChild(sep);
+  const info=document.createElement('span');info.className='leb-info';info.id='leb-sig-info';
+  info.textContent=typeof computeSigLabel==='function'?computeSigLabel():'';
+  bar.appendChild(info);
+  const modBtn=document.createElement('button');modBtn.className='leb-mod-btn';modBtn.id='leb-mod-btn';
+  modBtn.title='Afficher/masquer les panneaux mod';modBtn.textContent='mod';
+  const _refreshModBtn=()=>{
+    const anyOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
+    modBtn.classList.toggle('active',anyOpen);
+  };
+  _refreshModBtn();
+  modBtn.addEventListener('click',()=>{
+    const panels=[...document.querySelectorAll('.layer-mod-panel')];
+    const anyOpen=panels.some(p=>!p.classList.contains('hidden'));
+    const btns=[...document.querySelectorAll('.btn-layer-toggle')];
+    panels.forEach((p,i)=>{
+      const btn=btns[i];
+      if(anyOpen&&!p.classList.contains('hidden')){
+        p.classList.add('hidden');if(btn){btn.textContent='mod ▶';btn.classList.remove('open');}
+      } else if(!anyOpen&&p.classList.contains('hidden')){
+        p.classList.remove('hidden');if(btn){btn.textContent='mod ▼';btn.classList.add('open');}
+      }
+    });
+    modBtn.classList.toggle('active',!anyOpen);
+  });
+  bar.appendChild(modBtn);
+}
+function updateLayerEditBar(){
+  LAYERS.forEach((_,li)=>{
+    const el=document.getElementById('leb-cnt-'+li);
+    if(el&&state[li])el.textContent=String(state[li].pattern.length);
+  });
+  const sigEl=document.getElementById('leb-sig-info');
+  if(sigEl&&typeof computeSigLabel==='function')sigEl.textContent=computeSigLabel();
+  const lebMod=document.getElementById('leb-mod-btn');
+  if(lebMod){
+    const anyOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
+    lebMod.classList.toggle('active',anyOpen);
+  }
+}
 // ── Couches rythmiques ────────────────────────────────────────────────────
 const layerObservers=[];
 function buildLayers(){
@@ -5978,6 +6072,7 @@ function buildLayers(){
       const open=modPanel.classList.toggle('hidden');
       btnMod.textContent=open?'mod ▶':'mod ▼';btnMod.classList.toggle('open',!open);
       if(!open){updateSwapBtn();_refreshPadPreview();}
+      updateLayerEditBar();
     });
 
     cont.appendChild(layerDiv);
@@ -6000,6 +6095,7 @@ function buildLayers(){
   });
   if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   updateRhythmInfoBar();
+  buildLayerEditBar();
 }
 
 function findPatternBySeq(arr){
@@ -8558,6 +8654,19 @@ function _applyView(){
 // ── updateViewModeBar() : reconstruit les boutons de vue (top canvas ou top step-rows) ──
 function updateViewModeBar(){
   const isCircle = viewShape === 'circle';
+  // Groove.View bar — mise à jour états actifs
+  const gvBar=document.getElementById('groove-view-bar');
+  if(gvBar){
+    const curCyc=isCircle?viewCycleCircle:viewCycleLinear;
+    gvBar.querySelectorAll('.gvb-btn').forEach(b=>{
+      const k=b.dataset.viewKey;
+      const act=(k==='motif'&&isCircle&&curCyc==='pattern')||
+                (k==='mesure'&&isCircle&&curCyc==='measure')||
+                (k==='pas'&&!isCircle&&curCyc==='pattern')||
+                (k==='cycle'&&!isCircle&&curCyc==='cycle');
+      b.classList.toggle('active',act);
+    });
+  }
   const circleBar = document.getElementById('canvas-view-bar');
   const linearBar = document.getElementById('linear-view-bar');
   // Vider les deux barres
@@ -8635,6 +8744,7 @@ function updateStepSeqInfo(li){
     `<span style="color:${col.fill};opacity:.8">en ${unit}</span>`+
     `<span style="color:#888;font-size:8px">= ${durStr}</span>`;
   updateRhythmInfoBar();
+  updateLayerEditBar();
 }
 
 // ── updateRhythmInfoBar() : barre info rythmique globale (toutes vues) ──
