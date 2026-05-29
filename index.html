@@ -855,15 +855,16 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .play-drawer.rec-mode .rec-mode-strip{display:flex}
 .rms-btn{display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
 /* Remplacer : violet plein ; Empiler : jaune plein */
-#rec-mode-btn-rpl{border-color:rgba(123,94,167,.45);color:#7B5EA7}
-#rec-mode-btn-ovr{border-color:rgba(200,150,26,.5);color:#C8961A}
+/* OFF : gris neutre, couleur réservée à l'état actif */
+#rec-mode-btn-rpl{border-color:rgba(0,0,0,.18);color:#999}
+#rec-mode-btn-ovr{border-color:rgba(0,0,0,.18);color:#999}
 .rms-ico{font-size:18px;line-height:1}
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
 #rec-mode-btn-rpl.active-rpl{border-color:#7B5EA7;background:rgba(123,94,167,.18);color:#7B5EA7}
 #rec-mode-btn-ovr.active-ovr{border-color:#C8961A;background:rgba(200,150,26,.15);color:#C8961A}
-.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,150,26,.1);color:#C8961A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
-.rms-retake:active{background:rgba(200,150,26,.22)}
+.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(212,90,10,.09);color:#D4580A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
+.rms-retake:active{background:rgba(212,90,10,.22)}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 /* Replace mode : step passé sans note → effacé visuellement */
 .step.rec-past{opacity:.18 !important}
@@ -876,7 +877,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:12px}
 .play-btns.rec-mode .play-thumb{flex:1}
-@keyframes retake-btn-flash{0%{background:rgba(200,150,26,.1)}40%{background:rgba(200,150,26,.35);box-shadow:0 0 0 4px rgba(200,150,26,.2)}100%{background:rgba(200,150,26,.1)}}
+@keyframes retake-btn-flash{0%{background:rgba(212,90,10,.1)}40%{background:rgba(212,90,10,.35);box-shadow:0 0 0 4px rgba(212,90,10,.2)}100%{background:rgba(212,90,10,.1)}}
 .rms-retake.retake-anim{animation:retake-btn-flash .32s ease-out}
 @keyframes retake-icon-spin{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
 .rms-retake.retake-anim .retake-ico{display:inline-block;animation:retake-icon-spin .32s ease-out}
@@ -1232,7 +1233,7 @@ body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
 body.dark-mode .nav-cap-ann{background:rgba(192,57,43,.2);color:#ff7060}
 body.dark-mode .nav-cap-val{background:rgba(29,158,117,.2);color:#2ddea0}
-body.dark-mode .rms-retake{background:rgba(200,150,26,.2);color:#E8B840}
+body.dark-mode .rms-retake{background:rgba(212,90,10,.18);color:#F07030}
 body.dark-mode #btn-vol{color:#777;border-color:#444;background:#222220;opacity:1}
 body.dark-mode #btn-vol.active{background:rgba(74,127,165,.15);color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1366,7 +1367,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.33</span>
+    <span class="app-version">v3.16.34</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
