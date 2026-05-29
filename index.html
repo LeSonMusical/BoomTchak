@@ -311,7 +311,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .leb-sig:hover{color:#1D6B50}
 .leb-cycle{flex:1;color:#888;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .leb-mod-chevron{color:#bbb;font-size:8px}
-.leb-mod-btn{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid rgba(0,0,0,.18);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent;margin-left:auto}
+.leb-mod-btn{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid rgba(0,0,0,.18);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent;margin-left:auto}
 .leb-mod-btn:hover{opacity:1;background:rgba(0,0,0,.07)}
 .leb-mod-btn.active{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.25);opacity:1}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
@@ -1396,7 +1396,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.38</span>
+    <span class="app-version">v3.16.39</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5615,7 +5615,7 @@ function buildLayerEditBar(){
   modBtn.title='Afficher/masquer les panneaux mod';
   const _setModState=(open)=>{
     modBtn.classList.toggle('active',open);
-    modBtn.innerHTML='mod <span class="leb-mod-chevron">'+(open?'▼':'▶')+'</span>';
+    modBtn.innerHTML='<span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span> <span class="leb-mod-chevron">'+(open?'▼':'▶')+'</span>';
   };
   _setModState([...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden')));
   modBtn.addEventListener('click',()=>{
@@ -5650,7 +5650,7 @@ function updateLayerEditBar(){
   if(lebMod){
     const anyOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
     lebMod.classList.toggle('active',anyOpen);
-    lebMod.innerHTML='mod <span class="leb-mod-chevron">'+(anyOpen?'▼':'▶')+'</span>';
+    lebMod.innerHTML='<span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span> <span class="leb-mod-chevron">'+(anyOpen?'▼':'▶')+'</span>';
   }
 }
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -6125,8 +6125,8 @@ function buildLayers(){
     }
   });
   if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
-  updateRhythmInfoBar();
   buildLayerEditBar();
+  updateRhythmInfoBar();
 }
 
 function findPatternBySeq(arr){
