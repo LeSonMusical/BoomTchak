@@ -870,7 +870,9 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Mode rec — strip sous les thumbs, 2 boutons centrés */
 .rec-mode-strip{display:none;align-items:center;margin-top:8px;padding:0 4px;gap:8px}
 .play-drawer.rec-mode .rec-mode-strip{display:flex}
-.rms-btn{display:flex;flex-direction:row;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+.rms-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+.rms-btn-main{display:flex;align-items:center;gap:6px}
+.rms-mode-lbl{font-size:8px;color:#bbb;font-weight:400;line-height:1.2;text-align:center}
 /* Remplacer : violet plein ; Empiler : jaune plein */
 /* OFF : gris neutre, couleur réservée à l'état actif */
 #rec-mode-btn-rpl{border-color:rgba(0,0,0,.18);color:#999}
@@ -882,6 +884,10 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 #rec-mode-btn-ovr.active-ovr{border-color:#C8961A;background:rgba(200,150,26,.15);color:#C8961A}
 .rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(212,90,10,.09);color:#D4580A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 .rms-retake:active{background:rgba(212,90,10,.22)}
+body.dark-mode .rms-mode-lbl{color:#555}
+body:not(.dark-mode) .play-drawer{background:#f3f2f0}
+body:not(.dark-mode) .play-drawer-close{color:#444}
+body:not(.dark-mode) .play-drawer-close:hover{color:#1a1a18;background:#e0dedd}
 @keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.25}}
 /* Replace mode : step passé sans note → effacé visuellement */
 .step.rec-past{opacity:.18 !important}
@@ -1008,7 +1014,7 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 #circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:0 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
-#measure-page-indicator{position:absolute;top:8px;right:6px;display:flex;flex-direction:column;gap:2px;align-items:flex-end;pointer-events:auto}
+#measure-page-indicator{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:auto}
 .mpi-layers{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
 .mpi-nav{display:flex;align-items:center;gap:1px}
@@ -1396,7 +1402,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.39</span>
+    <span class="app-version">v3.16.40</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1718,13 +1724,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Strip mode rec — Remplacer | Reprendre (centré) | Empiler, flush bas du drawer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
-      <span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span>
+      <span class="rms-btn-main"><span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span></span>
+      <span class="rms-mode-lbl">mode</span>
     </button>
     <button class="rms-retake" id="btn-retake" title="Reprendre depuis le début">
       <span class="retake-ico">↺</span> Reprendre
     </button>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
-      <span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span>
+      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span></span>
+      <span class="rms-mode-lbl">mode</span>
     </button>
   </div>
 </div>
@@ -2906,6 +2914,11 @@ function updateMetroSaveBtn() { setDirtyUI('sig-sel-btn', 'btn-metro-save', metr
 
 // ^ accent fort, > temps, - subdiv, gris silence
 // Calcule un label "2+3/8" si les accents A/P sont non-équirépartis dans le metro.pattern
+function computeSigLabelSimple(){
+  const unit=currentSig?.beatUnit||4;
+  const nbDiv=currentSig?.nbDivisions||4;
+  return nbDiv+'/'+unit;
+}
 function computeSigLabel() {
   const mp  = currentSig?.metroPattern;
   const unit = currentSig?.beatUnit || 4;
@@ -3693,6 +3706,7 @@ function applyColorScheme(scheme){
   else if(scheme==='light') dark=false;
   else dark=window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('dark-mode', dark);
+  if(typeof drawCircles==='function' && (typeof circleView==='undefined'||circleView)) setTimeout(drawCircles,0);
 }
 function updateSmenuTheme(){
   const isDark = document.body.classList.contains('dark-mode');
@@ -5599,7 +5613,7 @@ function buildLayerEditBar(){
   const p1=document.createElement('span');p1.className='leb-pipe';p1.textContent='|';bar.appendChild(p1);
   const sigBtn=document.createElement('span');sigBtn.className='leb-sig';sigBtn.id='leb-sig';
   sigBtn.title='Métrique — choisir un preset de signature';
-  sigBtn.textContent=typeof computeSigLabel==='function'?computeSigLabel():'';
+  sigBtn.textContent=typeof computeSigLabelSimple==='function'?computeSigLabelSimple():'';
   sigBtn.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',
       label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,
@@ -5645,7 +5659,7 @@ function updateLayerEditBar(){
     if(el&&state[li])el.textContent=String(state[li].pattern.length);
   });
   const sigEl=document.getElementById('leb-sig');
-  if(sigEl&&typeof computeSigLabel==='function')sigEl.textContent=computeSigLabel();
+  if(sigEl&&typeof computeSigLabelSimple==='function')sigEl.textContent=computeSigLabelSimple();
   const lebMod=document.getElementById('leb-mod-btn');
   if(lebMod){
     const anyOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
@@ -8191,8 +8205,8 @@ function drawCircles(){
     }
   });
 
-  // Marqueurs de temps issus du metro.pattern (mesure + cycle)
-  if(circleModeView === 'measure' || circleModeView === 'cycle'){
+  // Marqueurs de temps issus du metro.pattern (mesure uniquement)
+  if(circleModeView === 'measure'){
     const rInner = radii[0] - dotR - 3;
     const rOuter = radii[2] + dotR + 5;
     const isDarkB = document.body.classList.contains('dark-mode');
@@ -8206,15 +8220,7 @@ function drawCircles(){
       ctx.lineWidth = isFirst ? 1.5 : 0.75;
       ctx.stroke();
     }
-    // Numéros des temps en bordure extérieure
-    const rLabel = Math.min(rOuter + 10, H/2 - 3);
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    for(const {frac, beatNum, isFirst} of beatMarks){
-      const a = -Math.PI/2 + 2*Math.PI * frac;
-      ctx.font = isFirst ? 'bold 9px sans-serif' : '8px sans-serif';
-      ctx.fillStyle = isFirst ? (isDarkB?'#9080C0':'#7060B0') : (isDarkB?'#555':'#aaa');
-      ctx.fillText(String(beatNum), cx + rLabel*Math.cos(a), cy + rLabel*Math.sin(a));
-    }
+    // Numéros des temps en bordure extérieure (vue mesure : supprimés — remplacés par Mes n/p)
   }
   // Labels nb de pas + durée (en fraction) dans le strip gauche — modes Pattern ET Mesure
   {
@@ -8257,14 +8263,17 @@ function drawCircles(){
     const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
     const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
 
+    const isDarkN = document.body.classList.contains('dark-mode');
+    const isMeasureLight = circleModeView === 'measure' && !isDarkN;
+    const nCol = isMeasureLight ? col.stroke : col.fill;
     const grad = ctx.createLinearGradient(cx, cy, ex, ey);
-    grad.addColorStop(0,   col.stroke+'00');   // transparent au pivot
-    grad.addColorStop(0.5, col.stroke+'44');   // semi au milieu
-    grad.addColorStop(1,   col.stroke+'cc');   // opaque à la tête
+    grad.addColorStop(0,    nCol+'00');
+    grad.addColorStop(0.4,  nCol+(isMeasureLight?'55':'cc'));
+    grad.addColorStop(1,    nCol+(isMeasureLight?'cc':'ff'));
 
     ctx.save();
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
-    ctx.strokeStyle = grad; ctx.lineWidth = 2;
+    ctx.strokeStyle = grad; ctx.lineWidth = isMeasureLight ? 2 : 3;
     ctx.lineCap = 'round'; ctx.stroke();
     ctx.restore();
   });
@@ -8966,7 +8975,7 @@ function updateRhythmInfoBar(){
   const hasTernMix=!ternAll&&!ternNone;
   // ── Labels phénomène (col 3) ──
   const phenoParts=[];
-  if(isAsym)phenoParts.push('Asymétrique');
+  if(isAsym)phenoParts.push('Asymétrique '+sigLabel);
   else if(ternAll)phenoParts.push('Ternaire');
   if(hasTernMix)phenoParts.push('Polyrythmie');
   if(isHemiole)phenoParts.push('Hémiole '+col3ratio);
