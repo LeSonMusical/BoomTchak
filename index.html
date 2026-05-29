@@ -1432,7 +1432,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.56</span>
+    <span class="app-version">v3.16.57</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3165,15 +3165,17 @@ function _miniVuDraw(){
     if(t>0){
       ctx.beginPath();ctx.arc(x,y,r0*(0.5+t*0.5),0,Math.PI*2);
       ctx.fillStyle=col;ctx.globalAlpha=t*0.92;ctx.fill();
-      // hr part de r0*0.8 au moment du son et s'étend jusqu'à maxR
-      const hr=r0*0.8+(1-t)*Math.min(x,W-x)*0.9;
-      const isCenter=li===2; // vert/noise : halo elliptique (plus large que haut)
+      const maxR=Math.min(x,W-x)*0.9;
+      const isCenter=li===2; // vert/noise : halo elliptique immédiat
+      // hr : vert démarre à 38% de maxR dès t=1 (visible immédiatement, pas de délai)
+      // autres : démarre à r0*0.8 (expansion depuis le dot)
+      const hr=isCenter?maxR*(0.38+0.62*(1-t)):r0*0.8+(1-t)*maxR;
       if(isCenter){
         ctx.save();ctx.translate(x,y);ctx.scale(1,0.42);
         const grad=ctx.createRadialGradient(0,0,r0*0.3,0,0,hr);
-        grad.addColorStop(0,hexRgba(col,t*0.68));
-        grad.addColorStop(0.40,hexRgba(col,t*0.32));
-        grad.addColorStop(0.78,hexRgba(col,t*0.07));
+        grad.addColorStop(0,hexRgba(col,t*0.80));
+        grad.addColorStop(0.38,hexRgba(col,t*0.38));
+        grad.addColorStop(0.75,hexRgba(col,t*0.08));
         grad.addColorStop(1,hexRgba(col,0));
         ctx.beginPath();ctx.arc(0,0,hr,0,Math.PI*2);
         ctx.fillStyle=grad;ctx.globalAlpha=1;ctx.fill();
