@@ -86,7 +86,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.16.0** (session 2026-05-26)
+**v3.16.55** (session 2026-05-29)
 
 ---
 
@@ -127,6 +127,17 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.16.55 | Mini-VU halo vert/noise elliptique (scaleY 0.42), bleu/rouge circulaires |
+| v3.16.54 | Mini-VU halo sans délai (`hr=r0*0.8+(1-t)*maxR`, t clampé [0,1]) ; suppression ctx.scale → halo circulaire ; respiration alpha 0.18–0.34 |
+| v3.16.53 | Mini-VU : respiration idle restaurée (discrète) ; halo-onde elliptique via ctx.scale ; RAF permanent quand visible ; Effacer : corbeille top:5px, billes bottom:8px (dans la corbeille) |
+| v3.16.52 | Mini-VU traînées horizontales → onde ; reordering bleu(0)=gauche / vert(2)=centre / rouge(1)=droite ; RAF stoppe si inactif ; `rec-mode-strip` justify-content:center (boutons Capture centrés) |
+| v3.16.51 | Mini-VU pulsant : canvas `#mini-visu` (position:absolute, pointer-events:none) derrière les boutons groove-view-bar repliée ; 3 halos colorés pilotés par le scheduleur audio (`_miniVuHit[li]` via performance.now) |
+| v3.16.50 | Dark mode rec-mode-btn : spécificité 1,2,1 sur règles active (fix bug état ON invisible) ; btn-rec-clear dans `.rms-center-slot` (position:absolute, alterne avec Reprendre) ; Effacer label+poubelle+pastilles empilés |
+| v3.16.49 | leb-steps restauré dans buildLayerEditBar ; col4 ratios colorés supprimé de updateRhythmInfoBar (seul label phéno jaune conservé) |
+| v3.16.48 | rec-mode-strip : Remplacer ON = border violet 2px, Empiler ON = border jaune 2px, OFF = gris #bbb thin ; "temps" → "tps" dans leb-cycle |
+| v3.16.47 | groove-view-bar : chevron entre Mesure et Step ; barre verticale gauche jaune ; boutons 52px uniformes (Pattern/Mesure/Step/Cycle) ; btn-mod border jaune ; collapse = seul chevron visible, jaune quand replié, violet discret quand ouvert |
+| v3.16.46 | Groove.view bar restructurée 2 lignes → 1 ligne, boutons violet uniforme |
+| v3.16.45 | Fix step-seq stale inline style (_applyView remet sr.style.display='') ; chevron Groove.view visible et centré |
 | v3.16.0 | Redesign complet volet Métronome : 5 sous-volets avec chip teal ; Tempo = battue+BPM↕drag+Swing ; Métrique = sig+Description générée ; Métronome = boutons empilés+sig centré ; Volumes = global+3 sliders per-accent volA/volP/volp ; Tap = description+gros bouton ; `_sigDescription()` ; `playMetroClick` per-level volume |
 | v3.15.33 | Modal capture : pad doux = `filter:brightness(1.4) saturate(.55)` (plus de grisé) ; sons à plein volume quand transport stoppé ; modal preset ✕ en couleur accent ; bouton ✕ fermeture ajouté au panel Encyclo ; overlay Métronome on/off + Sons on/off + labels "Tempo" / "Volume Groove" sur overlays drag ; redraw canvas au toggle Son on/off |
 | v3.15.32 | Vue Step.seq : `#step-rows-wrap` reçoit `margin-left:4px; border-left:2px solid #C8961A; padding-left:6px` → ligne verticale jaune Groove continue sans interruption ; dark mode `border-left-color:#8B6914` |
