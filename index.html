@@ -885,9 +885,11 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Actif : éclat blanc neutre — ni bleu ni vert */
 #rec-mode-btn-rpl.active-rpl{border-color:#7B5EA7;background:rgba(123,94,167,.18);color:#7B5EA7}
 #rec-mode-btn-ovr.active-ovr{border-color:#C8961A;background:rgba(200,150,26,.15);color:#C8961A}
-.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(212,90,10,.09);color:#D4580A;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
-.rms-retake:active{background:rgba(212,90,10,.22)}
+.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
+.rms-retake:active{background:rgba(200,130,18,.28)}
 body.dark-mode .rms-mode-lbl{color:#555}
+body.dark-mode #rec-mode-btn-rpl{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04)}
+body.dark-mode #rec-mode-btn-ovr{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04)}
 body:not(.dark-mode) .play-drawer{background:#f3f2f0}
 body:not(.dark-mode) .play-drawer-close{color:#444}
 body:not(.dark-mode) .play-drawer-close:hover{color:#1a1a18;background:#e0dedd}
@@ -903,7 +905,7 @@ body:not(.dark-mode) .play-drawer-close:hover{color:#1a1a18;background:#e0dedd}
 .btn-icon:hover{opacity:1}
 .play-btns.rec-mode{gap:12px}
 .play-btns.rec-mode .play-thumb{flex:1}
-@keyframes retake-btn-flash{0%{background:rgba(212,90,10,.1)}40%{background:rgba(212,90,10,.35);box-shadow:0 0 0 4px rgba(212,90,10,.2)}100%{background:rgba(212,90,10,.1)}}
+@keyframes retake-btn-flash{0%{background:rgba(200,130,18,.1)}40%{background:rgba(200,130,18,.35);box-shadow:0 0 0 4px rgba(200,130,18,.2)}100%{background:rgba(200,130,18,.1)}}
 .rms-retake.retake-anim{animation:retake-btn-flash .32s ease-out}
 @keyframes retake-icon-spin{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
 .rms-retake.retake-anim .retake-ico{display:inline-block;animation:retake-icon-spin .32s ease-out}
@@ -1259,7 +1261,7 @@ body.dark-mode.rec-active .btn-play-main:not(.active){border-color:#D85A30;color
 body.dark-mode.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff}
 body.dark-mode .nav-cap-ann{background:rgba(192,57,43,.2);color:#ff7060}
 body.dark-mode .nav-cap-val{background:rgba(29,158,117,.2);color:#2ddea0}
-body.dark-mode .rms-retake{background:rgba(212,90,10,.18);color:#F07030}
+body.dark-mode .rms-retake{background:rgba(200,130,18,.18);color:#D4A030}
 body.dark-mode #btn-vol{color:#777;border-color:#444;background:#222220;opacity:1}
 body.dark-mode #btn-vol.active{background:rgba(74,127,165,.15);color:#8ab4d0;border-color:#4A7FA5;opacity:1}
 body.dark-mode #btn-vol.muted{color:#444;border-color:#333;background:#1a1a18;opacity:.55}
@@ -1405,7 +1407,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.41</span>
+    <span class="app-version">v3.16.42</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5448,21 +5450,15 @@ function buildGrooveSection(){
     _grooveOnSelect(list[Math.floor(Math.random()*list.length)].id);
   });
 
-  // Collapse ˅/˄
+  // Collapse ˅/˄ — ne cache que la vue canvas (pas les 3 layers)
   const _toggleLayers=()=>{
     layersOuverts=!layersOuverts;
-    const lw=document.getElementById('layers-wrap');
     const cv=document.getElementById('circle-view');
-    const hd=document.querySelector('.hdivider');
     const ri=document.getElementById('rhythm-info-wrap');
     const sr=document.getElementById('step-rows-wrap');
-    const l2el=document.getElementById('groove-l2');
-    if(lw)lw.style.display=layersOuverts?'':'none';
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-    if(hd)hd.style.display=layersOuverts?'':'none';
-    if(ri)ri.style.display=layersOuverts?'':'none';
-    if(sr)sr.style.display=layersOuverts?'':'none';
-    if(l2el)l2el.style.display=layersOuverts?'':'none';
+    if(ri){ if(!layersOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
+    if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
     const l3el=document.getElementById('groove-view-bar');
     if(l3el){
       l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
@@ -5471,7 +5467,7 @@ function buildGrooveSection(){
     }
     btnCollapse.textContent=layersOuverts?'˅':'˄';
     btnCollapse.classList.toggle('open',layersOuverts);
-    btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+    btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
     updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
@@ -8278,7 +8274,7 @@ function drawCircles(){
 
     const isDarkN = document.body.classList.contains('dark-mode');
     const isMeasure = circleModeView === 'measure';
-    const nCol = isMeasure ? (isDarkN ? '#b0aac0' : '#6a6075') : col.fill;
+    const nCol = isMeasure ? '#C8961A' : col.fill;
     const grad = ctx.createLinearGradient(cx, cy, ex, ey);
     grad.addColorStop(0,    nCol+'00');
     grad.addColorStop(0.4,  nCol+(isMeasure ? '66' : 'cc'));
