@@ -298,8 +298,10 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
 .groove-view-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
-.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(123,94,167,.45);color:#7B5EA7;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 6px}
-.gvb-collapse-btn:hover{color:#5A4F94;background:rgba(123,94,167,.1);border-color:rgba(123,94,167,.7)}
+.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 6px;transition:background .12s,color .12s,border-color .12s}
+/* Replié : fond jaune bien visible */
+.gvb-collapse-btn:not(.open){background:#FFF0B3;border-color:#C8961A;color:#8B6914;font-weight:700}
+.gvb-collapse-btn:hover{color:#8B6914;background:rgba(200,150,26,.22);border-color:#C8961A}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -313,7 +315,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .leb-sig:hover{color:#1D6B50}
 .leb-cycle{flex:1;color:#888;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .leb-mod-chevron{color:#bbb;font-size:8px}
-.leb-mod-btn{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid rgba(0,0,0,.18);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent;margin-left:auto}
+.leb-mod-btn{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid rgba(200,150,26,.55);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent;margin-left:auto}
 .leb-mod-btn:hover{opacity:1;background:rgba(0,0,0,.07)}
 .leb-mod-btn.active{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.25);opacity:1}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
@@ -872,13 +874,13 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Mode rec — strip sous les thumbs, 2 boutons centrés */
 .rec-mode-strip{display:none;align-items:center;margin-top:8px;padding:0 4px;gap:8px}
 .play-drawer.rec-mode .rec-mode-strip{display:flex}
-.rms-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+.rms-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:90px;box-sizing:border-box}
 .rms-btn-main{display:flex;align-items:center;gap:6px}
 .rms-mode-lbl{font-size:8px;color:#bbb;font-weight:400;line-height:1.2;text-align:center}
 /* Remplacer : violet plein ; Empiler : jaune plein */
 /* OFF : gris neutre, couleur réservée à l'état actif */
-#rec-mode-btn-rpl{border-color:rgba(0,0,0,.22);color:#999;background:rgba(0,0,0,.03)}
-#rec-mode-btn-ovr{border-color:rgba(0,0,0,.22);color:#999;background:rgba(0,0,0,.03)}
+#rec-mode-btn-rpl{border-color:rgba(0,0,0,.32);color:#999;background:rgba(0,0,0,.03)}
+#rec-mode-btn-ovr{border-color:rgba(0,0,0,.32);color:#999;background:rgba(0,0,0,.03)}
 .rms-ico{font-size:18px;line-height:1}
 .rms-lbl{font-size:10px;font-weight:700;white-space:nowrap}
 /* Actif : éclat blanc neutre — ni bleu ni vert */
@@ -887,8 +889,8 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 .rms-retake:active{background:rgba(200,130,18,.28)}
 body.dark-mode .rms-mode-lbl{color:#555}
-body.dark-mode #rec-mode-btn-rpl{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04)}
-body.dark-mode #rec-mode-btn-ovr{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04)}
+body.dark-mode #rec-mode-btn-rpl{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.04)}
+body.dark-mode #rec-mode-btn-ovr{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.04)}
 body:not(.dark-mode) .play-drawer{background:#f3f2f0}
 body:not(.dark-mode) .play-drawer-close{color:#444}
 body:not(.dark-mode) .play-drawer-close:hover{color:#1a1a18;background:#e0dedd}
@@ -1311,7 +1313,8 @@ body.dark-mode .leb-mod-chevron{color:#555}
 body.dark-mode .leb-sig{color:#5AAA8A}
 body.dark-mode .leb-sig:hover{color:#7BCCAA}
 body.dark-mode .leb-cycle{color:#666}
-body.dark-mode .leb-mod-btn{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+body.dark-mode .leb-mod-btn{border-color:rgba(200,150,26,.5);background:rgba(255,255,255,.04)}
+body.dark-mode .gvb-collapse-btn:not(.open){background:#2C2710;border-color:#C8961A;color:#C8961A}
 body.dark-mode .leb-mod-btn.active{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);opacity:1}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -1406,7 +1409,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.46</span>
+    <span class="app-version">v3.16.47</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5406,10 +5409,8 @@ function buildGrooveSection(){
     if(i===2) l3.appendChild(btnCollapse);
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
-    b.addEventListener('click',()=>{
-      if(!layersOuverts) _toggleLayers(); // déplie si replié
-      setView(d.shape);setViewCycle(d.cycle);
-    });
+    if(!layersOuverts)b.style.display='none';
+    b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     l3.appendChild(b);
   });
   header.appendChild(l3);
@@ -5458,6 +5459,8 @@ function buildGrooveSection(){
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(ri){ if(!layersOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
     if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
+    const l3el=document.getElementById('groove-view-bar');
+    if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
@@ -8991,7 +8994,7 @@ function updateRhythmInfoBar(){
   const showCol4=hasSignificantRatio;
   // ── leb-cycle : toujours mis à jour ──
   const lebCycleEl=document.getElementById('leb-cycle');
-  if(lebCycleEl)lebCycleEl.innerHTML=`cycle de ${cycTpsStr}&thinsp;temps&thinsp;=&thinsp;${cycMesStr}&thinsp;mes.`;
+  if(lebCycleEl)lebCycleEl.innerHTML=`cycle de ${cycTpsStr}&thinsp;tps&thinsp;=&thinsp;${cycMesStr}&thinsp;mes.`;
   // ── Rhythm info bar : visible uniquement si phénomène poly/hémiole ──
   document.body.classList.toggle('has-poly-rhythm',!!phenoLabel);
   if(!phenoLabel){el.style.display='none';return;}
