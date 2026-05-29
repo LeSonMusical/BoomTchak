@@ -297,11 +297,10 @@ body.dark-mode .sig-edit-val{color:#666}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
-.groove-view-bar{display:flex;align-items:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
-.gvb-spacer{flex-shrink:0;width:24px}
-.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(123,94,167,.45);color:#7B5EA7;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin-left:auto}
+.groove-view-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09)}
+.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(123,94,167,.45);color:#7B5EA7;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px}
 .gvb-collapse-btn:hover{color:#5A4F94;background:rgba(123,94,167,.1);border-color:rgba(123,94,167,.7)}
-.gvb-btn{flex:1;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.gvb-btn{flex:0 0 auto;font-size:9px;padding:3px 4px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;min-width:38px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
 #layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08);width:100%;box-sizing:border-box}
@@ -1032,19 +1031,19 @@ body.view-circle .layer-row2{display:none!important}   /* grille steps masquée 
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
-#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #C8961A;padding-left:4px;background:transparent}
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #7B5EA7;padding-left:4px;background:transparent}
 
 .circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
 .circle-mode-btn.active{opacity:1;background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .circle-mode-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
-body.dark-mode #view-mode-bar{border-left-color:#8B6914}
+body.dark-mode #view-mode-bar{border-left-color:#5A4F94}
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
 /* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #7B5EA7}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
@@ -1096,8 +1095,8 @@ body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
 #step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
-body.step-seq #step-rows-wrap{display:flex;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
-body.dark-mode.step-seq #step-rows-wrap{border-left-color:#8B6914}
+body.step-seq #step-rows-wrap{display:flex;margin-left:4px;border-left:2px solid #7B5EA7;padding-left:6px}
+body.dark-mode.step-seq #step-rows-wrap{border-left-color:#5A4F94}
 /* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Layer muté : steps actifs atténués (comme vue circulaire) */
@@ -1155,7 +1154,7 @@ body.dark-mode .encyclo-l2{border-top-color:rgba(255,255,255,.06)}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
 body.dark-mode #layers{border-left-color:#8B6914}
-body.dark-mode.view-circle #circle-view{border-left-color:#8B6914}
+body.dark-mode.view-circle #circle-view{border-left-color:#5A4F94}
 body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
@@ -1407,7 +1406,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.44</span>
+    <span class="app-version">v3.16.45</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5392,7 +5391,7 @@ function buildGrooveSection(){
   l2.appendChild(btnFam);
   header.appendChild(l2);
 
-  // ── Ligne 3 : Groove.View bar (spacer + 4 boutons vue + chevron collapse) ─
+  // ── Ligne 3 : Groove.View bar (4 boutons vue avec chevron collapse au centre) ─
   const l3=document.createElement('div');
   l3.className='groove-view-bar';l3.id='groove-view-bar';
   // l3 toujours visible (le chevron reste accessible même quand collapsed)
@@ -5402,17 +5401,15 @@ function buildGrooveSection(){
     {key:'pas',   label:'☰ Pas',   shape:'linear', cycle:'pattern'},
     {key:'cycle', label:'↺ Cycle', shape:'linear', cycle:'cycle'}
   ];
-  const gvbSpacer=document.createElement('div');gvbSpacer.className='gvb-spacer';
-  if(!layersOuverts)gvbSpacer.style.display='none';
-  l3.appendChild(gvbSpacer);
-  _viewDefs.forEach(d=>{
+  _viewDefs.forEach((d,i)=>{
+    // Chevron entre Mesure (index 1) et Pas (index 2)
+    if(i===2) l3.appendChild(btnCollapse);
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
     if(!layersOuverts)b.style.display='none';
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     l3.appendChild(b);
   });
-  l3.appendChild(btnCollapse);
   header.appendChild(l3);
   cont.appendChild(header);
 
@@ -5462,8 +5459,6 @@ function buildGrooveSection(){
     const l3el=document.getElementById('groove-view-bar');
     if(l3el){
       l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
-      const sp=l3el.querySelector('.gvb-spacer');
-      if(sp)sp.style.display=layersOuverts?'':'none';
     }
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
@@ -8683,8 +8678,11 @@ function _applyView(){
   // Visibilité canvas / layers
   const cv = document.getElementById('circle-view');
   const lw = document.getElementById('layers-wrap');
+  const srAV = document.getElementById('step-rows-wrap');
   if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
   if(lw) lw.style.display = layersOuverts ? '' : 'none';
+  // Effacer tout style inline sur step-rows-wrap pour que le CSS body.step-seq puisse s'appliquer
+  if(srAV) srAV.style.display = layersOuverts ? '' : 'none';
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
