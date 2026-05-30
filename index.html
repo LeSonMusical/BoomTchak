@@ -75,7 +75,7 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
 /* ─── SECTION TEMPS ─── */
-.temps-bar{background:#EDF7F4;border-bottom:1px solid #B8D8CE;border-left:3px solid #3A8C6E}
+.temps-bar{background:linear-gradient(180deg,#F5FDFA 0%,#EDF7F4 25%,#BEE0D5 58%,#68B09A 82%,#3A8C6E 100%);border-left:3px solid #3A8C6E;box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6)}
 .temps-bar .section-bar-lbl{color:#555}
 .sig-sel{display:none}
 .sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #C0C8D0;border-radius:4px;background:#fff;color:#444;flex:1;cursor:pointer;min-width:48px;max-width:160px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
@@ -285,7 +285,7 @@ body.dark-mode .sig-edit-val{color:#666}
 .btn-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#bbb;flex-shrink:0;white-space:nowrap;transition:color .12s}
 .btn-volet:hover,.btn-volet.open{color:#555}
 /* barre groove : dorée */
-.groove-bar{background:#FFF0B3;border-left:3px solid #C8961A}
+.groove-bar{background:linear-gradient(180deg,#FFFEF8 0%,#FFF0B3 40%,#F5E070 72%,#EED050 100%);border-left:3px solid #C8961A;box-shadow:0 5px 12px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.65)}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
@@ -337,13 +337,25 @@ body.dark-mode .sig-edit-val{color:#666}
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
-.band-bar{background:#eef4f8;border-bottom:1px solid #c8dff0;border-left:3px solid #4A7FA5;display:none}
-.band-bar.visible{display:flex}
+.band-bar{background:linear-gradient(180deg,#F5F9FD 0%,#EEF4F8 25%,#AACCDF 58%,#5A98B8 82%,#4A7FA5 100%);border-left:3px solid #4A7FA5;box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6);display:none}
+.band-bar.visible{display:grid}
 .band-bar .section-bar-lbl{color:#2d5f80}
 .band-bar select{border:1px solid #8ab4d0}
 .band-content{overflow:hidden;transition:max-height .22s ease;max-height:0}
 .band-content.open{max-height:700px}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
+/* ─── 3D scroll-bar : layout 3 colonnes ─── */
+.sbar-3col{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:.3rem .4rem;gap:6px}
+.sbar-left{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex-shrink:0}
+.sbar-volets-row{display:flex;gap:2px}
+.sbar-center{display:flex;align-items:center;justify-content:center;gap:1px;min-width:0;overflow:hidden}
+.sbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.sbar-preset-name{font-weight:700;font-size:13px;background:transparent;border:none;cursor:pointer;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;line-height:1.4;text-align:center}
+.sbar-preset-name::after,.sbar-center .sig-sel-btn::after{content:none}
+.sbar-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;padding:3px 4px;flex-shrink:0;opacity:.45;line-height:1;border-radius:3px;-webkit-tap-highlight-color:transparent}
+.sbar-nav-btn:hover{opacity:.9}
+.temps-bar .sbar-preset-name,.temps-bar .sbar-nav-btn{color:#0A3828}
+.band-bar .sbar-preset-name,.band-bar .sbar-nav-btn{color:#0A2A3A}
 /* barre encyclo : neutre */
 .encyclo-bar{background:#f5f4f0;border-left:3px solid #9a9590;cursor:pointer}
 .encyclo-bar .section-bar-lbl{color:#666}
@@ -1166,11 +1178,14 @@ body.dark-mode .btn-theme:hover{background:#333330}
 body.dark-mode .btn-theme.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color:#444}
 body.dark-mode .section-bar-lbl{color:inherit}
-body.dark-mode .groove-bar{background:#2C2710}
+body.dark-mode .groove-bar{background:linear-gradient(180deg,#38300C 0%,#2C2710 40%,#1A1608 72%,#121005 100%)}
+body.dark-mode .temps-bar{background:linear-gradient(180deg,#1E3830 0%,#162C24 25%,#0A1E16 58%,#040E0C 82%,#020806 100%)}
+body.dark-mode .temps-bar .sbar-preset-name,body.dark-mode .temps-bar .sbar-nav-btn,body.dark-mode #sig-sel-btn{color:#9AE0C8}
 body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
 body.dark-mode .groove-bar select{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
-body.dark-mode .band-bar{background:#1a2530;border-bottom-color:#2a3a48}
+body.dark-mode .band-bar{background:linear-gradient(180deg,#222C38 0%,#1a2530 25%,#0E1820 58%,#060C14 82%,#030810 100%)}
 body.dark-mode .band-bar .section-bar-lbl{color:#7ab0cc}
+body.dark-mode .band-bar .sbar-preset-name,body.dark-mode .band-bar .sbar-nav-btn{color:#8AB8D8}
 body.dark-mode .band-bar select,body.dark-mode #band-sel{background:#2a2a28!important;color:#e0ddd8!important;border-color:rgba(255,255,255,.15)!important}
 body.dark-mode .band-sounds-wrap{border-left-color:#3a5a70}
 body.dark-mode .encyclo-bar{background:#252522;border-left-color:#555}
@@ -1439,7 +1454,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.61</span>
+    <span class="app-version">v3.16.62</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1534,17 +1549,24 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="frame">
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
-  <div class="section-bar temps-bar" id="section-temps">
-    <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
-    <button class="sig-sel-btn" id="sig-sel-btn">4/4</button>
-    <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    <div class="sb-spacer"></div>
-    <div id="btn-metro-volets-group">
-    <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-    <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-pat">Beat</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
-    <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
+  <div class="section-bar temps-bar sbar-3col" id="section-temps">
+    <div class="sbar-left">
+      <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
+      <div class="sbar-volets-row">
+        <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
+        <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
+      </div>
+    </div>
+    <div class="sbar-center">
+      <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
+      <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
+      <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
+      <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+    </div>
+    <div class="sbar-right">
+      <button class="btn-metro-volet" id="btn-metro-volet-pat">Beat</button>
+      <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
+      <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
     </div>
   </div>
   <div class="temps-content metro-off" id="temps-content">
@@ -5409,16 +5431,21 @@ function buildBandSection(){
   cont.innerHTML='';
 
   const bar=document.createElement('div');
-  bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
+  bar.className='section-bar band-bar sbar-3col'+(sonsOuvert?' visible':'');
 
-  const lbl=document.createElement('span');lbl.className='section-bar-lbl';lbl.textContent='🔈';lbl.style.cursor='pointer';
-  bar.appendChild(lbl);
+  // ── Col gauche : 🔈 + "Sons de" ──
+  const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';
+  const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent='🔈';
+  const lblTxt=document.createElement('span');lblTxt.style.cssText='font-size:10px;font-weight:700;white-space:nowrap;padding-left:2px;line-height:1';lblTxt.textContent='Sons de';
+  leftCol.appendChild(lblIco);leftCol.appendChild(lblTxt);
+  bar.appendChild(leftCol);
 
-  // Bouton preset band (remplace filtre famille + select)
+  // ── Col centre : ◀ [preset] ▶ 💾 ──
+  const centerCol=document.createElement('div');centerCol.className='sbar-center';
+  const bandNavPrev=document.createElement('button');bandNavPrev.className='sbar-nav-btn';bandNavPrev.textContent='◀';bandNavPrev.title='Band précédent';
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
   const bandPresetBtn=document.createElement('button');
-  bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='pm-preset-btn';
-  bandPresetBtn.style.cssText='border-color:#8ab4d0;color:#2d5f80';
+  bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='sbar-preset-name';
   bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' ✎':''):'—';
   const _bandOnSelect=(id)=>{
     applyBand(id);
@@ -5436,36 +5463,44 @@ function buildBandSection(){
     ()=>(packCours.bands||[]).filter(b=>!b.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
     ()=>currentBandId, _bandOnSelect
   );
-  bar.appendChild(bandPresetBtn);
-
-  // Bouton 💾 sauvegarder band
+  const bandNavNext=document.createElement('button');bandNavNext.className='sbar-nav-btn';bandNavNext.textContent='▶';bandNavNext.title='Band suivant';
+  const _navBand=(dir)=>{
+    const list=(packCours.bands||[]).filter(b=>!b.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0));
+    if(!list.length)return;
+    const idx=list.findIndex(b=>b.id===currentBandId);
+    const ni=idx<0?0:(idx+dir+list.length)%list.length;
+    _bandOnSelect(list[ni].id);
+  };
+  bandNavPrev.addEventListener('click',()=>_navBand(-1));
+  bandNavNext.addEventListener('click',()=>_navBand(1));
   const saveBtn=document.createElement('button');
   saveBtn.id='save-btn-band';saveBtn.className='btn-sec-save';saveBtn.style.cssText='font-size:13px;padding:2px 6px';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
-  bar.appendChild(saveBtn);
+  centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);centerCol.appendChild(saveBtn);
+  bar.appendChild(centerCol);
 
-  const _spacerBand=document.createElement('div');_spacerBand.className='sb-spacer';
-  bar.appendChild(_spacerBand);
+  // ── Col droite : bouton volet Instruments ──
+  const rightCol=document.createElement('div');rightCol.className='sbar-right';
   const btnVolet=document.createElement('button');
   btnVolet.className='btn-volet btn-volet-band'+(instrOuvert?' open':'');
-  btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
+  btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
   btnVolet.addEventListener('click',()=>{
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-    btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
+    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
     btnVolet.classList.toggle('open',instrOuvert);
   });
-  bar.appendChild(btnVolet);
-  bar.addEventListener('click',e=>{
-    if(e.target===lbl){
-      instrOuvert=!instrOuvert;
-      const bc=document.getElementById('band-content');
-      if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-      btnVolet.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';
-      btnVolet.classList.toggle('open',instrOuvert);
-    }
+  rightCol.appendChild(btnVolet);
+  bar.appendChild(rightCol);
+
+  leftCol.addEventListener('click',()=>{
+    instrOuvert=!instrOuvert;
+    const bc=document.getElementById('band-content');
+    if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
+    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+    btnVolet.classList.toggle('open',instrOuvert);
   });
   cont.appendChild(bar);
 
@@ -12907,6 +12942,9 @@ function attachEvents(){
       onSelect:(id)=>changeSig(id)
     });
   });
+  // ── Boutons ◀ ▶ navigation preset signature ──
+  document.getElementById('metro-sig-prev').addEventListener('click', () => _navigateMetroPreset(-1));
+  document.getElementById('metro-sig-next').addEventListener('click', () => _navigateMetroPreset(1));
   // ── Swipe sur sig-sel-btn : preset suivant / précédent ──
   (function(){
     const el=document.getElementById('sig-sel-btn');
