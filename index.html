@@ -213,7 +213,7 @@ body.dark-mode .sig-edit-val{color:#666}
 /* Métronome layout */
 .metro-ctrl-row2{display:flex;align-items:center;gap:5px;padding:.12rem 0 .05rem}
 .metro-ctrl-accents-v{display:flex;flex-direction:row;gap:3px;flex-shrink:0}
-.metro-ctrl-accents-v .mpv-word-btn{font-size:12px;font-weight:800;padding:2px 3px;text-align:center;line-height:1.4}
+.metro-ctrl-accents-v .mpv-word-btn{font-size:12px;font-weight:800;padding:6px 12px;min-width:36px;min-height:34px;text-align:center;line-height:1.4}
 .metro-ctrl-center{flex:1;display:flex;align-items:center;justify-content:center;padding:0 3px}
 /* Volumes layout */
 .metro-vol-row2{display:flex;gap:6px;align-items:center;padding:.18rem 0}
@@ -1439,7 +1439,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.59</span>
+    <span class="app-version">v3.16.60</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3162,27 +3162,33 @@ function _miniVuDraw(){
     const decay=li===2?200:MINI_VU_DECAY;
     const t=Math.min(1,Math.max(0,1-elapsed/decay));
     const col=cols[li]||'#888';
-    // Respiration idle (bleu/rouge seulement)
+    // Respiration idle (bleu/rouge) / ligne repos horizontale (vert/noise)
     if(li!==2){
       const breathT=(Math.sin(now*0.0018+li*2.1)+1)*0.5;
       ctx.beginPath();ctx.arc(x,y,r0*(0.45+breathT*0.25),0,Math.PI*2);
       ctx.fillStyle=col;ctx.globalAlpha=0.18+breathT*0.16;ctx.fill();
+    } else {
+      const idleR=Math.min(x,W-x)*0.5;
+      ctx.save();ctx.translate(x,y);ctx.scale(1,0.08);
+      const idleG=ctx.createRadialGradient(0,0,r0*0.1,0,0,idleR);
+      idleG.addColorStop(0,hexRgba(col,0.08));idleG.addColorStop(0.5,hexRgba(col,0.02));idleG.addColorStop(1,hexRgba(col,0));
+      ctx.beginPath();ctx.arc(0,0,idleR,0,Math.PI*2);
+      ctx.fillStyle=idleG;ctx.globalAlpha=1;ctx.fill();
+      ctx.restore();
     }
-    // Sur hit : dot flash + halo (circulaire sauf vert/noise centre = elliptique)
+    // Sur hit : dot flash + halo (circulaire sauf vert/noise = ellipse très plate)
     if(t>0){
       ctx.beginPath();ctx.arc(x,y,r0*(0.5+t*0.5),0,Math.PI*2);
       ctx.fillStyle=col;ctx.globalAlpha=t*0.92;ctx.fill();
       const maxR=Math.min(x,W-x)*0.9;
-      const isCenter=li===2; // vert/noise : halo elliptique immédiat
-      // hr : vert démarre à 38% de maxR dès t=1 (visible immédiatement, pas de délai)
-      // autres : démarre à r0*0.8 (expansion depuis le dot)
-      const hr=isCenter?maxR*(0.38+0.62*(1-t)):r0*0.8+(1-t)*maxR;
+      const isCenter=li===2;
+      const hr=isCenter?maxR*(0.25+0.75*(1-t)):r0*0.8+(1-t)*maxR;
       if(isCenter){
-        ctx.save();ctx.translate(x,y);ctx.scale(1,0.42);
-        const grad=ctx.createRadialGradient(0,0,r0*0.3,0,0,hr);
-        grad.addColorStop(0,hexRgba(col,t*0.80));
-        grad.addColorStop(0.38,hexRgba(col,t*0.38));
-        grad.addColorStop(0.75,hexRgba(col,t*0.08));
+        ctx.save();ctx.translate(x,y);ctx.scale(1,0.09);
+        const grad=ctx.createRadialGradient(0,0,r0*0.2,0,0,hr);
+        grad.addColorStop(0,hexRgba(col,t*0.65));
+        grad.addColorStop(0.35,hexRgba(col,t*0.25));
+        grad.addColorStop(0.70,hexRgba(col,t*0.06));
         grad.addColorStop(1,hexRgba(col,0));
         ctx.beginPath();ctx.arc(0,0,hr,0,Math.PI*2);
         ctx.fillStyle=grad;ctx.globalAlpha=1;ctx.fill();
@@ -5759,7 +5765,7 @@ function buildLayerEditBar(){
   sigBtn.textContent=typeof computeSigLabelSimple==='function'?computeSigLabelSimple():'';
   sigBtn.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',
-      label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,
+      label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',
       onSelect:(id)=>changeSig(id)});
   });
   bar.appendChild(sigBtn);
@@ -12693,7 +12699,8 @@ function attachEvents(){
         if(s)s.style.display='none';if(b)b.classList.remove('open');
       });
     } else {
-      const saved=_metroCollapsedState||[true,true,false,false,false]; // BPM + Unit ouverts par défaut
+      const saved=_metroCollapsedState?[..._metroCollapsedState]:[true,true,false,false,false];
+      if(!saved[0]&&!saved[1]){saved[0]=true;saved[1]=true;} // Tempo + Mesure toujours ouverts au minimum
       _METRO_SUBS_MAP.forEach(({subId,btnId},i)=>{
         const s=document.getElementById(subId),b=document.getElementById(btnId);
         if(s)s.style.display=saved[i]?'block':'none';
@@ -12882,7 +12889,7 @@ function attachEvents(){
   document.getElementById('sig-sel-btn').addEventListener('click',()=>{
     openPresetModal({
       type:'sig', currentId:currentSig?.id||'4/4',
-      label:'Métrique', accent:'#2A6A50', bg:'#EDF7F4', compact:true,
+      label:'Métrique', accent:'#2A6A50', bg:'#EDF7F4', compact:true, famFilter:'all',
       onSelect:(id)=>changeSig(id)
     });
   });
