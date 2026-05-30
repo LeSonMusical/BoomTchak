@@ -305,6 +305,10 @@ body.dark-mode .sig-edit-val{color:#666}
 /* Déplié : violet discret */
 .gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
 .gvb-collapse-btn:hover{opacity:.85}
+.band-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(74,127,165,.55);color:#4A7FA5;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
+.band-collapse-btn:not(.open){border-color:#4A7FA5;color:#245E82;font-weight:700;background:none}
+.band-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
+.band-collapse-btn:hover{opacity:.85}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -346,10 +350,10 @@ body.dark-mode .sig-edit-val{color:#666}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
 /* ─── 3D scroll-bar : layout 3 colonnes ─── */
 .sbar-3col{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:.3rem .4rem;gap:6px}
-.sbar-left{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex-shrink:0}
+.sbar-left{display:flex;flex-direction:row;align-items:center;gap:3px;flex-shrink:0}
 .sbar-volets-row{display:flex;gap:2px}
 .sbar-center{display:flex;align-items:center;justify-content:center;gap:1px;min-width:0;overflow:hidden}
-.sbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.sbar-right{display:flex;flex-direction:row;align-items:center;gap:2px;flex-shrink:0}
 .sbar-preset-name{font-weight:700;font-size:13px;background:transparent;border:none;cursor:pointer;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;line-height:1.4;text-align:center}
 .sbar-preset-name::after,.sbar-center .sig-sel-btn::after{content:none}
 .sbar-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;padding:3px 4px;flex-shrink:0;opacity:.45;line-height:1;border-radius:3px;-webkit-tap-highlight-color:transparent}
@@ -1360,6 +1364,8 @@ body.dark-mode .leb-cycle{color:#666}
 body.dark-mode .leb-mod-btn{border-color:rgba(200,150,26,.5);background:rgba(255,255,255,.04)}
 body.dark-mode .gvb-collapse-btn:not(.open){background:none;border-color:#C8961A;color:#C8961A}
 body.dark-mode .gvb-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
+body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#7AB8D8}
+body.dark-mode .band-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
 body.dark-mode .leb-mod-btn.active{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);opacity:1}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -1454,7 +1460,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.62</span>
+    <span class="app-version">v3.16.63</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1552,10 +1558,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="section-bar temps-bar sbar-3col" id="section-temps">
     <div class="sbar-left">
       <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
-      <div class="sbar-volets-row">
-        <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
-        <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
-      </div>
+      <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
+      <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
     </div>
     <div class="sbar-center">
       <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
@@ -5433,11 +5437,10 @@ function buildBandSection(){
   const bar=document.createElement('div');
   bar.className='section-bar band-bar sbar-3col'+(sonsOuvert?' visible':'');
 
-  // ── Col gauche : 🔈 + "Sons de" ──
+  // ── Col gauche : 🔈 ──
   const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';
   const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent='🔈';
-  const lblTxt=document.createElement('span');lblTxt.style.cssText='font-size:10px;font-weight:700;white-space:nowrap;padding-left:2px;line-height:1';lblTxt.textContent='Sons de';
-  leftCol.appendChild(lblIco);leftCol.appendChild(lblTxt);
+  leftCol.appendChild(lblIco);
   bar.appendChild(leftCol);
 
   // ── Col centre : ◀ [preset] ▶ 💾 ──
@@ -5480,16 +5483,18 @@ function buildBandSection(){
   centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);centerCol.appendChild(saveBtn);
   bar.appendChild(centerCol);
 
-  // ── Col droite : bouton volet Instruments ──
+  // ── Col droite : chevron collapse (style Groove, couleur bleue) ──
   const rightCol=document.createElement('div');rightCol.className='sbar-right';
   const btnVolet=document.createElement('button');
-  btnVolet.className='btn-volet btn-volet-band'+(instrOuvert?' open':'');
-  btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+  btnVolet.className='band-collapse-btn'+(instrOuvert?' open':'');
+  btnVolet.textContent=instrOuvert?'▼':'▶';
+  btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
   btnVolet.addEventListener('click',()=>{
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+    btnVolet.textContent=instrOuvert?'▼':'▶';
+    btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
     btnVolet.classList.toggle('open',instrOuvert);
   });
   rightCol.appendChild(btnVolet);
@@ -5499,7 +5504,8 @@ function buildBandSection(){
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-    btnVolet.textContent=instrOuvert?'Instru ▼':'Instru ▶';
+    btnVolet.textContent=instrOuvert?'▼':'▶';
+    btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
     btnVolet.classList.toggle('open',instrOuvert);
   });
   cont.appendChild(bar);
