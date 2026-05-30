@@ -89,8 +89,9 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .temps-slider::-moz-range-track{height:2px;background:#C0CCD8;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#3A8C6E;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;opacity:.45;transition:color .15s,opacity .15s;line-height:1}
+.btn-metro-main{position:relative;flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;opacity:.45;transition:opacity .15s;line-height:1}
 .btn-metro-main.on{opacity:1}
+.btn-metro-main:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:115%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:1px 5px 2px;cursor:pointer;font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:transparent;border:1px solid transparent;border-radius:3px;color:#aaa;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
 .btn-metro-volet:hover{color:#3A8C6E}
@@ -318,6 +319,10 @@ body.dark-mode .sig-edit-val{color:#666}
 .band-collapse-btn:not(.open){border-color:#4A7FA5;color:#245E82;font-weight:700;background:none}
 .band-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
 .band-collapse-btn:hover{opacity:.85}
+.metro-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(58,140,110,.55);color:#3A8C6E;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
+.metro-collapse-btn:not(.open){border-color:#3A8C6E;color:#1C5C40;font-weight:700;background:none}
+.metro-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
+.metro-collapse-btn:hover{opacity:.85}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -1383,6 +1388,8 @@ body.dark-mode .gvb-collapse-btn:not(.open){background:none;border-color:#C8961A
 body.dark-mode .gvb-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
 body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#7AB8D8}
 body.dark-mode .band-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
+body.dark-mode .metro-collapse-btn:not(.open){background:none;border-color:#4AAA80;color:#5ABB90}
+body.dark-mode .metro-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
 body.dark-mode .leb-mod-btn.active{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);opacity:1}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -1477,7 +1484,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.66</span>
+    <span class="app-version">v3.16.67</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1581,6 +1588,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
         <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
       </div>
+      <button class="metro-collapse-btn open" id="metro-collapse-btn" title="Plier/déplier sous-volets">▼</button>
     </div>
     <div class="sbar-chips">
       <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
@@ -9100,7 +9108,6 @@ function _navSetMetro(open){
 function _navSetSons(open){
   if(sonsOuvert===open)return;
   sonsOuvert=open;
-  if(open)instrOuvert=true;
   const bar=document.querySelector('.band-bar');
   if(bar){
     bar.classList.toggle('visible',open);
@@ -9128,11 +9135,14 @@ function setNavSection(name){
   if(name==='metro'&&isMetroOpen){_navSetMetro(false);_syncNavTabs();return;}
   if(name==='sons'&&sonsOuvert){_navSetSons(false);_syncNavTabs();return;}
   if(name==='encyclo'&&encycloOuvert){toggleEncyclo(false);_syncNavTabs();return;}
-  // Close others (including Jouer), open selected
+  // Fermetures : Metro et Sons peuvent coexister ; Encyclo est exclusive
   _navCloseJouer();
-  if(name!=='metro'&&isMetroOpen)_navSetMetro(false);
-  if(name!=='sons'&&sonsOuvert)_navSetSons(false);
-  if(name!=='encyclo'&&encycloOuvert)toggleEncyclo(false);
+  if(name==='encyclo'){
+    if(isMetroOpen)_navSetMetro(false);
+    if(sonsOuvert)_navSetSons(false);
+  } else {
+    if(encycloOuvert)toggleEncyclo(false);
+  }
   if(name==='metro')_navSetMetro(true);
   else if(name==='sons')_navSetSons(true);
   else if(name==='encyclo')toggleEncyclo(true);
@@ -12769,20 +12779,23 @@ function attachEvents(){
   let _metroCollapsedState=null;
   function _toggleAllMetroSubs(){
     const anyOpen=_METRO_SUBS_MAP.some(({subId})=>{const s=document.getElementById(subId);return s&&s.style.display!=='none';});
+    const cBtn=document.getElementById('metro-collapse-btn');
     if(anyOpen){
       _metroCollapsedState=_METRO_SUBS_MAP.map(({subId})=>{const s=document.getElementById(subId);return s?s.style.display!=='none':false;});
       _METRO_SUBS_MAP.forEach(({subId,btnId})=>{
         const s=document.getElementById(subId),b=document.getElementById(btnId);
         if(s)s.style.display='none';if(b)b.classList.remove('open');
       });
+      if(cBtn){cBtn.textContent='▶';cBtn.classList.remove('open');}
     } else {
       const saved=_metroCollapsedState?[..._metroCollapsedState]:[true,true,false,false,false];
-      if(!saved[0]&&!saved[1]){saved[0]=true;saved[1]=true;} // Tempo + Mesure toujours ouverts au minimum
+      if(!saved[0]&&!saved[1]){saved[0]=true;saved[1]=true;}
       _METRO_SUBS_MAP.forEach(({subId,btnId},i)=>{
         const s=document.getElementById(subId),b=document.getElementById(btnId);
         if(s)s.style.display=saved[i]?'block':'none';
         if(b)b.classList.toggle('open',!!saved[i]);
       });
+      if(cBtn){cBtn.textContent='▼';cBtn.classList.add('open');}
     }
   }
   function _toggleMetroSub(subId, btnId) {
@@ -12973,6 +12986,7 @@ function attachEvents(){
   // ── Boutons ◀ ▶ navigation preset signature ──
   document.getElementById('metro-sig-prev').addEventListener('click', () => _navigateMetroPreset(-1));
   document.getElementById('metro-sig-next').addEventListener('click', () => _navigateMetroPreset(1));
+  document.getElementById('metro-collapse-btn').addEventListener('click', () => _toggleAllMetroSubs());
   // ── Swipe sur sig-sel-btn : preset suivant / précédent ──
   (function(){
     const el=document.getElementById('sig-sel-btn');
