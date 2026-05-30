@@ -200,6 +200,15 @@ body.dark-mode .sig-edit-val{color:#666}
 .metro-sub-hdr{display:flex;align-items:center;gap:5px;padding:.18rem .4rem .08rem}
 .metro-sub-chip{background:#3A8C6E;color:#fff;font-size:8px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 5px 2px;border-radius:3px;flex-shrink:0;white-space:nowrap}
 .metro-sub-desc{font-size:9px;color:#aaa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+/* Section-temps : 2 lignes (preset + chips volets) */
+#section-temps{display:flex;flex-direction:column;align-items:stretch;padding:.22rem .4rem .1rem;gap:2px}
+.sbar-row1{display:flex;align-items:center;gap:4px;width:100%}
+.sbar-row1 .sbar-center{flex:1;min-width:0}
+.sbar-row1 .sbar-preset-name{flex:1;max-width:none;text-align:center}
+.sbar-chips{display:flex;align-items:center;gap:3px;padding:0 0 .04rem}
+.sbar-chips .btn-metro-volet{background:rgba(58,140,110,.28);color:rgba(255,255,255,.6);border:none;padding:1px 5px 2px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:background .12s,color .12s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.sbar-chips .btn-metro-volet.open{background:#3A8C6E;color:#fff}
+.sbar-chips .btn-metro-volet:hover{background:rgba(58,140,110,.5)}
 /* BPM draggable */
 .metro-col-left{display:flex;flex-direction:column;gap:3px;align-items:center;flex-shrink:0;padding-right:4px}
 .metro-bpm-drag{font-size:11px;font-weight:700;color:#5AAA8A;cursor:ns-resize;text-align:center;padding:2px 6px;border-radius:4px;background:rgba(58,140,110,.09);border:1px solid rgba(58,140,110,.22);user-select:none;-webkit-user-select:none;touch-action:none;line-height:1.55;white-space:nowrap;display:block}
@@ -1323,6 +1332,8 @@ body.dark-mode .metro-bloc{border-left-color:#2A4A40}
 body.dark-mode .metro-3col-lbl{color:#555}
 body.dark-mode .metro-3col-top{color:#777}
 body.dark-mode .metro-sub-chip{background:#2A6A50}
+body.dark-mode .sbar-chips .btn-metro-volet{background:rgba(42,106,80,.35);color:rgba(255,255,255,.4)}
+body.dark-mode .sbar-chips .btn-metro-volet.open{background:#2A6A50;color:#fff}
 body.dark-mode .metro-sub-desc{color:#555}
 body.dark-mode #metro-desc-tempo{color:#6AB8A0}
 body.dark-mode .metro-bpm-drag{background:rgba(58,140,110,.12);border-color:rgba(58,140,110,.28);color:#6AB8A0}
@@ -1460,7 +1471,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.63</span>
+    <span class="app-version">v3.16.64</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1555,19 +1566,20 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="frame">
   <!-- Section Temps (visible par défaut, toggle via btn-tempo) -->
   <div id="temps-wrap">
-  <div class="section-bar temps-bar sbar-3col" id="section-temps">
-    <div class="sbar-left">
+  <div class="section-bar temps-bar" id="section-temps">
+    <div class="sbar-row1">
       <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
+      <div class="sbar-center">
+        <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
+        <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
+        <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
+        <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+      </div>
+    </div>
+    <div class="sbar-chips">
       <button class="btn-metro-volet open" id="btn-metro-volet-temps">Tempo</button>
       <button class="btn-metro-volet open" id="btn-metro-volet-sign">Mesure</button>
-    </div>
-    <div class="sbar-center">
-      <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
-      <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
-      <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
-      <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
-    </div>
-    <div class="sbar-right">
+      <div class="sb-spacer"></div>
       <button class="btn-metro-volet" id="btn-metro-volet-pat">Beat</button>
       <button class="btn-metro-volet" id="btn-metro-volet-vol">Vol</button>
       <button class="btn-metro-volet" id="btn-metro-volet-tap">Tap</button>
@@ -9084,8 +9096,8 @@ function _navSetSons(open){
   const bar=document.querySelector('.band-bar');
   if(bar){
     bar.classList.toggle('visible',open);
-    const btnInstr=bar.querySelector('.btn-volet-band');
-    if(btnInstr){btnInstr.textContent=instrOuvert?'Instruments ▼':'Instruments ▶';btnInstr.classList.toggle('open',instrOuvert);}
+    const btnInstr=bar.querySelector('.band-collapse-btn');
+    if(btnInstr){btnInstr.textContent=instrOuvert?'▼':'▶';btnInstr.classList.toggle('open',instrOuvert);}
   }
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('active',open);
