@@ -316,13 +316,13 @@ body.dark-mode .sig-edit-val{color:#666}
 .gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
 .gvb-collapse-btn:hover{opacity:.85}
 .band-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(74,127,165,.55);color:#4A7FA5;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
-.band-collapse-btn:not(.open){border-color:#4A7FA5;color:#245E82;font-weight:700;background:none}
-.band-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
-.band-collapse-btn:hover{opacity:.85}
+.band-collapse-btn:not(.open){border-color:#4A7FA5;color:#1A3D5A;font-weight:700;background:none}
+.band-collapse-btn.open{border-color:#4A7FA5;color:#4A7FA5;font-weight:700;background:none;opacity:.75}
+.band-collapse-btn:hover{opacity:1}
 .metro-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(58,140,110,.55);color:#3A8C6E;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
 .metro-collapse-btn:not(.open){border-color:#3A8C6E;color:#1C5C40;font-weight:700;background:none}
-.metro-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
-.metro-collapse-btn:hover{opacity:.85}
+.metro-collapse-btn.open{border-color:#3A8C6E;color:#3A8C6E;font-weight:700;background:none;opacity:.75}
+.metro-collapse-btn:hover{opacity:1}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
@@ -1386,10 +1386,10 @@ body.dark-mode .leb-cycle{color:#666}
 body.dark-mode .leb-mod-btn{border-color:rgba(200,150,26,.5);background:rgba(255,255,255,.04)}
 body.dark-mode .gvb-collapse-btn:not(.open){background:none;border-color:#C8961A;color:#C8961A}
 body.dark-mode .gvb-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
-body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#7AB8D8}
-body.dark-mode .band-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
-body.dark-mode .metro-collapse-btn:not(.open){background:none;border-color:#4AAA80;color:#5ABB90}
-body.dark-mode .metro-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
+body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#1A3D5A}
+body.dark-mode .band-collapse-btn.open{border-color:#5A98B8;color:#5A98B8;opacity:.75}
+body.dark-mode .metro-collapse-btn:not(.open){background:none;border-color:#4AAA80;color:#1C5C40}
+body.dark-mode .metro-collapse-btn.open{border-color:#4AAA80;color:#4AAA80;opacity:.75}
 body.dark-mode .leb-mod-btn.active{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);opacity:1}
 body.dark-mode #canvas-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode #linear-view-bar .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
@@ -1484,7 +1484,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.67</span>
+    <span class="app-version">v3.16.68</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5517,7 +5517,7 @@ function buildBandSection(){
   btnVolet.addEventListener('click',()=>{
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
+    if(bc)bc.classList.toggle('open', instrOuvert);
     btnVolet.textContent=instrOuvert?'▼':'▶';
     btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
     btnVolet.classList.toggle('open',instrOuvert);
@@ -9106,8 +9106,8 @@ function _navSetMetro(open){
   _ribSigMetroOpen=false;
 }
 function _navSetSons(open){
-  if(sonsOuvert===open)return;
   sonsOuvert=open;
+  // Synchro DOM sans guard — évite tout désync state/DOM
   const bar=document.querySelector('.band-bar');
   if(bar){
     bar.classList.toggle('visible',open);
@@ -9129,23 +9129,15 @@ function _navCloseJouer(){
   if(bj)bj.classList.remove('active');
 }
 function setNavSection(name){
-  const _btnT=document.getElementById('btn-tempo');
-  const isMetroOpen=_btnT&&_btnT.classList.contains('active');
-  // Toggle off if already active
-  if(name==='metro'&&isMetroOpen){_navSetMetro(false);_syncNavTabs();return;}
-  if(name==='sons'&&sonsOuvert){_navSetSons(false);_syncNavTabs();return;}
-  if(name==='encyclo'&&encycloOuvert){toggleEncyclo(false);_syncNavTabs();return;}
-  // Fermetures : Metro et Sons peuvent coexister ; Encyclo est exclusive
-  _navCloseJouer();
-  if(name==='encyclo'){
-    if(isMetroOpen)_navSetMetro(false);
-    if(sonsOuvert)_navSetSons(false);
-  } else {
-    if(encycloOuvert)toggleEncyclo(false);
+  // Chaque bouton est un toggle pur, sans fermeture des autres sections
+  if(name==='metro'){
+    const isOpen=document.getElementById('btn-tempo')?.classList.contains('active');
+    _navSetMetro(!isOpen);
+  } else if(name==='sons'){
+    _navSetSons(!sonsOuvert);
+  } else if(name==='encyclo'){
+    toggleEncyclo(!encycloOuvert);
   }
-  if(name==='metro')_navSetMetro(true);
-  else if(name==='sons')_navSetSons(true);
-  else if(name==='encyclo')toggleEncyclo(true);
   _syncNavTabs();
 }
 
@@ -13376,15 +13368,6 @@ function attachEvents(){
     buildSoundPanel();
   };
   btnJouer.addEventListener('click',()=>{
-    const willOpen=!playDrawer.classList.contains('open');
-    if(willOpen){
-      // Fermer les sections exclusives avant d'ouvrir Jouer
-      if(encycloOuvert)toggleEncyclo(false);
-      const mw=document.getElementById('temps-wrap');
-      if(mw&&mw.style.display!=='none')_navSetMetro(false);
-      if(sonsOuvert)_navSetSons(false);
-      _syncNavTabs();
-    }
     playDrawer.classList.toggle('open');
     _syncJouerOpen();
   });
