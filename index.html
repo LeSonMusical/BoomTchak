@@ -89,8 +89,8 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .temps-slider::-moz-range-track{height:2px;background:#C0CCD8;border-radius:2px}
 .temps-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#3A8C6E;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 /* Bouton Métro : OFF = fond du volet + bordure colorée ; ON = rempli */
-.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;color:#888;transition:color .15s;line-height:1}
-.btn-metro-main.on{color:#444}
+.btn-metro-main{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;font-size:17px;padding:0 2px;height:22px;min-width:0;background:transparent;opacity:.45;transition:color .15s,opacity .15s;line-height:1}
+.btn-metro-main.on{opacity:1}
 /* Bouton Pulse (panel toggle) */
 .btn-metro-volet{padding:1px 5px 2px;cursor:pointer;font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:transparent;border:1px solid transparent;border-radius:3px;color:#aaa;flex-shrink:0;white-space:nowrap;margin-left:1px;transition:color .12s,background .12s,border-color .12s}
 .btn-metro-volet:hover{color:#3A8C6E}
@@ -613,6 +613,8 @@ body.dark-mode .enc-toc-item:hover{background:#353330;color:#ddd;border-color:#6
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:none;background:transparent;cursor:pointer;color:#999;padding:4px 0;transition:color .12s,background .12s;-webkit-tap-highlight-color:transparent}
 .nav-tab:active{opacity:.7}
 .nav-tab.active{color:#9A7010;background:rgba(200,150,26,.1)}
+#nav-tab-metro.active{background:rgba(58,140,110,.2);color:#1C6048}
+#nav-tab-sons.active{background:rgba(74,127,165,.2);color:#1A3D5A}
 .nav-tab .nav-tab-ico{font-size:18px;line-height:1.1}
 .nav-tab .nav-tab-lbl{font-size:8.5px;font-weight:700;letter-spacing:.01em}
 .nav-play-wrap{display:flex;align-items:center;justify-content:center;padding:0 6px;flex-shrink:0}
@@ -1235,8 +1237,8 @@ body.dark-mode .temps-slider::-webkit-slider-runnable-track{background:#2A4A40}
 body.dark-mode .temps-slider::-webkit-slider-thumb{background:#5AAA8A;border-color:#1A2820}
 body.dark-mode .temps-slider::-moz-range-track{background:#2A4A40}
 body.dark-mode .temps-slider::-moz-range-thumb{background:#5AAA8A;border-color:#1A2820}
-body.dark-mode .btn-metro-main{background:transparent;color:#4A8A70}
-body.dark-mode .btn-metro-main.on{color:#70B898}
+body.dark-mode .btn-metro-main{background:transparent;opacity:.35}
+body.dark-mode .btn-metro-main.on{opacity:1}
 body.dark-mode .btn-metro-volet{color:#3A5A50}
 body.dark-mode .btn-metro-volet:hover{color:#5AAA8A}
 body.dark-mode .btn-metro-volet.open{color:#fff;background:#8B6914;border-color:#6A5010}
@@ -1313,6 +1315,8 @@ body.dark-mode .encyclo-vide{color:#555}
 body.dark-mode .bottom-bar{background:#1c1c1a;border-top-color:#8B6914}
 body.dark-mode .nav-tab{color:#555}
 body.dark-mode .nav-tab.active{color:#E8CC60;background:rgba(200,150,26,.12)}
+body.dark-mode #nav-tab-metro.active{background:rgba(58,140,110,.28);color:#5AAA8A}
+body.dark-mode #nav-tab-sons.active{background:rgba(74,127,165,.28);color:#7AB8D8}
 body.dark-mode .btn-rec.recording{background:#c0392b}
 body.dark-mode .btn-play-main{background:#2a2a28;color:#e0ddd8;border-color:#555;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 body.dark-mode .btn-play-main:hover{background:#333330}
@@ -1473,7 +1477,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.65</span>
+    <span class="app-version">v3.16.66</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5451,8 +5455,8 @@ function buildBandSection(){
   bar.className='section-bar band-bar sbar-3col'+(sonsOuvert?' visible':'');
 
   // ── Col gauche : 🔈 ──
-  const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';
-  const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent='🔈';
+  const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';leftCol.title='Mute/Unmute sons';
+  const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent=bandMuted?'🔇':'🔊';
   leftCol.appendChild(lblIco);
   bar.appendChild(leftCol);
 
@@ -5513,14 +5517,7 @@ function buildBandSection(){
   rightCol.appendChild(btnVolet);
   bar.appendChild(rightCol);
 
-  leftCol.addEventListener('click',()=>{
-    instrOuvert=!instrOuvert;
-    const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
-    btnVolet.textContent=instrOuvert?'▼':'▶';
-    btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
-    btnVolet.classList.toggle('open',instrOuvert);
-  });
+  leftCol.addEventListener('click',()=>{ _applyBandMute(!bandMuted); });
   cont.appendChild(bar);
 
   const bc=document.getElementById('band-content');
@@ -8216,6 +8213,16 @@ function _syncBtnVolAllMuted(){
   const icon=document.getElementById('sons-icon');
   if(icon)icon.textContent=allMuted?'🔇':'🔊';
   btnV.classList.toggle('muted',allMuted);
+  if(circleView)drawCircles();
+}
+function _applyBandMute(muted){
+  bandMuted=muted;
+  const icon=document.getElementById('sons-icon');
+  if(icon)icon.textContent=muted?'🔇':'🔊';
+  const btnV=document.getElementById('btn-vol');
+  if(btnV)btnV.classList.toggle('muted',muted);
+  const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
+  if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
   if(circleView)drawCircles();
 }
 function setMetroGlobal(on){
@@ -12672,6 +12679,8 @@ function attachEvents(){
       const icon=document.getElementById('sons-icon');
       if(icon)icon.textContent=muted?'🔇':'🔊';
       btnV.classList.toggle('muted',muted);
+      const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
+      if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
       if(circleView) drawCircles();
       if(showMsg){
         _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(muted?'#aaa':'#4AC9A0')+'">'+(muted?'off':'on')+'</span>');
@@ -12743,7 +12752,7 @@ function attachEvents(){
     updateBandVolFill();
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
-    _toggleAllMetroSubs();
+    setMetroGlobal(metro.muted);
   });
   // Clic sur espace vide de la barre métro → collapse/restore tous les sous-volets
   document.getElementById('section-temps').addEventListener('click',e=>{
