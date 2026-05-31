@@ -942,7 +942,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-retake{display:none}
 body.rec-tapped .rms-retake{display:inline-flex}
 /* Bouton Effacer : label au-dessus de la poubelle, pastilles dedans */
-.btn-rec-clear{display:none;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;border:1px dashed rgba(216,90,48,.4);border-radius:8px;background:none;color:#D85A30;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap}
+.btn-rec-clear{display:none;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;border:1px dashed rgba(128,128,128,.3);border-radius:8px;background:none;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap}
 .btn-rec-clear:active{background:rgba(216,90,48,.12)}
 .rcc-lbl{font-size:9px;font-weight:600;letter-spacing:.2px}
 /* Poubelle : emoji avec pastilles couleur layers empilées en dessous (décalage pour "dans" la corbeille) */
@@ -1491,7 +1491,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.75</span>
+    <span class="app-version">v3.16.76</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1682,14 +1682,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   </div>
   <div class="metro-bloc">
     <div class="metro-metro-layout">
-      <!-- Ligne 1 : boutons type (gauche) + subdivision (droite) -->
+      <!-- Ligne 1 : [^>] | Subdivision | [-] en 3 parties égales -->
       <div class="metro-metro-top">
-        <div class="metro-ctrl-accents-v">
+        <div class="metro-ctrl-accents-v" style="flex:1;justify-content:center">
           <button class="mpv-word-btn on" id="mpv-tog-A">^</button>
           <button class="mpv-word-btn on" id="mpv-tog-P">&gt;</button>
-          <button class="mpv-word-btn" id="mpv-tog-p">-</button>
         </div>
-        <div class="metro-ctrl-subdiv">
+        <div class="metro-ctrl-subdiv" style="flex:1">
           <span class="metro-subdiv-lbl">Subdivision</span>
           <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
             <option value="1">×1</option>
@@ -1697,6 +1696,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
             <option value="3">×3</option>
             <option value="4">×4</option>
           </select>
+        </div>
+        <div style="flex:1;display:flex;justify-content:center;align-items:center">
+          <button class="mpv-word-btn" id="mpv-tog-p">-</button>
         </div>
       </div>
       <!-- Ligne 2 : pattern viz -->
@@ -1712,32 +1714,25 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div class="metro-sub" id="metro-sub-vol" style="display:none">
   <div class="metro-sub-hdr">
     <span class="metro-sub-chip">Volumes</span>
-    <span class="metro-sub-desc">Métro <span id="metro-vol-val">80%</span></span>
+    <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:1;max-width:none;margin:0 5px" title="Volume global métronome">
+    <span id="metro-vol-val" style="font-size:9px;color:#aaa;white-space:nowrap;min-width:26px;text-align:right">80%</span>
   </div>
   <div class="metro-bloc">
-    <div class="metro-vol-row2">
-      <!-- Tiers gauche : volume global -->
-      <div class="metro-vol-global">
-        <span class="metro-3col-lbl">Global</span>
-        <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80">
+    <div class="metro-vol-accents" style="padding:.18rem 0">
+      <div class="metro-acc-vol">
+        <span class="metro-acc-vol-lbl" style="color:#5577A8;margin-bottom:-2px">^</span>
+        <input type="range" class="metro-acc-gauge" id="metro-vol-A" min="0" max="100" value="100" title="Volume accent fort (^)" style="--gc:#5577A8;--pct:100%">
+        <span class="metro-acc-vol-val" id="metro-vol-A-val">100%</span>
       </div>
-      <!-- Deux tiers droite : 3 jauges par accent (sans curseur, couleur du type) -->
-      <div class="metro-vol-accents">
-        <div class="metro-acc-vol">
-          <span class="metro-acc-vol-lbl" style="color:#5577A8;margin-bottom:-2px">^</span>
-          <input type="range" class="metro-acc-gauge" id="metro-vol-A" min="0" max="100" value="100" title="Volume accent fort (^)" style="--gc:#5577A8;--pct:100%">
-          <span class="metro-acc-vol-val" id="metro-vol-A-val">100%</span>
-        </div>
-        <div class="metro-acc-vol">
-          <span class="metro-acc-vol-lbl" style="color:#3A8C6E;margin-bottom:-2px">&gt;</span>
-          <input type="range" class="metro-acc-gauge" id="metro-vol-P" min="0" max="100" value="70" title="Volume temps (>)" style="--gc:#3A8C6E;--pct:70%">
-          <span class="metro-acc-vol-val" id="metro-vol-P-val">70%</span>
-        </div>
-        <div class="metro-acc-vol">
-          <span class="metro-acc-vol-lbl" style="color:#6FAF98;margin-bottom:-2px">-</span>
-          <input type="range" class="metro-acc-gauge" id="metro-vol-p" min="0" max="100" value="40" title="Volume subdivisions (-)" style="--gc:#6FAF98;--pct:40%">
-          <span class="metro-acc-vol-val" id="metro-vol-p-val">40%</span>
-        </div>
+      <div class="metro-acc-vol">
+        <span class="metro-acc-vol-lbl" style="color:#3A8C6E;margin-bottom:-2px">&gt;</span>
+        <input type="range" class="metro-acc-gauge" id="metro-vol-P" min="0" max="100" value="70" title="Volume temps (>)" style="--gc:#3A8C6E;--pct:70%">
+        <span class="metro-acc-vol-val" id="metro-vol-P-val">70%</span>
+      </div>
+      <div class="metro-acc-vol">
+        <span class="metro-acc-vol-lbl" style="color:#6FAF98;margin-bottom:-2px">-</span>
+        <input type="range" class="metro-acc-gauge" id="metro-vol-p" min="0" max="100" value="40" title="Volume subdivisions (-)" style="--gc:#6FAF98;--pct:40%">
+        <span class="metro-acc-vol-val" id="metro-vol-p-val">40%</span>
       </div>
     </div>
   </div>
@@ -3198,6 +3193,7 @@ let schedTimerID=null, visualRafID=null;
 // Mini-VU (collapsed groove-view-bar)
 let _miniVuRafId=null;
 const _miniVuHit=[0,0,0]; // performance.now() timestamp of next beat per layer
+const _miniVuSoft=[false,false,false]; // true si le dernier coup était un son faible ('x')
 const MINI_VU_DECAY=420;  // ms halo fade duration
 
 function _miniVuDraw(){
@@ -3235,27 +3231,33 @@ function _miniVuDraw(){
       ctx.restore();
     }
     // Sur hit : dot flash + halo (circulaire sauf vert/noise = ellipse très plate)
+    // Sons faibles (x) : dot plus petit, halo moins intense
+    const isSoft=_miniVuSoft[li];
     if(t>0){
-      ctx.beginPath();ctx.arc(x,y,r0*(0.5+t*0.5),0,Math.PI*2);
-      ctx.fillStyle=col;ctx.globalAlpha=t*0.92;ctx.fill();
-      const maxR=Math.min(x,W-x)*0.9;
+      const dotScale=isSoft?0.45+t*0.3:0.5+t*0.5;
+      const alphaScale=isSoft?0.42:0.92;
+      ctx.beginPath();ctx.arc(x,y,r0*dotScale,0,Math.PI*2);
+      ctx.fillStyle=col;ctx.globalAlpha=t*alphaScale;ctx.fill();
+      const maxR=Math.min(x,W-x)*(isSoft?0.55:0.9);
       const isCenter=li===2;
       const hr=isCenter?maxR*(0.25+0.75*(1-t)):r0*0.8+(1-t)*maxR;
       if(isCenter){
         ctx.save();ctx.translate(x,y);ctx.scale(1,0.09);
         const grad=ctx.createRadialGradient(0,0,r0*0.2,0,0,hr);
-        grad.addColorStop(0,hexRgba(col,t*0.65));
-        grad.addColorStop(0.35,hexRgba(col,t*0.25));
-        grad.addColorStop(0.70,hexRgba(col,t*0.06));
+        const hA=isSoft?0.3:0.65, hB=isSoft?0.10:0.25, hC=isSoft?0.02:0.06;
+        grad.addColorStop(0,hexRgba(col,t*hA));
+        grad.addColorStop(0.35,hexRgba(col,t*hB));
+        grad.addColorStop(0.70,hexRgba(col,t*hC));
         grad.addColorStop(1,hexRgba(col,0));
         ctx.beginPath();ctx.arc(0,0,hr,0,Math.PI*2);
         ctx.fillStyle=grad;ctx.globalAlpha=1;ctx.fill();
         ctx.restore();
       } else {
+        const hA=isSoft?0.32:0.68, hB=isSoft?0.14:0.32, hC=isSoft?0.03:0.07;
         const grad=ctx.createRadialGradient(x,y,r0*0.3,x,y,hr);
-        grad.addColorStop(0,hexRgba(col,t*0.68));
-        grad.addColorStop(0.40,hexRgba(col,t*0.32));
-        grad.addColorStop(0.78,hexRgba(col,t*0.07));
+        grad.addColorStop(0,hexRgba(col,t*hA));
+        grad.addColorStop(0.40,hexRgba(col,t*hB));
+        grad.addColorStop(0.78,hexRgba(col,t*hC));
         grad.addColorStop(1,hexRgba(col,0));
         ctx.beginPath();ctx.arc(x,y,hr,0,Math.PI*2);
         ctx.fillStyle=grad;ctx.globalAlpha=1;ctx.fill();
@@ -3343,7 +3345,7 @@ function scheduler(){
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
       if(stepVal!=='.'&&!state[li].muted){
         scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
-        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;}
+        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
       }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
@@ -6393,7 +6395,7 @@ function buildLayers(){
     btnMod.addEventListener('click',()=>{
       const open=modPanel.classList.toggle('hidden');
       btnMod.textContent=open?'mod ▶':'mod ▼';btnMod.classList.toggle('open',!open);
-      if(!open){updateSwapBtn();_refreshPadPreview();}
+      if(!open){updateSwapBtn();_refreshPadPreview();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
       updateLayerEditBar();
     });
 
@@ -6592,7 +6594,7 @@ function buildPspFamTags(){
 // Construit le select d'ajout de famille (uniquement les non-déjà-assignées)
 function buildPspFamSel(){
   const sel = document.getElementById('psp-fam-sel');
-  sel.innerHTML = '<option value="">— Ajouter une famille —</option>';
+  sel.innerHTML = '<option value="">— Associer à une famille —</option>';
   _getPspFamilles()
     .filter(f => !_pspNewFamIds.includes(f.id))
     .forEach(f=>{
@@ -8355,7 +8357,7 @@ let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
 let viewCycleLinear = 'cycle';   // 'pattern' | 'cycle'    (état mémorisé en mode ☰)
 const flashStep = [-1,-1,-1];
-const CIRC_LABEL_W = 60; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
+const CIRC_LABEL_W = 72; // strip gauche labels (+ strip droit symétrique) pour centrer le cercle (cx = szW/2)
 
 const CIRCLE_COLORS = [
   {fill:'#378ADD', stroke:'#185FA5', track:'rgba(55,138,221,0.25)'},   // grave — cercle intérieur
@@ -8593,37 +8595,34 @@ function drawCircles(){
     }
     // Numéros des temps en bordure extérieure (vue mesure : supprimés — remplacés par Mes n/p)
   }
-  // Labels nb de pas + durée (en fraction) dans le strip gauche — modes Pattern ET Mesure
+  // Labels 3 lignes (nb pas / unité / durée) centrés verticalement — modes Pattern ET Mesure
   {
     const isDark2 = document.body.classList.contains('dark-mode');
     const fbs = currentSig.equivalence || currentSig.felBeatSteps || 2;
+    const lSpacing = Math.min(28, Math.max(20, H * 0.16)); // espacement entre couches
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     [0,1,2].forEach(li=>{
       const n = state[li].pattern.length;
       const col = CIRCLE_COLORS[li];
       const dbl = state[li].doubleOn, hlf = state[li].halfOn, trn = state[li].ternOn;
       const unit = dbl&&trn?'1/16T':hlf&&trn?'1/4T':dbl?'1/16':hlf?'1/4':trn?'1/8T':'1/8';
-      // Durée en fraction irréductible (ex: "2+1/3 tps" au lieu de "2,33 tps")
-      let numD = trn ? 2*n : n;
-      let denD = trn ? (hlf?6:dbl?12:6) : (hlf?1:dbl?2:1);
-      denD *= fbs; if(hlf&&!trn) numD*=2;
-      // Simplification : recalcul propre
-      if(!trn){ numD=n; denD=fbs*(dbl?2:hlf?1:1); if(hlf)numD=2*n; }
-      else { numD=2*n; denD=3*fbs*(dbl?2:hlf?1:1); if(hlf)numD=4*n; }
-      const g2=gcd(numD,denD); numD/=g2; denD/=g2;
-      const whole=Math.floor(numD/denD), rem=numD%denD;
-      const durStr = rem===0 ? whole+' tps' : whole===0 ? rem+'/'+denD+' tps' : whole+'+'+rem+'/'+denD+' tps';
-      const topPad = Math.round(cy - (radii[2]+dotR+6));
-      const y1 = topPad + 12 + li * 22;
-      const y2 = y1 + 11;
-      ctx.beginPath(); ctx.arc(11, y1, 3.5, 0, 2*Math.PI);
+      const {num,den}=_layerDurFrac(li);
+      const whole=Math.floor(num/den),rem=num%den;
+      const durStr=(rem===0?whole:(whole===0?rem+'/'+den:whole+'+'+rem+'/'+den))+' tps';
+      const lCY = cy + (li-1)*lSpacing; // centre vertical du groupe pour ce layer
+      const dotY = lCY - 8;
+      ctx.beginPath(); ctx.arc(8, dotY, 3.5, 0, 2*Math.PI);
       ctx.fillStyle = col.fill; ctx.fill();
       ctx.font = 'bold 9px sans-serif';
       ctx.fillStyle = isDark2 ? col.fill : col.stroke;
-      ctx.fillText(n + 'p ' + unit, 17, y1);
+      ctx.fillText(n + ' pas', 14, lCY - 8);
       ctx.font = '9px sans-serif';
-      ctx.fillStyle = isDark2 ? '#aaa' : '#666';
-      ctx.fillText(durStr, 17, y2);
+      ctx.fillStyle = isDark2 ? col.fill : col.stroke; ctx.globalAlpha = 0.75;
+      ctx.fillText('en ' + unit, 14, lCY + 1);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = isDark2 ? '#888' : '#999';
+      ctx.font = '8px sans-serif';
+      ctx.fillText('= ' + durStr, 14, lCY + 10);
     });
   }
 
@@ -8848,6 +8847,15 @@ function drawLinear(){
 function circleHitTest(x, y){
   if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
+  // Clic dans le strip gauche → ouvre volet mod du layer correspondant (vue circulaire)
+  if(circleModeView!=='linear' && x < CIRC_LABEL_W){
+    const H=cv.height, cy=H/2;
+    const lSpacing=Math.min(28,Math.max(20,H*0.16));
+    for(let li=0;li<3;li++){
+      const lCY=cy+(li-1)*lSpacing;
+      if(y>=lCY-14 && y<=lCY+14) return{labelLi:li};
+    }
+  }
   if(circleModeView==='linear'){
     // Recalcul des positions identiques à drawLinear()
     const mStepsL=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
@@ -8925,6 +8933,19 @@ function setupCanvasInteraction(){
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
+    if(hit.labelLi!==undefined){
+      const li=hit.labelLi;
+      const modPanel=document.getElementById('mod-panel-'+li);
+      if(modPanel){
+        const isHidden=modPanel.classList.contains('hidden');
+        modPanel.classList.toggle('hidden');
+        const layerDiv=document.getElementById('layer-div-'+li);
+        const btn=layerDiv?.querySelector('.btn-layer-toggle');
+        if(btn){btn.textContent=isHidden?'mod ▼':'mod ▶';btn.classList.toggle('open',isHidden);}
+        if(isHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+      }
+      return;
+    }
     const {li, si} = hit;
     const srcPat = state[li].patternId ? getPattern(state[li].patternId) : null;
     const STEP_CYCLE={'.':'X','X':'x','x':'.'};
@@ -8935,6 +8956,12 @@ function setupCanvasInteraction(){
     drawCircles();
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
+  cv.addEventListener('mousemove',e=>{
+    if(circleModeView==='linear'){cv.style.cursor='';return;}
+    const rect=cv.getBoundingClientRect();
+    cv.style.cursor=(e.clientX-rect.left)*(cv.width/rect.width)<CIRC_LABEL_W?'pointer':'';
+  });
+  cv.addEventListener('mouseleave',()=>cv.style.cursor='');
   // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
   let _cvTouchOnDot = false;
   cv.addEventListener('touchstart', e=>{
@@ -12946,7 +12973,7 @@ function attachEvents(){
   _swSlider?.addEventListener('input',e=>{
     const t=parseInt(e.target.value)/100;
     swingVal=t*t; // quadratique : plus de précision sur les petites valeurs (MPC 50–67%)
-    updateSwingDisplay();
+    updateSwingDisplay(); updateBeatDisplay();
     setMetroDirty(true); updateMetroSaveBtn();
     const _mpc=50+swingVal*25;_dragOverlay.show('<span style="font-size:20px;font-weight:900">'+_mpc.toFixed(1)+'%</span><br><span style="font-size:11px;font-weight:400;opacity:.85">'+getSwingName(_mpc)+'</span>');
   });
