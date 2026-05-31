@@ -1491,7 +1491,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.73</span>
+    <span class="app-version">v3.16.74</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3844,7 +3844,7 @@ function updateGrooveNameTopBar(){
   if(!btn) return;
   const g = getGroove(currentGrooveId);
   let name = g ? (g.nom || '—') : '—';
-  if(g && g.source==='teacher') name += ' ✎';
+  if(g && g.source==='teacher') name += ' 👤';
   if(g && g.source==='pending') name += ' 👁';
   const isDirty = grooveDirty || metroDirty || bandDirty;
   if(isDirty){
@@ -4432,6 +4432,7 @@ function openPresetModal(cfg){
       let items=(packCours.soundPresets||[]).filter(sp=>!sp.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return items.filter(i=>i.nom.toLowerCase().includes(q));}
       if(famFilter&&famFilter!=='all'){
+        if(famFilter==='__user__')return items.filter(sp=>sp.source&&sp.source!=='school');
         return items.filter(sp=>(sp.familles_ids||[]).includes(famFilter));
       }
       return items;
@@ -4439,14 +4440,15 @@ function openPresetModal(cfg){
     if(cfg.type==='band'){
       const all=(packCours.bands||[]).filter(b=>!b.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(b=>b.nom.toLowerCase().includes(q));}
-      return famFilter==='__teacher__'?all.filter(b=>b.source==='teacher'):
+      return famFilter==='__user__'?all.filter(b=>b.source!=='school'):
+             famFilter==='__teacher__'?all.filter(b=>b.source==='teacher'):
              famFilter&&famFilter!=='all'?all.filter(b=>(b.familles||[]).includes(famFilter)):all;
     }
     if(cfg.type==='groove'){
       const allG=packCours.grooves.filter(g=>!g.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return allG.filter(i=>i.nom.toLowerCase().includes(q));}
       const base=allG.filter(g=>g.source!=='pending');
-      const filtered=famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
+      const filtered=famFilter==='__user__'?base.filter(g=>g.source!=='school'):famFilter==='__teacher__'?base.filter(g=>g.source==='teacher'):famFilter&&famFilter!=='all'?base.filter(g=>(g.familles||[]).includes(famFilter)):base;
       const pending=allG.filter(g=>g.source==='pending'&&!filtered.some(i=>i.id===g.id));
       result=[...filtered,...pending];
     } else if(cfg.type==='sig'){
@@ -4456,12 +4458,13 @@ function openPresetModal(cfg){
       if(searchQuery){const q=searchQuery.toLowerCase();return [...base,...teacher].filter(i=>(i.label||i.nom||'').toLowerCase().includes(q));}
       // Filtre famille : match familles_ids ET le champ legacy famille (pour les presets JS fallback)
       const matchFam=p=>(p.familles_ids||[]).includes(famFilter)||(p.famille===famFilter);
-      const filtered=famFilter&&famFilter!=='all'?base.filter(matchFam):base;
-      result=[...filtered,...teacher.filter(p=>!filtered.some(i=>i.id===p.id))];
+      if(famFilter==='__user__'){result=[...teacher];}
+      else{const filtered=famFilter&&famFilter!=='all'?base.filter(matchFam):base;
+      result=[...filtered,...teacher.filter(p=>!filtered.some(i=>i.id===p.id))];}
     } else {
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(i=>i.nom.toLowerCase().includes(q));}
-      result=famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+      result=famFilter==='__user__'?all.filter(p=>p.source!=='school'):famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
     }
     return result;
   }
@@ -4711,7 +4714,7 @@ function openPresetModal(cfg){
       famCol.appendChild(b);
     };
     mkFilterBtn('all','Tout');
-    if(authProfile&&cfg.type!=='band'&&cfg.type!=='sound'&&cfg.type!=='sig')mkFilterBtn('__teacher__','Perso');
+    mkFilterBtn('__user__','👤 User');
 
     // Son : colonne gauche avec section Familles (soundFamilles)
     if(cfg.type==='sound'){
@@ -5340,7 +5343,7 @@ function openPresetModal(cfg){
         } else {
           const row=document.createElement('button');row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
           row.dataset.pmId=item.id;
-          row.textContent=item.nom+(item.source==='teacher'?' ✎':'');
+          row.textContent=item.nom+(item.source==='teacher'?' 👤':'');
           row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
           if(sheet._addLongPress)sheet._addLongPress(row,item.id);
           itemsWrap.appendChild(row);
@@ -5443,7 +5446,7 @@ function openPresetModal(cfg){
         row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
         row.dataset.pmId=item.id;
         if(cfg.type==='sig'){row.textContent=displayNom;}
-        else{row.textContent=displayNom+(item.source==='teacher'?' ✎':'')+(item.source==='pending'?' 👁':'');}
+        else{row.textContent=displayNom+(item.source==='teacher'?' 👤':'')+(item.source==='pending'?' 👁':'');}
         row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
         if(sheet._addLongPress)sheet._addLongPress(row,item.id);
         itemsWrap.appendChild(row);
@@ -5493,7 +5496,7 @@ function buildBandSection(){
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
   const bandPresetBtn=document.createElement('button');
   bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='sbar-preset-name';
-  bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' ✎':''):'—';
+  bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' 👤':''):'—';
   const _bandOnSelect=(id)=>{
     applyBand(id);
     const groove=getGroove(currentGrooveId);
@@ -5981,7 +5984,7 @@ function buildLayers(){
     const curPat0=_hasEmbed0?null:(state[li].patternId?getPattern(state[li].patternId):findPatternBySeq(state[li].pattern));
     const patPresetBtn=document.createElement('button');
     patPresetBtn.id='preset-btn-'+layer.id;patPresetBtn.className='pm-preset-btn';
-    patPresetBtn.textContent=curPat0?curPat0.nom+(curPat0.source==='teacher'?' ✎':''):'—';
+    patPresetBtn.textContent=curPat0?curPat0.nom+(curPat0.source==='teacher'?' 👤':''):'—';
     const _patOnSelect=(patId)=>{
       const pat=getPattern(patId);if(!pat)return;
       state[li].pattern=pat.sequence.split('');
@@ -5996,7 +5999,7 @@ function buildLayers(){
       updateEncycloPresetBtn(pat.encyclo_ref||pat.id);
       setLayerDirty(li,false);
       refreshLayerClass();
-      patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' ✎':'');
+      patPresetBtn.textContent=pat.nom+(pat.source==='teacher'?' 👤':'');
       const pasNum=document.getElementById('pas-num-'+li);
       if(pasNum)pasNum.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,false);
