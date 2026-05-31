@@ -1507,7 +1507,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.86</span>
+    <span class="app-version">v3.16.87</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5845,12 +5845,15 @@ function buildGrooveSection(){
 
   // Collapse ˅/˄ — ne cache que la vue canvas (pas les 3 layers)
   // Chevron : affichage Groove.view (canvas + boutons vue + mini-VU)
+  // Chevron : canvas + boutons vue + polymétrie (rien sur layers-wrap)
   const _toggleLayers=()=>{
     layersOuverts=!layersOuverts;
     const cv=document.getElementById('circle-view');
+    const ri=document.getElementById('rhythm-info-wrap');
     const sr=document.getElementById('step-rows-wrap');
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-    if(sr)sr.style.display=layersOuverts&&layerPanelsOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
+    if(ri){ if(!layersOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
+    if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
     const l3el=document.getElementById('groove-view-bar');
     if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
     btnCollapse.textContent=layersOuverts?'▼':'▶';
@@ -5860,15 +5863,11 @@ function buildGrooveSection(){
     updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
-  // Hamburger : masque/affiche les 3 volets layer + ligne info
+  // Hamburger : masque/affiche les 3 volets layer uniquement (pas rhythm-info, pas canvas)
   const _toggleLayerPanels=()=>{
     layerPanelsOuverts=!layerPanelsOuverts;
     const lw=document.getElementById('layers-wrap');
-    const ri=document.getElementById('rhythm-info-wrap');
-    const sr2=document.getElementById('step-rows-wrap');
-    if(lw)lw.style.display=(layerPanelsOuverts&&layersOuverts)?'':'none';
-    if(ri){ if(!layerPanelsOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
-    if(sr2)sr2.style.display=layerPanelsOuverts&&layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
+    if(lw)lw.style.display=layerPanelsOuverts?'':'none';
     btnLayersToggle.classList.toggle('open',layerPanelsOuverts);
     btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
   };
@@ -9278,9 +9277,9 @@ function _applyView(){
   const lw = document.getElementById('layers-wrap');
   const srAV = document.getElementById('step-rows-wrap');
   if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
-  if(lw) lw.style.display = (layersOuverts && layerPanelsOuverts) ? '' : 'none';
-  // Effacer tout style inline sur step-rows-wrap pour que le CSS body.step-seq puisse s'appliquer
-  if(srAV) srAV.style.display = (layersOuverts && layerPanelsOuverts) ? '' : 'none';
+  if(lw) lw.style.display = layerPanelsOuverts ? '' : 'none';
+  // step-rows-wrap = vue Groove (chevron), pas les volets layer
+  if(srAV) srAV.style.display = layersOuverts ? '' : 'none';
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
