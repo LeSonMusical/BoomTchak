@@ -310,14 +310,18 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .groove-l1-center{display:flex;align-items:center;gap:2px;justify-content:center}
 .groove-l1-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .groove-l2{display:flex;align-items:center;padding:.05rem .5rem .15rem}
-.groove-view-bar{display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 6px 5px;border-top:1px solid rgba(0,0,0,.09);position:relative;overflow:hidden;cursor:pointer}
+.groove-view-bar{display:flex;align-items:center;padding:3px 4px 5px;border-top:1px solid rgba(0,0,0,.09);position:relative;overflow:hidden;cursor:pointer}
 #mini-visu{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none}
-.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 6px;transition:color .12s,border-color .12s,opacity .12s;position:relative;z-index:2}
-/* Replié : jaune vif, bordure franche — sans fond */
-.gvb-collapse-btn:not(.open){border-color:#C8961A;color:#8B6914;font-weight:700;background:none}
-/* Déplié : violet discret */
-.gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
-.gvb-collapse-btn:hover{opacity:.85}
+.gvb-btns{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
+.gvb-collapse-btn{flex-shrink:0;background:none;border:1px solid transparent;cursor:pointer;padding:4px 6px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;border-radius:5px;-webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s,box-shadow .15s;position:relative;z-index:2}
+.gvb-bar{display:block;width:14px;height:2.5px;border-radius:1.5px;transition:opacity .15s}
+/* Replié : barres vives + fond blanc + ombre — très visible */
+.gvb-collapse-btn:not(.open){background:rgba(255,255,255,.65);border-color:rgba(0,0,0,.2);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.gvb-collapse-btn:not(.open) .gvb-bar{opacity:1}
+/* Déplié : barres quasi invisibles */
+.gvb-collapse-btn.open .gvb-bar{opacity:.18}
+.gvb-collapse-btn.open:hover .gvb-bar{opacity:.5}
+.gvb-collapse-btn:hover{background:rgba(255,255,255,.4)}
 .band-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(74,127,165,.55);color:#4A7FA5;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
 .band-collapse-btn:not(.open){border-color:#4A7FA5;color:#1A3D5A;font-weight:700;background:none}
 .band-collapse-btn.open{border-color:#4A7FA5;color:#4A7FA5;font-weight:700;background:none;opacity:.75}
@@ -1395,8 +1399,10 @@ body.dark-mode .leb-sig{color:#5AAA8A}
 body.dark-mode .leb-sig:hover{color:#7BCCAA}
 body.dark-mode .leb-cycle{color:#666}
 body.dark-mode .leb-mod-btn{border-color:rgba(200,150,26,.5);background:rgba(255,255,255,.04)}
-body.dark-mode .gvb-collapse-btn:not(.open){background:none;border-color:#C8961A;color:#C8961A}
-body.dark-mode .gvb-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
+body.dark-mode .gvb-collapse-btn:not(.open){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);box-shadow:0 1px 4px rgba(0,0,0,.45)}
+body.dark-mode .gvb-collapse-btn:not(.open) .gvb-bar{opacity:1}
+body.dark-mode .gvb-collapse-btn.open .gvb-bar{opacity:.15}
+body.dark-mode .gvb-collapse-btn:hover{background:rgba(255,255,255,.12)}
 body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#1A3D5A}
 body.dark-mode .band-collapse-btn.open{border-color:#5A98B8;color:#5A98B8;opacity:.75}
 body.dark-mode .metro-collapse-btn:not(.open){background:none;border-color:#4AAA80;color:#1C5C40}
@@ -1495,7 +1501,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.84</span>
+    <span class="app-version">v3.16.85</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5725,12 +5731,14 @@ function buildGrooveSection(){
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);
-  // Chevron collapse — attaché à la groove-view-bar (créé ici pour la closure _toggleLayers)
+  // Bouton collapse — hamburger tri-couleur, extrême droite de la groove-view-bar
   const btnCollapse=document.createElement('button');
   btnCollapse.className='gvb-collapse-btn'+(layersOuverts?' open':'');
   btnCollapse.id='groove-collapse';
-  btnCollapse.textContent=layersOuverts?'▼':'▶';
   btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+  ['#378ADD','#D85A30','#1D9E75'].forEach(col=>{
+    const bar=document.createElement('span');bar.className='gvb-bar';bar.style.background=col;btnCollapse.appendChild(bar);
+  });
 
   l1.appendChild(gLeft);l1.appendChild(gCenter);l1.appendChild(gRight);
   header.appendChild(l1);
@@ -5757,15 +5765,16 @@ function buildGrooveSection(){
     {key:'pas',   label:'Step',    shape:'linear', cycle:'pattern'},
     {key:'cycle', label:'Cycle',   shape:'linear', cycle:'cycle'}
   ];
-  _viewDefs.forEach((d,i)=>{
-    // Chevron entre Mesure (index 1) et Step (index 2)
-    if(i===2) l3.appendChild(btnCollapse);
+  const gvbBtns=document.createElement('div');gvbBtns.className='gvb-btns';
+  _viewDefs.forEach((d)=>{
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
     if(!layersOuverts)b.style.display='none';
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
-    l3.appendChild(b);
+    gvbBtns.appendChild(b);
   });
+  l3.appendChild(gvbBtns);
+  l3.appendChild(btnCollapse);
   // Clic sur le fond de la groove-view-bar → ouvre volet mod du layer correspondant (mini-VU zones)
   // Zone gauche=layer0, centre=layer2, droite=layer1 (correspond aux positions halos mini-VU)
   l3.addEventListener('click',e=>{
@@ -5826,14 +5835,15 @@ function buildGrooveSection(){
     const cv=document.getElementById('circle-view');
     const ri=document.getElementById('rhythm-info-wrap');
     const sr=document.getElementById('step-rows-wrap');
+    const l2el=document.getElementById('groove-l2');
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(ri){ if(!layersOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
     if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
+    if(l2el)l2el.style.display=layersOuverts?'':'none';
     const l3el=document.getElementById('groove-view-bar');
     if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
-    btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
-    btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
+    btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
     if(layersOuverts)_miniVuStop(); else _miniVuStart();
     updateViewModeBar();
   };
