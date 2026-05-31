@@ -34,7 +34,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .app-version{font-size:8px;color:#aaa;font-weight:400}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-sig-top{font-size:11px;padding:2px 5px;flex-shrink:0}
+.btn-sig-top{font-size:11px;padding:2px 7px;flex-shrink:0;letter-spacing:.02em}
 .btn-top{padding:3px 9px;cursor:pointer;font-size:11px;font-weight:600;background:#fff;border:1px solid #c0bdb7;border-radius:5px;color:#555;letter-spacing:.03em}
 .top-bar .btn-top{height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .btn-top:hover{background:#e8e5e0}
@@ -514,7 +514,9 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sons-lbl{font-size:11px;letter-spacing:.02em;color:inherit}
 .sons-vol-track{width:44px;height:2px;background:rgba(0,0,0,.12);border-radius:1px;overflow:hidden}
 #sons-vol-fill{height:100%;width:100%;background:currentColor;border-radius:1px}
-#btn-tempo{color:#999;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.6}
+/* btn-tempo + btn-sig-top : groupe visuel soudé */
+#btn-tempo{color:#999;border-color:#ccc;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px 4px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;opacity:.6;border-radius:5px 0 0 5px}
+#btn-sig-top{color:#999;border-color:#ccc;background:#f0f0f0;opacity:.6;border-radius:0 5px 5px 0;margin-left:-1px;border-left-width:0}
 #btn-tempo .metro-row{display:flex;align-items:center;gap:3px;line-height:1}
 #btn-tempo .metro-icon{font-size:14px}
 #btn-tempo .metro-bpm{font-size:11px;letter-spacing:.02em;color:inherit}
@@ -522,6 +524,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo .metro-track-fill{height:100%;width:50%;background:currentColor;border-radius:1px;transition:width .08s linear}
 #btn-tempo.metro-on{opacity:1;color:#777;border-color:#ccc;background:#f0f0f0}
 #btn-tempo.active{background:rgba(58,140,110,.1);border-color:#3A8C6E;color:#2A6A50;opacity:1}
+#btn-sig-top.active{background:rgba(58,140,110,.1);border-color:#3A8C6E;color:#2A6A50;opacity:1}
 #btn-tempo:not(.metro-on) .metro-icon{position:relative}
 #btn-tempo:not(.metro-on) .metro-icon::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:120%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.9}
 /* Overlay de valeur lors du drag (tempo/vol) */
@@ -935,11 +938,11 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 #rec-mode-btn-ovr.active-ovr{border:2px solid #C8961A;background:rgba(200,150,26,.12);color:#C8961A}
 .rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
 /* Slot central : contient rms-retake ET btn-rec-clear, un seul visible à la fois */
-.rms-center-slot{position:relative;min-width:86px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.rms-retake,.btn-rec-clear{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);visibility:hidden}
-body.rec-tapped .rms-retake{visibility:visible}
+.rms-center-slot{flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rms-retake{display:none}
+body.rec-tapped .rms-retake{display:inline-flex}
 /* Bouton Effacer : label au-dessus de la poubelle, pastilles dedans */
-.btn-rec-clear{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;border:1px dashed rgba(216,90,48,.4);border-radius:8px;background:none;color:#D85A30;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap}
+.btn-rec-clear{display:none;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;border:1px dashed rgba(216,90,48,.4);border-radius:8px;background:none;color:#D85A30;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap}
 .btn-rec-clear:active{background:rgba(216,90,48,.12)}
 .rcc-lbl{font-size:9px;font-weight:600;letter-spacing:.2px}
 /* Poubelle : emoji avec pastilles couleur layers empilées en dessous (décalage pour "dans" la corbeille) */
@@ -948,8 +951,8 @@ body.rec-tapped .rms-retake{visibility:visible}
 .rcc-layers{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
 .rcc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 /* Visible en rec-mode, avant 1er tap */
-.play-drawer.rec-mode .btn-rec-clear{visibility:visible}
-body.rec-tapped .btn-rec-clear{visibility:hidden!important}
+.play-drawer.rec-mode .btn-rec-clear{display:flex}
+body.rec-tapped .btn-rec-clear{display:none!important}
 .rms-retake:active{background:rgba(200,130,18,.28)}
 body.dark-mode .rms-mode-lbl{color:#555}
 body.dark-mode #rec-mode-btn-rpl{border:1px solid rgba(255,255,255,.22);background:none;color:#666}
@@ -1185,7 +1188,8 @@ body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
 body.dark-mode .app-name{color:#C8961A}
-body.dark-mode .btn-sig-top{}
+body.dark-mode #btn-sig-top{color:#666;border-color:#444;background:#222220;opacity:.5}
+body.dark-mode #btn-sig-top.active{background:rgba(58,140,110,.2);color:#5AAA8A;border-color:#3A8C6E;opacity:1}
 body.dark-mode .btn-view-shape{background:#1A2820;border-color:#2A4A40;color:#5AAA8A}
 body.dark-mode #view-mode-bar{background:transparent;border-bottom-color:#333330}
 body.dark-mode .app-version{color:#555}
@@ -1487,12 +1491,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.72</span>
+    <span class="app-version">v3.16.73</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
-    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
     <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">⏱</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
+    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
     <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
   </div>
   <!-- FAR RIGHT: settings -->
@@ -1812,11 +1816,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
   </div>
-  <!-- Strip mode rec — Remplacer | [Effacer↔Reprendre] | Superposer -->
+  <!-- Strip mode rec — Superposer | [Effacer↔Reprendre] | Remplacer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
-    <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
+    <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
       <span class="rms-mode-lbl">mode</span>
-      <span class="rms-btn-main"><span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span></span>
+      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Superposer</span></span>
     </button>
     <!-- Slot central : Effacer (avant 1er tap) ↔ Reprendre (après tap) -->
     <div class="rms-center-slot">
@@ -1831,9 +1835,9 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         </span>
       </button>
     </div>
-    <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
+    <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
       <span class="rms-mode-lbl">mode</span>
-      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Superposer</span></span>
+      <span class="rms-btn-main"><span class="rms-lbl">Remplacer</span><span class="rms-ico">⊘</span></span>
     </button>
   </div>
 </div>
@@ -3588,8 +3592,8 @@ function recTap(tapTime,isRight){
   // Nuance : 1 layer en rec → pouce gauche = fort (X), pouce droit = doux (x)
   const note=(recLayers.length===1&&isRight)?'x':'X';
   if(state[li].recMode==='overdub'){
-    // Fort (X) remplace faible (x) ; ne remplace pas un fort existant
-    if(state[li].pattern[si]==='.'||(note==='X'&&state[li].pattern[si]==='x')) state[li].pattern[si]=note;
+    // Tout son capté remplace ce qui est sur le step (fort ou faible)
+    state[li].pattern[si]=note;
     if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
     state[li].recNewSteps.add(si);
   } else {
@@ -3598,11 +3602,8 @@ function recTap(tapTime,isRight){
       state[li].recBuffer=Array(n).fill('.');
       state[li].pattern=Array(n).fill('.'); // Ardoise vierge au premier tap
     }
-    // Fort (X) remplace faible (x) ; faible ne remplace pas fort
-    if(state[li].recBuffer[si]==='.'||(note==='X'&&state[li].recBuffer[si]==='x')){
-      state[li].recBuffer[si]=note;
-      state[li].pattern[si]=note;
-    }
+    state[li].recBuffer[si]=note;
+    state[li].pattern[si]=note;
     if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
     state[li].recNewSteps.add(si);
   }
@@ -6075,7 +6076,7 @@ function buildLayers(){
       if(state[li].pattern.length<=1)return;
       const last=state[li].pattern[state[li].pattern.length-1];
       const doRemove=()=>{state[li].pattern=state[li].pattern.slice(0,-1);if((state[li].shiftN||0)>=state[li].pattern.length)state[li].shiftN=0;_reszMark();};
-      if(last!=='.')miniConfirm('Le dernier pas est actif. Enlever quand même ?','noWarnLastStep',doRemove);
+      if(last!=='.')miniConfirm('Le pas que vous retirez contient un son — le supprimer ?','noWarnLastStep',doRemove);
       else doRemove();
     });
 
