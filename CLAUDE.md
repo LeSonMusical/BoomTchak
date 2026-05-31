@@ -86,7 +86,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.16.55** (session 2026-05-29)
+**v3.17.0** (session 2026-05-31)
 
 ---
 
@@ -127,6 +127,19 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.17.0 | Hamburger layers visible en déplié (opacity .38 + border discret) ; clôture session 2026-05-31 |
+| v3.16.88 | groove-view-bar : hamburger `position:absolute right:4px` ; `gvb-btns padding:0 28px` symétrique → chevron centré sur point vert mini-VU (W*0.5) |
+| v3.16.87 | Fix séparation chevron/hamburger : `rhythm-info-wrap` → chevron ; `layers-wrap` → hamburger seul ; `setView()` : `lw` suit `layerPanelsOuverts`, `srAV` suit `layersOuverts` |
+| v3.16.86 | Volet Groove : deux boutons collapse indépendants — chevron ▼/▶ (Groove.view : canvas+boutons+poly) + hamburger tri-couleur (layers-wrap) ; état `layerPanelsOuverts` |
+| v3.16.85 | Hamburger tri-couleur extrême droite groove-view-bar ; `.gvb-btns` wrapper centré ; `.gvb-layers-btn` — remplacé par v3.16.86 (malentendu sur rôle chevron) |
+| v3.16.84 | Modal son : ouvre sur famille du preset courant (`familles_ids[0]`) ; `_soundOnSelect` sync label iBtn 2e ligne ; ⚙ `margin-left:auto` extrême droite |
+| v3.16.83 | Volet Son : vol label déplacé à gauche (width:44px, centré) ; bouton 🎲 preset aléatoire même famille ; bouton ✨ params aléatoires (pitch/atk/env → dirty) |
+| v3.16.82 | iBtn état invisible précis : top border couleur layer, reste transparent/neutre |
+| v3.16.81 | Boutons instrument layer 3 états (invisible/visible-replié/visible-déplié) ; `soundLayerVisible` state ; `_setIBtnStyle` ; `_savedInstrState` save/restore au chevron |
+| v3.16.80 | 2e ligne volet Band corrections : boutons ouvrent sound-ctrls (pas mod-panel) ; police condensée ; colonnes extrêmes réduites ; chevron save/restore état complet |
+| v3.16.79 | Fix bouton Reprendre disparu (spécificité CSS) ; 2e ligne volet Band avec 3 boutons instrument layer |
+| v3.16.78 | Groove gradient plus doré ; modal Capture Effacer↔Reprendre CSS grid sans layout shift ; mini-VU respiration part de quasi 0 ; `— ou —` avant Annuler modal Save |
+| v3.16.77 | Modal Save : borders/titres couleur layer — Groove/Métronome/Pattern/Instrument/Ensemble |
 | v3.16.55 | Mini-VU halo vert/noise elliptique (scaleY 0.42), bleu/rouge circulaires |
 | v3.16.54 | Mini-VU halo sans délai (`hr=r0*0.8+(1-t)*maxR`, t clampé [0,1]) ; suppression ctx.scale → halo circulaire ; respiration alpha 0.18–0.34 |
 | v3.16.53 | Mini-VU : respiration idle restaurée (discrète) ; halo-onde elliptique via ctx.scale ; RAF permanent quand visible ; Effacer : corbeille top:5px, billes bottom:8px (dans la corbeille) |
