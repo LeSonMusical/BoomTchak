@@ -1493,7 +1493,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.81</span>
+    <span class="app-version">v3.16.82</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2644,6 +2644,7 @@ let soundStateThumb=[
 ];
 const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
 let soundLayerVisible={low:true,high:true,noise:true}; // visibilité de chaque row instrument
+let _savedInstrState=null; // état complet sauvegardé avant fermeture chevron global
 
 // ── Presets métronome ─────────────────────────────────────────────────────
 // nbDivisions : nombre de divisions (pas de métro) par mesure
@@ -5575,9 +5576,22 @@ function buildBandSection(){
   const _setIBtnStyle=(btn,key,col)=>{
     const isVis=soundLayerVisible[key];
     const isOp=soundPanelOpen[key];
-    if(!isVis){btn.style.background='transparent';btn.style.borderColor=_h2r(col,.5);btn.style.color=col;}
-    else if(!isOp){btn.style.background=_h2r(col,.42);btn.style.borderColor=_h2r(col,.65);btn.style.color='#fff';}
-    else{btn.style.background=col;btn.style.borderColor=col;btn.style.color='#fff';}
+    if(!isVis){
+      // Invisible : neutre, seule la ligne supérieure porte la couleur layer
+      btn.style.background='transparent';
+      btn.style.border='1px solid rgba(160,160,160,.22)';
+      btn.style.borderTopWidth='2px';
+      btn.style.borderTopColor=col;
+      btn.style.color='#aaa';
+    }else if(!isOp){
+      btn.style.background=_h2r(col,.42);
+      btn.style.border=`1px solid ${_h2r(col,.65)}`;
+      btn.style.color='#fff';
+    }else{
+      btn.style.background=col;
+      btn.style.border=`1px solid ${col}`;
+      btn.style.color='#fff';
+    }
   };
   const _syncChevron=()=>{
     instrOuvert=_soundKeys.some(k=>soundLayerVisible[k]);
@@ -5601,7 +5615,24 @@ function buildBandSection(){
 
   btnVolet.addEventListener('click',()=>{
     const anyVis=_soundKeys.some(k=>soundLayerVisible[k]);
-    _soundKeys.forEach(k=>{soundLayerVisible[k]=!anyVis;_applyLayerVis(k);});
+    if(anyVis){
+      // FERMETURE : sauvegarder visible+plié/déplié de chaque layer, puis tout invisibiliser
+      _savedInstrState={};
+      _soundKeys.forEach(k=>{
+        _savedInstrState[k]={visible:soundLayerVisible[k],open:soundPanelOpen[k]};
+        soundLayerVisible[k]=false;
+        _applyLayerVis(k);
+      });
+    }else{
+      // OUVERTURE : restaurer l'état sauvegardé (visible/invisible + plié/déplié)
+      _soundKeys.forEach(k=>{
+        const saved=_savedInstrState?.[k];
+        soundLayerVisible[k]=saved?saved.visible:true;
+        if(saved)soundPanelOpen[k]=saved.open;
+        _applyLayerVis(k);
+      });
+      _savedInstrState=null;
+    }
     iBtnRefs.forEach((btn,i)=>_setIBtnStyle(btn,_soundKeys[i],CIRCLE_COLORS[i]?.fill||'#888'));
     _syncChevron();
   });
