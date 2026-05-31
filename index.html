@@ -313,15 +313,19 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .groove-view-bar{display:flex;align-items:center;padding:3px 4px 5px;border-top:1px solid rgba(0,0,0,.09);position:relative;overflow:hidden;cursor:pointer}
 #mini-visu{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none}
 .gvb-btns{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.gvb-collapse-btn{flex-shrink:0;background:none;border:1px solid transparent;cursor:pointer;padding:4px 6px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;border-radius:5px;-webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s,box-shadow .15s;position:relative;z-index:2}
+/* Chevron Groove.view (entre Mesure et Step) — jaune, contrôle l'affichage canvas/vue */
+.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 4px;transition:color .12s,border-color .12s,opacity .12s;position:relative;z-index:2}
+.gvb-collapse-btn:not(.open){border-color:#C8961A;color:#8B6914;font-weight:700;background:none}
+.gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
+.gvb-collapse-btn:hover{opacity:.85}
+/* Hamburger tricolore (extrême droite) — masque/affiche les 3 volets layer */
+.gvb-layers-btn{flex-shrink:0;background:none;border:1px solid transparent;cursor:pointer;padding:4px 6px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;border-radius:5px;-webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s,box-shadow .15s;position:relative;z-index:2}
 .gvb-bar{display:block;width:14px;height:2.5px;border-radius:1.5px;transition:opacity .15s}
-/* Replié : barres vives + fond blanc + ombre — très visible */
-.gvb-collapse-btn:not(.open){background:rgba(255,255,255,.65);border-color:rgba(0,0,0,.2);box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.gvb-collapse-btn:not(.open) .gvb-bar{opacity:1}
-/* Déplié : barres quasi invisibles */
-.gvb-collapse-btn.open .gvb-bar{opacity:.18}
-.gvb-collapse-btn.open:hover .gvb-bar{opacity:.5}
-.gvb-collapse-btn:hover{background:rgba(255,255,255,.4)}
+.gvb-layers-btn:not(.open){background:rgba(255,255,255,.65);border-color:rgba(0,0,0,.2);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.gvb-layers-btn:not(.open) .gvb-bar{opacity:1}
+.gvb-layers-btn.open .gvb-bar{opacity:.18}
+.gvb-layers-btn.open:hover .gvb-bar{opacity:.5}
+.gvb-layers-btn:hover{background:rgba(255,255,255,.4)}
 .band-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(74,127,165,.55);color:#4A7FA5;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s}
 .band-collapse-btn:not(.open){border-color:#4A7FA5;color:#1A3D5A;font-weight:700;background:none}
 .band-collapse-btn.open{border-color:#4A7FA5;color:#4A7FA5;font-weight:700;background:none;opacity:.75}
@@ -1399,10 +1403,12 @@ body.dark-mode .leb-sig{color:#5AAA8A}
 body.dark-mode .leb-sig:hover{color:#7BCCAA}
 body.dark-mode .leb-cycle{color:#666}
 body.dark-mode .leb-mod-btn{border-color:rgba(200,150,26,.5);background:rgba(255,255,255,.04)}
-body.dark-mode .gvb-collapse-btn:not(.open){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);box-shadow:0 1px 4px rgba(0,0,0,.45)}
-body.dark-mode .gvb-collapse-btn:not(.open) .gvb-bar{opacity:1}
-body.dark-mode .gvb-collapse-btn.open .gvb-bar{opacity:.15}
-body.dark-mode .gvb-collapse-btn:hover{background:rgba(255,255,255,.12)}
+body.dark-mode .gvb-collapse-btn:not(.open){background:none;border-color:#C8961A;color:#C8961A}
+body.dark-mode .gvb-collapse-btn.open{border-color:rgba(123,94,167,.25);color:rgba(155,143,213,.45)}
+body.dark-mode .gvb-layers-btn:not(.open){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);box-shadow:0 1px 4px rgba(0,0,0,.45)}
+body.dark-mode .gvb-layers-btn:not(.open) .gvb-bar{opacity:1}
+body.dark-mode .gvb-layers-btn.open .gvb-bar{opacity:.15}
+body.dark-mode .gvb-layers-btn:hover{background:rgba(255,255,255,.12)}
 body.dark-mode .band-collapse-btn:not(.open){background:none;border-color:#5A98B8;color:#1A3D5A}
 body.dark-mode .band-collapse-btn.open{border-color:#5A98B8;color:#5A98B8;opacity:.75}
 body.dark-mode .metro-collapse-btn:not(.open){background:none;border-color:#4AAA80;color:#1C5C40}
@@ -1501,7 +1507,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.85</span>
+    <span class="app-version">v3.16.86</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3985,6 +3991,7 @@ function updateSettingsBadge(){
   }
 }
 let layersOuverts = true;
+let layerPanelsOuverts = true;
 let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
@@ -5731,13 +5738,19 @@ function buildGrooveSection(){
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);
-  // Bouton collapse — hamburger tri-couleur, extrême droite de la groove-view-bar
+  // Chevron Groove.view (entre Mesure/Step) — affichage canvas/vue
   const btnCollapse=document.createElement('button');
   btnCollapse.className='gvb-collapse-btn'+(layersOuverts?' open':'');
   btnCollapse.id='groove-collapse';
-  btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+  btnCollapse.textContent=layersOuverts?'▼':'▶';
+  btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
+  // Hamburger tricolore (extrême droite) — masque/affiche les 3 volets layer
+  const btnLayersToggle=document.createElement('button');
+  btnLayersToggle.className='gvb-layers-btn'+(layerPanelsOuverts?' open':'');
+  btnLayersToggle.id='groove-layers-toggle';
+  btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
   ['#378ADD','#D85A30','#1D9E75'].forEach(col=>{
-    const bar=document.createElement('span');bar.className='gvb-bar';bar.style.background=col;btnCollapse.appendChild(bar);
+    const bar=document.createElement('span');bar.className='gvb-bar';bar.style.background=col;btnLayersToggle.appendChild(bar);
   });
 
   l1.appendChild(gLeft);l1.appendChild(gCenter);l1.appendChild(gRight);
@@ -5766,7 +5779,8 @@ function buildGrooveSection(){
     {key:'cycle', label:'Cycle',   shape:'linear', cycle:'cycle'}
   ];
   const gvbBtns=document.createElement('div');gvbBtns.className='gvb-btns';
-  _viewDefs.forEach((d)=>{
+  _viewDefs.forEach((d,i)=>{
+    if(i===2) gvbBtns.appendChild(btnCollapse); // chevron entre Mesure et Step
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
     if(!layersOuverts)b.style.display='none';
@@ -5774,7 +5788,7 @@ function buildGrooveSection(){
     gvbBtns.appendChild(b);
   });
   l3.appendChild(gvbBtns);
-  l3.appendChild(btnCollapse);
+  l3.appendChild(btnLayersToggle); // hamburger à l'extrême droite
   // Clic sur le fond de la groove-view-bar → ouvre volet mod du layer correspondant (mini-VU zones)
   // Zone gauche=layer0, centre=layer2, droite=layer1 (correspond aux positions halos mini-VU)
   l3.addEventListener('click',e=>{
@@ -5830,24 +5844,35 @@ function buildGrooveSection(){
   });
 
   // Collapse ˅/˄ — ne cache que la vue canvas (pas les 3 layers)
+  // Chevron : affichage Groove.view (canvas + boutons vue + mini-VU)
   const _toggleLayers=()=>{
     layersOuverts=!layersOuverts;
     const cv=document.getElementById('circle-view');
-    const ri=document.getElementById('rhythm-info-wrap');
     const sr=document.getElementById('step-rows-wrap');
-    const l2el=document.getElementById('groove-l2');
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-    if(ri){ if(!layersOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
-    if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
-    if(l2el)l2el.style.display=layersOuverts?'':'none';
+    if(sr)sr.style.display=layersOuverts&&layerPanelsOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
     const l3el=document.getElementById('groove-view-bar');
     if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
+    btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
-    btnCollapse.title=layersOuverts?'Masquer patterns':'Afficher patterns';
+    btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
     if(layersOuverts)_miniVuStop(); else _miniVuStart();
     updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
+  // Hamburger : masque/affiche les 3 volets layer + ligne info
+  const _toggleLayerPanels=()=>{
+    layerPanelsOuverts=!layerPanelsOuverts;
+    const lw=document.getElementById('layers-wrap');
+    const ri=document.getElementById('rhythm-info-wrap');
+    const sr2=document.getElementById('step-rows-wrap');
+    if(lw)lw.style.display=(layerPanelsOuverts&&layersOuverts)?'':'none';
+    if(ri){ if(!layerPanelsOuverts)ri.style.display='none'; else if(document.body.classList.contains('has-poly-rhythm'))ri.style.display=''; }
+    if(sr2)sr2.style.display=layerPanelsOuverts&&layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
+    btnLayersToggle.classList.toggle('open',layerPanelsOuverts);
+    btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
+  };
+  btnLayersToggle.addEventListener('click',e=>{e.stopPropagation();_toggleLayerPanels();});
 
   // Famille → ouvre modal
   btnFam.addEventListener('click',()=>{
@@ -9253,9 +9278,9 @@ function _applyView(){
   const lw = document.getElementById('layers-wrap');
   const srAV = document.getElementById('step-rows-wrap');
   if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
-  if(lw) lw.style.display = layersOuverts ? '' : 'none';
+  if(lw) lw.style.display = (layersOuverts && layerPanelsOuverts) ? '' : 'none';
   // Effacer tout style inline sur step-rows-wrap pour que le CSS body.step-seq puisse s'appliquer
-  if(srAV) srAV.style.display = layersOuverts ? '' : 'none';
+  if(srAV) srAV.style.display = (layersOuverts && layerPanelsOuverts) ? '' : 'none';
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
