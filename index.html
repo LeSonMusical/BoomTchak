@@ -924,7 +924,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .rms-btn{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#555;cursor:pointer;transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:90px;box-sizing:border-box}
 .rms-btn-main{display:flex;align-items:center;gap:6px}
 .rms-mode-lbl{font-size:8px;color:#bbb;font-weight:400;line-height:1.2;text-align:center}
-/* Remplacer : violet plein ; Empiler : jaune plein */
+/* Remplacer : violet plein ; Superposer : jaune plein */
 /* OFF : gris neutre, couleur réservée à l'état actif */
 #rec-mode-btn-rpl{border:1px solid rgba(0,0,0,.22);color:#bbb;background:none}
 #rec-mode-btn-ovr{border:1px solid rgba(0,0,0,.22);color:#bbb;background:none}
@@ -1487,7 +1487,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.71</span>
+    <span class="app-version">v3.16.72</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1812,7 +1812,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="play-thumb play-thumb-l" id="play-thumb-l"><span class="play-thumb-layer-name" id="play-thumb-l-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-l-sub">main gauche</span></button>
     <button class="play-thumb play-thumb-r" id="play-thumb-r"><span class="play-thumb-layer-name" id="play-thumb-r-name"></span>◉<br><span style="font-size:10px;font-weight:400;opacity:.7" id="play-thumb-r-sub">main droite</span></button>
   </div>
-  <!-- Strip mode rec — Remplacer | [Effacer↔Reprendre] | Empiler -->
+  <!-- Strip mode rec — Remplacer | [Effacer↔Reprendre] | Superposer -->
   <div class="rec-mode-strip" id="rec-mode-strip">
     <button class="rms-btn" id="rec-mode-btn-rpl" title="Efface les sons actuels et remplace">
       <span class="rms-mode-lbl">mode</span>
@@ -1833,7 +1833,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
     <button class="rms-btn" id="rec-mode-btn-ovr" title="S'ajoute aux sons existants">
       <span class="rms-mode-lbl">mode</span>
-      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Empiler</span></span>
+      <span class="rms-btn-main"><span class="rms-ico">＋</span><span class="rms-lbl">Superposer</span></span>
     </button>
   </div>
 </div>
@@ -3588,7 +3588,8 @@ function recTap(tapTime,isRight){
   // Nuance : 1 layer en rec → pouce gauche = fort (X), pouce droit = doux (x)
   const note=(recLayers.length===1&&isRight)?'x':'X';
   if(state[li].recMode==='overdub'){
-    if(state[li].pattern[si]==='.') state[li].pattern[si]=note;
+    // Fort (X) remplace faible (x) ; ne remplace pas un fort existant
+    if(state[li].pattern[si]==='.'||(note==='X'&&state[li].pattern[si]==='x')) state[li].pattern[si]=note;
     if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
     state[li].recNewSteps.add(si);
   } else {
@@ -3597,8 +3598,11 @@ function recTap(tapTime,isRight){
       state[li].recBuffer=Array(n).fill('.');
       state[li].pattern=Array(n).fill('.'); // Ardoise vierge au premier tap
     }
-    state[li].recBuffer[si]=note;
-    state[li].pattern[si]=note;
+    // Fort (X) remplace faible (x) ; faible ne remplace pas fort
+    if(state[li].recBuffer[si]==='.'||(note==='X'&&state[li].recBuffer[si]==='x')){
+      state[li].recBuffer[si]=note;
+      state[li].pattern[si]=note;
+    }
     if(!state[li].recNewSteps) state[li].recNewSteps=new Set();
     state[li].recNewSteps.add(si);
   }
@@ -5569,7 +5573,10 @@ function buildGrooveSection(){
   const gLeft=document.createElement('div');gLeft.className='groove-l1-left';
   const btnNewGroove=document.createElement('button');
   btnNewGroove.className='btn-new-groove';btnNewGroove.title='Nouveau groove';btnNewGroove.textContent='＋';
-  btnNewGroove.addEventListener('click',()=>{openPresetModal({type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',onSelect:_grooveOnSelect});});
+  btnNewGroove.addEventListener('click',()=>{
+    const nouvFam=(packCours.familles||[]).find(f=>f.nom&&f.nom.includes('Nouveau'));
+    openPresetModal({type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',onSelect:_grooveOnSelect,famFilter:nouvFam?.id??'all'});
+  });
   const btnDiceGroove=document.createElement('button');
   btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
   gLeft.appendChild(btnNewGroove);gLeft.appendChild(btnDiceGroove);
@@ -13457,8 +13464,14 @@ function attachEvents(){
     prefs.recMode=mode;localStorage.setItem('btk_prefs',JSON.stringify(prefs));
     _applyRecModeUI();
   };
-  document.getElementById('rec-mode-btn-rpl')?.addEventListener('click',()=>_setRecMode('replace'));
-  document.getElementById('rec-mode-btn-ovr')?.addEventListener('click',()=>_setRecMode('overdub'));
+  document.getElementById('rec-mode-btn-rpl')?.addEventListener('click',()=>{
+    const cur=recLayers.length>0?state[recLayers[0]].recMode:(prefs.recMode||'replace');
+    _setRecMode(cur==='replace'?'overdub':'replace');
+  });
+  document.getElementById('rec-mode-btn-ovr')?.addEventListener('click',()=>{
+    const cur=recLayers.length>0?state[recLayers[0]].recMode:(prefs.recMode||'replace');
+    _setRecMode(cur==='overdub'?'replace':'overdub');
+  });
   document.getElementById('btn-rec-clear')?.addEventListener('click',()=>{
     recLayers.forEach(li=>{
       state[li].pattern=Array(state[li].pattern.length).fill('.');
