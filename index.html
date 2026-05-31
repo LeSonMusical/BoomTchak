@@ -284,6 +284,9 @@ body.dark-mode .sig-edit-val{color:#666}
 .section-bar select{font-size:10px;flex:1;min-width:0;padding:1px 3px;border-radius:4px;background:#fff;color:#1a1a18;cursor:pointer}
 .section-bar-lbl{font-size:17px;flex-shrink:0;padding:0 2px;line-height:1;min-width:auto}
 .sb-spacer{flex:1;min-width:0}
+.btn-new-groove{display:inline-flex;align-items:center;padding:1px 6px;cursor:pointer;font-size:14px;font-weight:600;background:transparent;border:1px solid rgba(200,150,26,.45);border-radius:4px;color:#C8961A;flex-shrink:0;line-height:1.4;transition:opacity .12s}
+.btn-new-groove:hover{opacity:.8;background:rgba(200,150,26,.08)}
+body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .btn-dice-rng{display:none;padding:2px 5px;cursor:pointer;font-size:13px;background:transparent;border:none;flex-shrink:0;opacity:.55;line-height:1;transition:opacity .12s}
 .btn-dice-rng.visible{display:inline-flex;align-items:center}
 .btn-dice-rng:hover{opacity:1}
@@ -1484,7 +1487,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.69</span>
+    <span class="app-version">v3.16.70</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5551,11 +5554,14 @@ function buildGrooveSection(){
   const l1=document.createElement('div');
   l1.className='groove-l1';
 
-  // Groupe gauche : dé
+  // Groupe gauche : + nouveau + dé
   const gLeft=document.createElement('div');gLeft.className='groove-l1-left';
+  const btnNewGroove=document.createElement('button');
+  btnNewGroove.className='btn-new-groove';btnNewGroove.title='Nouveau groove';btnNewGroove.textContent='＋';
+  btnNewGroove.addEventListener('click',()=>{openGrooveSavePop(null);const t=document.getElementById('psp-new-toggle');if(t)t.click();});
   const btnDiceGroove=document.createElement('button');
   btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
-  gLeft.appendChild(btnDiceGroove);
+  gLeft.appendChild(btnNewGroove);gLeft.appendChild(btnDiceGroove);
 
   // Groupe centre : ◀ nom ▶
   const gCenter=document.createElement('div');gCenter.className='groove-l1-center';
@@ -6215,17 +6221,40 @@ function buildLayers(){
     };
     _refreshSoft();
     {
+      let _sSoftBase=null; // base pattern sans notes douces, capturé au pointerdown
       const _softDrag=e=>{
         if(!softTrack.hasPointerCapture(e.pointerId))return;
         const rect=softTrack.getBoundingClientRect();
         const v=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
         _modSoftState[li]=v;_refreshSoft();
-        generatePatternFromPad(li,_modPadState[li].x,_modPadState[li].y,v);
+        // Appliquer les notes douces sur le pattern courant (sans toucher aux 'X')
+        const base=_sSoftBase||state[li].pattern.map(s=>s==='x'?'.':s);
+        if(v<=0){state[li].pattern=[...base];}
+        else{
+          const L=base.length;const arr=[...base];
+          const silences=[];for(let i=0;i<L;i++)if(base[i]==='.')silences.push(i);
+          const nSoft=Math.round(v*silences.length);
+          if(nSoft>0){
+            const weights=_getStepWeights(li);
+            const noise=0.12+Math.pow(Math.max(0,v*2-1),1.3)*0.62;
+            const rv=_softRandVals[li];const rvL=rv?rv.length:0;
+            const scored=silences.map(i=>({i,sc:weights[i]*(1-noise)+(i<rvL?rv[i]:Math.random())*noise}));
+            scored.sort((a,b)=>a.sc-b.sc);
+            for(let k=0;k<nSoft;k++)arr[scored[k].i]='x';
+          }
+          state[li].pattern=arr;
+        }
         buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();setLayerDirty(li,true);_refreshPadPreview();
       };
-      softTrack.addEventListener('pointerdown',e=>{e.preventDefault();softTrack.setPointerCapture(e.pointerId);const _L=state[li].pattern.length;_softRandVals[li]=Array.from({length:_L},()=>Math.random());_softDrag(e);});
+      softTrack.addEventListener('pointerdown',e=>{
+        e.preventDefault();softTrack.setPointerCapture(e.pointerId);
+        const _L=state[li].pattern.length;
+        _softRandVals[li]=Array.from({length:_L},()=>Math.random());
+        _sSoftBase=state[li].pattern.map(s=>s==='x'?'.':s); // capturer base sans notes douces
+        _softDrag(e);
+      });
       softTrack.addEventListener('pointermove',_softDrag);
-      softTrack.addEventListener('pointerup',()=>{_speedMark();});
+      softTrack.addEventListener('pointerup',()=>{_sSoftBase=null;_speedMark();});
     }
 
     // ── Boutons d'action ─────────────────────────────────────────────────────
