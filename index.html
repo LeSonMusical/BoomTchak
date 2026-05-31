@@ -1495,7 +1495,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.83</span>
+    <span class="app-version">v3.16.84</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4214,6 +4214,10 @@ function openPresetModal(cfg){
     }
     if(cfg.currentId&&cfg.type==='sig'){
       const cur=metroPresets.find(p=>p.id===cfg.currentId);
+      if(cur?.familles_ids?.length)return cur.familles_ids[0];
+    }
+    if(cfg.currentId&&cfg.type==='sound'){
+      const cur=(packCours.soundPresets||[]).find(p=>p.id===cfg.currentId);
       if(cur?.familles_ids?.length)return cur.familles_ids[0];
     }
     const saved=_pmFamFilter[cfg.type];
@@ -7587,6 +7591,10 @@ function buildSoundRow(key,label,cls,ss){
     buildSoundPanel();
     // Appel défensif post-rebuild : garantit que la ligne reconstruite est propre
     setSoundDirtySlot(key,false);
+    // Sync label du bouton instrument dans la 2e ligne du volet Band
+    const _soundKeys2=['low','high','noise'];const _li2=_soundKeys2.indexOf(key);
+    const _iBtns=document.querySelectorAll('.band-instr-btn');
+    if(_li2>=0&&_iBtns[_li2]){const _n=sp.nom||'';_iBtns[_li2].textContent=_n;_iBtns[_li2].title=_n;}
   };
   soundPresetBtn.addEventListener('click',e=>{
     e.stopPropagation();
@@ -7605,7 +7613,7 @@ function buildSoundRow(key,label,cls,ss){
   );
 
   const arrow=document.createElement('button');arrow.className='btn-sec-ico';
-  arrow.style.cssText='font-size:9px;opacity:.88;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc);font-weight:700';
+  arrow.style.cssText='font-size:9px;opacity:.88;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc);font-weight:700;margin-left:auto';
   arrow.title='Réglages son';
   arrow.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
 
