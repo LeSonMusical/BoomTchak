@@ -369,8 +369,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .sbar-3col{grid-template-columns:1fr auto 1fr;align-items:center;padding:.3rem .4rem;gap:6px}
 .band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
 .band-instr-row{display:grid;grid-template-columns:26px 1fr 1fr 1fr 26px;gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
-.band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;opacity:.38;transition:opacity .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%;color:#fff}
-.band-instr-btn.open{opacity:1}
+.band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%}
 .sbar-left{justify-self:start}
 .sbar-right{justify-self:end}
 .sbar-left{display:flex;flex-direction:row;align-items:center;gap:3px;flex-shrink:0}
@@ -1494,7 +1493,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.80</span>
+    <span class="app-version">v3.16.81</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2644,6 +2643,7 @@ let soundStateThumb=[
   defaultSoundState('sp_clap','clap',800),
 ];
 const soundPanelOpen={low:false,high:false,noise:false,thumbL:false,thumbR:false};
+let soundLayerVisible={low:true,high:true,noise:true}; // visibilité de chaque row instrument
 
 // ── Presets métronome ─────────────────────────────────────────────────────
 // nbDivisions : nombre de divisions (pas de métro) par mesure
@@ -3929,7 +3929,6 @@ function refreshMenuBtnStates(){
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
 let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
-let _prevSoundPanelOpen = null; // état mémorisé avant collapse chevron
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
 let recLayers = [];            // file FIFO des layers en rec (max 2)
@@ -5560,77 +5559,79 @@ function buildBandSection(){
   centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);centerCol.appendChild(saveBtn);
   row1.appendChild(centerCol);
 
-  // Col droite : chevron collapse
+  // Col droite : chevron global (agit sur la visibilité des 3 layers)
   const rightCol=document.createElement('div');rightCol.className='sbar-right';
   const btnVolet=document.createElement('button');
+  const _soundKeys=['low','high','noise'];
+  // instrOuvert = au moins un layer visible
+  instrOuvert=_soundKeys.some(k=>soundLayerVisible[k]);
   btnVolet.className='band-collapse-btn'+(instrOuvert?' open':'');
   btnVolet.textContent=instrOuvert?'▼':'▶';
   btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
-  const _soundKeys=['low','high','noise'];
-  btnVolet.addEventListener('click',()=>{
-    if(instrOuvert){
-      // Sauvegarder et fermer tous les sous-volets instruments
-      _prevSoundPanelOpen={...soundPanelOpen};
-      _soundKeys.forEach(key=>{
-        soundPanelOpen[key]=false;
-        const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
-        if(ctrls)ctrls.classList.add('hidden');
-        const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
-        if(arr)arr.textContent='⚙ ▶';
-      });
-      document.querySelectorAll('.band-instr-btn').forEach(b=>b.classList.remove('open'));
-    } else if(_prevSoundPanelOpen){
-      // Restaurer l'état précédent des sous-volets
-      _soundKeys.forEach((key,i)=>{
-        const wasOpen=_prevSoundPanelOpen[key]||false;
-        soundPanelOpen[key]=wasOpen;
-        const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
-        if(ctrls)ctrls.classList.toggle('hidden',!wasOpen);
-        const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
-        if(arr)arr.textContent=wasOpen?'⚙ ▼':'⚙ ▶';
-      });
-      const iBtns=document.querySelectorAll('.band-instr-btn');
-      iBtns.forEach((b,i)=>{ if(i<3)b.classList.toggle('open',_prevSoundPanelOpen[_soundKeys[i]]||false); });
-      _prevSoundPanelOpen=null;
-    }
-    instrOuvert=!instrOuvert;
-    const bc=document.getElementById('band-content');
-    if(bc)bc.classList.toggle('open', instrOuvert);
+
+  // ── Helpers inline ──
+  const _h2r=(h,a)=>{const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;};
+  const iBtnRefs=[];
+  const _setIBtnStyle=(btn,key,col)=>{
+    const isVis=soundLayerVisible[key];
+    const isOp=soundPanelOpen[key];
+    if(!isVis){btn.style.background='transparent';btn.style.borderColor=_h2r(col,.5);btn.style.color=col;}
+    else if(!isOp){btn.style.background=_h2r(col,.42);btn.style.borderColor=_h2r(col,.65);btn.style.color='#fff';}
+    else{btn.style.background=col;btn.style.borderColor=col;btn.style.color='#fff';}
+  };
+  const _syncChevron=()=>{
+    instrOuvert=_soundKeys.some(k=>soundLayerVisible[k]);
+    const bc2=document.getElementById('band-content');
+    if(bc2)bc2.classList.toggle('open',instrOuvert);
     btnVolet.textContent=instrOuvert?'▼':'▶';
     btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
     btnVolet.classList.toggle('open',instrOuvert);
+  };
+  const _applyLayerVis=(key)=>{
+    const slRow=document.querySelector(`.sound-layer[data-sound-key="${key}"]`);
+    if(!slRow)return;
+    if(soundLayerVisible[key]){
+      slRow.style.display='';
+      const ctrls=slRow.querySelector('.sound-ctrls');
+      if(ctrls)ctrls.classList.toggle('hidden',!soundPanelOpen[key]);
+      const arr=slRow.querySelector('.btn-sec-ico');
+      if(arr)arr.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
+    }else{slRow.style.display='none';}
+  };
+
+  btnVolet.addEventListener('click',()=>{
+    const anyVis=_soundKeys.some(k=>soundLayerVisible[k]);
+    _soundKeys.forEach(k=>{soundLayerVisible[k]=!anyVis;_applyLayerVis(k);});
+    iBtnRefs.forEach((btn,i)=>_setIBtnStyle(btn,_soundKeys[i],CIRCLE_COLORS[i]?.fill||'#888'));
+    _syncChevron();
   });
   rightCol.appendChild(btnVolet);
   row1.appendChild(rightCol);
   leftCol.addEventListener('click',()=>{ _applyBandMute(!bandMuted); });
   bar.appendChild(row1);
 
-  // ── Ligne 2 : [vide] | [Grave] [Aigu] [Noise] | [vide] — accès rapide mod layers ──
+  // ── Ligne 2 : [vide] | [Grave] [Aigu] [Noise] | [vide] ──────────────────
   const instrRow=document.createElement('div');instrRow.className='band-instr-row';
-  const _skMap=['low','high','noise'];
-  instrRow.appendChild(document.createElement('div')); // cellule vide gauche
+  instrRow.appendChild(document.createElement('div'));
   for(let li=0;li<3;li++){
     const col=CIRCLE_COLORS[li]?.fill||'#888';
     const sp=getSoundPreset(soundState[li].soundPresetId);
     const instrName=sp?.nom||LAYERS[li].label;
-    const key=_skMap[li];
-    const isOpen=soundPanelOpen[key]||false;
+    const key=_soundKeys[li];
     const iBtn=document.createElement('button');
-    iBtn.className='band-instr-btn'+(isOpen?' open':'');
-    iBtn.style.background=col;iBtn.style.borderColor=col;
+    iBtn.className='band-instr-btn';
     iBtn.textContent=instrName;iBtn.title=instrName;
+    _setIBtnStyle(iBtn,key,col);
+    iBtnRefs.push(iBtn);
     iBtn.addEventListener('click',()=>{
-      const opening=!(soundPanelOpen[key]);
-      soundPanelOpen[key]=opening;
-      const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
-      if(ctrls)ctrls.classList.toggle('hidden',!opening);
-      const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
-      if(arr)arr.textContent=opening?'⚙ ▼':'⚙ ▶';
-      iBtn.classList.toggle('open',opening);
+      soundLayerVisible[key]=!soundLayerVisible[key];
+      _applyLayerVis(key);
+      _setIBtnStyle(iBtn,key,col);
+      _syncChevron();
     });
     instrRow.appendChild(iBtn);
   }
-  instrRow.appendChild(document.createElement('div')); // cellule vide droite
+  instrRow.appendChild(document.createElement('div'));
   bar.appendChild(instrRow);
 
   cont.appendChild(bar);
@@ -7571,7 +7572,7 @@ function buildSoundRow(key,label,cls,ss){
   );
 
   const arrow=document.createElement('button');arrow.className='btn-sec-ico';
-  arrow.style.cssText='font-size:9px;opacity:.55;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc)';
+  arrow.style.cssText='font-size:9px;opacity:.88;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc);font-weight:700';
   arrow.title='Réglages son';
   arrow.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
 
@@ -7621,6 +7622,8 @@ function buildSoundRow(key,label,cls,ss){
   });
 
   row.appendChild(header);row.appendChild(ctrls);
+  // Appliquer l'état de visibilité du layer
+  if(soundLayerVisible[key]===false) row.style.display='none';
   return row;
 }
 
