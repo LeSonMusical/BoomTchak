@@ -367,7 +367,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
 /* ─── 3D scroll-bar : layout 3 colonnes ─── */
 .sbar-3col{grid-template-columns:1fr auto 1fr;align-items:center;padding:.3rem .4rem;gap:6px}
-.band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
+.band-bar .sbar-row1{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
 .band-instr-row{display:grid;grid-template-columns:26px 1fr 1fr 1fr 26px;gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
 .band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%}
 .sbar-left{justify-self:start}
@@ -482,13 +482,13 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .sound-layer{border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:var(--cl);margin-bottom:3px}
 .sound-header{display:flex;flex-direction:column;gap:3px;padding:4px 8px;cursor:default}
 .sound-header:hover{filter:brightness(.97)}
-.sound-h-r1{display:flex;align-items:center;gap:5px}
+.sound-h-r1{display:flex;align-items:center;gap:3px}
 .sound-h-r2{display:flex;align-items:center;padding:0 0 2px}
 .sound-lbl{font-size:10px;font-weight:600;color:var(--cb);white-space:nowrap;flex-shrink:0;width:44px;overflow:hidden;text-overflow:ellipsis}
 .sound-arrow{font-size:13px;color:var(--cb);opacity:.7;transition:transform .15s;flex-shrink:0}
 .sound-arrow.open{transform:rotate(90deg)}
 .vol-h-wrap{display:flex;align-items:center;gap:3px;flex:1}
-.vol-h-lbl{font-size:8px;color:var(--cb);opacity:.6;flex-shrink:0}
+.vol-h-lbl{font-size:9px;font-weight:600;color:var(--cb);opacity:.88;flex-shrink:0;width:44px;text-align:center}
 .vol-h-track{flex:1;height:20px;background:transparent;border-radius:2px;position:relative;cursor:pointer;min-width:30px}
 .vol-h-track::before{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:2px;background:var(--cs);border-radius:2px;pointer-events:none}
 .vol-h-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:2px;background:var(--cc);border-radius:2px;pointer-events:none}
@@ -532,7 +532,9 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo:not(.metro-on) .metro-icon::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:120%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.9}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:8px 20px;border-radius:20px;pointer-events:none;z-index:9999;display:none;text-align:center;line-height:1.4}
-.sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:none;border-color:var(--cs);color:var(--cb)}
+.sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:40%;border-color:var(--cs);color:var(--cb)}
+.btn-sec-rnd,.btn-sec-magic{font-size:11px;padding:0 2px;cursor:pointer;flex-shrink:0;background:transparent;border:none;opacity:.55;line-height:1;-webkit-tap-highlight-color:transparent}
+.btn-sec-rnd:hover,.btn-sec-magic:hover{opacity:1}
 .sound-ctrls-actions .btn-sec-ico{opacity:.5}
 .sound-ctrls-actions .btn-sec-ico:hover{opacity:1}
 .sound-sep{height:1px;background:#d0cec7;margin:4px 0}
@@ -1493,7 +1495,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.82</span>
+    <span class="app-version">v3.16.83</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -7614,7 +7616,30 @@ function buildSoundRow(key,label,cls,ss){
   if(soundDirty[key])saveIcoHdr.classList.add('dirty');
   saveIcoHdr.addEventListener('click',e=>{e.stopPropagation();openSoundPresetSavePop(key,ss,saveIcoHdr);});
 
-  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(arrow);
+  // Bouton 🎲 preset aléatoire (même famille)
+  const rndBtn=document.createElement('button');rndBtn.className='btn-sec-rnd';rndBtn.textContent='🎲';rndBtn.title='Preset aléatoire';
+  rndBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const _curFamIds=getSoundPreset(ss.soundPresetId)?.familles_ids||[];
+    const _pool=(packCours.soundPresets||[]).filter(sp=>
+      !sp.localDeletePending && sp.id!==ss.soundPresetId &&
+      (_curFamIds.length===0||sp.familles_ids?.some(f=>_curFamIds.includes(f)))
+    );
+    if(!_pool.length)return;
+    _soundOnSelect(_pool[Math.floor(Math.random()*_pool.length)].id);
+  });
+
+  // Bouton ✨ paramètres aléatoires
+  const magicBtn=document.createElement('button');magicBtn.className='btn-sec-magic';magicBtn.textContent='✨';magicBtn.title='Paramètres aléatoires';
+  magicBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    ss.pitch=normToPitch(Math.random(),ss.soundId);
+    ss.atk=Math.random()*0.3;
+    ss.env=0.05+Math.random()*0.75;
+    setSoundDirtySlot(key,true);setBandDirty(true);buildSoundPanel();
+  });
+
+  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(rndBtn);r1.appendChild(magicBtn);r1.appendChild(arrow);
 
   // Rangée 2 : volume (pleine largeur)
   const r2=document.createElement('div');r2.className='sound-h-r2';
@@ -7624,7 +7649,7 @@ function buildSoundRow(key,label,cls,ss){
   const volFill=document.createElement('div');volFill.className='vol-h-fill';
   const volThumb=document.createElement('div');volThumb.className='vol-h-thumb';
   volTrack.appendChild(volFill);volTrack.appendChild(volThumb);
-  volWrap.appendChild(volTrack);volWrap.appendChild(volLbl);
+  volWrap.appendChild(volLbl);volWrap.appendChild(volTrack);
   function updateVol(v){const pct=Math.max(0,Math.min(1,v))*100;volFill.style.width=pct+'%';volThumb.style.left=pct+'%';}
   updateVol(ss.vol);
   setupHDrag(volTrack,v=>{ss.vol=v;updateVol(v);_bandVolChanged[key]=true;setBandDirty(true);});
