@@ -1491,7 +1491,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.74</span>
+    <span class="app-version">v3.16.75</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3826,6 +3826,24 @@ function miniConfirm(msg, prefKey, onYes){
     close();onYes();
   };
   ov.querySelector('#_mc_no').onclick=close;
+  ov.onclick=e=>{if(e.target===ov)close();};
+}
+function _keepOrCancelModal(nom, onKeep, onDiscard){
+  const isDark=document.body.classList.contains('dark-mode');
+  let ov=document.getElementById('_koc_ov');
+  if(!ov){ov=document.createElement('div');ov.id='_koc_ov';document.body.appendChild(ov);}
+  const bg=isDark?'#252320':'#fff',tc=isDark?'#d8d4cc':'#222',bc=isDark?'#444':'#ddd';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:${bg};border-radius:10px;padding:18px 20px;max-width:300px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.3);color:${tc}">
+    <p style="margin:0 0 14px;font-size:13px;line-height:1.45;font-weight:600">Que faire des modifications apportées à « ${nom} » ?</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button id="_koc_keep" style="padding:8px 14px;border-radius:6px;border:1px solid #3A8C6E;background:#f0fff8;color:#0F6E56;cursor:pointer;font-size:12px;font-weight:700;text-align:left">👤 Conserver pour moi</button>
+      <button id="_koc_discard" style="padding:8px 14px;border-radius:6px;border:1px solid ${bc};background:transparent;color:#c84040;cursor:pointer;font-size:12px;text-align:left">Annuler les modifications</button>
+    </div>
+  </div>`;
+  const close=()=>ov.style.display='none';
+  ov.querySelector('#_koc_keep').onclick=()=>{close();onKeep();};
+  ov.querySelector('#_koc_discard').onclick=()=>{close();onDiscard();};
   ov.onclick=e=>{if(e.target===ov)close();};
 }
 function setLayerDirty(li, isDirty){
@@ -10918,12 +10936,13 @@ function buildPublishSection() {
         ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>`
         : `<button class="btn-pub-item" data-type="${type}" data-id="${item.id}" `+
           `style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">${sendLabel}</button>`;
-    const cancelTitle = isSubmitted ? 'Annuler cette demande de modification pour l\'école'
-      : isDirtySchool ? 'Annuler les modifications (ne pas publier)'
-      : 'Ne pas soumettre (supprimer localement)';
+    const cancelLabel = isSubmitted ? 'Annuler' : isDirtySchool ? 'Ne pas publier' : 'Ne pas envoyer';
+    const cancelTitle = isSubmitted ? 'Retirer cette demande de modification'
+      : isDirtySchool ? 'Ne pas publier — choisir que faire des modifications'
+      : 'Ne pas envoyer — choisir que faire des modifications';
     const btnCancel = (isSubmitted || isDraft)
       ? `<button class="btn-pub-cancel" data-type="${type}" data-id="${item.id}" data-cancel-mode="${isSubmitted?'submitted':isDirtySchool?'school':'draft'}" `+
-        `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">Annuler</button>`
+        `title="${cancelTitle}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#666;cursor:pointer">${cancelLabel}</button>`
       : '';
     if (isMX) {
       // MX : 2 lignes — même design que section Demandes
@@ -11073,12 +11092,12 @@ function buildPublishSection() {
         `<div style="display:flex;gap:5px">` +
           (isMX
             ? `<button class="btn-pub-band" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>` +
-              `<button class="btn-pub-band-cancel" data-id="${b.id}" title="Supprimer localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`
+              `<button class="btn-pub-band-cancel" data-id="${b.id}" data-submitted="" title="Ne pas publier — choisir que faire" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Ne pas publier</button>`
             : isSubmitted
               ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>` +
-                `<button class="btn-pub-band-cancel" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+                `<button class="btn-pub-band-cancel" data-id="${b.id}" data-submitted="1" title="Retirer cette soumission" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
               : `<button class="btn-pub-band" data-id="${b.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
-                `<button class="btn-pub-band-cancel" data-id="${b.id}" title="Supprimer ce band localement" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`) +
+                `<button class="btn-pub-band-cancel" data-id="${b.id}" data-submitted="" title="Ne pas envoyer — choisir que faire" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Ne pas envoyer</button>`) +
         `</div></div>`;
     });
   }
@@ -11105,12 +11124,12 @@ function buildPublishSection() {
         `<div style="display:flex;gap:5px">` +
           (isMX
             ? `<button class="btn-pub-sp" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ Publier</button>` +
-              `<button class="btn-pub-sp-cancel" data-id="${sp.id}" data-school="${isDirtySchool?'1':''}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`
+              `<button class="btn-pub-sp-cancel" data-id="${sp.id}" data-school="${isDirtySchool?'1':''}" title="Ne pas publier — choisir que faire" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">${isDirtySchool?'Ne pas publier':'Ne pas envoyer'}</button>`
             : isSubmitted
               ? `<span style="font-size:10px;padding:2px 6px;border:1px solid #d08020;border-radius:4px;background:#fff8ec;color:#a06010">⏳ En attente</span>` +
-                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
+                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" data-submitted="1" title="Retirer cette soumission" style="font-size:10px;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">✕ Annuler</button>`
               : `<button class="btn-pub-sp" data-id="${sp.id}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">→ Envoyer</button>` +
-                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>`) +
+                `<button class="btn-pub-sp-cancel" data-id="${sp.id}" title="Ne pas envoyer — choisir que faire" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Ne pas envoyer</button>`) +
         `</div></div>`;
     });
   }
@@ -11201,19 +11220,30 @@ function buildPublishSection() {
         } else { btn.textContent = '✕'; btn.disabled = false; }
       } else if (mode === 'school') {
         // MX: annuler les modifications locales d'un item école
-        if (item) { item.localDirty = false; delete item.localChangeType; delete item.localChangedFields; }
-        saveToStorage(); buildPublishSection();
+        const nomItem = item?.nom || btn.dataset.id;
+        _keepOrCancelModal(nomItem,
+          ()=>{ /* Conserver pour moi : localDirty reste, item reste dans Publier */ },
+          ()=>{
+            if (item) { item.localDirty = false; delete item.localChangeType; delete item.localChangedFields; }
+            saveToStorage(); buildPublishSection();
+          }
+        );
       } else {
-        // TX: draft teacher item → supprimer localement
-        if (!confirm('Annuler les modifications apportées à « '+(item?.nom||btn.dataset.id)+' » ?')) return;
-        if (btn.dataset.type === 'pattern') {
-          packCours.patterns = packCours.patterns.filter(p => p.id !== btn.dataset.id);
-          buildLibListPatterns();
-        } else {
-          packCours.grooves = packCours.grooves.filter(g => g.id !== btn.dataset.id);
-          buildLibListGrooves();
-        }
-        saveToStorage(); buildPublishSection();
+        // TX/MX: draft teacher item → conserver comme item User ou supprimer localement
+        const nomItem = item?.nom || btn.dataset.id;
+        _keepOrCancelModal(nomItem,
+          ()=>{ /* Conserver pour moi : item reste dans packCours comme item User (source:'teacher') */ },
+          ()=>{
+            if (btn.dataset.type === 'pattern') {
+              packCours.patterns = packCours.patterns.filter(p => p.id !== btn.dataset.id);
+              buildLibListPatterns();
+            } else {
+              packCours.grooves = packCours.grooves.filter(g => g.id !== btn.dataset.id);
+              buildLibListGrooves();
+            }
+            saveToStorage(); buildPublishSection();
+          }
+        );
       }
     });
   });
@@ -11519,19 +11549,23 @@ function buildPublishSection() {
     btn.addEventListener('click', async () => {
       const b = (packCours.bands||[]).find(x => x.id === btn.dataset.id);
       if (!b) return;
-      if (b.localStatus === 'submitted') {
+      if (btn.dataset.submitted === '1') {
         btn.disabled = true;
         await sbCancelBandSubmission(btn.dataset.id);
         showToast('Soumission annulée', 'info');
       } else {
-        if (!confirm(`Supprimer le band local « ${b.nom} » ?`)) return;
-        packCours.bands = (packCours.bands||[]).filter(x => x.id !== btn.dataset.id);
-        if (currentBandId === btn.dataset.id) {
-          const next = (packCours.bands||[]).find(x => !x.localDeletePending);
-          if (next) { applyBand(next.id); buildBandSection(); }
-        }
-        saveToStorage(); buildBandSection(); buildPublishSection();
-        showToast('Band supprimé', 'info');
+        _keepOrCancelModal(b.nom,
+          ()=>{ /* Conserver pour moi : band reste comme item User (source:'teacher') */ },
+          ()=>{
+            packCours.bands = (packCours.bands||[]).filter(x => x.id !== btn.dataset.id);
+            if (currentBandId === btn.dataset.id) {
+              const next = (packCours.bands||[]).find(x => !x.localDeletePending);
+              if (next) { applyBand(next.id); buildBandSection(); }
+            }
+            saveToStorage(); buildBandSection(); buildPublishSection();
+            showToast('Band supprimé', 'info');
+          }
+        );
       }
     });
   });
@@ -11565,15 +11599,29 @@ function buildPublishSection() {
     btn.addEventListener('click', () => {
       const sp = (packCours.soundPresets||[]).find(x => x.id === btn.dataset.id);
       if (!sp) return;
-      if (btn.dataset.school === '1') {
-        // MX : annuler modifs locales d'un preset école
-        sp.localDirty = false; delete sp.localChangeType; delete sp.localChangedFields;
+      if (btn.dataset.submitted === '1') {
+        // TX : retirer soumission (item reste en draft)
+        sp.localStatus = undefined; delete sp.localStatus;
         saveToStorage(); buildPublishSection();
+        showToast('Soumission annulée', 'info');
+      } else if (btn.dataset.school === '1') {
+        // MX : annuler modifs locales d'un preset école
+        _keepOrCancelModal(sp.nom,
+          ()=>{ /* Conserver pour moi : localDirty reste */ },
+          ()=>{
+            sp.localDirty = false; delete sp.localChangeType; delete sp.localChangedFields;
+            saveToStorage(); buildPublishSection();
+          }
+        );
       } else {
-        if (!confirm(`Supprimer le preset son « ${sp.nom} » ?`)) return;
-        packCours.soundPresets = (packCours.soundPresets||[]).filter(x => x.id !== btn.dataset.id);
-        saveToStorage(); buildSoundPanel(); buildPublishSection();
-        showToast('Preset son supprimé', 'info');
+        _keepOrCancelModal(sp.nom,
+          ()=>{ /* Conserver pour moi : preset reste comme item User (source:'teacher') */ },
+          ()=>{
+            packCours.soundPresets = (packCours.soundPresets||[]).filter(x => x.id !== btn.dataset.id);
+            saveToStorage(); buildSoundPanel(); buildPublishSection();
+            showToast('Preset son supprimé', 'info');
+          }
+        );
       }
     });
   });
