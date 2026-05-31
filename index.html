@@ -298,7 +298,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .btn-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#bbb;flex-shrink:0;white-space:nowrap;transition:color .12s}
 .btn-volet:hover,.btn-volet.open{color:#555}
 /* barre groove : dorée */
-.groove-bar{background:linear-gradient(180deg,#FFFEF8 0%,#FFF0B3 40%,#F5E070 72%,#EED050 100%);border-left:3px solid #C8961A;box-shadow:0 5px 12px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.65)}
+.groove-bar{background:linear-gradient(180deg,#FFFCE8 0%,#FFE585 38%,#ECC030 70%,#D4A010 100%);border-left:3px solid #C8961A;box-shadow:0 5px 12px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.65)}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
@@ -936,24 +936,24 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 /* Actif : bordure épaisse couleur */
 #rec-mode-btn-rpl.active-rpl{border:2px solid #7B5EA7;background:rgba(123,94,167,.14);color:#7B5EA7}
 #rec-mode-btn-ovr.active-ovr{border:2px solid #C8961A;background:rgba(200,150,26,.12);color:#C8961A}
-.rms-retake{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;height:40px;min-width:64px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;visibility:hidden}
-/* Slot central : contient rms-retake ET btn-rec-clear, un seul visible à la fois */
-.rms-center-slot{flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.rms-retake{display:none}
-body.rec-tapped .rms-retake{display:inline-flex}
-/* Bouton Effacer : label au-dessus de la poubelle, pastilles dedans */
-.btn-rec-clear{display:none;flex-direction:column;align-items:center;gap:2px;padding:4px 10px;border:1px dashed rgba(128,128,128,.3);border-radius:8px;background:none;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap}
+/* Slot central : grille pour superposer Effacer et Reprendre — aucun déplacement au swap */
+.rms-center-slot{flex-shrink:0;display:grid;align-items:center;justify-items:center}
+/* Reprendre — toujours rendu, basculé par visibility */
+.rms-retake{grid-area:1/1;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:0 16px;border:none;border-radius:4px;background:rgba(200,130,18,.10);color:#C88218;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;visibility:hidden;pointer-events:none}
+body.rec-tapped .rms-retake{visibility:visible;pointer-events:auto}
+/* Bouton Effacer — même cellule grille, gap/padding réduits pour aligner la hauteur */
+.btn-rec-clear{grid-area:1/1;display:flex;flex-direction:column;align-items:center;gap:0;padding:3px 10px;border:1px dashed rgba(128,128,128,.3);border-radius:8px;background:none;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s;white-space:nowrap;visibility:hidden;pointer-events:none}
 .btn-rec-clear:active{background:rgba(216,90,48,.12)}
+.play-drawer.rec-mode .btn-rec-clear{visibility:visible;pointer-events:auto}
+body.rec-tapped .btn-rec-clear{visibility:hidden!important;pointer-events:none!important}
 .rcc-lbl{font-size:9px;font-weight:600;letter-spacing:.2px}
-/* Poubelle : emoji avec pastilles couleur layers empilées en dessous (décalage pour "dans" la corbeille) */
-.rcc-wrap{position:relative;width:24px;height:28px;flex-shrink:0}
-.rcc-ico{position:absolute;top:5px;left:0;right:0;text-align:center;font-size:18px;line-height:1;z-index:2;opacity:.72}
-.rcc-layers{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+/* Poubelle compacte : emoji + pastilles couleur layers */
+.rcc-wrap{position:relative;width:24px;height:22px;flex-shrink:0}
+.rcc-ico{position:absolute;top:0;left:0;right:0;text-align:center;font-size:16px;line-height:1.1;z-index:2;opacity:.72}
+.rcc-layers{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
 .rcc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-/* Visible en rec-mode, avant 1er tap */
-.play-drawer.rec-mode .btn-rec-clear{display:flex}
-body.rec-tapped .btn-rec-clear{display:none!important}
 .rms-retake:active{background:rgba(200,130,18,.28)}
+.play-drawer.rec-mode .rms-retake{visibility:hidden;pointer-events:none}
 body.dark-mode .rms-mode-lbl{color:#555}
 body.dark-mode #rec-mode-btn-rpl{border:1px solid rgba(255,255,255,.22);background:none;color:#666}
 body.dark-mode #rec-mode-btn-ovr{border:1px solid rgba(255,255,255,.22);background:none;color:#666}
@@ -1207,7 +1207,7 @@ body.dark-mode .btn-theme:hover{background:#333330}
 body.dark-mode .btn-theme.active{background:#e0ddd8;color:#1a1a18;border-color:#e0ddd8}
 body.dark-mode .section-bar select{background:#2a2a28;color:#e0ddd8;border-color:#444}
 body.dark-mode .section-bar-lbl{color:inherit}
-body.dark-mode .groove-bar{background:linear-gradient(180deg,#38300C 0%,#2C2710 40%,#1A1608 72%,#121005 100%)}
+body.dark-mode .groove-bar{background:linear-gradient(180deg,#3A3210 0%,#2E2800 40%,#201A00 70%,#181300 100%)}
 body.dark-mode .temps-bar{background:linear-gradient(180deg,#1E3830 0%,#162C24 25%,#0A1E16 58%,#040E0C 82%,#020806 100%)}
 body.dark-mode .temps-bar .sbar-preset-name,body.dark-mode .temps-bar .sbar-nav-btn,body.dark-mode #sig-sel-btn{color:#9AE0C8}
 body.dark-mode .groove-bar .section-bar-lbl{color:#c8961a}
@@ -1491,7 +1491,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.77</span>
+    <span class="app-version">v3.16.78</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1856,6 +1856,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     </div>
     <button class="psp-confirm" id="psp-confirm">Sauvegarder</button>
   </div>
+  <div class="psp-divider">— ou —</div>
   <button class="psp-cancel" id="psp-cancel">Annuler</button>
 </div>
 
@@ -3221,8 +3222,8 @@ function _miniVuDraw(){
     // Respiration idle (bleu/rouge) / ligne repos horizontale (vert/noise)
     if(li!==2){
       const breathT=(Math.sin(now*0.0018+li*2.1)+1)*0.5;
-      ctx.beginPath();ctx.arc(x,y,r0*(0.45+breathT*0.25),0,Math.PI*2);
-      ctx.fillStyle=col;ctx.globalAlpha=0.18+breathT*0.16;ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,r0*(0.04+breathT*0.26),0,Math.PI*2);
+      ctx.fillStyle=col;ctx.globalAlpha=0.03+breathT*0.13;ctx.fill();
     } else {
       const idleR=Math.min(x,W-x)*0.5;
       ctx.save();ctx.translate(x,y);ctx.scale(1,0.08);
