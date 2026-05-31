@@ -368,8 +368,8 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 /* ─── 3D scroll-bar : layout 3 colonnes ─── */
 .sbar-3col{grid-template-columns:1fr auto 1fr;align-items:center;padding:.3rem .4rem;gap:6px}
 .band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
-.band-instr-row{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
-.band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 4px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;opacity:.38;transition:opacity .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%;color:#fff}
+.band-instr-row{display:grid;grid-template-columns:26px 1fr 1fr 1fr 26px;gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
+.band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;opacity:.38;transition:opacity .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%;color:#fff}
 .band-instr-btn.open{opacity:1}
 .sbar-left{justify-self:start}
 .sbar-right{justify-self:end}
@@ -1494,7 +1494,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.16.79</span>
+    <span class="app-version">v3.16.80</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3929,6 +3929,7 @@ function refreshMenuBtnStates(){
 let sonsOuvert = false;   // Section Band visible (btn top-bar)
 let instrOuvert = true;   // Volet Instru ouvert (indépendant de sonsOuvert)
 let bandMuted = false;    // Mute global band
+let _prevSoundPanelOpen = null; // état mémorisé avant collapse chevron
 let bandVolume = 100;     // Volume band 0-100 (btn-vol drag)
 let jouerOpen = false;    // Tiroir "Jouer" ouvert (affiche Main G/D dans le volet band)
 let recLayers = [];            // file FIFO des layers en rec (max 2)
@@ -5565,7 +5566,33 @@ function buildBandSection(){
   btnVolet.className='band-collapse-btn'+(instrOuvert?' open':'');
   btnVolet.textContent=instrOuvert?'▼':'▶';
   btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
+  const _soundKeys=['low','high','noise'];
   btnVolet.addEventListener('click',()=>{
+    if(instrOuvert){
+      // Sauvegarder et fermer tous les sous-volets instruments
+      _prevSoundPanelOpen={...soundPanelOpen};
+      _soundKeys.forEach(key=>{
+        soundPanelOpen[key]=false;
+        const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
+        if(ctrls)ctrls.classList.add('hidden');
+        const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
+        if(arr)arr.textContent='⚙ ▶';
+      });
+      document.querySelectorAll('.band-instr-btn').forEach(b=>b.classList.remove('open'));
+    } else if(_prevSoundPanelOpen){
+      // Restaurer l'état précédent des sous-volets
+      _soundKeys.forEach((key,i)=>{
+        const wasOpen=_prevSoundPanelOpen[key]||false;
+        soundPanelOpen[key]=wasOpen;
+        const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
+        if(ctrls)ctrls.classList.toggle('hidden',!wasOpen);
+        const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
+        if(arr)arr.textContent=wasOpen?'⚙ ▼':'⚙ ▶';
+      });
+      const iBtns=document.querySelectorAll('.band-instr-btn');
+      iBtns.forEach((b,i)=>{ if(i<3)b.classList.toggle('open',_prevSoundPanelOpen[_soundKeys[i]]||false); });
+      _prevSoundPanelOpen=null;
+    }
     instrOuvert=!instrOuvert;
     const bc=document.getElementById('band-content');
     if(bc)bc.classList.toggle('open', instrOuvert);
@@ -5580,27 +5607,26 @@ function buildBandSection(){
 
   // ── Ligne 2 : [vide] | [Grave] [Aigu] [Noise] | [vide] — accès rapide mod layers ──
   const instrRow=document.createElement('div');instrRow.className='band-instr-row';
+  const _skMap=['low','high','noise'];
   instrRow.appendChild(document.createElement('div')); // cellule vide gauche
   for(let li=0;li<3;li++){
     const col=CIRCLE_COLORS[li]?.fill||'#888';
     const sp=getSoundPreset(soundState[li].soundPresetId);
     const instrName=sp?.nom||LAYERS[li].label;
-    const mp=document.getElementById('mod-panel-'+li);
-    const isOpen=mp&&!mp.classList.contains('hidden');
+    const key=_skMap[li];
+    const isOpen=soundPanelOpen[key]||false;
     const iBtn=document.createElement('button');
     iBtn.className='band-instr-btn'+(isOpen?' open':'');
     iBtn.style.background=col;iBtn.style.borderColor=col;
     iBtn.textContent=instrName;iBtn.title=instrName;
     iBtn.addEventListener('click',()=>{
-      const modPanel=document.getElementById('mod-panel-'+li);
-      if(!modPanel)return;
-      const wasHidden=modPanel.classList.contains('hidden');
-      modPanel.classList.toggle('hidden');
-      const layerDiv=document.getElementById('layer-div-'+li);
-      const btnToggle=layerDiv?.querySelector('.btn-layer-toggle');
-      if(btnToggle){btnToggle.textContent=wasHidden?'mod ▼':'mod ▶';btnToggle.classList.toggle('open',wasHidden);}
-      iBtn.classList.toggle('open',wasHidden);
-      if(wasHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+      const opening=!(soundPanelOpen[key]);
+      soundPanelOpen[key]=opening;
+      const ctrls=document.querySelector(`.sound-layer[data-sound-key="${key}"] .sound-ctrls`);
+      if(ctrls)ctrls.classList.toggle('hidden',!opening);
+      const arr=document.querySelector(`.sound-layer[data-sound-key="${key}"] .btn-sec-ico`);
+      if(arr)arr.textContent=opening?'⚙ ▼':'⚙ ▶';
+      iBtn.classList.toggle('open',opening);
     });
     instrRow.appendChild(iBtn);
   }
