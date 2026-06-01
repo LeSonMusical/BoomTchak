@@ -1108,9 +1108,12 @@ body.view-circle #circle-view{display:flex}
 #mpi-nav-row{position:absolute;top:5px;left:0;right:0;display:none;justify-content:center;align-items:center;gap:1px;pointer-events:auto}
 .mpi-btn{background:none;border:none;padding:0 3px;font-size:9px;cursor:pointer;color:#999;line-height:1.6}
 .mpi-btn:disabled{opacity:.2;cursor:default}
-#mpi-label{font-size:9px;font-weight:700;min-width:36px;text-align:center;color:#6B5FA5;white-space:nowrap}
+#mpi-label{font-size:9px;font-weight:700;min-width:36px;text-align:center;color:#6B5FA5;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.mpi-dot{font-size:8px;opacity:.32;color:#6B5FA5;line-height:1;transition:all .15s;cursor:default}
+.mpi-dot.active{font-size:12px;opacity:1}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
+body.dark-mode .mpi-dot{color:#9080C0}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1509,7 +1512,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.4</span>
+    <span class="app-version">v3.17.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8877,24 +8880,7 @@ function drawCircles(){
     }
   });
 
-  // Vue mesure : icônes ↺ à la première limite de répétition de chaque layer
-  if(circleModeView==='measure' && _mPageSec>0){
-    const isDarkR=document.body.classList.contains('dark-mode');
-    ctx.font='11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    [0,1,2].forEach(li=>{
-      const n=state[li].pattern.length;
-      const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
-      if(n<=spm_liR && n<spm_liR && Math.ceil(spm_liR/n)>=2){
-        const frac=n*getBeatSec(li)/_mPageSec; if(frac>=1)return;
-        const a=-Math.PI/2+2*Math.PI*frac;
-        const rTxt=radii[li]+dotR+9;
-        ctx.globalAlpha=0.72;
-        ctx.fillStyle=isDarkR?'#B0A0E0':'#7060B0';
-        ctx.fillText('↺',cx+rTxt*Math.cos(a),cy+rTxt*Math.sin(a));
-        ctx.globalAlpha=1;
-      }
-    });
-  }
+  // Vue mesure : icônes ↺ — supprimé (v3.17.5)
 
   // Marqueurs de temps issus du metro.pattern (mesure uniquement)
   if(circleModeView === 'measure'){
@@ -9358,11 +9344,17 @@ function _updateMeasurePageIndicator(globalPage){
     pageInfos.push({pages});
   });
 
-  // Mise à jour des labels layer : toujours ● Xmes
+  // Labels layer : fraction de mesure (ex: "½ mes", "2 mes") + mise en valeur si ≠ 1
   LAYERS.forEach((_,li)=>{
     const m=document.getElementById('mpi-l'+li); if(!m) return;
-    const {pages}=pageInfos[li];
-    m.textContent='● '+pages+'mes';
+    const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
+    const n=state[li].pattern.length;
+    const g=gcd(n,spm_li), fNum=n/g, fDen=spm_li/g;
+    const fracStr = fDen===1 ? fNum+' mes' : fNum+'/'+fDen+' mes';
+    const isExact = (fNum===1 && fDen===1);
+    m.textContent='● '+fracStr;
+    m.style.fontStyle=isExact?'':'italic';
+    m.style.fontWeight=isExact?'600':'800';
   });
 
   // Nav row : visible seulement si > 1 page
@@ -9372,11 +9364,26 @@ function _updateMeasurePageIndicator(globalPage){
   if(maxPages>1){
     const displayPage=(globalPage%maxPages)+1;
     const lbl=document.getElementById('mpi-label');
-    if(lbl) lbl.textContent='Mes '+displayPage+'/'+maxPages;
+    if(lbl){
+      // Proposition A — dots de pagination
+      lbl.innerHTML='';
+      for(let p=0;p<maxPages;p++){
+        const d=document.createElement('span');
+        d.className='mpi-dot'+(p===displayPage-1?' active':'');
+        d.textContent=p===displayPage-1?'●':'○';
+        lbl.appendChild(d);
+      }
+    }
     const prev=document.getElementById('mpi-prev');
     const next=document.getElementById('mpi-next');
     if(prev) prev.disabled=playing||globalPage<=0;
     if(next) next.disabled=playing||globalPage>=(maxPages-1);
+
+    // Proposition D — toast one-shot au premier changement de page
+    if(displayPage>1 && !localStorage.getItem('ptk_mpi_toast')){
+      localStorage.setItem('ptk_mpi_toast','1');
+      showToast('Vue Mesure : ce pattern fait '+maxPages+' mesures — la vue change de page à chaque mesure');
+    }
   }
 }
 
