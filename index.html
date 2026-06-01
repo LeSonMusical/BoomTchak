@@ -1509,7 +1509,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.3</span>
+    <span class="app-version">v3.17.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8603,6 +8603,8 @@ let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
+let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
+let _mirrorFlashRaf = null;
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
 let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
@@ -8683,6 +8685,18 @@ function resizeCanvas(){
   drawCircles();
 }
 
+function _startMirrorFlash(li,si){
+  _measureTapFlash={li,si,startTime:performance.now(),endTime:performance.now()+480};
+  if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
+  const _go=()=>{
+    if(!_measureTapFlash||performance.now()>=_measureTapFlash.endTime){
+      _measureTapFlash=null;drawCircles();_mirrorFlashRaf=null;return;
+    }
+    drawCircles();_mirrorFlashRaf=requestAnimationFrame(_go);
+  };
+  _mirrorFlashRaf=requestAnimationFrame(_go);
+}
+
 function drawCircles(){
   if(circleModeView==='linear'){ drawLinear(); return; }
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return;
@@ -8737,6 +8751,32 @@ function drawCircles(){
     // Anneau de piste
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI);
     ctx.strokeStyle = col.track; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Vue mesure : teinture des secteurs miroir (rep ≥ 1) + séparateurs radials
+    if(circleModeView==='measure' && _mPageSec>0){
+      const spm_liT=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
+      if(n<=spm_liT && n<spm_liT){
+        const maxRepT=Math.max(1,Math.ceil(spm_liT/n));
+        if(maxRepT>=2){
+          const isDarkT=document.body.classList.contains('dark-mode');
+          const rI=r-dotR-1,rO=r+dotR+1;
+          for(let rep=1;rep<maxRepT;rep++){
+            const fS=rep*n*getBeatSec(li)/_mPageSec;
+            if(fS>=1)break;
+            const fE=Math.min((rep+1)*n*getBeatSec(li)/_mPageSec,0.9999);
+            const aS=-Math.PI/2+2*Math.PI*fS, aE=-Math.PI/2+2*Math.PI*fE;
+            // Teinture annulaire du secteur miroir
+            ctx.beginPath();ctx.arc(cx,cy,rO,aS,aE);ctx.arc(cx,cy,rI,aE,aS,true);ctx.closePath();
+            ctx.fillStyle=col.fill+(isDarkT?'22':'18');ctx.fill();
+            // Ligne séparatrice radiale
+            ctx.beginPath();
+            ctx.moveTo(cx+rI*Math.cos(aS),cy+rI*Math.sin(aS));
+            ctx.lineTo(cx+rO*Math.cos(aS),cy+rO*Math.sin(aS));
+            ctx.strokeStyle=col.fill+(isDarkT?'cc':'99');ctx.lineWidth=1.2;ctx.stroke();
+          }
+        }
+      }
+    }
 
     // Step courant (pour flash)
     let curSi = -1;
@@ -8825,9 +8865,36 @@ function drawCircles(){
         ctx.beginPath(); ctx.arc(dx, dy, dotSz, 0, 2*Math.PI);
         ctx.strokeStyle='rgba(255,255,255,0.82)'; ctx.lineWidth=2; ctx.stroke();
       }
+      // Flash miroir : halo violet sur toutes les occurrences (rep 0..N) du step édité
+      if(_measureTapFlash && _measureTapFlash.li===li && _measureTapFlash.si===si){
+        const _pn=performance.now(),_pr=Math.min(1,(_pn-_measureTapFlash.startTime)/450);
+        const _fa=0.85*(1-_pr), _fr=(isOn?dotR:dotR*0.72)+1.5+_pr*5;
+        ctx.beginPath();ctx.arc(dx,dy,_fr,0,2*Math.PI);
+        ctx.strokeStyle=isDark?`rgba(255,210,70,${_fa})`:`rgba(130,50,210,${_fa})`;
+        ctx.lineWidth=2.5;ctx.stroke();
+      }
       if(isNew) ctx.globalAlpha=1;
     }
   });
+
+  // Vue mesure : icônes ↺ à la première limite de répétition de chaque layer
+  if(circleModeView==='measure' && _mPageSec>0){
+    const isDarkR=document.body.classList.contains('dark-mode');
+    ctx.font='11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    [0,1,2].forEach(li=>{
+      const n=state[li].pattern.length;
+      const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
+      if(n<=spm_liR && n<spm_liR && Math.ceil(spm_liR/n)>=2){
+        const frac=n*getBeatSec(li)/_mPageSec; if(frac>=1)return;
+        const a=-Math.PI/2+2*Math.PI*frac;
+        const rTxt=radii[li]+dotR+9;
+        ctx.globalAlpha=0.72;
+        ctx.fillStyle=isDarkR?'#B0A0E0':'#7060B0';
+        ctx.fillText('↺',cx+rTxt*Math.cos(a),cy+rTxt*Math.sin(a));
+        ctx.globalAlpha=1;
+      }
+    });
+  }
 
   // Marqueurs de temps issus du metro.pattern (mesure uniquement)
   if(circleModeView === 'measure'){
@@ -9212,6 +9279,13 @@ function setupCanvasInteraction(){
     const STEP_CYCLE={'.':'X','X':'x','x':'.'};
     const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
     state[li].pattern[si]=newVal;
+    // Flash miroir : signaler visuellement toutes les occurrences du step en vue mesure
+    if(circleModeView==='measure'){
+      const _spmF=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+      const _msF=(60/_spmF)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+      const _slF=Math.max(1,Math.round(_msF/getBeatSec(li)));
+      if(state[li].pattern.length<=_slF&&Math.ceil(_slF/state[li].pattern.length)>=2) _startMirrorFlash(li,si);
+    }
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
     drawCircles();
