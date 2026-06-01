@@ -1514,7 +1514,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.9</span>
+    <span class="app-version">v3.17.10</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8947,6 +8947,34 @@ function drawCircles(){
         ctx.lineWidth = 0.75; ctx.stroke();
       }
     });
+    // Labels de fraction mesure (strip droit) — même lCY → alignement parfait avec labels gauche
+    if(circleModeView==='measure' && _mPageSec>0){
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      const textX=W-5;
+      [0,1,2].forEach(li=>{
+        const n=state[li].pattern.length;
+        const col=CIRCLE_COLORS[li];
+        const lCY=cy+(li-1)*lSpacing;
+        const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
+        let fracStr, alpha, doVeil;
+        if(n<spm_liR){
+          const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
+        } else if(n===spm_liR){
+          fracStr='1 mes';alpha=0.45;doVeil=false;
+        } else {
+          const plr=Math.ceil(n/spm_liR);const lp=_mGlobalPage%plr+1;
+          fracStr=lp+'/'+plr+' mes';alpha=0.9;doVeil=false;
+        }
+        ctx.font='bold 8px sans-serif';
+        const tw=ctx.measureText(fracStr).width;
+        if(doVeil){
+          ctx.globalAlpha=0.15;ctx.fillStyle=col.fill;
+          ctx.fillRect(textX-tw-3,lCY-7,tw+6,13);ctx.globalAlpha=1;
+        }
+        ctx.globalAlpha=alpha;ctx.fillStyle=isDark2?col.fill:col.stroke;
+        ctx.fillText(fracStr,textX,lCY);ctx.globalAlpha=1;
+      });
+    }
   }
 
   // Aiguilles — dégradé transparent au centre, opaque à leur cercle
@@ -9353,67 +9381,17 @@ function _updateMeasurePageIndicator(globalPage){
     pageInfos.push({pages});
   });
 
-  // Labels layer : positionnés en regard des labels canvas via getBoundingClientRect
-  const _mpiColors=['#378ADD','#D85A30','#1D9E75'];
-  const _cv=document.getElementById('rhythm-canvas');
-  const _mpiEl=document.getElementById('measure-page-indicator');
-  const _cvH=_cv?_cv.height:200;
-  const _cy=_cvH/2;
-  const _lSp=Math.min(36,Math.max(26,_cvH*0.2));
-  // Calcul des positions CSS via les rectangles réels
-  const _cvR=_cv?_cv.getBoundingClientRect():{top:0,left:0,height:_cvH,width:_cvH};
-  const _mpiR=_mpiEl?_mpiEl.getBoundingClientRect():{top:0,left:0};
-  const _canvasTopInMpi=_cvR.top-_mpiR.top;
-  const _canvasLeftInMpi=_cvR.left-_mpiR.left;
-  const _scaleY=_cvR.height/_cvH;
-  const _scaleX=_cvR.width/(_cv?_cv.width:_cvH+144);
-  // Centre du cercle en CSS px dans le repère #measure-page-indicator
-  const _cxCss=_canvasLeftInMpi+(CIRC_LABEL_W+_cvH/2)*_scaleX;
-  const _cyCss=_canvasTopInMpi+_cy*_scaleY;
-  LAYERS.forEach((_,li)=>{
-    const m=document.getElementById('mpi-l'+li); if(!m) return;
-    const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
-    const n=state[li].pattern.length;
-    // Position verticale calculée depuis le centre du cercle en CSS px
-    m.style.top=(_cyCss+(li-1)*_lSp*_scaleY)+'px';
-    m.style.color=_mpiColors[li];
-    m.style.padding=''; m.style.background=''; m.style.borderRadius='';
-    m.style.fontStyle='italic'; m.style.fontWeight='800'; m.style.opacity='1';
-    if(n<spm_li){
-      // Pattern < mesure : fraction + voile rappelant le secteur teinté
-      const g=gcd(n,spm_li);
-      m.textContent='● '+n/g+'/'+(spm_li/g)+' mes';
-      m.style.background=_mpiColors[li]+'25';   // voile couleur layer ~15%
-      m.style.padding='1px 4px'; m.style.borderRadius='3px';
-    } else if(n===spm_li){
-      // Pattern = mesure exacte : "1 mes" légèrement atténué
-      m.textContent='● 1 mes';
-      m.style.fontStyle='normal'; m.style.fontWeight='600'; m.style.opacity='0.55';
-    } else {
-      // Pattern > mesure : décompte de page courant (1/2 → 2/2…)
-      const pagesForLayer=Math.ceil(n/Math.max(1,spm_li));
-      const layerPage=globalPage%pagesForLayer+1;
-      m.textContent='● '+layerPage+'/'+pagesForLayer+' mes';
-    }
-  });
+  // Labels fraction : dessinés sur canvas (strip droit) — DOM labels vidés
+  [0,1,2].forEach(li=>{ const m=document.getElementById('mpi-l'+li); if(m){m.textContent='';m.style.cssText='';} });
 
-  // Nav row : centrée sur le cercle, visible seulement si > 1 page
+  // Nav row : en haut du cercle
   const navRow=document.getElementById('mpi-nav-row');
-  if(navRow){
-    navRow.style.display=maxPages>1?'flex':'none';
-    if(maxPages>1){
-      navRow.style.left=_cxCss+'px';
-      navRow.style.top=_cyCss+'px';
-      navRow.style.right='auto';
-      navRow.style.transform='translate(-50%,-50%)';
-    }
-  }
+  if(navRow){ navRow.style.display=maxPages>1?'flex':'none'; navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:5px;left:0;right:0;justify-content:center;align-items:center;gap:1px;pointer-events:auto'; }
 
   if(maxPages>1){
     const displayPage=(globalPage%maxPages)+1;
     const lbl=document.getElementById('mpi-label');
     if(lbl){
-      // Proposition A — dots de pagination
       lbl.innerHTML='';
       for(let p=0;p<maxPages;p++){
         const d=document.createElement('span');
@@ -9424,8 +9402,15 @@ function _updateMeasurePageIndicator(globalPage){
     }
     const prev=document.getElementById('mpi-prev');
     const next=document.getElementById('mpi-next');
-    if(prev) prev.disabled=playing||globalPage<=0;
-    if(next) next.disabled=playing||globalPage>=(maxPages-1);
+    // Flèches : invisibles quand transport=play, visibles et lumineuses quand stop
+    if(prev){
+      prev.disabled=!playing&&globalPage<=0;
+      prev.style.opacity=playing?'0':(globalPage<=0?'0.18':'1');
+    }
+    if(next){
+      next.disabled=!playing&&globalPage>=(maxPages-1);
+      next.style.opacity=playing?'0':(globalPage>=(maxPages-1)?'0.18':'1');
+    }
 
     // Proposition D — toast one-shot au premier changement de page
     if(displayPage>1 && !localStorage.getItem('ptk_mpi_toast')){
