@@ -541,7 +541,7 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 #btn-tempo:not(.metro-on) .metro-icon::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:120%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.9}
 /* Overlay de valeur lors du drag (tempo/vol) */
 .drag-value-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.72);color:#fff;font-size:15px;font-weight:700;padding:8px 20px;border-radius:20px;pointer-events:none;z-index:9999;display:none;text-align:center;line-height:1.4}
-.sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:40%;border-color:var(--cs);color:var(--cb)}
+.sound-h-r1 .pm-preset-btn{font-size:10px;flex:1;min-width:0;max-width:40%;border-color:var(--cs);color:var(--cb);text-align:center}
 .btn-sec-rnd,.btn-sec-magic{font-size:11px;padding:0 2px;cursor:pointer;flex-shrink:0;background:transparent;border:none;opacity:.55;line-height:1;-webkit-tap-highlight-color:transparent}
 .btn-sec-rnd:hover,.btn-sec-magic:hover{opacity:1}
 .sound-ctrls-actions .btn-sec-ico{opacity:.5}
@@ -1509,7 +1509,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.0</span>
+    <span class="app-version">v3.17.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5629,8 +5629,8 @@ function buildBandSection(){
       slRow.style.display='';
       const ctrls=slRow.querySelector('.sound-ctrls');
       if(ctrls)ctrls.classList.toggle('hidden',!soundPanelOpen[key]);
-      const arr=slRow.querySelector('.btn-sec-ico');
-      if(arr)arr.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
+      const iico=slRow.querySelector('.btn-info-ico');
+      if(iico)iico.classList.toggle('active',!!(soundPanelOpen[key]));
     }else{slRow.style.display='none';}
   };
 
@@ -5675,12 +5675,33 @@ function buildBandSection(){
     iBtn.textContent=instrName;iBtn.title=instrName;
     _setIBtnStyle(iBtn,key,col);
     iBtnRefs.push(iBtn);
-    iBtn.addEventListener('click',()=>{
-      soundLayerVisible[key]=!soundLayerVisible[key];
-      _applyLayerVis(key);
-      _setIBtnStyle(iBtn,key,col);
-      _syncChevron();
+    let _ibLt=null,_ibLong=false;
+    iBtn.addEventListener('pointerdown',()=>{
+      _ibLong=false;
+      _ibLt=setTimeout(()=>{
+        _ibLong=true;
+        soundLayerVisible[key]=!soundLayerVisible[key];
+        _applyLayerVis(key);_setIBtnStyle(iBtn,key,col);_syncChevron();
+      },450);
     });
+    iBtn.addEventListener('pointerup',()=>{
+      clearTimeout(_ibLt);
+      if(_ibLong)return;
+      const ss2=soundState[li];
+      const _slyAc2={low:{accent:'#378ADD',bg:'#ddeefa'},high:{accent:'#D85A30',bg:'#faeae5'},noise:{accent:'#1D9E75',bg:'#e2f5ef'}};
+      const _sla2=_slyAc2[key]||{accent:'#4a7fa5',bg:'#eef4f8'};
+      openPresetModal({type:'sound',currentId:ss2.soundPresetId,label:'Son '+(['Grave','Aigu','Noise'][li]),accent:_sla2.accent,bg:_sla2.bg,
+        onSelect:(spId)=>{
+          const sp2=getSoundPreset(spId);if(!sp2)return;
+          const origId2=ss2.soundPresetId;const _pv2=ss2.vol;
+          ss2.soundPresetId=sp2.id;ss2.soundId=sp2.soundId;ss2.pitch=sp2.pitch;ss2.env=sp2.env??0.3;ss2.vol=_pv2;ss2.atk=sp2.atk??0.0;
+          soundDirty[key]=false;if(spId!==origId2)setBandDirty(true);
+          buildSoundPanel();setSoundDirtySlot(key,false);
+          iBtn.textContent=sp2.nom||'';iBtn.title=sp2.nom||'';_setIBtnStyle(iBtn,key,col);
+        }
+      });
+    });
+    iBtn.addEventListener('pointercancel',()=>clearTimeout(_ibLt));
     instrRow.appendChild(iBtn);
   }
   instrRow.appendChild(document.createElement('div'));
@@ -7648,10 +7669,9 @@ function buildSoundRow(key,label,cls,ss){
     ()=>ss.soundPresetId, _soundOnSelect
   );
 
-  const arrow=document.createElement('button');arrow.className='btn-sec-ico';
-  arrow.style.cssText='font-size:9px;opacity:.88;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc);font-weight:700;margin-left:auto';
-  arrow.title='Réglages son';
-  arrow.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
+  const iInfoBtn=document.createElement('button');iInfoBtn.className='btn-info-ico';
+  iInfoBtn.title='Réglages son';iInfoBtn.textContent='i';
+  if(soundPanelOpen[key])iInfoBtn.classList.add('active');
 
   // Bouton 💾 son : visible seulement quand dirty
   const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-save';saveIcoHdr.textContent='💾';
@@ -7683,7 +7703,7 @@ function buildSoundRow(key,label,cls,ss){
     setSoundDirtySlot(key,true);setBandDirty(true);buildSoundPanel();
   });
 
-  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(rndBtn);r1.appendChild(magicBtn);r1.appendChild(arrow);
+  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(iInfoBtn);r1.appendChild(rndBtn);r1.appendChild(magicBtn);
 
   // Rangée 2 : volume (pleine largeur)
   const r2=document.createElement('div');r2.className='sound-h-r2';
@@ -7714,11 +7734,11 @@ function buildSoundRow(key,label,cls,ss){
   ctrls.appendChild(inner);
   if(!soundPanelOpen[key]) ctrls.classList.add('hidden');
 
-  arrow.addEventListener('click',e=>{
+  iInfoBtn.addEventListener('click',e=>{
     e.stopPropagation();
-    const opening=ctrls.classList.toggle('hidden');
-    arrow.textContent=opening?'⚙ ▶':'⚙ ▼';
-    soundPanelOpen[key]=!opening;
+    const nowHidden=ctrls.classList.toggle('hidden');
+    soundPanelOpen[key]=!nowHidden;
+    iInfoBtn.classList.toggle('active',!nowHidden);
   });
 
   row.appendChild(header);row.appendChild(ctrls);
