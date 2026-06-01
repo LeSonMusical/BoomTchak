@@ -1099,20 +1099,20 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:12px 0 1.25rem;flex-shrink:0}
+#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:6px 0 1.25rem;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
 #measure-page-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 .mpi-layers{position:absolute;right:6px;top:0;bottom:0;pointer-events:none}
 .mpi-layer{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}
 .mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
-#mpi-nav-row{position:absolute;top:4px;display:none;justify-content:center;align-items:center;gap:2px;pointer-events:auto}
-.mpi-btn{background:none;border:none;padding:0 6px;font-size:16px;cursor:pointer;color:#7060B0;line-height:1.6;opacity:.9}
+#mpi-nav-row{position:absolute;top:3px;display:none;justify-content:center;align-items:center;gap:0px;pointer-events:auto}
+.mpi-btn{background:none;border:none;padding:0 4px;font-size:15px;cursor:pointer;color:#7060B0;line-height:1.6;opacity:.9}
 .mpi-btn:disabled{opacity:.18;cursor:default}
 body.dark-mode .mpi-btn{color:#A090D0}
-#mpi-label{font-size:11px;font-weight:700;min-width:40px;text-align:center;color:#6B5FA5;white-space:nowrap;display:flex;align-items:center;gap:4px}
-.mpi-dot{font-size:10px;opacity:.32;color:#6B5FA5;line-height:1;transition:all .15s;cursor:default}
-.mpi-dot.active{font-size:14px;opacity:1}
+#mpi-label{font-size:10px;font-weight:700;min-width:32px;text-align:center;color:#6B5FA5;white-space:nowrap;display:flex;align-items:center;gap:1px}
+.mpi-dot{font-size:8px;opacity:.32;color:#6B5FA5;line-height:1;transition:all .15s;cursor:default}
+.mpi-dot.active{font-size:11px;opacity:1}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
@@ -1514,7 +1514,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.12</span>
+    <span class="app-version">v3.17.13</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
