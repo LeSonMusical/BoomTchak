@@ -1103,7 +1103,8 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
 #measure-page-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
-.mpi-layers{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.mpi-layers{position:absolute;right:6px;top:0;bottom:0;pointer-events:none}
+.mpi-layer{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}
 .mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
 #mpi-nav-row{position:absolute;top:5px;left:0;right:0;display:none;justify-content:center;align-items:center;gap:1px;pointer-events:auto}
 .mpi-btn{background:none;border:none;padding:0 3px;font-size:9px;cursor:pointer;color:#999;line-height:1.6}
@@ -1512,7 +1513,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.6</span>
+    <span class="app-version">v3.17.7</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8777,23 +8778,6 @@ function drawCircles(){
             ctx.lineTo(cx+rO*Math.cos(aS),cy+rO*Math.sin(aS));
             ctx.strokeStyle=col.fill+(isDarkT?'cc':'99');ctx.lineWidth=1.2;ctx.stroke();
           }
-          // Texte de fraction dans le premier secteur miroir (sur voile)
-          const fSep=n*getBeatSec(li)/_mPageSec;
-          const fEnd1=Math.min(fSep*2,1.0);
-          const sectorArcLen=(fEnd1-fSep)*2*Math.PI*r;
-          if(sectorArcLen>18){
-            const aMid=-Math.PI/2+2*Math.PI*((fSep+fEnd1)/2);
-            const tx=cx+r*Math.cos(aMid), ty=cy+r*Math.sin(aMid);
-            const gN=gcd(n,spm_liT);
-            const fStr=n/gN+'/'+(spm_liT/gN)+' mes';
-            const isDarkT2=document.body.classList.contains('dark-mode');
-            ctx.save(); ctx.translate(tx,ty);
-            ctx.font='bold 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-            ctx.shadowColor=isDarkT2?'rgba(0,0,0,.7)':'rgba(255,255,255,.9)';ctx.shadowBlur=3;
-            ctx.fillStyle=isDarkT2?col.fill:col.stroke;
-            ctx.globalAlpha=0.92;ctx.fillText(fStr,0,0);
-            ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.restore();
-          }
         }
       }
     }
@@ -8905,7 +8889,7 @@ function drawCircles(){
     const rOuter = radii[2] + dotR + 5;
     const isDarkB = document.body.classList.contains('dark-mode');
     const beatMarks = _metroBeatMarks(circleModeView);
-    for(const {frac, isFirst} of beatMarks){
+    for(const {frac, beatNum, isFirst} of beatMarks){
       const a = -Math.PI/2 + 2*Math.PI * frac;
       ctx.beginPath();
       ctx.moveTo(cx + rInner*Math.cos(a), cy + rInner*Math.sin(a));
@@ -8913,8 +8897,15 @@ function drawCircles(){
       ctx.strokeStyle = isFirst ? (isDarkB?'#9080C0':'#7060B0') : (isDarkB?'#555':'#d0ccc5');
       ctx.lineWidth = isFirst ? 1.5 : 0.75;
       ctx.stroke();
+      // Numéro du temps à l'extérieur du cercle (petit espace après la ligne)
+      const rTxt = rOuter + 8;
+      ctx.font = isFirst ? 'bold 9px sans-serif' : '8px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = isFirst ? (isDarkB?'#A090D0':'#7060B0') : (isDarkB?'#555':'#aaa');
+      ctx.globalAlpha = isFirst ? 0.85 : 0.6;
+      ctx.fillText(beatNum, cx + rTxt*Math.cos(a), cy + rTxt*Math.sin(a));
+      ctx.globalAlpha = 1;
     }
-    // Numéros des temps en bordure extérieure (vue mesure : supprimés — remplacés par Mes n/p)
   }
   // Labels 3 lignes (nb pas / unité / durée) centrés verticalement — modes Pattern ET Mesure
   {
@@ -9361,23 +9352,25 @@ function _updateMeasurePageIndicator(globalPage){
     pageInfos.push({pages});
   });
 
-  // Labels layer : couleur pleine ; fraction seulement si pattern > mesure (canvas gère < mesure)
+  // Labels layer : positionnés en regard des labels canvas (même Y que "n pas en 1/8")
   const _mpiColors=['#378ADD','#D85A30','#1D9E75'];
+  const _cv=document.getElementById('rhythm-canvas');
+  const _cvH=_cv?_cv.height:200;
+  const _cy=_cvH/2;
+  const _lSp=Math.min(36,Math.max(26,_cvH*0.2));
   LAYERS.forEach((_,li)=>{
     const m=document.getElementById('mpi-l'+li); if(!m) return;
     const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
     const n=state[li].pattern.length;
+    const g=gcd(n,spm_li), fNum=n/g, fDen=spm_li/g;
+    const isExact=(fNum===1&&fDen===1);
+    const fracStr=fDen===1?fNum+' mes':fNum+'/'+fDen+' mes';
+    // Position verticale alignée avec le layer canvas
+    m.style.top=(_cy+(li-1)*_lSp)+'px';
     m.style.color=_mpiColors[li];
-    if(n<=spm_li){
-      // pattern ≤ mesure : texte affiché sur le voile canvas, DOM vide
-      m.textContent='';m.style.fontStyle='';m.style.fontWeight='600';
-    } else {
-      // pattern > mesure : fraction n/d mes, mise en valeur
-      const g=gcd(n,spm_li), fNum=n/g, fDen=spm_li/g;
-      const fracStr=fDen===1?fNum+' mes':fNum+'/'+fDen+' mes';
-      m.textContent='● '+fracStr;
-      m.style.fontStyle='italic';m.style.fontWeight='800';
-    }
+    m.textContent='● '+fracStr;
+    m.style.fontStyle=isExact?'normal':'italic';
+    m.style.fontWeight=isExact?'600':'800';
   });
 
   // Nav row : visible seulement si > 1 page
