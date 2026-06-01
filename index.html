@@ -376,7 +376,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
 /* ─── 3D scroll-bar : layout 3 colonnes ─── */
 .sbar-3col{grid-template-columns:1fr auto 1fr;align-items:center;padding:.3rem .4rem;gap:6px}
-.band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
+.band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem 0 .18rem;width:100%;box-sizing:border-box}
 .band-instr-row{display:grid;grid-template-columns:26px 1fr 1fr 1fr 26px;gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
 .band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%}
 .sbar-left{justify-self:start}
@@ -1509,7 +1509,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.2</span>
+    <span class="app-version">v3.17.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5682,7 +5682,7 @@ function buildBandSection(){
         _ibLong=true;
         soundLayerVisible[key]=!soundLayerVisible[key];
         _applyLayerVis(key);_setIBtnStyle(iBtn,key,col);_syncChevron();
-      },300);
+      },200);
     });
     iBtn.addEventListener('pointerup',()=>{
       clearTimeout(_ibLt);
