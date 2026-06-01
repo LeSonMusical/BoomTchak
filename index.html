@@ -376,7 +376,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .band-sounds-wrap{padding:.15rem .5rem .3rem;border-left:2px solid #8ab4d0;margin-left:4px}
 /* ─── 3D scroll-bar : layout 3 colonnes ─── */
 .sbar-3col{grid-template-columns:1fr auto 1fr;align-items:center;padding:.3rem .4rem;gap:6px}
-.band-bar .sbar-row1{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
+.band-bar .sbar-row1{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:.3rem .4rem .18rem;width:100%;box-sizing:border-box}
 .band-instr-row{display:grid;grid-template-columns:26px 1fr 1fr 1fr 26px;gap:3px;width:100%;padding:0 .3rem .3rem;box-sizing:border-box}
 .band-instr-btn{display:flex;align-items:center;justify-content:center;padding:2px 3px;border-radius:3px;font-size:8px;font-weight:300;letter-spacing:-.02em;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s;-webkit-tap-highlight-color:transparent;min-width:0;width:100%}
 .sbar-left{justify-self:start}
@@ -1509,7 +1509,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.1</span>
+    <span class="app-version">v3.17.2</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5578,7 +5578,7 @@ function buildBandSection(){
   saveBtn.id='save-btn-band';saveBtn.className='btn-sec-save';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
-  centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);centerCol.appendChild(saveBtn);
+  centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);
   row1.appendChild(centerCol);
 
   // Col droite : chevron global (agit sur la visibilité des 3 layers)
@@ -5629,8 +5629,8 @@ function buildBandSection(){
       slRow.style.display='';
       const ctrls=slRow.querySelector('.sound-ctrls');
       if(ctrls)ctrls.classList.toggle('hidden',!soundPanelOpen[key]);
-      const iico=slRow.querySelector('.btn-info-ico');
-      if(iico)iico.classList.toggle('active',!!(soundPanelOpen[key]));
+      const arr=slRow.querySelector('.btn-sec-ico');
+      if(arr)arr.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
     }else{slRow.style.display='none';}
   };
 
@@ -5657,7 +5657,7 @@ function buildBandSection(){
     iBtnRefs.forEach((btn,i)=>_setIBtnStyle(btn,_soundKeys[i],CIRCLE_COLORS[i]?.fill||'#888'));
     _syncChevron();
   });
-  rightCol.appendChild(btnVolet);
+  rightCol.appendChild(saveBtn);rightCol.appendChild(btnVolet);
   row1.appendChild(rightCol);
   leftCol.addEventListener('click',()=>{ _applyBandMute(!bandMuted); });
   bar.appendChild(row1);
@@ -5682,7 +5682,7 @@ function buildBandSection(){
         _ibLong=true;
         soundLayerVisible[key]=!soundLayerVisible[key];
         _applyLayerVis(key);_setIBtnStyle(iBtn,key,col);_syncChevron();
-      },450);
+      },300);
     });
     iBtn.addEventListener('pointerup',()=>{
       clearTimeout(_ibLt);
@@ -6149,6 +6149,9 @@ function buildLayers(){
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
       if(circleView) drawCircles();
       _syncBtnVolAllMuted();
+      // Sync bouton mute dans le volet Son
+      const _smb=document.querySelector(`.sound-layer[data-sound-key="${['low','high','noise'][li]}"] .btn-mute-lbl`);
+      if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;}
     });
     row1.appendChild(btnMute);
 
@@ -7630,7 +7633,29 @@ function buildSoundRow(key,label,cls,ss){
   // Rangée 1 : label + preset son + toggle réglages
   const r1=document.createElement('div');r1.className='sound-h-r1';
 
-  const lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
+  const _keyToLi={low:0,high:1,noise:2};const li_=_keyToLi[key]??-1;
+  let lbl;
+  if(li_>=0){
+    lbl=document.createElement('button');lbl.className='btn-mute-lbl'+(state[li_]?.muted?' muted':'');
+    lbl.textContent=label;lbl.title=(state[li_]?.muted?'Activer : ':'Muet : ')+label;
+    lbl.addEventListener('click',e=>{
+      e.stopPropagation();
+      state[li_].muted=!state[li_].muted;
+      lbl.classList.toggle('muted',state[li_].muted);
+      lbl.title=(state[li_].muted?'Activer : ':'Muet : ')+label;
+      const _lmb=document.getElementById('btn-mute-lbl-'+li_);
+      if(_lmb){_lmb.classList.toggle('muted',state[li_].muted);_lmb.title=(state[li_].muted?'Activer : ':'Muet : ')+LAYERS[li_].label;}
+      const _ld=document.getElementById('layer-div-'+li_);
+      if(_ld)_ld.classList.toggle('muted-layer',state[li_].muted);
+      const _sd=document.getElementById('steps-'+LAYERS[li_].id);
+      const _r2=_sd?.closest('.layer-row2');if(_r2)_r2.classList.toggle('muted',state[li_].muted);
+      grooveDirty=true;updateGrooveSaveBtn();
+      const _sgm=getGroove(currentGrooveId);if(_sgm)saveToStorage();
+      if(circleView)drawCircles();_syncBtnVolAllMuted();
+    });
+  }else{
+    lbl=document.createElement('div');lbl.className='sound-lbl';lbl.textContent=label;
+  }
 
   const soundPresetBtn=document.createElement('button');
   soundPresetBtn.className='pm-preset-btn';
@@ -7670,8 +7695,19 @@ function buildSoundRow(key,label,cls,ss){
   );
 
   const iInfoBtn=document.createElement('button');iInfoBtn.className='btn-info-ico';
-  iInfoBtn.title='Réglages son';iInfoBtn.textContent='i';
-  if(soundPanelOpen[key])iInfoBtn.classList.add('active');
+  iInfoBtn.textContent='i';iInfoBtn.title='Info sur ce son';
+  const _eKey=ss.soundId||key;const _hasE=hasEncycloContent(_eKey);
+  iInfoBtn.style.visibility=_hasE?'visible':'hidden';
+  if(_hasE){iInfoBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(encycloOuvert&&currentEncycloId===_eKey)toggleEncyclo(false);
+    else{showEncycloEntry(_eKey);if(!encycloOuvert)toggleEncyclo(true);}
+  });}
+
+  const arrow=document.createElement('button');arrow.className='btn-sec-ico';
+  arrow.style.cssText='font-size:9px;opacity:.88;padding:1px 4px;cursor:pointer;flex-shrink:0;white-space:nowrap;color:var(--cc);font-weight:700;margin-left:auto';
+  arrow.title='Réglages son';
+  arrow.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
 
   // Bouton 💾 son : visible seulement quand dirty
   const saveIcoHdr=document.createElement('button');saveIcoHdr.className='btn-sec-save';saveIcoHdr.textContent='💾';
@@ -7703,7 +7739,7 @@ function buildSoundRow(key,label,cls,ss){
     setSoundDirtySlot(key,true);setBandDirty(true);buildSoundPanel();
   });
 
-  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(iInfoBtn);r1.appendChild(rndBtn);r1.appendChild(magicBtn);
+  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(iInfoBtn);r1.appendChild(rndBtn);r1.appendChild(magicBtn);r1.appendChild(arrow);
 
   // Rangée 2 : volume (pleine largeur)
   const r2=document.createElement('div');r2.className='sound-h-r2';
@@ -7734,11 +7770,11 @@ function buildSoundRow(key,label,cls,ss){
   ctrls.appendChild(inner);
   if(!soundPanelOpen[key]) ctrls.classList.add('hidden');
 
-  iInfoBtn.addEventListener('click',e=>{
+  arrow.addEventListener('click',e=>{
     e.stopPropagation();
     const nowHidden=ctrls.classList.toggle('hidden');
     soundPanelOpen[key]=!nowHidden;
-    iInfoBtn.classList.toggle('active',!nowHidden);
+    arrow.textContent=nowHidden?'⚙ ▶':'⚙ ▼';
   });
 
   row.appendChild(header);row.appendChild(ctrls);
