@@ -1516,7 +1516,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.16</span>
+    <span class="app-version">v3.17.17</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10116,6 +10116,18 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
       packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections };
     } else {
       packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
+    }
+    // Synchroniser l'index — les articles créés directement en DB apparaissent dans la liste
+    // (sauf les entrées hard-codées ENCYCLO_MISC qui ont leur propre entrée statique)
+    if (!ENCYCLO_MISC.some(m => m.id === e.key)) {
+      if (!packCours.encycloIndex) packCours.encycloIndex = [];
+      const existing = packCours.encycloIndex.findIndex(x => x.id === e.key);
+      const entry = { id: e.key, nom: e.titre || e.key, category: e.category || 'concepts', source: 'school' };
+      if (existing >= 0) {
+        packCours.encycloIndex[existing] = Object.assign({}, packCours.encycloIndex[existing], entry);
+      } else {
+        packCours.encycloIndex.push(entry);
+      }
     }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
