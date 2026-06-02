@@ -564,6 +564,8 @@ body.mode-tx [contenteditable="true"]:focus{background:rgba(216,90,48,.11);box-s
 .encyclo-panel-handle-wrap{flex-shrink:0;padding:10px 0 6px;display:flex;justify-content:center;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
 .encyclo-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
 .encyclo-panel-handle-wrap:hover .encyclo-panel-handle{background:#aaa}
+#encyclo-fixed-header{flex-shrink:0;background:#fff;border-bottom:1px solid rgba(0,0,0,.07);overflow:hidden}
+body.dark-mode #encyclo-fixed-header{background:#252522;border-bottom-color:rgba(255,255,255,.06)}
 .encyclo-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 /* Inside panel: content always visible, hide toggle button */
 #encyclo-panel .encyclo-content{max-height:none!important;overflow:visible!important}
@@ -605,8 +607,8 @@ body.dark-mode .enc-lp-item:hover{background:#2a3820}
 .encyclo-vide{font-size:11px;color:#aaa;font-style:italic}
 .enc-related{margin-top:12px;padding-top:8px;border-top:1px solid #e8e5e0}
 .enc-related-lbl{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.enc-related-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:3px}
-.enc-related-list li{font-size:11px}
+.enc-related-list{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;flex-direction:row;gap:4px 8px}
+.enc-related-list li{font-size:11px;white-space:nowrap}
 body.dark-mode .enc-related{border-top-color:#333}
 /* Boutons filtre contenu encyclopédie */
 .pm-fam-cf{font-size:9px!important;padding:1px 6px!important;opacity:.75}
@@ -1516,7 +1518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.19</span>
+    <span class="app-version">v3.18.0</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1828,6 +1830,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <div class="encyclo-panel-handle"></div>
     <button id="encyclo-panel-close" style="position:absolute;right:10px;top:6px;background:none;border:1px solid #aaa;border-radius:4px;font-size:13px;color:#777;cursor:pointer;padding:1px 8px;line-height:1.5;z-index:1" title="Fermer">✕</button>
   </div>
+  <div id="encyclo-fixed-header"></div>
   <div class="encyclo-panel-content" id="encyclo-panel-content">
     <div id="enc-floating-toolbar"></div>
     <div id="section-encyclo"></div>
@@ -7842,6 +7845,8 @@ function setupHDrag(track,onVal){
 function buildEncycloSection(){
   const cont=document.getElementById('section-encyclo');if(!cont)return;
   cont.innerHTML='';
+  const fixedHdr=document.getElementById('encyclo-fixed-header');
+  if(fixedHdr)fixedHdr.innerHTML='';
 
   // ── Header 2-lignes ───────────────────────────────────────────────────────
   const header=document.createElement('div');header.className='encyclo-header encyclo-bar';
@@ -7955,7 +7960,7 @@ function buildEncycloSection(){
   header.addEventListener('click',e=>{
     if(e.target===header||e.target===l1){toggleEncyclo(!encycloOuvert);}
   });
-  cont.appendChild(header);
+  if(fixedHdr)fixedHdr.appendChild(header);else cont.appendChild(header);
 
   // Contenu collapsible
   const content=document.createElement('div');
@@ -8107,7 +8112,8 @@ function renderEncyclo(key){
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
   const rawEntry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
-  const isEditable = !isPreview && encEditMode && (currentMode==='tx' || authProfile?.role==='mx');
+  const _isSchoolItem = !!(packCours.encycloIndex?.find(e=>e.id===key)?.source==='school') || ENCYCLO_MISC.some(m=>m.id===key);
+  const isEditable = !isPreview && encEditMode && (authProfile?.role==='mx' || (currentMode==='tx' && !_isSchoolItem));
   // Détecter le format : nouveau (sections[]) ou héritage (chapo+bullets)
   const isNewFormat = rawEntry && Array.isArray(rawEntry.sections) && rawEntry.sections.length > 0;
   const entry = rawEntry;
@@ -8171,7 +8177,7 @@ function renderEncyclo(key){
         if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
         const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
         const secs=packCours.encyclo[key].sections;
-        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx+1:secs.length;
+        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx:secs.length;
         secs.splice(insertAt,0,newSec);
         _focusedSecIdx=insertAt;
         encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
@@ -8307,7 +8313,7 @@ function renderEncyclo(key){
         if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
         const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
         const secs=packCours.encyclo[key].sections;
-        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx+1:secs.length;
+        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx:secs.length;
         secs.splice(insertAt,0,newSec);
         _focusedSecIdx=insertAt;
         encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
