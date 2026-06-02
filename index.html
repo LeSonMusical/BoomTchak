@@ -1518,7 +1518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.1</span>
+    <span class="app-version">v3.18.2</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10115,6 +10115,8 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
 
   // Calcul des clés couvertes par les patterns (via encyclo_ref ou id) — pour exclure les articles liés
   const _patternKeys = new Set(packCours.patterns.map(p => p.encyclo_ref || p.id));
+  // Calcul des clés grooves — les grooves ont aussi des stubs encyclo auto-créés
+  const _grooveKeys = new Set(packCours.grooves.map(g => g.id));
   // Calcul des clés ENCYCLO_MISC (statiques hard-codées)
   const _miscKeys = new Set(ENCYCLO_MISC.map(m => m.id));
 
@@ -10127,10 +10129,10 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     } else {
       packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
     }
-    // Ajouter à l'index tous les articles standalone (ni pattern-lié, ni misc)
-    // Si titre absent en DB, on affiche la clé comme nom de secours
-    if (!_patternKeys.has(e.key) && !_miscKeys.has(e.key)) {
-      packCours.encycloIndex.push({ id: e.key, nom: e.titre || e.key, category: e.category || 'concepts', source: 'school' });
+    // Ajouter à l'index uniquement les articles concepts standalone :
+    // ni lié à un pattern, ni à un groove, ni dans ENCYCLO_MISC, et avec un titre non vide
+    if (!_patternKeys.has(e.key) && !_grooveKeys.has(e.key) && !_miscKeys.has(e.key) && e.titre) {
+      packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
     }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
