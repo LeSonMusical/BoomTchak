@@ -1516,7 +1516,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.18</span>
+    <span class="app-version">v3.17.19</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10108,6 +10108,15 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   const _validFamIds = new Set(packCours.familles.map(f => f.id));
   packCours.patterns.forEach(p => { if (p.familles?.length) p.familles = p.familles.filter(id => _validFamIds.has(id)); });
   packCours.grooves.forEach(g => { if (g.familles?.length) g.familles = g.familles.filter(id => _validFamIds.has(id)); });
+  // Purge les entrées 'school' de l'index avant de reconstruire — évite la pollution du localStorage
+  if (!packCours.encycloIndex) packCours.encycloIndex = [];
+  packCours.encycloIndex = packCours.encycloIndex.filter(e => e.source !== 'school');
+
+  // Calcul des clés couvertes par les patterns (via encyclo_ref ou id) — pour exclure les articles liés
+  const _patternKeys = new Set(packCours.patterns.map(p => p.encyclo_ref || p.id));
+  // Calcul des clés ENCYCLO_MISC (statiques hard-codées)
+  const _miscKeys = new Set(ENCYCLO_MISC.map(m => m.id));
+
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
@@ -10117,18 +10126,10 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     } else {
       packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
     }
-    // Synchroniser l'index — les articles créés directement en DB apparaissent dans la liste
-    // Exclure : entrées ENCYCLO_MISC (statiques) + articles liés à un pattern via encyclo_ref (déjà accessibles via le pattern)
-    const _isPatternLinked = packCours.patterns.some(p => (p.encyclo_ref || p.id) === e.key);
-    if (!_isPatternLinked && !ENCYCLO_MISC.some(m => m.id === e.key)) {
-      if (!packCours.encycloIndex) packCours.encycloIndex = [];
-      const existing = packCours.encycloIndex.findIndex(x => x.id === e.key);
-      const entry = { id: e.key, nom: e.titre || e.key, category: e.category || 'concepts', source: 'school' };
-      if (existing >= 0) {
-        packCours.encycloIndex[existing] = Object.assign({}, packCours.encycloIndex[existing], entry);
-      } else {
-        packCours.encycloIndex.push(entry);
-      }
+    // Ajouter à l'index uniquement les articles concepts standalone :
+    // ni lié à un pattern, ni dans ENCYCLO_MISC, et avec un titre non vide
+    if (!_patternKeys.has(e.key) && !_miscKeys.has(e.key) && e.titre) {
+      packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
     }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
