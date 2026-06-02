@@ -1516,7 +1516,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.17.15</span>
+    <span class="app-version">v3.17.16</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3323,7 +3323,7 @@ const LOOKAHEAD=0.1;
 const SCHED_MS=25;
 
 function getAC(){
-  if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
+  if(!ac||ac.state==='closed'){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
   return ac;
 }
 
@@ -3790,13 +3790,38 @@ function refreshTransportBtn(){
 }
 function togglePlay(){
   if(!playing){
-    if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}
-    ac.resume(); // iOS 18 : resume() synchrone dans le handler de clic
-    startPlay();
+    // Recréer l'AC s'il a été fermé par iOS après une longue veille
+    if(!ac || ac.state==='closed'){
+      ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+    }
+    const _launch=()=>{ startPlay(); refreshTransportBtn(); };
+    if(ac.state==='running'){
+      // AC déjà actif (cas desktop) — démarrage immédiat
+      _launch();
+    } else {
+      // AC suspendu (retour de veille mobile) — attendre le vrai resume avant de programmer les notes
+      // iOS Safari ignore silencieusement les notes programmées sur un AC suspendu
+      let _timedOut=false;
+      const _fallback=setTimeout(()=>{
+        _timedOut=true;
+        // ac.resume() bloqué (bug iOS rare) → recréer l'AC entièrement
+        try{ ac.close(); }catch(e){}
+        ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+        ac.resume().then(_launch);
+      }, 1200);
+      ac.resume()
+        .then(()=>{ if(!_timedOut){ clearTimeout(_fallback); _launch(); } })
+        .catch(()=>{
+          clearTimeout(_fallback);
+          try{ ac.close(); }catch(e){}
+          ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+          ac.resume().then(_launch);
+        });
+    }
   } else {
     stopPlay();
+    refreshTransportBtn();
   }
-  refreshTransportBtn();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -14132,16 +14157,25 @@ start();
 attachEvents();
 // Maintenir l'AudioContext actif après retour (iOS/Firefox suspend AC en arrière-plan)
 function _resumeAfterBackground(){
-  if(!ac)return;
-  ac.resume().then(()=>{
-    if(!playing)return;
-    // Resync nextStepTime pour éviter un burst de steps accumulés pendant la mise en veille
-    const now=ac.currentTime;
-    LAYERS.forEach((_,li)=>{ if(state[li].nextStepTime<now) state[li].nextStepTime=now+0.05; });
-    if(metroNextBeatTime<now) metroNextBeatTime=now+0.05;
-    // Redémarrer le scheduler si la chaîne setTimeout est morte (Firefox iOS)
+  if(!ac||ac.state==='closed')return; // AC fermé → sera recréé au prochain Play
+  if(ac.state==='suspended'){
+    ac.resume().then(()=>{
+      if(!playing)return;
+      // Resync nextStepTime pour éviter un burst de steps accumulés pendant la mise en veille
+      const now=ac.currentTime;
+      LAYERS.forEach((_,li)=>{ if(state[li].nextStepTime<now) state[li].nextStepTime=now+0.05; });
+      if(metroNextBeatTime<now) metroNextBeatTime=now+0.05;
+      // Redémarrer le scheduler si la chaîne setTimeout est morte (Firefox iOS)
+      if(!schedTimerID) schedTimerID=setTimeout(scheduler,SCHED_MS);
+    }).catch(()=>{
+      // AC irrécupérable — forcer stop propre pour que le prochain Play recrée l'AC
+      if(playing) stopPlay();
+      refreshTransportBtn();
+    });
+  } else if(ac.state==='running' && playing){
+    // AC déjà running mais scheduler mort (Firefox iOS)
     if(!schedTimerID) schedTimerID=setTimeout(scheduler,SCHED_MS);
-  });
+  }
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) _resumeAfterBackground(); });
 window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
