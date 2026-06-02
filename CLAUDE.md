@@ -86,7 +86,29 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.17.0** (session 2026-05-31)
+**v3.19.x** (session 2026-06-02)
+
+---
+
+## TODO — Migration items hard-codés vers DB
+
+Les éléments suivants sont encore hard-codés dans le JS et doivent être migrés en DB (sauf sons) :
+
+### 1. Articles encyclopédie (`const ENCYCLO` + `const ENCYCLO_MISC`)
+- **17 articles patterns rythmes** : `fl4/offbeat`, `tres`, `cinq`, `hab`, `afoxe`, `reggae`, `son/son23`, `shiko`, `souk`, `bossa`, `gahu`, `samba`, `fume`, `cascara`, `tumbao`, `solea`, `bembe`
+- **14 articles appli** (`misc_*` + `poumtchak`) : `misc_groove`, `misc_pattern`, `misc_sons`, `misc_notations`, `misc_tempo`, `misc_transformations`, `misc_familles`, `misc_metro`, `misc_signature`, `misc_temps_musical`, `misc_mesure`, `misc_step`, `misc_visualisation`, `poumtchak`
+- **3 templates** : `concept`, `groove`, `vide` → à remplacer par code en dur dans la fonction de création
+
+**Plan de migration** :
+1. Garder `const ENCYCLO` comme fallback offline (chargé dans `packCours.encyclo` au démarrage)
+2. SQL `INSERT INTO encyclo` pour les 34 articles + Lamberio exécute
+3. Supprimer `ENCYCLO_MISC` et unifier avec `packCours.encycloIndex`
+4. Les articles DB écrasent le fallback JS à la sync (déjà en place)
+
+### 2. Patterns par défaut (`PTK_DEFAULT.patterns`)
+Idem — fallback offline ok, mais la DB fait référence.
+
+### 3. Sons (`SOUND_DEFS`) — **hors scope** (délibérément hard-codés)
 
 ---
 
