@@ -1518,7 +1518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.0</span>
+    <span class="app-version">v3.18.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5363,25 +5363,20 @@ function openPresetModal(cfg){
           const nomInp=document.createElement('input');nomInp.placeholder='Titre de l\'article';nomInp.style.cssText='font-size:12px;padding:5px 8px;border:1px solid #c0bdb7;border-radius:4px;outline:none';
           const catSel=sel();
           ENCYCLO_CATS.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.label;if(c.id===famFilter&&famFilter!=='all')o.selected=true;catSel.appendChild(o);});
-          const tplSel=sel();
-          [{v:'concept',l:'Concept (En bref / Théorie / Pratique…)'},{v:'groove',l:'Groove/Pattern (Origine / Écriture…)'},{v:'vide',l:'Vide'}]
-            .forEach(({v,l})=>{const o=document.createElement('option');o.value=v;o.textContent=l;tplSel.appendChild(o);});
           const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
           const okBtn=document.createElement('button');okBtn.textContent='Créer';okBtn.style.cssText='font-size:11px;padding:3px 10px;border:1px solid #4a6d40;border-radius:4px;background:#4a6d40;color:#fff;cursor:pointer';
           const cancelBtn=document.createElement('button');cancelBtn.textContent='Annuler';cancelBtn.style.cssText='font-size:11px;padding:3px 10px;border:1px solid #c0bdb7;border-radius:4px;background:#fff;cursor:pointer';
           btns.appendChild(okBtn);btns.appendChild(cancelBtn);
-          form.appendChild(nomInp);form.appendChild(catSel);form.appendChild(tplSel);form.appendChild(btns);
+          form.appendChild(nomInp);form.appendChild(catSel);form.appendChild(btns);
           itemsWrap.appendChild(form);nomInp.focus();
           const doCreate=()=>{
             const nom=nomInp.value.trim();if(!nom)return;
             const id='enc_'+nom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
             if(!packCours.encycloIndex)packCours.encycloIndex=[];
             if(packCours.encycloIndex.some(e=>e.id===id)||ENCYCLO_MISC.some(m=>m.id===id)){showToast('Clé "'+id+'" déjà utilisée — choisissez un autre titre','error');return;}
-            const tplKey=tplSel.value;
-            const tpl=JSON.parse(JSON.stringify(ENCYCLO_TEMPLATES[tplKey]||ENCYCLO_TEMPLATES.vide));
             packCours.encycloIndex.push({id,nom,category:catSel.value,source:authProfile?.role==='mx'?'school':'teacher'});
             if(!packCours.encyclo)packCours.encyclo={};
-            packCours.encyclo[id]={titre:nom,chapo:tpl.chapo||'',sections:tpl.sections};
+            packCours.encyclo[id]={titre:nom,sections:[{id:'contenu',titre:'Contenu',contenu:''}]};
             saveToStorage();cfg.onSelect(id);_closeOverlay();
           };
           okBtn.addEventListener('click',doCreate);
@@ -10132,10 +10127,10 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     } else {
       packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
     }
-    // Ajouter à l'index uniquement les articles concepts standalone :
-    // ni lié à un pattern, ni dans ENCYCLO_MISC, et avec un titre non vide
-    if (!_patternKeys.has(e.key) && !_miscKeys.has(e.key) && e.titre) {
-      packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
+    // Ajouter à l'index tous les articles standalone (ni pattern-lié, ni misc)
+    // Si titre absent en DB, on affiche la clé comme nom de secours
+    if (!_patternKeys.has(e.key) && !_miscKeys.has(e.key)) {
+      packCours.encycloIndex.push({ id: e.key, nom: e.titre || e.key, category: e.category || 'concepts', source: 'school' });
     }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
