@@ -1518,7 +1518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.2</span>
+    <span class="app-version">v3.18.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10674,13 +10674,17 @@ async function sbSubmitEncycloTX(key) {
   if (!entry) return false;
   const txKey = 'tx_' + authProfile.id + '_' + key;
   const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
+  const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
+  const titre = entry.titre || idxEntry?.nom || key;
+  const category = idxEntry?.category || 'concepts';
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         key: txKey,
-        titre: entry.titre || '',
+        titre,
+        category,
         sections: isNewFmt ? entry.sections : [],
         chapo: isNewFmt ? '' : (entry.chapo || ''),
         bullets: isNewFmt ? [] : (entry.bullets || []),
@@ -10707,7 +10711,8 @@ async function sbApproveEncycloItem(key) {
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
           body: JSON.stringify({
             key: canonicalKey,
-            titre: row.titre || '',
+            titre: row.titre || canonicalKey,
+            category: row.category || 'concepts',
             sections: isNewFmt ? row.sections : [],
             chapo: isNewFmt ? '' : (row.chapo || ''),
             bullets: isNewFmt ? [] : (row.bullets || []),
@@ -10811,13 +10816,17 @@ async function sbSaveEncycloEntry(key) {
   const entry = packCours.encyclo?.[key];
   if (!entry) return;
   const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
+  const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
+  const titre = entry.titre || idxEntry?.nom || key;
+  const category = idxEntry?.category || 'concepts';
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
         key,
-        titre:   entry.titre   || '',
+        titre,
+        category,
         sections: isNewFmt ? entry.sections : [],
         chapo:   isNewFmt ? '' : (entry.chapo   || ''),
         bullets: isNewFmt ? [] : (entry.bullets || []),
