@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.5</span>
+    <span class="app-version">v3.18.6</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10118,8 +10118,13 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
-    // DB articles : sections uniquement (chapo/bullets supprimés)
-    packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections || [] };
+    // Si la DB a sections vides ET que l'on a du contenu JS héritage (chapo/bullets), on le préserve
+    const localEntry = packCours.encyclo?.[e.key];
+    const dbHasContent = Array.isArray(e.sections) && e.sections.length > 0;
+    const localHasLegacy = !dbHasContent && localEntry && (localEntry.chapo || localEntry.bullets?.length);
+    if (!localHasLegacy) {
+      packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections || [] };
+    }
     // Index standalone : ni lié à un item (item_ref), ni hard-codé (ENCYCLO_MISC), avec titre
     if (!e.item_ref && !_miscKeys.has(e.key) && e.titre) {
       packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
@@ -10802,6 +10807,14 @@ async function sbSaveEncycloEntry(key) {
   const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
   const titre = entry.titre || idxEntry?.nom || key;
   const category = idxEntry?.category || 'concepts';
+  // Conversion héritage chapo+bullets → sections[] si l'entrée n'a pas encore migré
+  let sections = entry.sections || [];
+  if (!sections.length && (entry.chapo || entry.bullets?.length)) {
+    sections = [{ id: 'chapo', titre: 'Chapo', contenu: entry.chapo || '' }];
+    (entry.bullets || []).forEach(([bk, bv]) => {
+      sections.push({ id: 'sec_' + bk.toLowerCase().replace(/\s+/g, '_'), titre: bk, contenu: bv || '' });
+    });
+  }
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
@@ -10810,7 +10823,7 @@ async function sbSaveEncycloEntry(key) {
         key,
         titre,
         category,
-        sections: entry.sections || [],
+        sections,
         scope:   'school',
         approved: true,
         owner_id: authProfile.id,
