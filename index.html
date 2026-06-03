@@ -10077,7 +10077,6 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   if (!packCours.encycloIndex) packCours.encycloIndex = [];
   packCours.encycloIndex = packCours.encycloIndex.filter(e => e.source !== 'school');
 
-  // Calcul des clés couvertes par les patterns (via encyclo_ref ou id) — pour exclure les articles liés
   // item_ref renseigné = article lié à un pattern/groove/band — exclus de l'index standalone
   // ENCYCLO_MISC = articles appli hard-codés en JS — exclus aussi
   const _miscKeys = new Set(ENCYCLO_MISC.map(m => m.id));
