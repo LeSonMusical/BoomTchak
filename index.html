@@ -1518,7 +1518,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.3</span>
+    <span class="app-version">v3.18.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3844,7 +3844,7 @@ let soundDirty = {low:false, high:false, noise:false, thumbL:false, thumbR:false
 let _bandVolChanged = {low:false, high:false, noise:false, thumbL:false, thumbR:false};
 let encycloDir = false;
 let encEditMode = false; // true = mode édition (TX/MX uniquement)
-let _encPreview = null; // { canonicalKey, chapo, bullets } — aperçu TX sans modifier packCours
+let _encPreview = null; // { canonicalKey, sections } — aperçu TX sans modifier packCours
 let _encHistory = ['poumtchak']; // historique de navigation entre articles
 let _encHistoryIdx = 0;
 
@@ -8106,10 +8106,10 @@ function renderEncyclo(key){
   // Aperçu TX : afficher le contenu de la proposition sans modifier packCours
   const isPreview = _encPreview?.canonicalKey === key;
   const enc=packCours.encyclo||ENCYCLO;
-  const rawEntry = isPreview ? { chapo: _encPreview.chapo, bullets: _encPreview.bullets } : enc[key];
+  const rawEntry = isPreview ? { titre: '', sections: _encPreview.sections || [] } : enc[key];
   const _isSchoolItem = !!(packCours.encycloIndex?.find(e=>e.id===key)?.source==='school') || ENCYCLO_MISC.some(m=>m.id===key);
   const isEditable = !isPreview && encEditMode && (authProfile?.role==='mx' || (currentMode==='tx' && !_isSchoolItem));
-  // Détecter le format : nouveau (sections[]) ou héritage (chapo+bullets)
+  // isNewFormat = sections[] présentes (DB) ; sinon format héritage (chapo+bullets, JS fallback uniquement)
   const isNewFormat = rawEntry && Array.isArray(rawEntry.sections) && rawEntry.sections.length > 0;
   const entry = rawEntry;
   if(!entry || (!isPreview && !isEditable && !hasEncycloContent(key))){
@@ -8164,43 +8164,19 @@ function renderEncyclo(key){
 
     const sepTb=document.createElement('span');sepTb.style.cssText='flex:1';tb.appendChild(sepTb);
 
-    if(isNewFormat){
-      const addSecTb=document.createElement('button');addSecTb.className='enc-tb-btn';addSecTb.textContent='＋ Section';addSecTb.title='Ajouter une section';
-      addSecTb.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        ensureEnc();
-        if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
-        const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
-        const secs=packCours.encyclo[key].sections;
-        const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx:secs.length;
-        secs.splice(insertAt,0,newSec);
-        _focusedSecIdx=insertAt;
-        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
-      });
-      tb.appendChild(addSecTb);
-    } else {
-      // Format héritage : ＋ Note et − Suppr.
-      const addTb=document.createElement('button');addTb.className='enc-tb-btn';addTb.textContent='＋ Section';addTb.title='Ajouter une section';
-      addTb.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        ensureEnc();if(!packCours.encyclo[key].bullets)packCours.encyclo[key].bullets=[];
-        const insertIdx=(_focusedBulletIdx!==null&&_focusedBulletIdx>=0)?_focusedBulletIdx+1:(packCours.encyclo[key].bullets.length);
-        packCours.encyclo[key].bullets.splice(insertIdx,0,['Titre','']);
-        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
-        const newLi=body.querySelectorAll('.encyclo-bullets li')[insertIdx];
-        if(newLi){const kEl=newLi.querySelector('.encyclo-bkey');if(kEl&&kEl.isContentEditable){kEl.focus();const r=document.createRange();r.selectNodeContents(kEl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}}
-      });
-      tb.appendChild(addTb);
-      const delTb=document.createElement('button');delTb.className='enc-tb-btn';delTb.textContent='− Suppr.';delTb.title='Supprimer cette note';
-      delTb.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        if(_focusedBulletIdx===null||_focusedBulletIdx<0)return;
-        ensureEnc();
-        packCours.encyclo[key].bullets.splice(_focusedBulletIdx,1);
-        encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
-      });
-      tb.appendChild(delTb);
-    }
+    const addSecTb=document.createElement('button');addSecTb.className='enc-tb-btn';addSecTb.textContent='＋ Section';addSecTb.title='Ajouter une section';
+    addSecTb.addEventListener('mousedown',e=>{
+      e.preventDefault();
+      ensureEnc();
+      if(!packCours.encyclo[key].sections)packCours.encyclo[key].sections=[];
+      const newSec={id:'sec_'+Date.now(),titre:'Nouvelle section',contenu:''};
+      const secs=packCours.encyclo[key].sections;
+      const insertAt=(_focusedSecIdx>=0&&_focusedSecIdx<secs.length)?_focusedSecIdx:secs.length;
+      secs.splice(insertAt,0,newSec);
+      _focusedSecIdx=insertAt;
+      encycloDir=true;updateEncycloSaveBtn();renderEncyclo(key);
+    });
+    tb.appendChild(addSecTb);
 
     if(tb._vvSync){
       window.visualViewport?.removeEventListener('resize',tb._vvSync);
@@ -8231,18 +8207,6 @@ function renderEncyclo(key){
   // ── Nouveau format : sections linéaires ──────────────────────────────────
   if(isNewFormat){
     const sections=entry.sections;
-    // Chapo
-    const chapoEl=document.createElement('p');chapoEl.className='encyclo-chapo';
-    if(isEditable){
-      chapoEl.contentEditable='true';
-      chapoEl.textContent=entry.chapo||'';
-      chapoEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.execCommand('insertText',false,'\n');}});
-      chapoEl.addEventListener('focus',()=>{chapoEl.dataset.orig=chapoEl.textContent;body._encShowToolbar?.();});
-      chapoEl.addEventListener('blur',()=>{ensureEnc();const v=(chapoEl.innerText||'').replace(/\n+$/,'');packCours.encyclo[key].chapo=v;if(v!==chapoEl.dataset.orig){encycloDir=true;updateEncycloSaveBtn();}body._encHideToolbar?.();});
-    } else {
-      if(entry.chapo){chapoEl.innerHTML=parseMarkdown(entry.chapo);_attachLinks(chapoEl);}
-    }
-    if(entry.chapo||isEditable)body.appendChild(chapoEl);
 
     // Table des sections (lecture seule, ≥ 2 sections)
     if(!isEditable&&sections.length>1){
@@ -10114,24 +10078,17 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
   packCours.encycloIndex = packCours.encycloIndex.filter(e => e.source !== 'school');
 
   // Calcul des clés couvertes par les patterns (via encyclo_ref ou id) — pour exclure les articles liés
-  const _patternKeys = new Set(packCours.patterns.map(p => p.encyclo_ref || p.id));
-  // Calcul des clés grooves — les grooves ont aussi des stubs encyclo auto-créés
-  const _grooveKeys = new Set(packCours.grooves.map(g => g.id));
-  // Calcul des clés ENCYCLO_MISC (statiques hard-codées)
+  // item_ref renseigné = article lié à un pattern/groove/band — exclus de l'index standalone
+  // ENCYCLO_MISC = articles appli hard-codés en JS — exclus aussi
   const _miscKeys = new Set(ENCYCLO_MISC.map(m => m.id));
 
   (encyclo || []).forEach(e => {
     // Ne pas écraser les modifications TX locales non soumises
     if (packCours.encyclo?.[e.key]?._pendingTX) return;
-    // Nouveau format (sections[]) ou héritage (chapo+bullets)
-    if (Array.isArray(e.sections) && e.sections.length > 0) {
-      packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections };
-    } else {
-      packCours.encyclo[e.key] = { chapo: e.chapo || '', bullets: e.bullets || [] };
-    }
-    // Ajouter à l'index uniquement les articles concepts standalone :
-    // ni lié à un pattern, ni à un groove, ni dans ENCYCLO_MISC, et avec un titre non vide
-    if (!_patternKeys.has(e.key) && !_grooveKeys.has(e.key) && !_miscKeys.has(e.key) && e.titre) {
+    // DB articles : sections uniquement (chapo/bullets supprimés)
+    packCours.encyclo[e.key] = { titre: e.titre || '', sections: e.sections || [] };
+    // Index standalone : ni lié à un item (item_ref), ni hard-codé (ENCYCLO_MISC), avec titre
+    if (!e.item_ref && !_miscKeys.has(e.key) && e.titre) {
       packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
     }
   });
@@ -10673,7 +10630,6 @@ async function sbSubmitEncycloTX(key) {
   const entry = packCours.encyclo?.[key];
   if (!entry) return false;
   const txKey = 'tx_' + authProfile.id + '_' + key;
-  const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
   const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
   const titre = entry.titre || idxEntry?.nom || key;
   const category = idxEntry?.category || 'concepts';
@@ -10685,9 +10641,7 @@ async function sbSubmitEncycloTX(key) {
         key: txKey,
         titre,
         category,
-        sections: isNewFmt ? entry.sections : [],
-        chapo: isNewFmt ? '' : (entry.chapo || ''),
-        bullets: isNewFmt ? [] : (entry.bullets || []),
+        sections: entry.sections || [],
         scope: 'teacher', approved: false, owner_id: authProfile.id,
       }),
     });
@@ -10705,7 +10659,6 @@ async function sbApproveEncycloItem(key) {
       const rows = await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}&select=*`);
       const row = Array.isArray(rows) && rows[0];
       if (row) {
-        const isNewFmt = Array.isArray(row.sections) && row.sections.length > 0;
         await sbFetch('/rest/v1/encyclo', {
           method: 'POST',
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -10713,9 +10666,7 @@ async function sbApproveEncycloItem(key) {
             key: canonicalKey,
             titre: row.titre || canonicalKey,
             category: row.category || 'concepts',
-            sections: isNewFmt ? row.sections : [],
-            chapo: isNewFmt ? '' : (row.chapo || ''),
-            bullets: isNewFmt ? [] : (row.bullets || []),
+            sections: row.sections || [],
             scope: 'school', approved: true, owner_id: null,
           }),
         });
@@ -10815,7 +10766,6 @@ async function sbSaveEncycloEntry(key) {
   if (!authSession || authProfile?.role !== 'mx') return;
   const entry = packCours.encyclo?.[key];
   if (!entry) return;
-  const isNewFmt = Array.isArray(entry.sections) && entry.sections.length > 0;
   const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
   const titre = entry.titre || idxEntry?.nom || key;
   const category = idxEntry?.category || 'concepts';
@@ -10827,9 +10777,7 @@ async function sbSaveEncycloEntry(key) {
         key,
         titre,
         category,
-        sections: isNewFmt ? entry.sections : [],
-        chapo:   isNewFmt ? '' : (entry.chapo   || ''),
-        bullets: isNewFmt ? [] : (entry.bullets || []),
+        sections: entry.sections || [],
         scope:   'school',
         approved: true,
         owner_id: authProfile.id,
@@ -11086,7 +11034,7 @@ function buildApprobationsSection() {
       const enc = (_pendingItems.encyclos||[]).find(e => e.key === k);
       if (!enc) return;
       // Aperçu TX sans modifier packCours.encyclo (évite publication accidentelle)
-      _encPreview = { canonicalKey, chapo: enc.chapo || '', bullets: enc.bullets || [] };
+      _encPreview = { canonicalKey, sections: enc.sections || [] };
       showEncycloEntry(canonicalKey);
       if (!encycloOuvert) toggleEncyclo(true);
       document.getElementById('panel-settings')?.classList.remove('open');
