@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.2</span>
+    <span class="app-version">v3.19.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1624,6 +1624,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
       </div>
       <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+      <button class="btn-metro-enc-info" id="btn-metro-enc-info" title="Article encyclopédie" style="display:none;font-size:11px;font-weight:700;padding:0 7px;border:1px solid var(--c-encyclo,#4a6d40);border-radius:4px;color:var(--c-encyclo,#4a6d40);background:transparent;cursor:pointer">i</button>
       <button class="metro-collapse-btn open" id="metro-collapse-btn" title="Plier/déplier sous-volets">▼</button>
     </div>
     <div class="sbar-chips">
@@ -2828,12 +2829,19 @@ function getSigFallback(presetId) {
   return _normalizeSig({...fb});
 }
 
+function updateMetroEncBtn(){
+  const btn=document.getElementById('btn-metro-enc-info'); if(!btn) return;
+  const id=currentSig?.id;
+  btn.style.display=(id&&id!=='_custom'&&hasEncycloContent(id))?'':'none';
+}
+
 function buildSigSelector() {
   const label = currentSig?._embedded ? '—' : (currentSig?.label || currentSig?.id || '4/4');
   const btn = document.getElementById('sig-sel-btn');
   if (btn) btn.textContent = label;
   syncMetroControls();
   renderMetroPatternViz();
+  updateMetroEncBtn();
 }
 
 function changeSig(id) {
@@ -4481,9 +4489,9 @@ function openPresetModal(cfg){
       if(showMisc)
         ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
           .forEach(m=>items.push({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
-      // Articles custom (encycloIndex)
+      // Articles custom (encycloIndex) — masqués si en attente de suppression
       (packCours.encycloIndex||[])
-        .filter(e=>cat==='all'||cat===(e.category||'concepts'))
+        .filter(e=>!e._hiddenPending&&(cat==='all'||cat===(e.category||'concepts')))
         .forEach(e=>items.push({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
       if(showG)
         packCours.grooves
@@ -5180,12 +5188,14 @@ function openPresetModal(cfg){
       if(cfg.type==='sound'){
         if(item.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer un preset son école','warn');return;}
         item.nom=newNom;
+        _syncEncycloTitreForItem(item.id,newNom);
         item.localDirty=true;item.localChangeType=item.localChangeType||'update';
         saveToStorage();buildPublishSection();buildSoundPanel();buildItems();return;
       }
       if(cfg.type==='band'){
         if(item.source==='school'&&authProfile?.role!=='mx'){nameEl.textContent=nameEl.dataset.orig;showToast('Seul un MX peut renommer un band école','warn');return;}
         item.nom=newNom;
+        _syncEncycloTitreForItem(item.id,newNom);
         item.localChangeType=item.localChangeType||'update';
         if(!item.localChangedFields)item.localChangedFields=[];
         if(!item.localChangedFields.includes('nom'))item.localChangedFields.push('nom');
@@ -5193,12 +5203,15 @@ function openPresetModal(cfg){
       }
       if(item.source==='school'&&authProfile?.role!=='mx'){
         const fork=txForkItem(cfg.type,item);fork.nom=newNom;
+        _syncEncycloTitreForItem(fork.encyclo_ref||fork.id,newNom);
         if(cfg.type==='groove'&&currentGrooveId===item.id)currentGrooveId=fork.id;
         saveToStorage();buildPublishSection();
         if(cfg.type==='groove')buildGrooveSection();else buildLayers();
         showToast('Modification sauvegardée — soumettez-la via ···','info');
       } else {
-        item.nom=newNom;markItemDirty(item,'nom');saveToStorage();buildPublishSection();
+        item.nom=newNom;markItemDirty(item,'nom');
+        _syncEncycloTitreForItem(item.encyclo_ref||item.id,newNom);
+        saveToStorage();buildPublishSection();
         if(cfg.type==='groove')buildGrooveSection();else buildLayers();
       }
       buildItems();
@@ -5306,17 +5319,18 @@ function openPresetModal(cfg){
         const isCustom=item.typeBadge==='✎';
         const row=document.createElement('button');
         row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
-        row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left'+(manageMode?';cursor:default':'');
+        const _inSearch=!!searchQuery; // en recherche : navigation prioritaire sur gestion
+        row.style.cssText='display:flex;align-items:center;gap:6px;text-align:left'+(manageMode&&!_inSearch?';cursor:default':'');
         // Badge : toujours affiché sauf l'icône ✎ en mode gestion (remplacé par rien)
-        if(!manageMode||!isCustom){
+        if(!manageMode||!isCustom||_inSearch){
           const badge=document.createElement('span');badge.style.cssText=(bdgStyle[item.typeBadge]||bdgStyle.M)+';font-size:8px;padding:1px 4px;border-radius:3px;flex-shrink:0';badge.textContent=item.typeBadge;
           row.appendChild(badge);
         }
-        // Nom (éditable inline pour articles custom en mode gestion)
+        // Nom (éditable inline pour articles custom en mode gestion, hors recherche)
         const nameEl=document.createElement('span');
-        nameEl.style.cssText='flex:1;'+(manageMode?'font-size:11px':('opacity:'+(item.hasC?'1':'.45')));
+        nameEl.style.cssText='flex:1;'+(manageMode&&!_inSearch?'font-size:11px':('opacity:'+(item.hasC?'1':'.45')));
         nameEl.textContent=item.nom;
-        if(manageMode&&isCustom){
+        if(manageMode&&isCustom&&!_inSearch){
           nameEl.className='pm-item-name';nameEl.style.cursor='text';
           const startRename=()=>{
             nameEl.contentEditable='true';nameEl.focus();
@@ -5328,28 +5342,46 @@ function openPresetModal(cfg){
           };
           nameEl.addEventListener('click',e=>{e.stopPropagation();startRename();});
         }
+        // Fix 6 : message si clic rename sur article lié à un item (non-custom)
+        if(manageMode&&!isCustom&&!_inSearch){
+          nameEl.style.cursor='help';
+          nameEl.title='Ce titre suit le nom de l\'item associé. Renommez l\'item via son preset.';
+          nameEl.addEventListener('click',e=>{e.stopPropagation();showToast('Ce titre suit le nom de l\'item associé. Renommez l\'item via son preset.','info');});
+        }
         row.appendChild(nameEl);
-        if(!manageMode){
-          // Mode normal : indicateur ●/○ + clic pour sélectionner
+        if(!manageMode||_inSearch){
+          // Mode normal (ou recherche active) : indicateur ●/○ + clic pour sélectionner
           const dot=document.createElement('span');dot.style.cssText='font-size:8px;flex-shrink:0;color:'+(item.hasC?'#1D9E75':'#ccc');dot.textContent=item.hasC?'●':'○';
           row.appendChild(dot);
           row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
         } else {
-          // Mode gestion : corbeille sur tous les items
-          const delBtn=document.createElement('button');delBtn.className='pm-item-del';delBtn.textContent='🗑';delBtn.title='Supprimer';
+          // Mode gestion : corbeille → workflow Soumettre/Publier
+          const isPendingDel=!!(packCours.encyclo?.[item.id]?._pendingDelEncyclo||packCours.encyclo?.[item.id]?._pendingDelEncycloTX);
+          const delBtn=document.createElement('button');delBtn.className='pm-item-del';
+          delBtn.textContent=isPendingDel?'↺':'🗑';
+          delBtn.title=isPendingDel?'Annuler suppression':'Marquer pour suppression';
+          delBtn.style.color=isPendingDel?'#e08020':'';
           delBtn.addEventListener('click',e=>{
             e.stopPropagation();
-            const category=isCustom?((packCours.encycloIndex||[]).find(x=>x.id===item.id)?.category||''):'';
-            const isConceptAppli=isCustom&&(category==='concepts'||category==='appli');
-            const msg=isConceptAppli
-              ?`Supprimer l'article "${item.nom}" ?\n⚠ Cette entrée sera définitivement retirée de l'encyclopédie.`
-              :isCustom
-              ?`Supprimer l'article "${item.nom}" ?`
-              :`Effacer le contenu encyclopédique de "${item.nom}" ?\n(L'item lui-même ne sera pas supprimé)`;
+            ensureEncyclo();
+            if(isPendingDel){
+              // Annuler la suppression en attente
+              if(packCours.encyclo[item.id]){delete packCours.encyclo[item.id]._pendingDelEncyclo;delete packCours.encyclo[item.id]._pendingDelEncycloTX;}
+              saveToStorage();buildPublishSection();buildItems();return;
+            }
+            const msg=isCustom
+              ?`Soumettre "${item.nom}" à suppression ?\nL'article sera supprimé après validation.`
+              :`Effacer le contenu encyclopédique de "${item.nom}" après validation ?`;
             if(!confirm(msg))return;
-            if(isCustom){const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);if(idx>=0)packCours.encycloIndex.splice(idx,1);if(packCours.encyclo)delete packCours.encyclo[item.id];buildEncycloSection();}
-            else{if(packCours.encyclo)delete packCours.encyclo[item.id];}
-            saveToStorage();buildItems();
+            if(!packCours.encyclo[item.id])packCours.encyclo[item.id]={titre:item.nom,sections:[]};
+            if(authProfile?.role==='mx'){packCours.encyclo[item.id]._pendingDelEncyclo=true;}
+            else{packCours.encyclo[item.id]._pendingDelEncycloTX=true;}
+            if(isCustom){
+              // Cacher de l'index mais garder en mémoire pour la publication
+              const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===item.id);
+              if(idx>=0)packCours.encycloIndex[idx]._hiddenPending=true;
+            }
+            saveToStorage();buildPublishSection();buildItems();
           });
           row.appendChild(delBtn);
         }
@@ -7561,6 +7593,19 @@ function attachSwipe(el, getList, getCurrentId, onSelect){
   });
 }
 
+function ensureEncyclo(){if(!packCours.encyclo)packCours.encyclo=JSON.parse(JSON.stringify(ENCYCLO));}
+
+// Sync du titre d'article encyclopédie quand un item est renommé
+function _syncEncycloTitreForItem(key, newNom){
+  if(!key||!newNom) return;
+  if(packCours.encyclo?.[key]) packCours.encyclo[key].titre=newNom;
+  const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===key);
+  if(idx>=0) packCours.encycloIndex[idx].nom=newNom;
+  if(authProfile?.role==='mx' && hasEncycloContent(key)){
+    sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({titre:newNom})}).catch(()=>{});
+  }
+}
+
 // Vérifie si une entrée encyclo a du contenu réel (chapo ou au moins un bullet)
 function hasEncycloContent(ref){
   if(!ref) return false;
@@ -8721,7 +8766,7 @@ function resizeCanvas(){
   drawCircles();
 }
 
-function _triggerRightFlash(li){
+function _triggerRightFlash(li, hold=false){
   const spmM=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
   const mPS=(60/spmM)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
   const n=state[li].pattern.length;
@@ -8735,10 +8780,11 @@ function _triggerRightFlash(li){
     sa=-Math.PI/2+(page/plr)*2*Math.PI; ea=-Math.PI/2+((page+1)/plr)*2*Math.PI;
   }
   const now=performance.now();
-  _mesureRightFlash={li,startMs:now,endMs:now+600,sa,ea};
+  // hold=true : arc reste allumé indéfiniment (effacé par touchend) ; sinon flash 600ms
+  _mesureRightFlash={li,startMs:now,endMs:hold?Infinity:now+600,sa,ea,hold};
   if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
   const _goF=()=>{
-    if(!_mesureRightFlash||performance.now()>=_mesureRightFlash.endMs){
+    if(!_mesureRightFlash||(!hold&&performance.now()>=_mesureRightFlash.endMs)){
       _mesureRightFlash=null;drawCircles();_mirrorFlashRaf=null;return;
     }
     drawCircles();_mirrorFlashRaf=requestAnimationFrame(_goF);
@@ -9032,10 +9078,10 @@ function drawCircles(){
         ctx.globalAlpha=1;
       }
       // Flash arc — secteur correspondant à la page visible (STOP)
-      const _flashNow=_mesureRightFlash&&performance.now()<_mesureRightFlash.endMs;
+      const _flashNow=_mesureRightFlash&&(performance.now()<_mesureRightFlash.endMs||_mesureRightFlash.hold);
       if(_flashNow){
         const _fli=_mesureRightFlash.li;
-        const _ft=(performance.now()-_mesureRightFlash.startMs)/(_mesureRightFlash.endMs-_mesureRightFlash.startMs);
+        const _ft=_mesureRightFlash.hold?0:(performance.now()-_mesureRightFlash.startMs)/(_mesureRightFlash.endMs-_mesureRightFlash.startMs);
         const _fa=Math.max(0,1-_ft)*0.45;
         const _fR=radii[_fli];
         const _fCol=CIRCLE_COLORS[_fli];
@@ -9441,12 +9487,20 @@ function setupCanvasInteraction(){
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
     if(_cvTouchOnDot)e.preventDefault();
-    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi); // flash immédiat au toucher
+    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true); // allumé au toucher, hold jusqu'au relâcher
   },{passive:false});
   cv.addEventListener('touchend', e=>{
     if(!_cvTouchOnDot)return;
     _cvTouchOnDot=false;
-    if(_cvTouchIsRight){_cvTouchIsRight=false;return;} // déjà géré dans touchstart
+    if(_cvTouchIsRight){
+      _cvTouchIsRight=false;
+      // Éteindre l'arc maintenu au relâcher du doigt
+      if(_mesureRightFlash?.hold){
+        _mesureRightFlash=null;
+        if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
+        drawCircles();
+      }
+      return; // déjà géré dans touchstart
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
 }
@@ -11425,10 +11479,16 @@ function buildPublishSection() {
         .filter(([,e]) => e._pendingTX || e._localStatusEncyclo === 'submitted')
         .map(([key,e]) => ({ key, nom: getEncycloDisplayName(key), isSubmitted: e._localStatusEncyclo === 'submitted', isDirty: !!e._pendingTX }))
     : [];
+  const pendingDelEncycloMX = isMX && packCours.encyclo
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDelEncyclo).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
+    : [];
+  const pendingDelEncycloTX = !isMX && packCours.encyclo
+    ? Object.entries(packCours.encyclo).filter(([,e])=>e._pendingDelEncycloTX).map(([key,e])=>({key,nom:getEncycloDisplayName(key)}))
+    : [];
   const dirtyFams          = isMX  ? packCours.familles.filter(f => f.localDirty && !f._deletePending) : [];
   const pendingRenameFamsTX = !isMX ? packCours.familles.filter(f => f._pendingRename && f.source !== 'school') : [];
 
-  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + teacherSoundPresets.length + dirtySchoolSoundPresets.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBandFams.length + pendingDelSoundFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
+  if (!authSession || !(allPats.length + allGrooves.length + teacherMetroPres.length + teacherBands.length + teacherSoundPresets.length + dirtySchoolSoundPresets.length + pendingEncyclo.length + pendingEncycloTX.length + pendingDelEncycloMX.length + pendingDelEncycloTX.length + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBandFams.length + pendingDelSoundFams.length + pendingDelBands.length + dirtyFams.length + pendingRenameFamsTX.length)) {
     if(pubToggle){ pubToggle.style.display='none'; container.style.display='none'; }
     _localPendingCount = 0; updateSettingsBadge();
     return;
@@ -11440,7 +11500,7 @@ function buildPublishSection() {
   const draftDelGrvs = txDelGrooves.filter(g => g.localStatus !== 'submitted');
   _localPendingCount = draftPats.length + draftGrvs.length + draftDelPats.length + draftDelGrvs.length
     + dirtySchoolPats.length + dirtySchoolGrooves.length
-    + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length
+    + pendingEncyclo.length + pendingEncycloTX.filter(e => !e.isSubmitted || e.isDirty).length + pendingDelEncycloMX.length + pendingDelEncycloTX.length
     + pendingDelPats.length + pendingDelGrvs.length + pendingDelFams.length + pendingDelBandFams.length + pendingDelSoundFams.length + dirtyFams.length
     + pendingRenameFamsTX.length + teacherMetroPres.filter(p => !p.localStatus || p.localStatus === 'draft').length
     + teacherBands.filter(b => !b.localStatus || b.localStatus === 'draft').length + pendingDelBands.length
@@ -11543,6 +11603,34 @@ function buildPublishSection() {
           `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
           `<button class="btn-pub-encyclo" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">↑ École</button>` +
           `<button class="btn-pub-encyclo-cancel" data-key="${e.key}" title="Ne pas publier" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
+        `</div></div>`;
+    });
+  }
+  if (pendingDelEncycloMX.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppression articles (${pendingDelEncycloMX.length})</div>`;
+    pendingDelEncycloMX.forEach(e => {
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${e.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-del-confirm" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Supprimer</button>` +
+          `<button class="btn-pub-enc-del-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
+        `</div></div>`;
+    });
+  }
+  if (pendingDelEncycloTX.length) {
+    html += `<div style="font-size:10px;font-weight:600;color:#c04040;margin-top:6px;margin-bottom:4px">🗑 Suppression articles (${pendingDelEncycloTX.length})</div>`;
+    pendingDelEncycloTX.forEach(e => {
+      html += `<div style="margin-bottom:6px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">` +
+        `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:5px">` +
+          `<span style="font-size:11px;font-weight:600;flex:1;min-width:0;word-break:break-word">${e.nom}</span>` +
+          `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
+        `</div>` +
+        `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-del-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>` +
+          `<button class="btn-pub-enc-del-tx-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
     });
   }
@@ -11816,6 +11904,45 @@ function buildPublishSection() {
     btn.addEventListener('click', () => {
       const entry = packCours.encyclo?.[btn.dataset.key];
       if (entry) delete entry._pendingDB;
+      saveToStorage(); buildPublishSection();
+    });
+  });
+
+  container.querySelectorAll('.btn-pub-enc-del-confirm').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.key;
+      btn.disabled=true; btn.textContent='…';
+      try {
+        await sbFetch(`/rest/v1/encyclo?key=eq.${encodeURIComponent(key)}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      } catch(e){ /* ignore — article can be local-only */ }
+      const idxI=(packCours.encycloIndex||[]).findIndex(x=>x.id===key);
+      if(idxI>=0) packCours.encycloIndex.splice(idxI,1);
+      if(packCours.encyclo) delete packCours.encyclo[key];
+      if(currentEncycloId===key){ currentEncycloId=null; buildEncycloSection(); }
+      saveToStorage(); showToast('Article supprimé','info'); buildPublishSection();
+    });
+  });
+  container.querySelectorAll('.btn-pub-enc-del-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const e=packCours.encyclo?.[btn.dataset.key]; if(e) delete e._pendingDelEncyclo;
+      const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===btn.dataset.key);
+      if(idx>=0) delete packCours.encycloIndex[idx]._hiddenPending;
+      saveToStorage(); buildPublishSection();
+    });
+  });
+  container.querySelectorAll('.btn-pub-enc-del-tx').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key=btn.dataset.key; btn.disabled=true; btn.textContent='…';
+      const ok=await sbSubmitEncycloTX(key,'delete');
+      if(ok){ showToast('Demande de suppression envoyée','info'); buildPublishSection(); }
+      else{ btn.textContent='Envoyer'; btn.disabled=false; }
+    });
+  });
+  container.querySelectorAll('.btn-pub-enc-del-tx-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const e=packCours.encyclo?.[btn.dataset.key]; if(e) delete e._pendingDelEncycloTX;
+      const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===btn.dataset.key);
+      if(idx>=0) delete packCours.encycloIndex[idx]._hiddenPending;
       saveToStorage(); buildPublishSection();
     });
   });
@@ -13407,6 +13534,9 @@ function attachEvents(){
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     setMetroGlobal(metro.muted);
+  });
+  document.getElementById('btn-metro-enc-info')?.addEventListener('click',()=>{
+    if(currentSig?.id){showEncycloEntry(currentSig.id);if(!encycloOuvert)toggleEncyclo(true);}
   });
   // Clic sur espace vide de la barre métro → collapse/restore tous les sous-volets
   document.getElementById('section-temps').addEventListener('click',e=>{
