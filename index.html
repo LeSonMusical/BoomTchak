@@ -360,6 +360,9 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 body.dark-mode #groove-preset-btn.groove-pending{color:#c084fc;background:rgba(192,132,252,.1)}
 @keyframes _gpFlashDark{0%{background:rgba(192,132,252,.45);color:#fff}100%{background:rgba(192,132,252,.1);color:#c084fc}}
 body.dark-mode #groove-preset-btn.groove-beat-flash{animation:_gpFlashDark .28s ease-out forwards}
+/* Flash de switch — éclat bref au moment du déclenchement */
+@keyframes _gpSwitch{0%{background:rgba(155,89,182,.85);color:#fff;transform:scale(1.06)}100%{background:transparent;color:inherit;transform:scale(1)}}
+#groove-preset-btn.groove-switch-flash{animation:_gpSwitch .35s ease-out forwards}
 .groove-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;color:#9A7020;padding:2px 4px;flex-shrink:0;opacity:.6;line-height:1;border-radius:3px}
 .groove-nav-btn:hover{opacity:1;background:rgba(200,150,26,.12)}
 .groove-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#C8961A;padding:2px 3px;flex-shrink:0;opacity:.3;line-height:1}
@@ -1527,7 +1530,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.7</span>
+    <span class="app-version">v3.19.8</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3045,8 +3048,8 @@ function highlightMetroStep() {
   const curStep = Math.floor((now - metroStartTime) / stepSec) % mpv.length;
   if (curStep === _lastMetroVizStep) return;
   _lastMetroVizStep = curStep;
-  // Flash du bouton groove sur le 1er temps de mesure si un groove est en attente
-  if(_pendingGrooveId && curStep===0){
+  // Flash du bouton groove sur chaque temps (A=accent, P=temps) si un groove est en attente
+  if(_pendingGrooveId && (mpv[curStep]==='A'||mpv[curStep]==='P')){
     const _gb=document.getElementById('groove-preset-btn');
     if(_gb){_gb.classList.remove('groove-beat-flash');void _gb.offsetWidth;_gb.classList.add('groove-beat-flash');}
   }
@@ -3795,7 +3798,7 @@ function _startRecNewBlinkLoop(){
 
 function stopPlay(){
   playing=false;
-  if(_pendingGrooveId){_pendingGrooveId=null;_updatePendingGrooveUI(null);}
+  if(_pendingGrooveId){_pendingGrooveId=null;_updatePendingGrooveUI();}
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
@@ -3999,6 +4002,17 @@ function updateGrooveSaveBtn(){
 function updateGrooveNameTopBar(){
   const btn = document.getElementById('groove-preset-btn');
   if(!btn) return;
+  // Groove en attente : le bouton affiche le NOM SUIVANT en violet (source de vérité)
+  if(_pendingGrooveId){
+    const pg=getGroove(_pendingGrooveId);
+    if(pg){
+      btn.textContent=pg.nom;
+      btn.classList.add('groove-pending');
+      btn.style.fontStyle='';
+      return;
+    }
+  }
+  btn.classList.remove('groove-pending','groove-beat-flash');
   const g = getGroove(currentGrooveId);
   let name = g ? (g.nom || '—') : '—';
   if(g && g.source==='teacher') name += ' 👤';
@@ -4113,17 +4127,8 @@ let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
 
 // ── Indicateur UI groove en attente ───────────────────────────────────────
-function _updatePendingGrooveUI(grooveId){
-  const btn=document.getElementById('groove-preset-btn'); if(!btn) return;
-  if(!grooveId){
-    btn.classList.remove('groove-pending','groove-beat-flash');
-    updateGrooveNameTopBar();
-    return;
-  }
-  const pg=getGroove(grooveId); if(!pg){updateGrooveNameTopBar();return;}
-  btn.textContent=pg.nom; // nom seul — la teinte violette et le flash signalent l'état
-  btn.classList.add('groove-pending');
-  btn.classList.remove('groove-beat-flash');
+function _updatePendingGrooveUI(){
+  updateGrooveNameTopBar(); // updateGrooveNameTopBar gère _pendingGrooveId directement
 }
 
 // ── Appliquer le groove en attente au début du prochain cycle (appelé depuis scheduler) ─
@@ -4160,7 +4165,11 @@ function _applyPendingGroove(){
   // Mises à jour UI différées (hors chemin critique audio)
   setTimeout(()=>{
     const _gpBtn=document.getElementById('groove-preset-btn');
-    if(_gpBtn)_gpBtn.classList.remove('groove-pending','groove-beat-flash');
+    if(_gpBtn){
+      _gpBtn.classList.remove('groove-pending','groove-beat-flash');
+      _gpBtn.classList.add('groove-switch-flash');
+      setTimeout(()=>_gpBtn.classList.remove('groove-switch-flash'),400);
+    }
     updateGrooveSaveBtn();updateGrooveNameTopBar();
     LAYERS.forEach((_,li)=>setLayerDirty(li,false));
     if(groove.band_embed){
@@ -4202,7 +4211,7 @@ function _applyPendingGroove(){
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
   // Si en lecture : programmer le changement au prochain cycle (enchaînement fluide)
-  if(playing){_pendingGrooveId=grooveId;_updatePendingGrooveUI(grooveId);return;}
+  if(playing){_pendingGrooveId=grooveId;_updatePendingGrooveUI();return;}
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
