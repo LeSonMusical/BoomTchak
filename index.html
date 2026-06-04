@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.18.6</span>
+    <span class="app-version">v3.19.0</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8640,6 +8640,7 @@ let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), res
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
 let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
 let _mirrorFlashRaf = null;
+let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
 let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
@@ -8979,22 +8980,60 @@ function drawCircles(){
         ctx.lineWidth = 0.75; ctx.stroke();
       }
     });
-    // Labels de fraction mesure (strip droit) — même lCY → alignement parfait avec labels gauche
+    // Strip droit : info mesure par layer + ligne cycle globale (violet)
     if(circleModeView==='measure' && _mPageSec>0){
       ctx.textAlign='right'; ctx.textBaseline='middle';
       const textX=W-5;
-      [0,1,2].forEach(li=>{
+      // Calcul infos par layer
+      const _layInfo=[0,1,2].map(li=>{
         const n=state[li].pattern.length;
+        const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
+        const plr=n>=spm_liR?Math.ceil(n/spm_liR):0; // 0 = pattern < 1 mesure
+        return{n,spm_liR,plr};
+      });
+      // Cycle global = PPCM des plr de chaque layer (en mesures)
+      const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
+      const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
+      // Ligne violet cycle global — au-dessus du layer 0 (lCY=cy-lSpacing)
+      const _topLineY=cy-lSpacing-14;
+      ctx.font='bold 10px sans-serif';
+      ctx.globalAlpha=0.85; ctx.fillStyle='#8866cc';
+      if(playing){
+        const _gLp=(_mGlobalPage%_globalPlr)+1;
+        ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,_topLineY);
+      } else {
+        ctx.fillText('cycle '+_globalPlr+' mes.',textX,_topLineY);
+      }
+      ctx.globalAlpha=1;
+      // Flash arc — illumination d'un layer en mode STOP
+      const _flashNow=_mesureRightFlash&&performance.now()<_mesureRightFlash.endMs;
+      if(_flashNow){
+        const _fli=_mesureRightFlash.li;
+        const _ft=(performance.now()-_mesureRightFlash.startMs)/(_mesureRightFlash.endMs-_mesureRightFlash.startMs);
+        const _fa=Math.max(0,1-_ft)*0.35;
+        const _fR=radii[_fli];
+        const _fCol=CIRCLE_COLORS[_fli];
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx,cy,_fR,0,2*Math.PI);
+        ctx.strokeStyle=_fCol.fill; ctx.lineWidth=dotR*2.2; ctx.globalAlpha=_fa;
+        ctx.stroke(); ctx.restore(); ctx.globalAlpha=1;
+      }
+      // Labels par layer
+      [0,1,2].forEach(li=>{
+        const{n,spm_liR,plr}=_layInfo[li];
         const col=CIRCLE_COLORS[li];
         const lCY=cy+(li-1)*lSpacing;
-        const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
-        let fracStr, alpha, doVeil;
+        let fracStr,alpha,doVeil;
         if(n<spm_liR){
+          // Pattern < 1 mesure → fraction
           const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
-        } else if(n===spm_liR){
-          fracStr='1 mes';alpha=0.45;doVeil=false;
+        } else if(!playing){
+          // Transport STOP → total mesures
+          fracStr=(plr===1?'1':plr)+' mes';alpha=plr===1?0.6:0.9;doVeil=false;
         } else {
-          const plr=Math.ceil(n/spm_liR);const lp=_mGlobalPage%plr+1;
+          // Transport PLAY
+          if(plr===1) return; // 1 mesure exacte → masqué
+          const lp=_mGlobalPage%plr+1;
           fracStr=lp+'/'+plr+' mes';alpha=0.9;doVeil=false;
         }
         ctx.font='bold 11px sans-serif';
@@ -9239,6 +9278,15 @@ function circleHitTest(x, y){
       if(y>=lCY-18 && y<=lCY+18) return{labelLi:li};
     }
   }
+  // Clic dans le strip droit (vue Mesure, transport=STOP) → illumination arc
+  if(circleModeView==='measure' && !playing && x > cv.width - 72){
+    const H=cv.height, cy=H/2;
+    const lSpacing=Math.min(36,Math.max(26,H*0.2));
+    for(let li=0;li<3;li++){
+      const lCY=cy+(li-1)*lSpacing;
+      if(y>=lCY-18 && y<=lCY+18) return{rightLi:li};
+    }
+  }
   if(circleModeView==='linear'){
     // Recalcul des positions identiques à drawLinear()
     const mStepsL=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
@@ -9316,6 +9364,21 @@ function setupCanvasInteraction(){
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
+    if(hit.rightLi!==undefined){
+      // Illumination arc — flash du cercle du layer cliqué (STOP seulement)
+      const li=hit.rightLi;
+      const now=performance.now();
+      _mesureRightFlash={li,startMs:now,endMs:now+600};
+      if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
+      const _goF=()=>{
+        if(!_mesureRightFlash||performance.now()>=_mesureRightFlash.endMs){
+          _mesureRightFlash=null;drawCircles();_mirrorFlashRaf=null;return;
+        }
+        drawCircles();_mirrorFlashRaf=requestAnimationFrame(_goF);
+      };
+      _mirrorFlashRaf=requestAnimationFrame(_goF);
+      return;
+    }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
       const modPanel=document.getElementById('mod-panel-'+li);
