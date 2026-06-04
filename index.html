@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.3</span>
+    <span class="app-version">v3.19.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9501,6 +9501,7 @@ function setupCanvasInteraction(){
         drawCircles();
       }
       return; // déjà géré dans touchstart
+    }
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
 }
