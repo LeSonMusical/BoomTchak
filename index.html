@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.5</span>
+    <span class="app-version">v3.19.6</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3231,6 +3231,7 @@ function _syncMetroToGroove() {
 }
 
 let playing=false, ac=null, latencyMs=0;
+let _pendingGrooveId=null; // groove en attente de démarrage au prochain cycle si playing
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
@@ -3354,6 +3355,10 @@ function scheduler(){
     while(state[li].nextStepTime<now+LOOKAHEAD){
       const si=state[li].stepPos;
       if(si===0){
+        if(li===0&&_pendingGrooveId){
+          _applyPendingGroove();
+          // state[0].pattern est maintenant le nouveau groove ; si=0 reste valide
+        }
         if(li===0&&pendingGlobalMult!==globalSpeedMult){
           const now2=getAC().currentTime,oldM=globalSpeedMult;
           globalSpeedMult=pendingGlobalMult;
@@ -3778,6 +3783,7 @@ function _startRecNewBlinkLoop(){
 
 function stopPlay(){
   playing=false;
+  if(_pendingGrooveId){_pendingGrooveId=null;_updatePendingGrooveUI(null);}
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
@@ -4094,9 +4100,90 @@ let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
 
+// ── Indicateur UI groove en attente ───────────────────────────────────────
+function _updatePendingGrooveUI(grooveId){
+  const btn=document.getElementById('groove-preset-btn'); if(!btn) return;
+  if(!grooveId){updateGrooveNameTopBar();return;}
+  const pg=getGroove(grooveId); if(!pg){updateGrooveNameTopBar();return;}
+  const nom=pg.nom.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  btn.innerHTML='<span style="opacity:.5;font-size:10px">⟳ </span>'+nom;
+}
+
+// ── Appliquer le groove en attente au début du prochain cycle (appelé depuis scheduler) ─
+function _applyPendingGroove(){
+  const groove=getGroove(_pendingGrooveId);
+  _pendingGrooveId=null;
+  if(!groove)return;
+  const schedT=state[0].nextStepTime; // heure du step 0 en cours de programmation
+  const _btnV=document.getElementById('btn-vol');
+  const _wasMutedAll=_btnV?.classList.contains('muted');
+  LAYERS.forEach((layer,li)=>{
+    try{
+      const gl=groove.layers[li];if(!gl)return;
+      if(gl.sequence){
+        state[li].pattern=gl.sequence.split('');state[li].patternId=gl.patternId||null;state[li].shiftN=0;
+      } else {
+        const pat=getPattern(gl.patternId);
+        if(!pat||!pat.sequence){state[li].patternId=gl.patternId||null;return;}
+        let seq=pat.sequence.split('');
+        if(gl.shift)seq=rotate(seq,seq.length-gl.shift);
+        state[li].pattern=seq;state[li].patternId=gl.patternId;state[li].shiftN=gl.shift||0;
+      }
+      state[li].stepPos=0;state[li].nextStepTime=schedT;state[li].startTime=schedT;
+      state[li].muted=_wasMutedAll||(gl.mute||false);
+      state[li].halfOn=gl.halfOn||false;state[li].doubleOn=gl.doubleOn||false;state[li].ternOn=gl.ternOn||false;
+      state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=false;
+      state[li].nextSpeedDir=gl.doubleOn?'half':'double';state[li].wrapped=false;
+    }catch(e){console.error('_applyPendingGroove L'+li+':',e);}
+  });
+  currentGrooveId=groove.id;
+  grooveDirty=false;metroDirty=false;bandDirty=false;
+  globalSpeedMult=1;pendingGlobalMult=1;
+  linearCycleStartTime=schedT;
+  // Mises à jour UI différées (hors chemin critique audio)
+  setTimeout(()=>{
+    updateGrooveSaveBtn();updateGrooveNameTopBar();
+    LAYERS.forEach((_,li)=>setLayerDirty(li,false));
+    if(groove.band_embed){
+      const be=groove.band_embed;
+      const _rs=(ss,slot)=>{if(!slot)return;ss.soundPresetId=slot.soundPresetId;ss.soundId=slot.soundId;ss.pitch=slot.pitch;ss.env=slot.env??0.3;ss.vol=slot.vol??0.5;ss.atk=slot.atk??0;};
+      _rs(soundState[0],be.low);_rs(soundState[1],be.high);_rs(soundState[2],be.noise);
+      _rs(soundStateThumb[0],be.thumbL);_rs(soundStateThumb[1],be.thumbR);
+      if(groove.band_defaut)currentBandId=groove.band_defaut;
+      bandDirty=false;Object.keys(soundDirty).forEach(k=>soundDirty[k]=false);Object.keys(_bandVolChanged).forEach(k=>_bandVolChanged[k]=false);
+      buildSoundPanel();
+    } else if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){
+      applyBand(groove.band_defaut);
+    }
+    if(prefs.applyGrooveSig&&groove.signature){
+      const sig=getSigFallback(groove.signature);
+      if(sig){_suppressGrooveDirty=true;currentSig=sig;buildSigSelector();LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));syncMetroControls();renderMetroPatternViz();updateBeatDisplay();_suppressGrooveDirty=false;}
+    }
+    if(groove.metro){
+      const m=groove.metro;
+      if(m.swing!==undefined){swingVal=m.swing;updateSwingDisplay();}
+      if(m.volA!==undefined){metro.volA=m.volA;const el=document.getElementById('metro-vol-A');if(el){el.value=m.volA;el.style.setProperty('--pct',m.volA+'%');}const ve=document.getElementById('metro-vol-A-val');if(ve)ve.textContent=m.volA+'%';}
+      if(m.volP!==undefined){metro.volP=m.volP;const el=document.getElementById('metro-vol-P');if(el){el.value=m.volP;el.style.setProperty('--pct',m.volP+'%');}const ve=document.getElementById('metro-vol-P-val');if(ve)ve.textContent=m.volP+'%';}
+      if(m.volp!==undefined){metro.volp=m.volp;const el=document.getElementById('metro-vol-p');if(el){el.value=m.volp;el.style.setProperty('--pct',m.volp+'%');}const ve=document.getElementById('metro-vol-p-val');if(ve)ve.textContent=m.volp+'%';}
+      if(m.metroPattern&&m.metroPattern.length>0&&currentSig){
+        currentSig=_normalizeSig({...currentSig,equivalence:m.equivalence||m.felBeatSteps||currentSig.equivalence,nbDivisions:m.nbDivisions||m.beatsPerMeasure||currentSig.nbDivisions,beatUnit:m.beatUnit||currentSig.beatUnit,subdivision:m.subdivision||currentSig.subdivision,metroPattern:[...m.metroPattern],_embedded:true,});
+        syncMetroControls();renderMetroPatternViz();updateBeatDisplay();setMetroDirty(false);
+      } else if((m.equivalence!==undefined||m.felBeatSteps!==undefined)&&currentSig){
+        currentSig={...currentSig,equivalence:m.equivalence||m.felBeatSteps||currentSig.equivalence};updateBeatDisplay();
+      }
+    }
+    updateGlobalSpeedBtns();
+    buildLayers();if(circleView)drawCircles();
+    buildBandSection();updateGrooveSelect();updateEncycloPresetBtn(groove.id);updateSpmDisplay();
+    grooveDirty=false;metroDirty=false;bandDirty=false;updateGrooveSaveBtn();updateGrooveNameTopBar();
+  },0);
+}
+
 // ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
+  // Si en lecture : programmer le changement au prochain cycle (enchaînement fluide)
+  if(playing){_pendingGrooveId=grooveId;_updatePendingGrooveUI(grooveId);return;}
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
@@ -4201,25 +4288,6 @@ function applyGroove(grooveId){
   globalSpeedMult=1;
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
-
-  // Resync si en lecture — aligner sur le prochain début de mesure (temps 1 du métronome)
-  if(playing){
-    clearTimeout(schedTimerID);
-    const now=getAC().currentTime;
-    const spmNow=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const stepSec=(60/spmNow)*(8/(currentSig.beatUnit||4))/(currentSig.subdivision||1);
-    // Sync au prochain temps 1 (pos 0 du metroPattern) pour que le groove démarre sur le 1er temps
-    const mpLen=Math.max(1,(currentSig.metroPattern||[]).length);
-    const stepsLeft=(mpLen-metroStepPos%mpLen)%mpLen;
-    const syncTime=Math.max(now, metroNextBeatTime+stepsLeft*stepSec);
-    linearCycleStartTime=syncTime;
-    LAYERS.forEach((_,li)=>{
-      state[li].stepPos=0;
-      state[li].nextStepTime=syncTime;
-      state[li].startTime=syncTime;
-    });
-    scheduler();
-  }
 
   // Reconstruire le DOM des couches et sons
   buildLayers();
@@ -9187,7 +9255,11 @@ function drawCircles(){
     grad.addColorStop(1,    nCol+(isMeasure ? 'cc' : 'ff'));
 
     ctx.save();
-    if(state[li].muted) ctx.globalAlpha = 0.12; // muté → aiguille quasi-invisible
+    if(state[li].muted){
+      ctx.globalAlpha = 0.12; // muté → aiguille quasi-invisible
+    } else if(!isMeasure){
+      ctx.globalAlpha = [1.0, 0.68, 0.40][li]; // superposition : couche 1 domine, 3 s'efface
+    }
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
     ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
     ctx.lineCap = 'round'; ctx.stroke();
