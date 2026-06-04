@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.0</span>
+    <span class="app-version">v3.19.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8994,28 +8994,27 @@ function drawCircles(){
       // Cycle global = PPCM des plr de chaque layer (en mesures)
       const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
       const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
-      // Ligne violet cycle global — au-dessus du layer 0 (lCY=cy-lSpacing)
-      const _topLineY=cy-lSpacing-14;
+      // Ligne violet cycle global — haut du canvas, alignée à droite
       ctx.font='bold 10px sans-serif';
       ctx.globalAlpha=0.85; ctx.fillStyle='#8866cc';
       if(playing){
         const _gLp=(_mGlobalPage%_globalPlr)+1;
-        ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,_topLineY);
+        ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,10);
       } else {
-        ctx.fillText('cycle '+_globalPlr+' mes.',textX,_topLineY);
+        ctx.fillText('cycle '+_globalPlr+' mes.',textX,10);
       }
       ctx.globalAlpha=1;
-      // Flash arc — illumination d'un layer en mode STOP
+      // Flash arc — secteur correspondant à la page visible (STOP)
       const _flashNow=_mesureRightFlash&&performance.now()<_mesureRightFlash.endMs;
       if(_flashNow){
         const _fli=_mesureRightFlash.li;
         const _ft=(performance.now()-_mesureRightFlash.startMs)/(_mesureRightFlash.endMs-_mesureRightFlash.startMs);
-        const _fa=Math.max(0,1-_ft)*0.35;
+        const _fa=Math.max(0,1-_ft)*0.45;
         const _fR=radii[_fli];
         const _fCol=CIRCLE_COLORS[_fli];
         ctx.save();
-        ctx.beginPath(); ctx.arc(cx,cy,_fR,0,2*Math.PI);
-        ctx.strokeStyle=_fCol.fill; ctx.lineWidth=dotR*2.2; ctx.globalAlpha=_fa;
+        ctx.beginPath(); ctx.arc(cx,cy,_fR,_mesureRightFlash.sa,_mesureRightFlash.ea);
+        ctx.strokeStyle=_fCol.fill; ctx.lineWidth=dotR*2.4; ctx.globalAlpha=_fa;
         ctx.stroke(); ctx.restore(); ctx.globalAlpha=1;
       }
       // Labels par layer
@@ -9034,7 +9033,7 @@ function drawCircles(){
           // Transport PLAY
           if(plr===1) return; // 1 mesure exacte → masqué
           const lp=_mGlobalPage%plr+1;
-          fracStr=lp+'/'+plr+' mes';alpha=0.9;doVeil=false;
+          fracStr='mes. '+lp+'/'+plr;alpha=0.9;doVeil=false;
         }
         ctx.font='bold 11px sans-serif';
         const tw=ctx.measureText(fracStr).width;
@@ -9365,10 +9364,21 @@ function setupCanvasInteraction(){
     if(!hit) return;
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
     if(hit.rightLi!==undefined){
-      // Illumination arc — flash du cercle du layer cliqué (STOP seulement)
+      // Flash secteur arc — calcule les angles correspondant à la page visible
       const li=hit.rightLi;
+      const spmM=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+      const mPS=(60/spmM)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+      const n=state[li].pattern.length;
+      const spmR=Math.max(1,Math.round(mPS/getBeatSec(li)));
+      let sa,ea;
+      if(n<spmR){
+        sa=-Math.PI/2; ea=-Math.PI/2+(n/spmR)*2*Math.PI;
+      } else {
+        const plr=Math.ceil(n/spmR),page=_measureViewPage%plr;
+        sa=-Math.PI/2+(page/plr)*2*Math.PI; ea=-Math.PI/2+((page+1)/plr)*2*Math.PI;
+      }
       const now=performance.now();
-      _mesureRightFlash={li,startMs:now,endMs:now+600};
+      _mesureRightFlash={li,startMs:now,endMs:now+600,sa,ea};
       if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
       const _goF=()=>{
         if(!_mesureRightFlash||performance.now()>=_mesureRightFlash.endMs){
@@ -9412,7 +9422,8 @@ function setupCanvasInteraction(){
   cv.addEventListener('mousemove',e=>{
     if(circleModeView==='linear'){cv.style.cursor='';return;}
     const rect=cv.getBoundingClientRect();
-    cv.style.cursor=(e.clientX-rect.left)*(cv.width/rect.width)<CIRC_LABEL_W?'pointer':'';
+    const _cx=(e.clientX-rect.left)*(cv.width/rect.width);
+    cv.style.cursor=(_cx<CIRC_LABEL_W||(circleModeView==='measure'&&!playing&&_cx>cv.width-72))?'pointer':'';
   });
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
   // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
