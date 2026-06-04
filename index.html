@@ -354,15 +354,22 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
 /* Groove en attente — armé pour le prochain cycle */
-#groove-preset-btn.groove-pending{color:#9b59b6;border-radius:4px;background:rgba(155,89,182,.08);transition:background .3s,color .3s}
-@keyframes _gpFlash{0%{background:rgba(155,89,182,.5);color:#fff}100%{background:rgba(155,89,182,.08);color:#9b59b6}}
-#groove-preset-btn.groove-beat-flash{animation:_gpFlash .28s ease-out forwards}
-body.dark-mode #groove-preset-btn.groove-pending{color:#c084fc;background:rgba(192,132,252,.1)}
-@keyframes _gpFlashDark{0%{background:rgba(192,132,252,.45);color:#fff}100%{background:rgba(192,132,252,.1);color:#c084fc}}
-body.dark-mode #groove-preset-btn.groove-beat-flash{animation:_gpFlashDark .28s ease-out forwards}
-/* Flash de switch — éclat bref au moment du déclenchement */
-@keyframes _gpSwitch{0%{background:rgba(155,89,182,.85);color:#fff;transform:scale(1.06)}100%{background:transparent;color:inherit;transform:scale(1)}}
-#groove-preset-btn.groove-switch-flash{animation:_gpSwitch .35s ease-out forwards}
+/* Phase 1 : flash d'entrée au clic (s'exécute une fois à l'ajout de la classe) */
+@keyframes _gpEnter{0%{background:rgba(155,89,182,.55);color:#fff}100%{background:rgba(155,89,182,.09);color:#9b59b6}}
+#groove-preset-btn.groove-pending{color:#9b59b6;border-radius:4px;background:rgba(155,89,182,.09);animation:_gpEnter .22s ease-out}
+body.dark-mode #groove-preset-btn.groove-pending{color:#c084fc;background:rgba(192,132,252,.11)}
+@keyframes _gpEnterDk{0%{background:rgba(192,132,252,.5);color:#fff}100%{background:rgba(192,132,252,.11);color:#c084fc}}
+body.dark-mode #groove-preset-btn.groove-pending{animation:_gpEnterDk .22s ease-out}
+/* Phase 2 : respiration par temps (douce — relancée à chaque temps via JS) */
+@keyframes _gpBreathe{0%{background:rgba(155,89,182,.38);color:#d4a0f7}60%{background:rgba(155,89,182,.09);color:#9b59b6}100%{background:rgba(155,89,182,.09);color:#9b59b6}}
+#groove-preset-btn.groove-beat-flash{animation:_gpBreathe .65s ease-out forwards}
+@keyframes _gpBreatheDk{0%{background:rgba(192,132,252,.38);color:#e9d0ff}60%{background:rgba(192,132,252,.11);color:#c084fc}100%{background:rgba(192,132,252,.11);color:#c084fc}}
+body.dark-mode #groove-preset-btn.groove-beat-flash{animation:_gpBreatheDk .65s ease-out forwards}
+/* Phase 3 : flash de switch → jaune groove (atterrit sur la couleur normale) */
+@keyframes _gpSwitch{0%{background:rgba(200,150,26,.72);color:#fff;transform:scale(1.05)}100%{background:transparent;color:#6B4C10;transform:scale(1)}}
+#groove-preset-btn.groove-switch-flash{animation:_gpSwitch .4s ease-out forwards}
+@keyframes _gpSwitchDk{0%{background:rgba(200,150,26,.65);color:#fff;transform:scale(1.05)}100%{background:transparent;color:#C8961A;transform:scale(1)}}
+body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s ease-out forwards}
 .groove-nav-btn{background:transparent;border:none;cursor:pointer;font-size:11px;color:#9A7020;padding:2px 4px;flex-shrink:0;opacity:.6;line-height:1;border-radius:3px}
 .groove-nav-btn:hover{opacity:1;background:rgba(200,150,26,.12)}
 .groove-collapse-btn{background:transparent;border:none;cursor:pointer;font-size:12px;color:#C8961A;padding:2px 3px;flex-shrink:0;opacity:.3;line-height:1}
@@ -1530,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.8</span>
+    <span class="app-version">v3.19.9</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4007,7 +4014,7 @@ function updateGrooveNameTopBar(){
     const pg=getGroove(_pendingGrooveId);
     if(pg){
       btn.textContent=pg.nom;
-      btn.classList.add('groove-pending');
+      if(!btn.classList.contains('groove-pending')) btn.classList.add('groove-pending'); // une seule fois → animation d'entrée
       btn.style.fontStyle='';
       return;
     }
@@ -4167,8 +4174,9 @@ function _applyPendingGroove(){
     const _gpBtn=document.getElementById('groove-preset-btn');
     if(_gpBtn){
       _gpBtn.classList.remove('groove-pending','groove-beat-flash');
+      void _gpBtn.offsetWidth; // force reflow → relance l'animation
       _gpBtn.classList.add('groove-switch-flash');
-      setTimeout(()=>_gpBtn.classList.remove('groove-switch-flash'),400);
+      setTimeout(()=>{_gpBtn.classList.remove('groove-switch-flash');updateGrooveNameTopBar();},420);
     }
     updateGrooveSaveBtn();updateGrooveNameTopBar();
     LAYERS.forEach((_,li)=>setLayerDirty(li,false));
