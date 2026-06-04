@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.9</span>
+    <span class="app-version">v3.19.10</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4169,7 +4169,16 @@ function _applyPendingGroove(){
   grooveDirty=false;metroDirty=false;bandDirty=false;
   globalSpeedMult=1;pendingGlobalMult=1;
   linearCycleStartTime=schedT;
-  // Mises à jour UI différées (hors chemin critique audio)
+
+  // ── Synchrone — critique pour le timing audio ──────────────────────────
+  // Swing appliqué MAINTENANT (avant que le scheduler schedule les prochaines notes)
+  if(groove.metro?.swing!==undefined) swingVal=groove.metro.swing;
+  // Resync métronome sur schedT : élimine toute dérive entre groove et métro au switch
+  metroStepPos=0;metroBeatPos=0;
+  metroNextBeatTime=schedT;metroStartTime=schedT;
+  _lastMetroVizStep=-1;
+
+  // ── Différé — uniquement mises à jour UI ──────────────────────────────
   setTimeout(()=>{
     const _gpBtn=document.getElementById('groove-preset-btn');
     if(_gpBtn){
@@ -4197,7 +4206,7 @@ function _applyPendingGroove(){
     }
     if(groove.metro){
       const m=groove.metro;
-      if(m.swing!==undefined){swingVal=m.swing;updateSwingDisplay();}
+      if(m.swing!==undefined) updateSwingDisplay(); // swingVal déjà appliqué synchronement
       if(m.volA!==undefined){metro.volA=m.volA;const el=document.getElementById('metro-vol-A');if(el){el.value=m.volA;el.style.setProperty('--pct',m.volA+'%');}const ve=document.getElementById('metro-vol-A-val');if(ve)ve.textContent=m.volA+'%';}
       if(m.volP!==undefined){metro.volP=m.volP;const el=document.getElementById('metro-vol-P');if(el){el.value=m.volP;el.style.setProperty('--pct',m.volP+'%');}const ve=document.getElementById('metro-vol-P-val');if(ve)ve.textContent=m.volP+'%';}
       if(m.volp!==undefined){metro.volp=m.volp;const el=document.getElementById('metro-vol-p');if(el){el.value=m.volp;el.style.setProperty('--pct',m.volp+'%');}const ve=document.getElementById('metro-vol-p-val');if(ve)ve.textContent=m.volp+'%';}
