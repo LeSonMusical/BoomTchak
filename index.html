@@ -1520,7 +1520,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.4</span>
+    <span class="app-version">v3.19.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3918,6 +3918,54 @@ function _keepOrCancelModal(nom, onKeep, onDiscard){
   ov.querySelector('#_koc_keep').onclick=()=>{close();onKeep();};
   ov.querySelector('#_koc_discard').onclick=()=>{close();onDiscard();};
   ov.onclick=e=>{if(e.target===ov)close();};
+}
+// Modale 3 choix : suppression item avec article lié non vierge
+function _warnEncycloDelete(itemNom){
+  return new Promise(resolve=>{
+    const isDark=document.body.classList.contains('dark-mode');
+    let ov=document.getElementById('_wed_ov');
+    if(!ov){ov=document.createElement('div');ov.id='_wed_ov';document.body.appendChild(ov);}
+    const bg=isDark?'#252320':'#fff',tc=isDark?'#d8d4cc':'#222',bc=isDark?'#444':'#ddd';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px';
+    const nom=itemNom.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    ov.innerHTML=`<div style="background:${bg};border-radius:10px;padding:18px 20px;max-width:320px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.3);color:${tc}">
+      <p style="margin:0 0 6px;font-size:13px;font-weight:700">Supprimer « ${nom} » ?</p>
+      <p style="margin:0 0 14px;font-size:12px;color:#C8961A;line-height:1.4">⚠️ Cet item possède un article encyclopédie avec du contenu rédigé.</p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="_wed_both" style="padding:8px 14px;border-radius:6px;border:1px solid #c84040;background:transparent;color:#c84040;cursor:pointer;font-size:12px;font-weight:700;text-align:left">🗑 Supprimer item + article</button>
+        <button id="_wed_item" style="padding:8px 14px;border-radius:6px;border:1px solid #3A8C6E;background:#f0fff8;color:#0F6E56;cursor:pointer;font-size:12px;font-weight:700;text-align:left">✓ Supprimer item, garder l'article</button>
+        <button id="_wed_cancel" style="padding:8px 14px;border-radius:6px;border:1px solid ${bc};background:transparent;color:${tc};cursor:pointer;font-size:12px;text-align:left">Annuler</button>
+      </div>
+    </div>`;
+    const close=()=>ov.style.display='none';
+    ov.querySelector('#_wed_both').onclick=()=>{close();resolve('both');};
+    ov.querySelector('#_wed_item').onclick=()=>{close();resolve('item');};
+    ov.querySelector('#_wed_cancel').onclick=()=>{close();resolve('cancel');};
+    ov.onclick=e=>{if(e.target===ov){close();resolve('cancel');}};
+  });
+}
+async function _checkEncycloBeforeDelete(nom, key){
+  if(!hasEncycloContent(key)) return 'item';
+  return await _warnEncycloDelete(nom);
+}
+// Applique la suppression d'article (immédiate pour teacher, différée pour school)
+function _applyEncycloDelete(key, source){
+  if(!key) return;
+  ensureEncyclo();
+  if(!packCours.encyclo[key]) packCours.encyclo[key]={titre:'',sections:[]};
+  if(source !== 'school'){
+    delete packCours.encyclo[key];
+    const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===key);
+    if(idx>=0) packCours.encycloIndex.splice(idx,1);
+  } else if(authProfile?.role==='mx'){
+    packCours.encyclo[key]._pendingDelEncyclo=true;
+    const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===key);
+    if(idx>=0) packCours.encycloIndex[idx]._hiddenPending=true;
+  } else {
+    packCours.encyclo[key]._pendingDelEncycloTX=true;
+    const idx=(packCours.encycloIndex||[]).findIndex(x=>x.id===key);
+    if(idx>=0) packCours.encycloIndex[idx]._hiddenPending=true;
+  }
 }
 function setLayerDirty(li, isDirty){
   dirtyLayers[li]=isDirty;
@@ -9124,14 +9172,13 @@ function drawCircles(){
     }
   }
 
-  // Aiguilles — dégradé transparent au centre, opaque à leur cercle
+  // Aiguilles — dégradé transparent au centre, opaque à leur cercle ; atténuées si layer muté
   LAYERS.forEach((_, li)=>{
     const r = radii[li];
     const col = CIRCLE_COLORS[li];
     const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
     const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
 
-    const isDarkN = document.body.classList.contains('dark-mode');
     const isMeasure = circleModeView === 'measure';
     const nCol = isMeasure ? '#C8961A' : col.fill;
     const grad = ctx.createLinearGradient(cx, cy, ex, ey);
@@ -9140,6 +9187,7 @@ function drawCircles(){
     grad.addColorStop(1,    nCol+(isMeasure ? 'cc' : 'ff'));
 
     ctx.save();
+    if(state[li].muted) ctx.globalAlpha = 0.12; // muté → aiguille quasi-invisible
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
     ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
     ctx.lineCap = 'round'; ctx.stroke();
@@ -12642,6 +12690,9 @@ async function libDeletePattern(patId){
     alert('Ce pattern est utilisé dans : '+usedIn.map(g=>g.nom).join(', ')+'\nRetirez-le d\'abord des grooves.');
     return;
   }
+  const encKey = pat.encyclo_ref || pat.id;
+  const encChoice = await _checkEncycloBeforeDelete(pat.nom, encKey);
+  if(encChoice === 'cancel') return;
   if(pat.source === 'school'){
     if(authProfile?.role !== 'mx'){
       // TX : créer une demande de suppression (fork tx_del_)
@@ -12649,6 +12700,7 @@ async function libDeletePattern(patId){
       const delForkId = 'tx_del_' + pat.id + '_' + Date.now();
       const delFork = { ...pat, id: delForkId, source: 'teacher', localChangeType: 'delete', localDeletePending: true, sourceRef: pat.id };
       packCours.patterns.push(delFork);
+      if(encChoice==='both') _applyEncycloDelete(encKey, pat.source);
       saveToStorage(); buildLibListPatterns(); buildPublishSection();
       showToast('Demande de suppression créée — soumettez-la via le panneau', 'warn');
       return;
@@ -12657,6 +12709,7 @@ async function libDeletePattern(patId){
     if(!confirm('Marquer le pattern « '+pat.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
     pat.localDeletePending = true;
     pat.localChangeType = 'delete';
+    if(encChoice==='both') _applyEncycloDelete(encKey, pat.source);
     saveToStorage(); buildLibListPatterns(); buildPublishSection();
     buildLayers();
     showToast('Suppression en attente de publication', 'warn');
@@ -12669,6 +12722,7 @@ async function libDeletePattern(patId){
   } else {
     if(!confirm('Supprimer le pattern « '+pat.nom+' » ?')) return;
   }
+  if(encChoice==='both') _applyEncycloDelete(encKey, pat.source);
   packCours.patterns = packCours.patterns.filter(p=>p.id!==patId);
   saveToStorage(); buildLibListPatterns();
   buildLayers();
@@ -13066,6 +13120,9 @@ async function libDeleteGroove(grooveId){
   if(packCours.grooves.filter(g=>!g.localDeletePending).length<=1){ showToast('Impossible de supprimer le dernier groove actif', 'warn'); return; }
   const groove = packCours.grooves.find(g=>g.id===grooveId);
   if(!groove) return;
+  const encKey = groove.id;
+  const encChoice = await _checkEncycloBeforeDelete(groove.nom, encKey);
+  if(encChoice === 'cancel') return;
   if(groove.source === 'school'){
     if(authProfile?.role !== 'mx'){
       // TX : créer une demande de suppression (fork tx_del_)
@@ -13073,6 +13130,7 @@ async function libDeleteGroove(grooveId){
       const delForkId = 'tx_del_' + groove.id + '_' + Date.now();
       const delFork = { ...groove, id: delForkId, source: 'teacher', localChangeType: 'delete', localDeletePending: true, sourceRef: groove.id };
       packCours.grooves.push(delFork);
+      if(encChoice==='both') _applyEncycloDelete(encKey, groove.source);
       saveToStorage(); buildLibListGrooves(); buildPublishSection();
       showToast('Demande de suppression créée — soumettez-la via le panneau', 'warn');
       return;
@@ -13081,6 +13139,7 @@ async function libDeleteGroove(grooveId){
     if(!confirm('Marquer le groove « '+groove.nom+' » pour suppression ?\nIl disparaîtra après publication.')) return;
     groove.localDeletePending = true;
     groove.localChangeType = 'delete';
+    if(encChoice==='both') _applyEncycloDelete(encKey, groove.source);
     saveToStorage(); buildLibListGrooves(); buildPublishSection();
     if(currentGrooveId === grooveId){
       const next = packCours.grooves.find(g=>!g.localDeletePending&&g.id!==grooveId);
@@ -13095,6 +13154,7 @@ async function libDeleteGroove(grooveId){
   } else {
     if(!confirm('Supprimer le groove « '+groove.nom+' » ?')) return;
   }
+  if(encChoice==='both') _applyEncycloDelete(encKey, groove.source);
   packCours.grooves=packCours.grooves.filter(g=>g.id!==grooveId);
   saveToStorage(); buildLibListGrooves();
   if(currentGrooveId===grooveId){ applyGroove(packCours.grooves.filter(g=>!g.localDeletePending)[0]?.id||packCours.grooves[0].id); }
@@ -13106,12 +13166,16 @@ async function libDeleteGroove(grooveId){
 async function libDeleteBand(bandId){
   const band=(packCours.bands||[]).find(b=>b.id===bandId);
   if(!band)return;
+  const encKey = band.id;
+  const encChoice = await _checkEncycloBeforeDelete(band.nom, encKey);
+  if(encChoice === 'cancel') return;
   if(band.source==='school'){
     if(authProfile?.role!=='mx'){
       showToast('Seul un MX peut supprimer un band école','warn');return;
     }
     if(!confirm('Marquer le band « '+band.nom+' » pour suppression ?'))return;
     band.localDeletePending=true;band.localChangeType='delete';
+    if(encChoice==='both') _applyEncycloDelete(encKey, band.source);
     saveToStorage();buildBandSection();buildPublishSection();
     showToast('Suppression en attente de publication','warn');return;
   }
@@ -13121,6 +13185,7 @@ async function libDeleteBand(bandId){
   } else {
     if(!confirm('Supprimer le band « '+band.nom+' » ?'))return;
   }
+  if(encChoice==='both') _applyEncycloDelete(encKey, band.source);
   packCours.bands=packCours.bands.filter(b=>b.id!==bandId);
   if(currentBandId===bandId){
     const next=(packCours.bands||[]).filter(b=>!b.localDeletePending)[0];
