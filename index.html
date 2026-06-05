@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.5</span>
+    <span class="app-version">v3.20.6</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6530,6 +6530,16 @@ function buildLayers(){
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
+    seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
+    seqInfo.addEventListener('click',()=>{
+      const mp=document.getElementById('mod-panel-'+li);if(!mp)return;
+      const isHidden=mp.classList.contains('hidden');
+      mp.classList.toggle('hidden');
+      const ld=document.getElementById('layer-div-'+li);
+      const tb=ld?.querySelector('.btn-layer-toggle');
+      if(tb){tb.textContent=isHidden?'mod ▼':'mod ▶';tb.classList.toggle('open',isHidden);}
+      if(isHidden){updateLayerEditBar();setTimeout(()=>mp.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+    });
     row2.appendChild(seqInfo);
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
@@ -8993,20 +9003,9 @@ function resizeCanvas(){
   drawCircles();
 }
 
-function _triggerRightFlash(li, hold=false, saOvr=undefined, eaOvr=undefined){
-  const spmM=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-  const mPS=(60/spmM)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
-  const n=state[li].pattern.length;
-  const spmR=Math.max(1,Math.round(mPS/getBeatSec(li)));
-  let sa,ea;
-  if(saOvr!==undefined){sa=saOvr;ea=eaOvr;}
-  else if(n<spmR){
-    sa=-Math.PI/2; ea=-Math.PI/2+(n/spmR)*2*Math.PI;
-  } else {
-    const plr=Math.ceil(n/spmR);
-    const page=playing?(_mGlobalPageLast%plr):(_measureViewPage%plr);
-    sa=-Math.PI/2+(page/plr)*2*Math.PI; ea=-Math.PI/2+((page+1)/plr)*2*Math.PI;
-  }
+function _triggerRightFlash(li, hold=false){
+  // Surligne toujours le cercle COMPLET du layer (quel que soit le nb de mesures)
+  const sa=-Math.PI/2, ea=3*Math.PI/2;
   const now=performance.now();
   // hold=true : arc reste allumé indéfiniment (effacé par touchend) ; sinon flash 600ms
   _mesureRightFlash={li,startMs:now,endMs:hold?Infinity:now+600,sa,ea,hold};
@@ -9584,7 +9583,7 @@ function circleHitTest(x, y){
     const lSpacing=Math.min(36,Math.max(26,H*0.2));
     for(let li=0;li<3;li++){
       const lCY=cy+(li-1)*lSpacing;
-      if(y>=lCY-18 && y<=lCY+18) return{labelLi:li};
+      if(y>=lCY-22 && y<=lCY+22) return{labelLi:li};
     }
   }
   // Clic dans le strip droit (vue Mesure) → illumination arc
@@ -9593,7 +9592,7 @@ function circleHitTest(x, y){
     const lSpacing=Math.min(36,Math.max(26,H*0.2));
     for(let li=0;li<3;li++){
       const lCY=cy+(li-1)*lSpacing;
-      if(y>=lCY-18 && y<=lCY+18) return{rightLi:li};
+      if(y>=lCY-22 && y<=lCY+22) return{rightLi:li};
     }
   }
   if(circleModeView==='linear'){
@@ -9676,6 +9675,14 @@ function setupCanvasInteraction(){
     if(hit.rightLi!==undefined){ _triggerRightFlash(hit.rightLi); return; }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
+      // S'assurer que les volets layers sont visibles avant de toggle le panel mod
+      if(!layerPanelsOuverts){
+        layerPanelsOuverts=true;
+        const lw=document.getElementById('layers-wrap');
+        if(lw)lw.style.display='';
+        const togBtn=document.getElementById('groove-layers-toggle');
+        if(togBtn){togBtn.classList.add('open');togBtn.title='Masquer layers';}
+      }
       const modPanel=document.getElementById('mod-panel-'+li);
       if(modPanel){
         const isHidden=modPanel.classList.contains('hidden');
