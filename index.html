@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.1</span>
+    <span class="app-version">v3.20.2</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8895,6 +8895,18 @@ let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
+function _getMeasureMaxPages(){
+  const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
+  const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
+  if(!mSec)return 1;
+  let maxP=1;
+  LAYERS.forEach((_,li)=>{
+    const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
+    const pages=Math.ceil(state[li].pattern.length/spm_li);
+    if(pages>maxP)maxP=pages;
+  });
+  return maxP;
+}
 let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
 let _mirrorFlashRaf = null;
 let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
@@ -9313,15 +9325,19 @@ function drawCircles(){
           // Pattern < 1 mesure → fraction
           const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
         } else if(!playing){
-          // Transport STOP → total mesures
+          // Transport STOP
           if(plr===1){fracStr='1 mes';alpha=0.6;}
-          else{fracStr=plr+' mes';alpha=1;bigFont=true;}
+          else{
+            const cp=(_measureViewPage%plr)+1;
+            fracStr='◀ '+cp+'/'+plr+' ▶';
+            alpha=1;bigFont=true;
+          }
           doVeil=false;
         } else {
           // Transport PLAY
           if(plr===1) return; // 1 mesure exacte → masqué
           const lp=_mGlobalPage%plr+1;
-          fracStr='mes. '+lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
+          fracStr=lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
         }
         ctx.font=(bigFont?'bold 13px':'bold 11px')+' sans-serif';
         const tw=ctx.measureText(fracStr).width;
@@ -9656,7 +9672,24 @@ function setupCanvasInteraction(){
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
-    if(hit.rightLi!==undefined){ _triggerRightFlash(hit.rightLi); return; }
+    if(hit.rightLi!==undefined){
+      const _rLi=hit.rightLi;
+      if(!playing){
+        const _spmN=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+        const _mPN=(60/_spmN)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+        const _nN=state[_rLi].pattern.length;
+        const _spmRN=Math.max(1,Math.round(_mPN/getBeatSec(_rLi)));
+        const _plrN=Math.ceil(_nN/_spmRN);
+        if(_plrN>1){
+          _measureViewPage=(_measureViewPage+1)%_getMeasureMaxPages();
+          _updateMeasurePageIndicator(_measureViewPage);
+          drawCircles();
+          return;
+        }
+      }
+      _triggerRightFlash(_rLi);
+      return;
+    }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
       const modPanel=document.getElementById('mod-panel-'+li);
