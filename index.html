@@ -9004,8 +9004,18 @@ function resizeCanvas(){
 }
 
 function _triggerRightFlash(li, hold=false){
-  // Surligne toujours le cercle COMPLET du layer (quel que soit le nb de mesures)
-  const sa=-Math.PI/2, ea=3*Math.PI/2;
+  const spmM=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+  const mPS=(60/spmM)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+  const n=state[li].pattern.length;
+  const spmR=Math.max(1,Math.round(mPS/getBeatSec(li)));
+  let sa,ea;
+  if(n<spmR){
+    // Pattern plus court qu'une mesure → surligne l'arc proportionnel (fraction 1/p)
+    sa=-Math.PI/2; ea=-Math.PI/2+(n/spmR)*2*Math.PI;
+  } else {
+    // Pattern couvre ≥ 1 mesure → surligne tout le cercle
+    sa=-Math.PI/2; ea=3*Math.PI/2;
+  }
   const now=performance.now();
   // hold=true : arc reste allumé indéfiniment (effacé par touchend) ; sinon flash 600ms
   _mesureRightFlash={li,startMs:now,endMs:hold?Infinity:now+600,sa,ea,hold};
@@ -9721,13 +9731,14 @@ function setupCanvasInteraction(){
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
   // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
-  let _cvSwipeStartX = null; // glissé haut-centre pour navigation de pages
+  let _cvSwipeStartX = null;
   cv.addEventListener('touchstart', e=>{
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
     const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
-    // Zone de glissement : haut-centre (y<32, entre strips gauche et droit)
-    if(circleModeView==='measure' && canvasY<32 && canvasX>CIRC_LABEL_W && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
+    // Zone de glissement pour changer de mesure : haut du canvas (y<50), sauf strip droit
+    // Zone intentionnellement large (toute la largeur sauf strip droit) pour faciliter le geste
+    if(circleModeView==='measure' && canvasY<50 && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
       _cvSwipeStartX=t.clientX;
       e.preventDefault();
       return;
@@ -9737,7 +9748,10 @@ function setupCanvasInteraction(){
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
     if(_cvTouchOnDot)e.preventDefault();
-    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true); // allumé au toucher, hold jusqu'au relâcher
+    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true);
+  },{passive:false});
+  cv.addEventListener('touchmove', e=>{
+    if(_cvSwipeStartX!==null) e.preventDefault();
   },{passive:false});
   cv.addEventListener('touchmove', e=>{
     if(_cvSwipeStartX!==null) e.preventDefault(); // bloquer scroll pendant glissement
@@ -9764,7 +9778,7 @@ function setupCanvasInteraction(){
         if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
         drawCircles();
       }
-      return; // déjà géré dans touchstart
+      return;
     }
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
