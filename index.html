@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.4</span>
+    <span class="app-version">v3.20.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9332,16 +9332,10 @@ function drawCircles(){
           // Pattern < 1 mesure → fraction
           const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
         } else if(!playing){
-          // Transport STOP — machine d'états par layer
           if(plr===1){fracStr='1 mes';alpha=0.6;}
-          else{
-            const rp=_rightStripPage[li];
-            fracStr=rp<0?plr+' mes':'mes. '+(rp+1)+'/'+plr;
-            alpha=1;bigFont=true;
-          }
+          else{fracStr=plr+' mes';alpha=1;bigFont=true;}
           doVeil=false;
         } else {
-          // Transport PLAY
           if(plr===1) return;
           const lp=_mGlobalPage%plr+1;
           fracStr='mes. '+lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
@@ -9679,31 +9673,7 @@ function setupCanvasInteraction(){
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
-    if(hit.rightLi!==undefined){
-      const _rLi=hit.rightLi;
-      const _spmN=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-      const _mPN=(60/_spmN)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
-      const _nN=state[_rLi].pattern.length;
-      const _spmRN=Math.max(1,Math.round(_mPN/getBeatSec(_rLi)));
-      const _plrN=Math.ceil(_nN/_spmRN);
-      if(!playing && _plrN>1){
-        // Cycle : -1(tout) → 0 → 1 → … → plr-1 → -1
-        const cur=_rightStripPage[_rLi];
-        const next=cur>=_plrN-1?-1:cur+1;
-        _rightStripPage[_rLi]=next;
-        if(next<0){
-          _triggerRightFlash(_rLi,false,-Math.PI/2,3*Math.PI/2); // cercle complet
-        } else {
-          _triggerRightFlash(_rLi,false,
-            -Math.PI/2+(next/_plrN)*2*Math.PI,
-            -Math.PI/2+((next+1)/_plrN)*2*Math.PI
-          );
-        }
-        return;
-      }
-      _triggerRightFlash(_rLi);
-      return;
-    }
+    if(hit.rightLi!==undefined){ _triggerRightFlash(hit.rightLi); return; }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
       const modPanel=document.getElementById('mod-panel-'+li);
@@ -9744,38 +9714,50 @@ function setupCanvasInteraction(){
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
   // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
+  let _cvSwipeStartX = null; // glissé haut-centre pour navigation de pages
   cv.addEventListener('touchstart', e=>{
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
-    const hit=circleHitTest((t.clientX-rect.left)*sx,(t.clientY-rect.top)*sy);
+    const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
+    // Zone de glissement : haut-centre (y<32, entre strips gauche et droit)
+    if(circleModeView==='measure' && canvasY<32 && canvasX>CIRC_LABEL_W && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
+      _cvSwipeStartX=t.clientX;
+      e.preventDefault();
+      return;
+    }
+    _cvSwipeStartX=null;
+    const hit=circleHitTest(canvasX,canvasY);
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
     if(_cvTouchOnDot)e.preventDefault();
-    if(_cvTouchIsRight){
-      // Hold flash uniquement si plr≤1 ou en lecture — le cyclage est géré dans touchend/onPt
-      const _rLiTs=hit.rightLi;
-      const _spmTs=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-      const _mPTs=(60/_spmTs)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
-      const _nTs=state[_rLiTs].pattern.length;
-      const _plrTs=_mPTs>0?Math.ceil(_nTs/Math.max(1,Math.round(_mPTs/getBeatSec(_rLiTs)))):1;
-      if(playing||_plrTs<=1) _triggerRightFlash(_rLiTs,true);
-    }
+    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true); // allumé au toucher, hold jusqu'au relâcher
+  },{passive:false});
+  cv.addEventListener('touchmove', e=>{
+    if(_cvSwipeStartX!==null) e.preventDefault(); // bloquer scroll pendant glissement
   },{passive:false});
   cv.addEventListener('touchend', e=>{
+    if(_cvSwipeStartX!==null){
+      const dx=e.changedTouches[0].clientX-_cvSwipeStartX;
+      _cvSwipeStartX=null;
+      if(Math.abs(dx)>=30){
+        if(dx<0) _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
+        else     _measureViewPage=Math.max(0,_measureViewPage-1);
+        _updateMeasurePageIndicator(_measureViewPage);
+        drawCircles();
+      }
+      return;
+    }
     if(!_cvTouchOnDot)return;
     _cvTouchOnDot=false;
     if(_cvTouchIsRight){
       _cvTouchIsRight=false;
+      // Éteindre l'arc maintenu au relâcher du doigt
       if(_mesureRightFlash?.hold){
-        // Mode hold (plr=1 ou lecture) — éteindre et terminer
         _mesureRightFlash=null;
         if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
         drawCircles();
-        return;
       }
-      // Mode cycle (plr>1, arrêt) — exécuter comme un click
-      const t2=e.changedTouches[0];onPt(t2.clientX,t2.clientY);
-      return;
+      return; // déjà géré dans touchstart
     }
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
