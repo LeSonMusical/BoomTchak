@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.3</span>
+    <span class="app-version">v3.20.4</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9293,14 +9293,19 @@ function drawCircles(){
       // Cycle global = PPCM des plr de chaque layer (en mesures)
       const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
       const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
-      // Cycle global — haut-gauche du canvas, violet
+      // Cycle global — haut-gauche (label) + haut-droite (compteur chiffré)
       if(_globalPlr>1){
-        ctx.save();
         ctx.font='bold 10px sans-serif';
         ctx.globalAlpha=0.85; ctx.fillStyle='#8866cc';
+        // Gauche : "Cycle de n mesures"
+        ctx.save();
         ctx.textAlign='left'; ctx.textBaseline='top';
         ctx.fillText('Cycle de '+_globalPlr+' mesures',4,2);
         ctx.restore();
+        // Droite : "mes. p/n" chiffré
+        ctx.textAlign='right'; ctx.textBaseline='middle';
+        const _gLp=playing?(_mGlobalPage%_globalPlr)+1:(_measureViewPage%_globalPlr)+1;
+        ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,10);
         ctx.globalAlpha=1;
       }
       // Flash arc — secteur correspondant à la page visible (STOP)
@@ -9746,20 +9751,31 @@ function setupCanvasInteraction(){
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
     if(_cvTouchOnDot)e.preventDefault();
-    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true); // allumé au toucher, hold jusqu'au relâcher
+    if(_cvTouchIsRight){
+      // Hold flash uniquement si plr≤1 ou en lecture — le cyclage est géré dans touchend/onPt
+      const _rLiTs=hit.rightLi;
+      const _spmTs=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+      const _mPTs=(60/_spmTs)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+      const _nTs=state[_rLiTs].pattern.length;
+      const _plrTs=_mPTs>0?Math.ceil(_nTs/Math.max(1,Math.round(_mPTs/getBeatSec(_rLiTs)))):1;
+      if(playing||_plrTs<=1) _triggerRightFlash(_rLiTs,true);
+    }
   },{passive:false});
   cv.addEventListener('touchend', e=>{
     if(!_cvTouchOnDot)return;
     _cvTouchOnDot=false;
     if(_cvTouchIsRight){
       _cvTouchIsRight=false;
-      // Éteindre l'arc maintenu au relâcher du doigt
       if(_mesureRightFlash?.hold){
+        // Mode hold (plr=1 ou lecture) — éteindre et terminer
         _mesureRightFlash=null;
         if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
         drawCircles();
+        return;
       }
-      return; // déjà géré dans touchstart
+      // Mode cycle (plr>1, arrêt) — exécuter comme un click
+      const t2=e.changedTouches[0];onPt(t2.clientX,t2.clientY);
+      return;
     }
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
@@ -9822,12 +9838,11 @@ function _updateMeasurePageIndicator(globalPage){
     if(_rcv && _mpiEl){
       const _rcvR=_rcv.getBoundingClientRect(), _mpiR=_mpiEl.getBoundingClientRect();
       if(_mpiR.width>0){
-        // Aligné sur le bord DROIT du canvas (haut-droite)
-        leftPx=Math.round(_rcvR.right - _mpiR.left)+'px';
-        transformVal='translateX(-100%)';
+        leftPx=Math.round(_rcvR.left - _mpiR.left + _rcvR.width/2)+'px';
+        transformVal='translateX(-50%)';
       }
     }
-    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:1px;left:'+leftPx+';transform:'+transformVal+';justify-content:flex-end;align-items:center;gap:0px;pointer-events:auto';
+    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:1px;left:'+leftPx+';transform:'+transformVal+';justify-content:center;align-items:center;gap:0px;pointer-events:auto';
   }
 
   if(maxPages>1){
