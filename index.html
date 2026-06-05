@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.2</span>
+    <span class="app-version">v3.20.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3809,7 +3809,7 @@ function stopPlay(){
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
-  _measureViewPage = 0; // retour page 0 à l'arrêt
+  _measureViewPage = 0; _rightStripPage=[-1,-1,-1]; // retour page 0 à l'arrêt
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
     drawCircles(); // met à jour l'indicateur via son appel interne
@@ -4218,6 +4218,7 @@ function _applyPendingGroove(){
       }
     }
     updateGlobalSpeedBtns();
+    _rightStripPage=[-1,-1,-1];
     LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
     buildLayers();if(circleView)drawCircles();
     buildBandSection();updateGrooveSelect();updateEncycloPresetBtn(groove.id);updateSpmDisplay();
@@ -4335,6 +4336,7 @@ function applyGroove(grooveId){
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
 
+  _rightStripPage=[-1,-1,-1];
   // Synchroniser les états pad/soft avant reconstruction DOM
   LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
   // Reconstruire le DOM des couches et sons
@@ -8895,6 +8897,7 @@ let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
+let _rightStripPage = [-1,-1,-1]; // par layer : -1 = tout, 0..n-1 = mesure spécifique
 function _getMeasureMaxPages(){
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
@@ -8990,13 +8993,14 @@ function resizeCanvas(){
   drawCircles();
 }
 
-function _triggerRightFlash(li, hold=false){
+function _triggerRightFlash(li, hold=false, saOvr=undefined, eaOvr=undefined){
   const spmM=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
   const mPS=(60/spmM)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
   const n=state[li].pattern.length;
   const spmR=Math.max(1,Math.round(mPS/getBeatSec(li)));
   let sa,ea;
-  if(n<spmR){
+  if(saOvr!==undefined){sa=saOvr;ea=eaOvr;}
+  else if(n<spmR){
     sa=-Math.PI/2; ea=-Math.PI/2+(n/spmR)*2*Math.PI;
   } else {
     const plr=Math.ceil(n/spmR);
@@ -9289,16 +9293,14 @@ function drawCircles(){
       // Cycle global = PPCM des plr de chaque layer (en mesures)
       const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
       const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
-      // Ligne violet cycle global — haut du canvas, seulement si cycle > 1 mesure
+      // Cycle global — haut-gauche du canvas, violet
       if(_globalPlr>1){
+        ctx.save();
         ctx.font='bold 10px sans-serif';
         ctx.globalAlpha=0.85; ctx.fillStyle='#8866cc';
-        if(playing){
-          const _gLp=(_mGlobalPage%_globalPlr)+1;
-          ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,10);
-        } else {
-          ctx.fillText('cycle '+_globalPlr+' mes.',textX,10);
-        }
+        ctx.textAlign='left'; ctx.textBaseline='top';
+        ctx.fillText('Cycle de '+_globalPlr+' mesures',4,2);
+        ctx.restore();
         ctx.globalAlpha=1;
       }
       // Flash arc — secteur correspondant à la page visible (STOP)
@@ -9325,19 +9327,19 @@ function drawCircles(){
           // Pattern < 1 mesure → fraction
           const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
         } else if(!playing){
-          // Transport STOP
+          // Transport STOP — machine d'états par layer
           if(plr===1){fracStr='1 mes';alpha=0.6;}
           else{
-            const cp=(_measureViewPage%plr)+1;
-            fracStr='◀ '+cp+'/'+plr+' ▶';
+            const rp=_rightStripPage[li];
+            fracStr=rp<0?plr+' mes':'mes. '+(rp+1)+'/'+plr;
             alpha=1;bigFont=true;
           }
           doVeil=false;
         } else {
           // Transport PLAY
-          if(plr===1) return; // 1 mesure exacte → masqué
+          if(plr===1) return;
           const lp=_mGlobalPage%plr+1;
-          fracStr=lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
+          fracStr='mes. '+lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
         }
         ctx.font=(bigFont?'bold 13px':'bold 11px')+' sans-serif';
         const tw=ctx.measureText(fracStr).width;
@@ -9674,18 +9676,25 @@ function setupCanvasInteraction(){
     if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
     if(hit.rightLi!==undefined){
       const _rLi=hit.rightLi;
-      if(!playing){
-        const _spmN=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-        const _mPN=(60/_spmN)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
-        const _nN=state[_rLi].pattern.length;
-        const _spmRN=Math.max(1,Math.round(_mPN/getBeatSec(_rLi)));
-        const _plrN=Math.ceil(_nN/_spmRN);
-        if(_plrN>1){
-          _measureViewPage=(_measureViewPage+1)%_getMeasureMaxPages();
-          _updateMeasurePageIndicator(_measureViewPage);
-          drawCircles();
-          return;
+      const _spmN=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+      const _mPN=(60/_spmN)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+      const _nN=state[_rLi].pattern.length;
+      const _spmRN=Math.max(1,Math.round(_mPN/getBeatSec(_rLi)));
+      const _plrN=Math.ceil(_nN/_spmRN);
+      if(!playing && _plrN>1){
+        // Cycle : -1(tout) → 0 → 1 → … → plr-1 → -1
+        const cur=_rightStripPage[_rLi];
+        const next=cur>=_plrN-1?-1:cur+1;
+        _rightStripPage[_rLi]=next;
+        if(next<0){
+          _triggerRightFlash(_rLi,false,-Math.PI/2,3*Math.PI/2); // cercle complet
+        } else {
+          _triggerRightFlash(_rLi,false,
+            -Math.PI/2+(next/_plrN)*2*Math.PI,
+            -Math.PI/2+((next+1)/_plrN)*2*Math.PI
+          );
         }
+        return;
       }
       _triggerRightFlash(_rLi);
       return;
@@ -9813,11 +9822,12 @@ function _updateMeasurePageIndicator(globalPage){
     if(_rcv && _mpiEl){
       const _rcvR=_rcv.getBoundingClientRect(), _mpiR=_mpiEl.getBoundingClientRect();
       if(_mpiR.width>0){
-        leftPx=Math.round(_rcvR.left - _mpiR.left + _rcvR.width/2)+'px';
-        transformVal='translateX(-50%)';
+        // Aligné sur le bord DROIT du canvas (haut-droite)
+        leftPx=Math.round(_rcvR.right - _mpiR.left)+'px';
+        transformVal='translateX(-100%)';
       }
     }
-    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:1px;left:'+leftPx+';transform:'+transformVal+';justify-content:center;align-items:center;gap:0px;pointer-events:auto';
+    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:1px;left:'+leftPx+';transform:'+transformVal+';justify-content:flex-end;align-items:center;gap:0px;pointer-events:auto';
   }
 
   if(maxPages>1){
