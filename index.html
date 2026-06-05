@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.0</span>
+    <span class="app-version">v3.20.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9684,6 +9684,7 @@ function setupCanvasInteraction(){
     }
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
+    _syncPadToPattern(li);
     drawCircles();
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
