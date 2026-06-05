@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.19.10</span>
+    <span class="app-version">v3.20.0</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4218,6 +4218,7 @@ function _applyPendingGroove(){
       }
     }
     updateGlobalSpeedBtns();
+    LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
     buildLayers();if(circleView)drawCircles();
     buildBandSection();updateGrooveSelect();updateEncycloPresetBtn(groove.id);updateSpmDisplay();
     grooveDirty=false;metroDirty=false;bandDirty=false;updateGrooveSaveBtn();updateGrooveNameTopBar();
@@ -4334,6 +4335,8 @@ function applyGroove(grooveId){
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
 
+  // Synchroniser les états pad/soft avant reconstruction DOM
+  LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
   // Reconstruire le DOM des couches et sons
   buildLayers();
   if(circleView) drawCircles(); // forcer maj cercle après changement de pattern
@@ -6178,6 +6181,51 @@ function _euclidean(k,L){
   for(let i=0;i<k;i++)pos.push(Math.floor(i*L/k));
   return pos;
 }
+// ── Rétro-inférence XY+S depuis le pattern courant ───────────────────────
+function _inferPadStateFromPattern(li){
+  const pat=state[li].pattern;
+  const L=pat.length;if(!L)return;
+  const nFortes=pat.filter(s=>s==='X').length;
+  const x=nFortes/L;
+  const nNonForte=L-nFortes;
+  const nSoft=pat.filter(s=>s==='x').length;
+  const s=nNonForte>0?nSoft/nNonForte:0;
+  let y=_modPadState[li].y;
+  if(nFortes>0){
+    const eucSet=new Set(_euclidean(nFortes,L));
+    const atEuclid=pat.reduce((acc,v,i)=>v==='X'&&eucSet.has(i)?acc+1:acc,0);
+    y=1-atEuclid/nFortes;
+  }
+  _modPadState[li]={x,y};
+  _modSoftState[li]=s;
+}
+// Met à jour le curseur pad + slider soft depuis le pattern (si DOM existant)
+function _syncPadToPattern(li){
+  _inferPadStateFromPattern(li);
+  const pad=document.getElementById('mod-pad-'+li);if(!pad)return;
+  const{x,y}=_modPadState[li];
+  const pRect=pad.querySelector('.mod-pad-rect');
+  const pCorner=pad.querySelector('.mod-pad-corner');
+  if(pRect){pRect.style.width=`${x*100}%`;pRect.style.height=`${y*100}%`;}
+  if(pCorner){pCorner.style.left=`${x*100}%`;pCorner.style.top=`${(1-y)*100}%`;}
+  const sv=_modSoftState[li];
+  const lmp=pad.closest('.layer-mod-panel');
+  if(lmp){
+    const fill=lmp.querySelector('.mod-soft-h-fill');
+    const thumb=lmp.querySelector('.mod-soft-h-thumb');
+    if(fill)fill.style.width=`${sv*100}%`;
+    if(thumb)thumb.style.left=`${sv*100}%`;
+  }
+  const prev=pad.querySelector('.mod-pad-preview');
+  if(prev){
+    prev.innerHTML='';
+    state[li].pattern.forEach(pv=>{
+      const d=document.createElement('div');
+      d.className='mod-pad-dot'+(pv==='X'?' forte':pv==='x'?' soft':'');
+      prev.appendChild(d);
+    });
+  }
+}
 function generatePatternFromPad(li,x,y,s){
   const L=state[li].pattern.length;if(!L)return;
   const weights=_getStepWeights(li);
@@ -6431,6 +6479,7 @@ function buildLayers(){
       const pasNum=document.getElementById('pas-num-'+li);
       if(pasNum)pasNum.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,false);
+      _syncPadToPattern(li);
       if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
     };
@@ -6554,6 +6603,7 @@ function buildLayers(){
       state[li].pendingDouble=dbl;state[li].pendingHalf=hlf;state[li].pendingClear=(!dbl&&!hlf);
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
+      _syncPadToPattern(li);
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
@@ -6898,6 +6948,7 @@ function onStepClick(li,si,el){
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
+  _syncPadToPattern(li);
 }
 
 // ── Sauvegarde pattern couche — popover ──────────────────────────────────
