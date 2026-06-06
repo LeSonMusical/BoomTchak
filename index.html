@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.22</span>
+    <span class="app-version">v3.20.23</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9435,26 +9435,47 @@ function drawCircles(){
     }
   }
 
-  // Aiguilles — dégradé transparent au centre, opaque à leur cercle ; atténuées si layer muté
+  // Aiguilles — profondeur : pleine couleur dans la zone du layer, atténuée dans les zones intérieures
+  // Chaque needle li traverse les rings de 0..li-1 avant le sien → dégradé par zone
   LAYERS.forEach((_, li)=>{
     const r = radii[li];
     const col = CIRCLE_COLORS[li];
     const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
     const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
-
     const isMeasure = circleModeView === 'measure';
     const nCol = isMeasure ? '#C8961A' : col.fill;
+    const endA = isMeasure ? 'cc' : 'ff';
+
     const grad = ctx.createLinearGradient(cx, cy, ex, ey);
-    grad.addColorStop(0,    nCol+'00');
-    grad.addColorStop(0.4,  nCol+(isMeasure ? '66' : 'cc'));
-    grad.addColorStop(1,    nCol+(isMeasure ? 'cc' : 'ff'));
+    grad.addColorStop(0, nCol+'00');
+
+    if(li === 0){
+      // Zone propre dès le départ : fade in simple
+      grad.addColorStop(0.40, nCol+'88');
+      grad.addColorStop(1.00, nCol+endA);
+    } else if(li === 1){
+      // 0→f0 = zone ring0 (dim) ; f0→1 = zone propre (bright)
+      const f0 = radii[0]/r;           // ≈ 0.718
+      grad.addColorStop(f0*0.35,      nCol+'28');
+      grad.addColorStop(f0-0.03,      nCol+'28');
+      grad.addColorStop(f0+0.08,      nCol+'88');
+      grad.addColorStop(f0+0.22,      nCol+'bb');
+      grad.addColorStop(1.00,         nCol+endA);
+    } else {
+      // 0→f0 très dim, f0→f1 medium dim, f1→1 bright
+      const f0 = radii[0]/r;           // ≈ 0.560
+      const f1 = radii[1]/r;           // ≈ 0.780
+      grad.addColorStop(f0*0.35,      nCol+'20');
+      grad.addColorStop(f0-0.02,      nCol+'28');
+      grad.addColorStop(f0+0.04,      nCol+'3c');
+      grad.addColorStop(f1-0.03,      nCol+'3c');
+      grad.addColorStop(f1+0.07,      nCol+'88');
+      grad.addColorStop(f1+0.20,      nCol+'bb');
+      grad.addColorStop(1.00,         nCol+endA);
+    }
 
     ctx.save();
-    if(state[li].muted){
-      ctx.globalAlpha = 0.12; // muté → aiguille quasi-invisible
-    } else if(!isMeasure){
-      ctx.globalAlpha = [1.0, 0.68, 0.40][li]; // superposition : couche 1 domine, 3 s'efface
-    }
+    if(state[li].muted) ctx.globalAlpha = 0.12;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
     ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
     ctx.lineCap = 'round'; ctx.stroke();
