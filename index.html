@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.27</span>
+    <span class="app-version">v3.20.28</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2697,7 +2697,7 @@ let state=LAYERS.map(()=>({
   patternId:null,
   stepPos:0, nextStepTime:0, startTime:0,
   muted:false, halfOn:false, doubleOn:false, ternOn:false,
-  pendingHalf:false, pendingDouble:false, pendingClear:false,
+  pendingHalf:false, pendingDouble:false, pendingClear:false, pendingTern:null,
   nextSpeedDir:'double',
   wrapped:false,
   recArmed:false, recording:false, recMode:'replace', originalPattern:null, prevPattern:null, recBuffer:null,
@@ -3412,13 +3412,16 @@ function scheduler(){
           });
           updateGlobalSpeedBtns();
         }
-        if(state[li].pendingClear||state[li].pendingHalf||state[li].pendingDouble){
+        if(state[li].pendingClear||state[li].pendingHalf||state[li].pendingDouble||state[li].pendingTern!=null){
           // Calcul totalU avant/après pour recalibrer l'aiguille vue linéaire (évite saut visuel)
           const _calcTU=()=>{let u=0;LAYERS.forEach((_,lj)=>{if(state[lj].pattern.length>0){const m=state[lj].doubleOn?2:state[lj].halfOn?0.5:1,tf=state[lj].ternOn?2/3:1,s=Math.round(6*tf/m);const c=state[lj].pattern.length*s;u=u>0?lcm(u,c):c;}});return u;};
           const _oldTU=_calcTU();
           if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
           if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
           if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
+          if(state[li].pendingTern!=null){state[li].ternOn=state[li].pendingTern;state[li].pendingTern=null;}
+          // Recalibrer startTime → le visuel repart de zéro au même moment que l'audio
+          state[li].startTime=state[li].nextStepTime;
           const _newTU=_calcTU();
           if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
             const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
@@ -4183,7 +4186,7 @@ function _applyPendingGroove(){
       state[li].stepPos=0;state[li].nextStepTime=schedT;state[li].startTime=schedT;
       state[li].muted=_wasMutedAll||(gl.mute||false);
       state[li].halfOn=gl.halfOn||false;state[li].doubleOn=gl.doubleOn||false;state[li].ternOn=gl.ternOn||false;
-      state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=false;
+      state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=false;state[li].pendingTern=null;
       state[li].nextSpeedDir=gl.doubleOn?'half':'double';state[li].wrapped=false;
     }catch(e){console.error('_applyPendingGroove L'+li+':',e);}
   });
@@ -4295,6 +4298,7 @@ function applyGroove(grooveId){
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
+    state[li].pendingTern=null;
     state[li].nextSpeedDir=gl.doubleOn?'half':'double';
     state[li].wrapped=false;
     }catch(e){console.error('applyGroove L'+li+':',e);}
@@ -6633,7 +6637,7 @@ function buildLayers(){
       if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
       if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
       unitSel.value=nextDbl?'×2':nextHalf?'÷2':'=';
-      if(bTern){bTern.classList.toggle('on',state[li].ternOn);bTern.style.color='';}
+      if(bTern){const _td=state[li].pendingTern!=null?state[li].pendingTern:state[li].ternOn;bTern.classList.toggle('on',_td);bTern.style.color='';}
       if(_updateStepUnitLbl)_updateStepUnitLbl();
       updateStepSeqInfo(li);
     };
@@ -6650,7 +6654,11 @@ function buildLayers(){
       _syncPadToPattern(li);
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
-    bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
+    bTern.addEventListener('click',()=>{
+      if(!playing){state[li].ternOn=!state[li].ternOn;state[li].pendingTern=null;}
+      else{state[li].pendingTern=state[li].pendingTern!=null?!state[li].pendingTern:!state[li].ternOn;}
+      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
+    });
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
 
