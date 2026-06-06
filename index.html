@@ -1179,7 +1179,7 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
-  body.view-circle.circle-linear #circle-view{flex:0 0 calc(100% - 4px);width:calc(100% - 4px)}
+  body.view-circle.circle-linear #circle-view{flex:0 0 calc(100% - 4px);width:calc(100% - 4px);padding-bottom:4px}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
   /* view-mode-bar suit section-groove dans le flex-wrap */
   body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px);flex-shrink:0}
@@ -1543,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.17</span>
+    <span class="app-version">v3.20.18</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8990,14 +8990,12 @@ function resizeCanvas(){
   const isDesktop2 = window.innerWidth >= 600;
   if(circleModeView==='linear'){
     const canvW=Math.max(160, Math.min(isDesktop2?480:frameW2-16, frameW2-8));
-    const canvH=96;
+    const canvH=110;
     cv.width=canvW; cv.height=canvH;
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    const toggleEl2=document.getElementById('circle-mode-toggle');
-    const toggleH2=toggleEl2?(toggleEl2.offsetHeight+4):0;
-    wrap.style.height=(canvH+toggleH2)+'px';
+    wrap.style.height=''; // hauteur auto : circle-view s'adapte à ses enfants (canvas + lci bar)
     drawCircles(); return;
   }
   const dotR = 10;
