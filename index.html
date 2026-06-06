@@ -662,7 +662,8 @@ body.dark-mode .enc-toc-item:hover{background:#353330;color:#ddd;border-color:#6
 .nav-tab.active{color:#9A7010;background:rgba(200,150,26,.1)}
 #nav-tab-metro.active{background:rgba(58,140,110,.2);color:#1C6048}
 #nav-tab-sons.active{background:rgba(74,127,165,.2);color:#1A3D5A}
-.nav-tab .nav-tab-ico{font-size:18px;line-height:1.1}
+.nav-tab .nav-tab-ico{font-size:18px;line-height:1.1;position:relative;display:inline-block}
+body.metro-muted #nav-tab-metro .nav-tab-ico::after{content:'';position:absolute;top:50%;left:50%;width:130%;height:2px;background:rgba(140,140,140,.78);transform:translate(-50%,-50%) rotate(-45deg);border-radius:1px;pointer-events:none}
 .nav-tab .nav-tab-lbl{font-size:8.5px;font-weight:700;letter-spacing:.01em}
 .nav-play-wrap{display:flex;align-items:center;justify-content:center;padding:0 6px;flex-shrink:0}
 .nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(192,57,43,.1);color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
@@ -1151,7 +1152,7 @@ body.dark-mode #lci-range.lci-interactive{color:#A090D0}
 body.dark-mode #lci-range.lci-interactive:hover{color:#C0B0F0}
 /* ── OFF state indicators ─────────────────────────────────────────────── */
 .nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none;margin-top:1px}
-body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:block}
+body.band-muted .nav-tab-off-badge.sons-badge{display:block}
 body.band-muted .band-instr-btn{opacity:.28;filter:grayscale(.6);pointer-events:none}
 .metro-off .mpv-tog-accent-group .mpv-word-btn{opacity:.28}
 body.metro-muted #metro-pattern-viz{opacity:.28;pointer-events:none}
@@ -1555,7 +1556,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.30</span>
+    <span class="app-version">v3.20.31</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
