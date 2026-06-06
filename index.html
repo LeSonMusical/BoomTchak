@@ -1138,11 +1138,11 @@ body.dark-mode .mpi-btn{color:#A090D0}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
-#linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-top:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0}
+#linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
 #lci-info,#lci-range{flex:1;font-size:11px;color:#888;white-space:nowrap}
 #lci-range{text-align:right}
 #lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
-body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-top-color:rgba(200,150,26,0.15)}
+body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
 body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
@@ -1543,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.13</span>
+    <span class="app-version">v3.20.14</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1832,6 +1832,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <div id="canvas-view-bar"></div>
+    <!-- Barre info/pagination vue Cycle linéaire (au-dessus du canvas) -->
+    <div id="linear-cycle-indicator" style="display:none">
+      <span id="lci-info"></span>
+      <div id="lci-nav-row">
+        <button class="mpi-btn" id="lci-prev">◀</button>
+        <span id="lci-label"></span>
+        <button class="mpi-btn" id="lci-next">▶</button>
+      </div>
+      <span id="lci-range"></span>
+    </div>
     <canvas id="rhythm-canvas"></canvas>
     <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
     <div id="measure-page-indicator" style="display:none">
@@ -1846,17 +1856,6 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <span class="mpi-layer c-noise" id="mpi-l2"></span>
       </div>
     </div>
-  </div>
-  <!-- Barre info/pagination vue Cycle linéaire -->
-  <div id="linear-cycle-indicator" style="display:none">
-    <span id="lci-info"></span>
-    <div id="lci-nav-row">
-      <button class="mpi-btn" id="lci-prev">◀</button>
-      <span id="lci-label"></span>
-      <button class="mpi-btn" id="lci-next">▶</button>
-    </div>
-    <span id="lci-range"></span>
-  </div>
   <div class="hdivider"></div>
 </div>
 
@@ -9593,11 +9592,9 @@ function drawLinear(){
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
     ctx.lineWidth=m===mStart?1.5:0.75; ctx.stroke();
-    if(m>0){
-      ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-      ctx.fillStyle=isDark?'#555':'#bbb';
-      ctx.fillText('M'+m, x, marginY-1);
-    }
+    ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillStyle=isDark?'#555':'#bbb';
+    ctx.fillText('M'+(m+1), x, marginY-1);
   }
   // Steps + indicateurs de répétition (donut comme vue mesure)
   [0,1,2].forEach(li=>{
