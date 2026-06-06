@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.23</span>
+    <span class="app-version">v3.20.24</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9308,6 +9308,52 @@ function drawCircles(){
       }
       if(isNew) ctx.globalAlpha=1;
     }
+
+    // Aiguille interleaved : dessinée APRÈS les dots du ring li, AVANT le ring intérieur suivant
+    // Les rings plus intérieurs dessinés après seront naturellement au-dessus de cette aiguille
+    {
+      const rN=radii[li], colN=CIRCLE_COLORS[li];
+      const angN=-Math.PI/2+fracs[li]*2*Math.PI;
+      const exN=cx+rN*Math.cos(angN), eyN=cy+rN*Math.sin(angN);
+      const isMeas=circleModeView==='measure';
+      const nCol=isMeas?'#C8961A':colN.fill;
+      const endA=isMeas?'cc':'ff';
+      const grad=ctx.createLinearGradient(cx,cy,exN,eyN);
+      grad.addColorStop(0,nCol+'00');
+      if(li===0){
+        // Zone propre dès le centre — fade-in lissé
+        grad.addColorStop(0.30,nCol+'55');
+        grad.addColorStop(0.60,nCol+'aa');
+        grad.addColorStop(1.00,nCol+endA);
+      } else if(li===1){
+        const f0=radii[0]/rN; // ≈ 0.718 — frontière zone ring0/ring1
+        // dim lissé dans zone ring0, puis rampe vers plein dans zone propre
+        grad.addColorStop(0.10,    nCol+'30');
+        grad.addColorStop(f0-0.14, nCol+'38');
+        grad.addColorStop(f0-0.01, nCol+'42');
+        grad.addColorStop(f0+0.07, nCol+'70');
+        grad.addColorStop(f0+0.20, nCol+'aa');
+        grad.addColorStop(1.00,    nCol+endA);
+      } else {
+        const f0=radii[0]/rN, f1=radii[1]/rN; // ≈ 0.560 et 0.780
+        // très dim zone ring0, medium dim zone ring1, rampe plein dans zone propre
+        grad.addColorStop(0.06,    nCol+'22');
+        grad.addColorStop(f0-0.11, nCol+'30');
+        grad.addColorStop(f0,      nCol+'3c');
+        grad.addColorStop(f0+0.06, nCol+'48');
+        grad.addColorStop(f1-0.09, nCol+'50');
+        grad.addColorStop(f1-0.01, nCol+'58');
+        grad.addColorStop(f1+0.07, nCol+'80');
+        grad.addColorStop(f1+0.20, nCol+'b0');
+        grad.addColorStop(1.00,    nCol+endA);
+      }
+      ctx.save();
+      if(state[li].muted) ctx.globalAlpha=0.12;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(exN,eyN);
+      ctx.strokeStyle=grad; ctx.lineWidth=isMeas?2.5:3;
+      ctx.lineCap='round'; ctx.stroke();
+      ctx.restore();
+    }
   });
 
   // Vue mesure : icônes ↺ — supprimé (v3.17.5)
@@ -9435,52 +9481,7 @@ function drawCircles(){
     }
   }
 
-  // Aiguilles — profondeur : pleine couleur dans la zone du layer, atténuée dans les zones intérieures
-  // Chaque needle li traverse les rings de 0..li-1 avant le sien → dégradé par zone
-  LAYERS.forEach((_, li)=>{
-    const r = radii[li];
-    const col = CIRCLE_COLORS[li];
-    const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
-    const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
-    const isMeasure = circleModeView === 'measure';
-    const nCol = isMeasure ? '#C8961A' : col.fill;
-    const endA = isMeasure ? 'cc' : 'ff';
-
-    const grad = ctx.createLinearGradient(cx, cy, ex, ey);
-    grad.addColorStop(0, nCol+'00');
-
-    if(li === 0){
-      // Zone propre dès le départ : fade in simple
-      grad.addColorStop(0.40, nCol+'88');
-      grad.addColorStop(1.00, nCol+endA);
-    } else if(li === 1){
-      // 0→f0 = zone ring0 (dim) ; f0→1 = zone propre (bright)
-      const f0 = radii[0]/r;           // ≈ 0.718
-      grad.addColorStop(f0*0.35,      nCol+'28');
-      grad.addColorStop(f0-0.03,      nCol+'28');
-      grad.addColorStop(f0+0.08,      nCol+'88');
-      grad.addColorStop(f0+0.22,      nCol+'bb');
-      grad.addColorStop(1.00,         nCol+endA);
-    } else {
-      // 0→f0 très dim, f0→f1 medium dim, f1→1 bright
-      const f0 = radii[0]/r;           // ≈ 0.560
-      const f1 = radii[1]/r;           // ≈ 0.780
-      grad.addColorStop(f0*0.35,      nCol+'20');
-      grad.addColorStop(f0-0.02,      nCol+'28');
-      grad.addColorStop(f0+0.04,      nCol+'3c');
-      grad.addColorStop(f1-0.03,      nCol+'3c');
-      grad.addColorStop(f1+0.07,      nCol+'88');
-      grad.addColorStop(f1+0.20,      nCol+'bb');
-      grad.addColorStop(1.00,         nCol+endA);
-    }
-
-    ctx.save();
-    if(state[li].muted) ctx.globalAlpha = 0.12;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
-    ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
-    ctx.lineCap = 'round'; ctx.stroke();
-    ctx.restore();
-  });
+  // (aiguilles dessinées en interleaved dans le loop [2,1,0] ci-dessus pour l'effet de profondeur)
 
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
