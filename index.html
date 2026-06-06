@@ -1145,6 +1145,14 @@ body.dark-mode .mpi-dot{color:#9080C0}
 #lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
 body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
 body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
+/* ── OFF state indicators ─────────────────────────────────────────────── */
+.nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none}
+body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:inline}
+body.band-muted .band-instr-btn{opacity:.28;filter:grayscale(.6);pointer-events:none}
+.metro-off .mpv-tog-accent-group .mpv-word-btn{opacity:.28}
+.sbar-off-badge{font-size:8px;font-weight:700;color:#d94040;margin-left:3px;display:none;line-height:1}
+body.band-muted .band-bar .sbar-off-badge,body.metro-muted .temps-bar .sbar-off-badge{display:inline}
+body.dark-mode .sbar-off-badge{color:#f06060}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1544,7 +1552,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.20</span>
+    <span class="app-version">v3.20.21</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1641,7 +1649,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
     <div class="sbar-row1">
-      <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
+      <button class="btn-metro-main" id="btn-metro-main">⏱️</button><span class="sbar-off-badge">off</span>
       <div class="sbar-center">
         <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
         <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
@@ -1744,7 +1752,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
             <span style="flex:1">moyen</span>
             <span style="flex:1">faible</span>
           </div>
-          <div style="display:flex;gap:2px">
+          <div class="mpv-tog-accent-group" style="display:flex;gap:2px">
             <button class="mpv-word-btn on" id="mpv-tog-A" style="flex:1;padding:3px 2px;min-height:24px">^</button>
             <button class="mpv-word-btn on" id="mpv-tog-P" style="flex:1;padding:3px 2px;min-height:24px">&gt;</button>
             <button class="mpv-word-btn" id="mpv-tog-p" style="flex:1;padding:3px 2px;min-height:24px">-</button>
@@ -2001,11 +2009,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Left pair: Tic-Tac + Sons -->
   <div class="nav-pair nav-pair-left">
     <button class="nav-tab" id="nav-tab-metro">
-      <span class="nav-tab-ico">⏱️</span>
+      <span class="nav-tab-ico">⏱️</span><span class="nav-tab-off-badge metro-badge">off</span>
       <span class="nav-tab-lbl">Tic-Tac</span>
     </button>
     <button class="nav-tab" id="nav-tab-sons">
-      <span class="nav-tab-ico">🔊</span>
+      <span class="nav-tab-ico">🔊</span><span class="nav-tab-off-badge sons-badge">off</span>
       <span class="nav-tab-lbl">Sons</span>
     </button>
   </div>
@@ -5792,6 +5800,8 @@ function buildBandSection(){
   const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';leftCol.title='Mute/Unmute sons';
   const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent=bandMuted?'🔇':'🔊';
   leftCol.appendChild(lblIco);
+  const sonsOffBadge=document.createElement('span');sonsOffBadge.className='sbar-off-badge';sonsOffBadge.textContent='off';
+  leftCol.appendChild(sonsOffBadge);
   row1.appendChild(leftCol);
 
   // Col centre : ◀ [preset] ▶ 💾
@@ -8871,8 +8881,11 @@ function _syncBtnVolAllMuted(){
 }
 function _applyBandMute(muted){
   bandMuted=muted;
+  document.body.classList.toggle('band-muted',muted);
   const icon=document.getElementById('sons-icon');
   if(icon)icon.textContent=muted?'🔇':'🔊';
+  const navIco=document.querySelector('#nav-tab-sons .nav-tab-ico');
+  if(navIco)navIco.textContent=muted?'🔇':'🔊';
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('muted',muted);
   const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
@@ -8881,8 +8894,11 @@ function _applyBandMute(muted){
 }
 function setMetroGlobal(on){
   metro.muted=!on;
+  document.body.classList.toggle('metro-muted',!on);
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
+  const navIco=document.querySelector('#nav-tab-metro .nav-tab-ico');
+  if(navIco)navIco.textContent=on?'⏱️':'🔕';
   const btnTop=document.getElementById('btn-tempo');
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
@@ -9919,9 +9935,8 @@ function _moveRow2ToStepView(){
 // ── _updateMeasurePageIndicator(globalPage) ────────────────────────────────
 function _updateMeasurePageIndicator(globalPage){
   const el=document.getElementById('measure-page-indicator'); if(!el) return;
-  const show=circleModeView==='measure' && layersOuverts && circleView;
-  el.style.display=show?'flex':'none';
-  if(!show) return;
+  const baseShow=circleModeView==='measure' && layersOuverts && circleView;
+  if(!baseShow){el.style.display='none';return;}
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
   let maxPages=1;
@@ -9932,6 +9947,8 @@ function _updateMeasurePageIndicator(globalPage){
     maxPages=lcm(maxPages,n/gcd(n,Math.max(1,spm_li)));
   });
   maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
+  if(maxPages<=1){el.style.display='none';return;}
+  el.style.display='flex';
   const activePage=globalPage%maxPages;
   // Gauche : "Cycle · N mes"
   const infoEl=document.getElementById('mpi-info');
@@ -14524,9 +14541,19 @@ function attachEvents(){
   });
 
   // ── Nav tabs ──
-  document.getElementById('nav-tab-metro').addEventListener('click',()=>setNavSection('metro'));
-  document.getElementById('nav-tab-sons').addEventListener('click',()=>setNavSection('sons'));
-  document.getElementById('nav-tab-encyclo').addEventListener('click',()=>setNavSection('encyclo'));
+  (()=>{
+    function attachNavTabLongPress(id,onShort,onLong){
+      const el=document.getElementById(id); if(!el) return;
+      let lt=null,fired=false;
+      el.addEventListener('pointerdown',()=>{fired=false;lt=setTimeout(()=>{lt=null;fired=true;onLong();},450);});
+      el.addEventListener('pointercancel',()=>{if(lt){clearTimeout(lt);lt=null;}});
+      el.addEventListener('pointerup',()=>{if(lt){clearTimeout(lt);lt=null;}});
+      el.addEventListener('click',()=>{if(fired){fired=false;return;}onShort();});
+    }
+    attachNavTabLongPress('nav-tab-metro',()=>setNavSection('metro'),()=>setMetroGlobal(!!metro.muted));
+    attachNavTabLongPress('nav-tab-sons',()=>setNavSection('sons'),()=>_applyBandMute(!bandMuted));
+    document.getElementById('nav-tab-encyclo').addEventListener('click',()=>setNavSection('encyclo'));
+  })();
 
   // ── Play ──
   document.getElementById('btn-play').addEventListener('click',togglePlay);
@@ -14796,7 +14823,9 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 _initEncycloPanel();
 // Sync état initial métro (sans overlay)
-(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);})();
+(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const navIco=document.querySelector('#nav-tab-metro .nav-tab-ico');if(navIco)navIco.textContent=on?'⏱️':'🔕';})();
+// Sync état initial band mute
+if(bandMuted){document.body.classList.add('band-muted');const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent='🔇';}
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 // ── Init navigation pages vue Mesure ──────────────────────────────────────
