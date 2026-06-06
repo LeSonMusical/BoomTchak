@@ -1543,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.16</span>
+    <span class="app-version">v3.20.17</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6579,6 +6579,7 @@ function buildLayers(){
     const _reszMark=()=>{
       nPas.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
+      _updateLinearPageIndicator();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
     };
@@ -9561,14 +9562,14 @@ function drawLinear(){
   const {pageU:CAP_U,numPages}=_getLinearCycleInfo();
   const isCapped=numPages>1;
   // Page active : auto-suivi pendant la lecture, page manuelle sinon
-  let activePage=_linearCyclePage;
+  let activePage=Math.min(_linearCyclePage,Math.max(0,numPages-1)); // clamp si cycle réduit
   let cycElU=0;
   if(playing){
     const spmP=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     cycElU=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmP)*DENOM)%totalU+totalU)%totalU;
     activePage=Math.floor(cycElU/CAP_U);
-    _linearCyclePage=activePage; // sync pour l'indicateur DOM
   }
+  _linearCyclePage=activePage; // sync pour l'indicateur DOM
   const startU=activePage*CAP_U;
   const dispU=Math.min(CAP_U,totalU-startU);
   const marginX=8, marginY=16;
