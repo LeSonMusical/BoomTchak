@@ -1138,6 +1138,8 @@ body.dark-mode .mpi-btn{color:#A090D0}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
+#linear-cycle-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+#lci-nav-row{display:none;position:absolute;top:3px;justify-content:center;align-items:center;gap:0;pointer-events:auto}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1537,7 +1539,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.11</span>
+    <span class="app-version">v3.20.12</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1838,6 +1840,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <span class="mpi-layer c-low"   id="mpi-l0"></span>
         <span class="mpi-layer c-high"  id="mpi-l1"></span>
         <span class="mpi-layer c-noise" id="mpi-l2"></span>
+      </div>
+    </div>
+    <!-- Indicateur de page (vue Cycle linéaire, cycle > 24 pas) -->
+    <div id="linear-cycle-indicator" style="display:none">
+      <div id="lci-nav-row">
+        <button class="mpi-btn" id="lci-prev">◀</button>
+        <span id="lci-label"></span>
+        <button class="mpi-btn" id="lci-next">▶</button>
       </div>
     </div>
   </div>
@@ -8938,6 +8948,7 @@ function _getLinearMaxPages(){
   return Math.ceil(totalU/CAP_U);
 }
 let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
+let _linearTapFlash  = null;   // idem pour vue Cycle linéaire
 let _mirrorFlashRaf = null;
 let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
@@ -9056,6 +9067,53 @@ function _startMirrorFlash(li,si){
     drawCircles();_mirrorFlashRaf=requestAnimationFrame(_go);
   };
   _mirrorFlashRaf=requestAnimationFrame(_go);
+}
+function _startLinearFlash(li,si){
+  _linearTapFlash={li,si,startTime:performance.now(),endTime:performance.now()+480};
+  if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
+  const _go=()=>{
+    if(!_linearTapFlash||performance.now()>=_linearTapFlash.endTime){
+      _linearTapFlash=null;drawCircles();_mirrorFlashRaf=null;return;
+    }
+    drawCircles();_mirrorFlashRaf=requestAnimationFrame(_go);
+  };
+  _mirrorFlashRaf=requestAnimationFrame(_go);
+}
+function _updateLinearPageIndicator(){
+  const container=document.getElementById('linear-cycle-indicator');
+  if(!container) return;
+  const show=circleModeView==='linear' && layersOuverts && circleView;
+  container.style.display=show?'block':'none';
+  if(!show) return;
+  const maxPages=_getLinearMaxPages();
+  const navRow=document.getElementById('lci-nav-row');
+  if(navRow){
+    const rcv=document.getElementById('rhythm-canvas');
+    const lciEl=container;
+    let leftPx='50%', tr='translateX(-50%)';
+    if(rcv&&lciEl){
+      const rcvR=rcv.getBoundingClientRect(), lciR=lciEl.getBoundingClientRect();
+      if(lciR.width>0){leftPx=Math.round(rcvR.left-lciR.left+rcvR.width/2)+'px';}
+    }
+    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:3px;left:'+leftPx+';transform:translateX(-50%);justify-content:center;align-items:center;gap:0;pointer-events:auto';
+  }
+  if(maxPages>1){
+    const activePage=Math.min(_linearCyclePage,maxPages-1);
+    const lbl=document.getElementById('lci-label');
+    if(lbl){
+      lbl.innerHTML='';
+      for(let p=0;p<maxPages;p++){
+        const d=document.createElement('span');
+        d.className='mpi-dot'+(p===activePage?' active':'');
+        d.textContent=p===activePage?'●':'○';
+        lbl.appendChild(d);
+      }
+    }
+    const prev=document.getElementById('lci-prev');
+    const next=document.getElementById('lci-next');
+    if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
+    if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
+  }
 }
 
 function drawCircles(){
@@ -9505,34 +9563,6 @@ function drawLinear(){
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
   const half=DENOM/2;
-  // Label de page + flèches jaunes ◀ ▶ (cliquables)
-  _circleBadges=[];
-  if(isCapped){
-    const totalSteps=Math.round(totalU/DENOM);
-    const p1=Math.round(startU/DENOM)+1;
-    const p2=Math.min(totalSteps,Math.round((startU+dispU)/DENOM));
-    const label=`${p1}–${p2} / ${totalSteps} pas`;
-    ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillStyle=isDark?'#C89040':'#8B6000';
-    ctx.fillText(label, W/2, 2);
-    // Flèches ◀ ▶
-    const arrowY=0, arrowH=14;
-    const lw=ctx.measureText(label).width;
-    const arrowGap=4;
-    const lArrowX=W/2-lw/2-arrowGap-16, rArrowX=W/2+lw/2+arrowGap;
-    const arrowW=16;
-    ctx.font='bold 10px sans-serif'; ctx.textBaseline='top';
-    if(activePage>0){
-      ctx.fillStyle='#C8A820'; ctx.textAlign='right';
-      ctx.fillText('◀', lArrowX+arrowW, arrowY+2);
-      _circleBadges.push({x:lArrowX,y:arrowY,w:arrowW,h:arrowH,action:()=>{_linearCyclePage=Math.max(0,_linearCyclePage-1);drawCircles();}});
-    }
-    if(activePage<numPages-1){
-      ctx.fillStyle='#C8A820'; ctx.textAlign='left';
-      ctx.fillText('▶', rArrowX, arrowY+2);
-      _circleBadges.push({x:rArrowX,y:arrowY,w:arrowW,h:arrowH,action:()=>{_linearCyclePage=Math.min(numPages-1,_linearCyclePage+1);drawCircles();}});
-    }
-  }
   // Lignes de temps (beats)
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
@@ -9612,24 +9642,34 @@ function drawLinear(){
           ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
         }
         if(isNewL) ctx.globalAlpha=1;
+        // Flash miroir linéaire : halo sur toutes les occurrences du step édité
+        if(_linearTapFlash && _linearTapFlash.li===li && _linearTapFlash.si===si){
+          const _pn=performance.now(),_pr=Math.min(1,(_pn-_linearTapFlash.startTime)/450);
+          const _fa=0.85*(1-_pr), _fr=(isOn?dotR:dotR*0.72)+1.5+_pr*5;
+          ctx.beginPath(); ctx.arc(x,y,_fr,0,2*Math.PI);
+          ctx.strokeStyle=isDark?`rgba(255,210,70,${_fa})`:`rgba(130,50,210,${_fa})`;
+          ctx.lineWidth=2.5; ctx.stroke();
+        }
       }
     }
   });
-  // Aiguille + highlight step courant
+  // Aiguille + highlight step courant (anneau blanc comme vue mesure)
   if(playing){
     [0,1,2].forEach(li=>{
       const n=state[li].pattern.length; if(!n) return;
       const y=marginY+rowH*li+rowH/2;
-      const col=CIRCLE_COLORS[li], isMuted=state[li].muted;
       const cu=cycU[li], s=su[li];
+      const isMuted=state[li].muted;
       const curSiRaw=Math.floor(cycElU/s);
       const absU=curSiRaw*s;
       if(absU<startU||absU>=startU+dispU) return;
       const curSi=Math.floor((cycElU%cu)/s)%n;
-      if(state[li].pattern[curSi]==='.') return;
+      const curStep=state[li].pattern[curSi];
+      if(curStep==='.'||isMuted) return;
+      const dotSz=curStep==='X'?dotR:dotR*0.72;
       const x=marginX+uW*(absU-startU+half);
-      ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
-      ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x,y,dotSz,0,2*Math.PI);
+      ctx.strokeStyle='rgba(255,255,255,0.82)'; ctx.lineWidth=2; ctx.stroke();
     });
     const needleU=cycElU-startU;
     if(needleU>=0&&needleU<dispU){
@@ -9638,6 +9678,8 @@ function drawLinear(){
       ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
     }
   }
+  // Indicateur de page DOM (flèches + dots)
+  _updateLinearPageIndicator();
 }
 
 function circleHitTest(x, y){
@@ -9788,12 +9830,20 @@ function setupCanvasInteraction(){
     const STEP_CYCLE={'.':'X','X':'x','x':'.'};
     const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
     state[li].pattern[si]=newVal;
-    // Flash miroir : signaler visuellement toutes les occurrences du step en vue mesure
+    // Flash miroir : toutes les occurrences du step (vue mesure et vue cycle linéaire)
     if(circleModeView==='measure'){
       const _spmF=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
       const _msF=(60/_spmF)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
       const _slF=Math.max(1,Math.round(_msF/getBeatSec(li)));
       if(state[li].pattern.length<=_slF&&Math.ceil(_slF/state[li].pattern.length)>=2) _startMirrorFlash(li,si);
+    } else if(circleModeView==='linear'){
+      // Flash si le pattern se répète au moins 2 fois dans le cycle PPCM
+      const DENOM=6;
+      const sL=state[li].doubleOn?3:state[li].halfOn?12:state[li].ternOn?4:6;
+      const cuL=state[li].pattern.length*sL;
+      let totUL=0;
+      LAYERS.forEach((_,lj)=>{const sj=state[lj].doubleOn?3:state[lj].halfOn?12:state[lj].ternOn?4:6;const cj=state[lj].pattern.length*sj;if(cj>0) totUL=totUL>0?lcm(totUL,cj):cj;});
+      if(cuL>0&&Math.ceil(totUL/cuL)>=2) _startLinearFlash(li,si);
     }
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
@@ -9802,13 +9852,7 @@ function setupCanvasInteraction(){
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
   cv.addEventListener('mousemove',e=>{
-    if(circleModeView==='linear'){
-      const rect2=cv.getBoundingClientRect();
-      const bx=(e.clientX-rect2.left)*(cv.width/rect2.width), by=(e.clientY-rect2.top)*(cv.height/rect2.height);
-      const onBadge=_circleBadges.some(b=>bx>=b.x&&bx<=b.x+b.w&&by>=b.y&&by<=b.y+b.h);
-      cv.style.cursor=onBadge?'pointer':'';
-      return;
-    }
+    if(circleModeView==='linear'){cv.style.cursor='';return;}
     const rect=cv.getBoundingClientRect();
     const _cx=(e.clientX-rect.left)*(cv.width/rect.width);
     cv.style.cursor=(_cx<CIRC_LABEL_W||(circleModeView==='measure'&&_cx>cv.width-72))?'pointer':'';
@@ -10003,10 +10047,11 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); _updateLinearPageIndicator(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     _updateMeasurePageIndicator(_measureViewPage); // cache l'indicateur hors vue cercle
+    _updateLinearPageIndicator(); // cache l'indicateur cycle linéaire hors vue
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
     if(isStepSeq) _moveRow2ToStepView();
@@ -14826,6 +14871,14 @@ setView('circle');                                             // Vue circulaire
   });
   document.getElementById('mpi-next')?.addEventListener('click',()=>{
     _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
+    drawCircles();
+  });
+  document.getElementById('lci-prev')?.addEventListener('click',()=>{
+    _linearCyclePage=Math.max(0,_linearCyclePage-1);
+    drawCircles();
+  });
+  document.getElementById('lci-next')?.addEventListener('click',()=>{
+    _linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);
     drawCircles();
   });
 }());
