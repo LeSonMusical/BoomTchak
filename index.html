@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.9</span>
+    <span class="app-version">v3.20.10</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4241,6 +4241,7 @@ function applyGroove(grooveId){
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
+  _linearCyclePage=0;
   grooveDirty=false; metroDirty=false; bandDirty=false; updateGrooveSaveBtn();
   updateGrooveNameTopBar();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
@@ -8913,18 +8914,9 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
+let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
 let _rightStripPage = [-1,-1,-1]; // par layer : -1 = tout, 0..n-1 = mesure spécifique
-let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed)
-function _getLinearMaxPages(){
-  const DENOM=6, CAP_U=64*DENOM;
-  const su=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
-  const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
-  let totalU=0;
-  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
-  if(!totalU) totalU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
-  return Math.ceil(totalU/CAP_U);
-}
 function _getMeasureMaxPages(){
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
@@ -8936,6 +8928,15 @@ function _getMeasureMaxPages(){
     if(pages>maxP)maxP=pages;
   });
   return maxP;
+}
+function _getLinearMaxPages(){
+  const DENOM=6, CAP_U=48*DENOM;
+  const su=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
+  const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
+  let totalU=0;
+  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
+  if(!totalU) totalU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
+  return Math.ceil(totalU/CAP_U);
 }
 let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
 let _mirrorFlashRaf = null;
@@ -9490,29 +9491,27 @@ function drawLinear(){
   let totalU=0;
   LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
   if(!totalU) totalU=measU;
-  const CAP_U=64*DENOM;
+  const CAP_U=48*DENOM;
   const numPages=Math.ceil(totalU/CAP_U);
-  // En lecture : la page suit automatiquement l'aiguille
+  // Page active : auto-suivi pendant la lecture, page manuelle sinon
   let activePage=_linearCyclePage;
+  let cycElU=0;
   if(playing){
     const spmP=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     const nowP=getAC().currentTime-prefs.audioOffset;
     const elUP=((nowP-linearCycleStartTime)/(60/spmP)*DENOM);
-    const cycElUP=((elUP%totalU)+totalU)%totalU;
-    activePage=Math.floor(cycElUP/CAP_U);
+    cycElU=((elUP%totalU)+totalU)%totalU;
+    activePage=Math.floor(cycElU/CAP_U);
   }
   const startU=activePage*CAP_U;
-  const isCapped=numPages>1;
   const dispU=Math.min(CAP_U,totalU-startU);
-  const numMeasures=Math.ceil((startU+dispU)/measU)-Math.floor(startU/measU);
+  const isCapped=numPages>1;
   const marginX=8, marginY=16;
   const rowH=Math.floor((H-2*marginY)/3);
   const uW=(W-2*marginX)/dispU; // pixels par unité
   // dotR basé sur l'unité la plus petite
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
-  // half = DENOM/2 : décalage universel pour aligner marqueurs ET dots sur la grille de base
-  // (aiguille : cycElU+DENOM/2 ; dots : uPos+DENOM/2 — indépendant de la vitesse du layer)
   const half=DENOM/2;
   // Label de page (en haut, centré) quand le cycle dépasse la page
   if(isCapped){
@@ -9521,58 +9520,73 @@ function drawLinear(){
     const p2=Math.min(totalSteps,Math.round((startU+dispU)/DENOM));
     ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillStyle=isDark?'#C89040':'#8B6000';
-    ctx.fillText(`Cycle de ${totalSteps} pas — affichés ${p1}–${p2}  ◀ glisser ▶`, W/2, 2);
+    ctx.fillText(`Cycle ${totalSteps} pas — ${p1}–${p2} (page ${activePage+1}/${numPages})`, W/2, 2);
   }
   // Lignes de temps (beats) — légères, entre les séparateurs de mesure
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
-    const bStart=Math.floor(startU/beatU), bEnd=Math.ceil((startU+dispU)/beatU)+1;
-    for(let b=bStart;b<=bEnd;b++){
-      const absU=b*beatU; if(absU%measU===0)continue;
-      if(absU<startU||absU>=startU+dispU)continue;
-      const x=marginX+uW*(absU-startU+half); if(x>W-marginX+2)break;
+    const firstBeat=Math.ceil(startU/beatU);
+    const lastBeat=Math.ceil((startU+dispU)/beatU);
+    for(let b=firstBeat;b<=lastBeat;b++){
+      if(b*beatU%measU===0)continue;
+      const x=marginX+uW*(b*beatU-startU+half); if(x<marginX-2||x>W-marginX+2)continue;
       ctx.beginPath();ctx.moveTo(x,marginY-2);ctx.lineTo(x,H-marginY+2);
       ctx.strokeStyle=isDark?'#373533':'#e0dcd4';ctx.lineWidth=0.5;ctx.stroke();
     }
   }
-  // Séparateurs de mesures — positions absolues décalées par startU
-  const mStart=Math.floor(startU/measU), mEnd=Math.ceil((startU+dispU)/measU);
-  for(let m=mStart;m<=mEnd;m++){
-    const absU=m*measU; if(absU<startU) continue;
-    const x=marginX+uW*(absU-startU+half); if(x>W-marginX+2) break;
+  // Séparateurs de mesures
+  const firstMeas=Math.floor(startU/measU), lastMeas=Math.ceil((startU+dispU)/measU);
+  for(let m=firstMeas;m<=lastMeas;m++){
+    const x=marginX+uW*(m*measU-startU+half); if(x<marginX-2||x>W-marginX+2) continue;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
-    ctx.lineWidth=(absU===startU)?1.5:0.75; ctx.stroke();
+    ctx.lineWidth=(m===firstMeas)?1.5:0.75; ctx.stroke();
     if(m>0){
       ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
       ctx.fillStyle=isDark?'#555':'#bbb';
       ctx.fillText('M'+m, x, marginY-1);
     }
   }
-  const blinkPhaseL=(Date.now()%650)/650;
-  const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
   [0,1,2].forEach(li=>{
     const pat=state[li].pattern, n=pat.length, col=CIRCLE_COLORS[li], isMuted=state[li].muted;
     const y=marginY+rowH*li+rowH/2;
     const cu=cycU[li], s=su[li];
     ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y);
     ctx.strokeStyle=col.track; ctx.lineWidth=1; ctx.stroke();
-    // Séparateurs de répétitions (pointillés couleur layer) — uniquement si visible dans la fenêtre
-    for(let rep=1;rep*cu<totalU;rep++){
-      const absU=rep*cu; if(absU<=startU||absU>=startU+dispU)continue;
-      const x=marginX+uW*(absU-startU);
-      ctx.save(); ctx.beginPath(); ctx.moveTo(x,y-dotR-2); ctx.lineTo(x,y+dotR+2);
-      ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
-      ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
-    }
-    // Dessiner les steps visibles dans la fenêtre [startU, startU+dispU)
-    const repS=Math.floor(startU/cu), repE=Math.ceil((startU+dispU)/cu);
-    for(let rep=repS;rep<=repE;rep++){
+    if(!n||!cu) return;
+    const totalReps=Math.ceil(totalU/cu);
+    const blinkPhaseL=(Date.now()%650)/650;
+    const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
+    // Dessiner les steps + indicateurs de répétition
+    for(let rep=0;rep<totalReps;rep++){
+      const repStartU=rep*cu, repEndU=(rep+1)*cu;
+      // Sauter ce rep si hors de la page affichée
+      if(repEndU<=startU||repStartU>=startU+dispU) continue;
+      // Indicateur de répétition ↺ (sauf 1ère occurrence)
+      if(rep>0){
+        const xRep=marginX+uW*(repStartU-startU);
+        const bracketY=y-dotR-3;
+        // Ligne verticale de reprise
+        ctx.save();
+        ctx.beginPath(); ctx.moveTo(xRep,bracketY+6); ctx.lineTo(xRep,bracketY);
+        ctx.strokeStyle=col.stroke+'88'; ctx.lineWidth=0.8; ctx.stroke();
+        ctx.font='bold 8px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+        ctx.fillStyle=col.stroke+'bb';
+        ctx.fillText('↺', xRep+2, bracketY+1);
+        ctx.restore();
+      }
+      // Separateur pointillé entre répétitions
+      if(rep>0){
+        const xSep=marginX+uW*(repStartU-startU);
+        ctx.save(); ctx.beginPath(); ctx.moveTo(xSep,y-dotR-2); ctx.lineTo(xSep,y+dotR+2);
+        ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
+        ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
+      }
+      // Steps de cette répétition
       for(let si=0;si<n;si++){
-        const absU=(rep*n+si)*s;
-        const dp=absU-startU; // position relative à la fenêtre
-        if(dp+s<=0)continue; if(dp>=dispU)break;
-        const x=marginX+uW*(dp+DENOM/2);
+        const absU=repStartU+si*s;
+        if(absU<startU||absU>=startU+dispU) continue;
+        const x=marginX+uW*(absU-startU+half);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
         const isNewL=rep===0&&!!state[li].recNewSteps?.has(si);
         if(isNewL) ctx.globalAlpha=blinkAlphaL;
@@ -9595,29 +9609,24 @@ function drawLinear(){
   });
   // Aiguille + highlight step courant
   if(playing){
-    const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const baseStepSec=60/spm;
-    const now=getAC().currentTime-prefs.audioOffset;
-    const elU=((now-linearCycleStartTime)/baseStepSec*DENOM);
-    const cycElU=((elU%totalU)+totalU)%totalU;
-    // Highlight step courant par layer — uniquement si dans la fenêtre courante
     [0,1,2].forEach(li=>{
       const n=state[li].pattern.length; if(!n) return;
       const y=marginY+rowH*li+rowH/2;
       const col=CIRCLE_COLORS[li], isMuted=state[li].muted;
-      const curRep=Math.floor(cycElU/cycU[li]);
-      const curSi=Math.floor((cycElU%cycU[li])/su[li])%n;
+      const cu=cycU[li], s=su[li];
+      const curSiRaw=Math.floor(cycElU/s); // position globale en steps
+      const absU=curSiRaw*s;
+      if(absU<startU||absU>=startU+dispU) return;
+      const curSi=Math.floor((cycElU%cu)/s)%n;
       if(state[li].pattern[curSi]==='.') return;
-      const absU=(curRep*n+curSi)*su[li];
-      const dp=absU-startU; if(dp<0||dp>=dispU) return;
-      const x=marginX+uW*(dp+DENOM/2);
+      const x=marginX+uW*(absU-startU+half);
       ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
       ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
     });
-    // Aiguille dorée — seulement si la position est dans la fenêtre courante
-    const dpNeedle=cycElU-startU;
-    if(dpNeedle>=0&&dpNeedle<dispU){
-      const nx=marginX+uW*(dpNeedle+DENOM/2);
+    // Aiguille dorée
+    const needleU=cycElU-startU;
+    if(needleU>=0&&needleU<dispU){
+      const nx=marginX+uW*(needleU+half);
       ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
       ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
     }
@@ -9647,18 +9656,18 @@ function circleHitTest(x, y){
     }
   }
   if(circleModeView==='linear'){
-    const DENOM=6, CAP_U=64*DENOM;
+    const DENOM=6, CAP_U=48*DENOM;
     const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
     const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
     let totU=0;
     LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=totU>0?lcm(totU,cycUL[li]):cycUL[li];});
     if(!totU) totU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
-    // Même page que drawLinear : suivre l'aiguille en lecture, sinon _linearCyclePage
+    // Page active (identique à drawLinear)
     let hitPage=_linearCyclePage;
     if(playing){
       const spmH=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-      const nowH=getAC().currentTime-prefs.audioOffset;
-      const cycElUH=(((nowH-linearCycleStartTime)/(60/spmH)*DENOM)%totU+totU)%totU;
+      const elUH=((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmH)*DENOM);
+      const cycElUH=((elUH%totU)+totU)%totU;
       hitPage=Math.floor(cycElUH/CAP_U);
     }
     const startUH=hitPage*CAP_U;
@@ -9781,22 +9790,19 @@ function setupCanvasInteraction(){
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
   // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
-  let _cvSwipeStartX = null, _cvSwipeMode = null;
+  let _cvSwipeStartX = null, _cvSwipeMode = null; // 'measure' | 'linear'
   cv.addEventListener('touchstart', e=>{
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
     const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
-    // Zone de glissement pour changer de mesure : haut du canvas (y<50), sauf strip droit
-    // Zone intentionnellement large pour le swipe de navigation de pages
+    // Swipe vue Mesure (zone haute, hors strip droit)
     if(circleModeView==='measure' && canvasY<50 && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
-      _cvSwipeStartX=t.clientX; _cvSwipeMode='measure';
-      e.preventDefault(); return;
+      _cvSwipeStartX=t.clientX; _cvSwipeMode='measure'; e.preventDefault(); return;
     }
+    // Swipe vue Cycle linéaire
     if(circleModeView==='linear' && _getLinearMaxPages()>1){
-      _cvSwipeStartX=t.clientX; _cvSwipeMode='linear';
-      e.preventDefault(); return;
+      _cvSwipeStartX=t.clientX; _cvSwipeMode='linear'; e.preventDefault(); return;
     }
-    _cvSwipeStartX=null; _cvSwipeMode=null;
     const hit=circleHitTest(canvasX,canvasY);
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
@@ -9829,7 +9835,6 @@ function setupCanvasInteraction(){
     _cvTouchOnDot=false;
     if(_cvTouchIsRight){
       _cvTouchIsRight=false;
-      // Éteindre l'arc maintenu au relâcher du doigt
       if(_mesureRightFlash?.hold){
         _mesureRightFlash=null;
         if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
