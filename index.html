@@ -1142,9 +1142,13 @@ body.dark-mode .mpi-dot{color:#9080C0}
 #linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
 #lci-info,#lci-range{flex:1;font-size:10px;color:#888;white-space:nowrap}
 #lci-range{text-align:right}
+#lci-range.lci-interactive{color:#7060B0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent;font-weight:600}
+#lci-range.lci-interactive:hover{color:#5040A0}
 #lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
 body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
 body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
+body.dark-mode #lci-range.lci-interactive{color:#A090D0}
+body.dark-mode #lci-range.lci-interactive:hover{color:#C0B0F0}
 /* ── OFF state indicators ─────────────────────────────────────────────── */
 .nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none;margin-top:1px}
 body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:block}
@@ -1551,7 +1555,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.29</span>
+    <span class="app-version">v3.20.30</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8978,6 +8982,7 @@ let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
+let _lciMaxPageSize = 24;       // nb max de pas par page en vue Cycle (16/24/48, défaut 24)
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
 let _rightStripPage = [-1,-1,-1]; // par layer : -1 = tout, 0..n-1 = mesure spécifique
 function _getMeasureMaxPages(){
@@ -9001,7 +9006,7 @@ function _getLinearCycleInfo(){
   if(!totalU) totalU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
   const totalSteps=Math.round(totalU/DENOM);
   const mSteps=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
-  const MAX_PAGE=Math.max(24,mSteps); // au moins 1 mesure entière par page
+  const MAX_PAGE=Math.max(_lciMaxPageSize,mSteps); // au moins 1 mesure entière par page
   if(totalSteps<=MAX_PAGE) return {totalU,pageU:totalU,numPages:1,pageSteps:totalSteps};
   // Plus grand k*mSteps ≤ MAX_PAGE qui divise totalSteps exactement
   let pageSteps=mSteps;
@@ -9141,7 +9146,11 @@ function _updateLinearPageIndicator(){
   if(rangeEl){
     const pageStart=activePage*pageSteps+1;
     const pageEnd=Math.min((activePage+1)*pageSteps,totalSteps);
+    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
     rangeEl.textContent='pas '+pageStart+'–'+pageEnd;
+    rangeEl.classList.toggle('lci-interactive',validOpts.length>0);
+    rangeEl.title=validOpts.length>0?'Cliquer pour changer la taille de page ('+validOpts.join('/')+' pas)':'';
   }
   const navRow=document.getElementById('lci-nav-row');
   if(navRow) navRow.style.display=maxPages>1?'flex':'none';
@@ -14886,6 +14895,17 @@ setView('circle');                                             // Vue circulaire
   });
   document.getElementById('lci-next')?.addEventListener('click',()=>{
     _linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);
+    _updateLinearPageIndicator(); drawCircles();
+  });
+  document.getElementById('lci-range')?.addEventListener('click',()=>{
+    const {totalU}=_getLinearCycleInfo();
+    const totalSteps=Math.round(totalU/6);
+    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const opts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
+    if(!opts.length) return;
+    const idx=opts.indexOf(_lciMaxPageSize);
+    _lciMaxPageSize=opts[(idx+1)%opts.length];
+    _linearCyclePage=0;
     _updateLinearPageIndicator(); drawCircles();
   });
 }());
