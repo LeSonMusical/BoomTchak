@@ -1146,8 +1146,8 @@ body.dark-mode .mpi-dot{color:#9080C0}
 body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
 body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
 /* ── OFF state indicators ─────────────────────────────────────────────── */
-.nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none}
-body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:inline}
+.nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none;margin-top:1px}
+body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:block}
 body.band-muted .band-instr-btn{opacity:.28;filter:grayscale(.6);pointer-events:none}
 .metro-off .mpv-tog-accent-group .mpv-word-btn{opacity:.28}
 body.metro-muted #metro-pattern-viz{opacity:.28;pointer-events:none}
@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.26</span>
+    <span class="app-version">v3.20.27</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2008,12 +2008,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Left pair: Tic-Tac + Sons -->
   <div class="nav-pair nav-pair-left">
     <button class="nav-tab" id="nav-tab-metro">
-      <span class="nav-tab-ico">⏱️</span><span class="nav-tab-off-badge metro-badge">off</span>
+      <span class="nav-tab-ico">⏱️</span>
       <span class="nav-tab-lbl">Tic-Tac</span>
+      <span class="nav-tab-off-badge metro-badge">off</span>
     </button>
     <button class="nav-tab" id="nav-tab-sons">
-      <span class="nav-tab-ico">🔊</span><span class="nav-tab-off-badge sons-badge">off</span>
+      <span class="nav-tab-ico">🔊</span>
       <span class="nav-tab-lbl">Sons</span>
+      <span class="nav-tab-off-badge sons-badge">off</span>
     </button>
   </div>
   <!-- Capture Annuler — remplace la paire gauche en rec-tapped -->
