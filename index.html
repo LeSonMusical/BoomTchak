@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.28</span>
+    <span class="app-version">v3.20.29</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -2697,7 +2697,7 @@ let state=LAYERS.map(()=>({
   patternId:null,
   stepPos:0, nextStepTime:0, startTime:0,
   muted:false, halfOn:false, doubleOn:false, ternOn:false,
-  pendingHalf:false, pendingDouble:false, pendingClear:false, pendingTern:null,
+  pendingHalf:false, pendingDouble:false, pendingClear:false, pendingTern:null, ternStartTime:0,
   nextSpeedDir:'double',
   wrapped:false,
   recArmed:false, recording:false, recMode:'replace', originalPattern:null, prevPattern:null, recBuffer:null,
@@ -3416,16 +3416,39 @@ function scheduler(){
           // Calcul totalU avant/après pour recalibrer l'aiguille vue linéaire (évite saut visuel)
           const _calcTU=()=>{let u=0;LAYERS.forEach((_,lj)=>{if(state[lj].pattern.length>0){const m=state[lj].doubleOn?2:state[lj].halfOn?0.5:1,tf=state[lj].ternOn?2/3:1,s=Math.round(6*tf/m);const c=state[lj].pattern.length*s;u=u>0?lcm(u,c):c;}});return u;};
           const _oldTU=_calcTU();
-          if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
-          if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
-          if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
-          if(state[li].pendingTern!=null){state[li].ternOn=state[li].pendingTern;state[li].pendingTern=null;}
+          let _anySpeedChange=false;
+          if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;_anySpeedChange=true;}
+          if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;_anySpeedChange=true;}
+          if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;_anySpeedChange=true;}
+          if(state[li].pendingTern!=null){
+            if(!state[li].ternOn&&state[li].pendingTern===true){
+              // Activation T : si=0 normal = frontière mesure → appliquer immédiatement
+              state[li].ternOn=true; state[li].ternStartTime=state[li].nextStepTime; state[li].pendingTern=null; _anySpeedChange=true;
+            } else if(state[li].ternOn&&state[li].pendingTern===false){
+              // Désactivation T : si=0 ternaire ≠ frontière mesure → attendre l'alignement
+              let _doT=true;
+              const _spm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
+              if(_spm>0){
+                const _mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
+                const _ns=(60/_spm)/_mult;
+                const _measSteps=(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4));
+                const _measDur=_measSteps*_ns;
+                if(_measDur>0){const _el=state[li].nextStepTime-(state[li].ternStartTime||0);const _fr=(_el%_measDur)/_measDur;_doT=_fr<0.08||_fr>0.92;}
+              }
+              if(_doT){state[li].ternOn=false;state[li].pendingTern=null;_anySpeedChange=true;}
+              // else : on attend le prochain si=0 aligné sur la mesure
+            } else {
+              state[li].ternOn=state[li].pendingTern; state[li].pendingTern=null; _anySpeedChange=true;
+            }
+          }
           // Recalibrer startTime → le visuel repart de zéro au même moment que l'audio
-          state[li].startTime=state[li].nextStepTime;
-          const _newTU=_calcTU();
-          if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
-            const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
-            if(_bspm>0){const _bss=60/_bspm;const _t0=state[li].nextStepTime;const _elU=(_t0-linearCycleStartTime)/_bss*6;const _k=Math.round(_elU/_newTU);linearCycleStartTime=_t0-_k*_newTU/6*_bss;}
+          if(_anySpeedChange){
+            state[li].startTime=state[li].nextStepTime;
+            const _newTU=_calcTU();
+            if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
+              const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
+              if(_bspm>0){const _bss=60/_bspm;const _t0=state[li].nextStepTime;const _elU=(_t0-linearCycleStartTime)/_bss*6;const _k=Math.round(_elU/_newTU);linearCycleStartTime=_t0-_k*_newTU/6*_bss;}
+            }
           }
         }
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
