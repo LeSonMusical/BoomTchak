@@ -1543,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.18</span>
+    <span class="app-version">v3.20.19</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8935,14 +8935,15 @@ let _rightStripPage = [-1,-1,-1]; // par layer : -1 = tout, 0..n-1 = mesure spé
 function _getMeasureMaxPages(){
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
-  if(!mSec)return 1;
-  let maxP=1;
+  if(!mSec) return 1;
+  let cyclePages=1;
   LAYERS.forEach((_,li)=>{
     const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
-    const pages=Math.ceil(state[li].pattern.length/spm_li);
-    if(pages>maxP)maxP=pages;
+    const n=state[li].pattern.length;
+    if(!n) return;
+    cyclePages=lcm(cyclePages, n/gcd(n,spm_li));
   });
-  return maxP;
+  return Math.max(1,Math.min(Math.round(cyclePages),96));
 }
 function _getLinearCycleInfo(){
   const DENOM=6;
@@ -9240,10 +9241,8 @@ function drawCircles(){
           }
         }
       } else {
-        // Pattern > 1 mesure : afficher la tranche de la page courante (WYSIWYH)
-        const pagesForLayer = Math.ceil(n / spm_li);
-        const layerPage = _mGlobalPage % pagesForLayer;
-        const pageStart = layerPage * spm_li;
+        // Pattern > 1 mesure : tranche du cycle global — offset = (page × spm_li) % n
+        const pageStart = (_mGlobalPage * spm_li) % n;
         const pageEnd = Math.min(pageStart + spm_li, n);
         for(let si=pageStart; si<pageEnd; si++){
           const frac = (si - pageStart) * getBeatSec(li) / _mPageSec;
@@ -9384,7 +9383,7 @@ function drawCircles(){
       const _layInfo=[0,1,2].map(li=>{
         const n=state[li].pattern.length;
         const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
-        const plr=n>=spm_liR?Math.ceil(n/spm_liR):0; // 0 = pattern < 1 mesure
+        const plr=n>=spm_liR?n/gcd(n,spm_liR):0; // cycle en mesures via pgcd (0 = pattern < 1 mesure)
         return{n,spm_liR,plr};
       });
       // Cycle global = PPCM des plr de chaque layer (en mesures)
@@ -9766,9 +9765,8 @@ function circleHitTest(x, y){
               if(frac<1) pts.push({si, a:-Math.PI/2+2*Math.PI*frac});
             }
         } else {
-          const pagesForLayer = Math.ceil(n/spm_li);
-          const layerPage = (playing ? _mGlobalPageLast : _measureViewPage) % pagesForLayer;
-          const pageStart = layerPage * spm_li;
+          const refPage = playing ? _mGlobalPageLast : _measureViewPage;
+          const pageStart = (refPage * spm_li) % n;
           const pageEnd = Math.min(pageStart + spm_li, n);
           for(let si=pageStart; si<pageEnd; si++){
             const frac=(si-pageStart)*getBeatSec(li)/measureSecM;
@@ -9960,16 +9958,15 @@ function _updateMeasurePageIndicator(globalPage){
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
 
-  // Calcul des pages par layer
+  // Calcul cycle global (LCM des cycles par layer)
   let maxPages=1;
-  const pageInfos=[];
   LAYERS.forEach((_,li)=>{
     const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
     const n=state[li].pattern.length;
-    const pages=Math.ceil(n/Math.max(1,spm_li));
-    if(pages>maxPages) maxPages=pages;
-    pageInfos.push({pages});
+    if(!n) return;
+    maxPages=lcm(maxPages, n/gcd(n,Math.max(1,spm_li)));
   });
+  maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
 
   // Labels fraction : dessinés sur canvas (strip droit) — DOM labels vidés
   [0,1,2].forEach(li=>{ const m=document.getElementById('mpi-l'+li); if(m){m.textContent='';m.style.cssText='';} });
@@ -14867,13 +14864,14 @@ setView('circle');                                             // Vue circulaire
     const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
     const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
     if(!mSec) return 1;
-    let maxP=1;
+    let cyclePages=1;
     LAYERS.forEach((_,li)=>{
       const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
-      const pages=Math.ceil(state[li].pattern.length/spm_li);
-      if(pages>maxP) maxP=pages;
+      const n=state[li].pattern.length;
+      if(!n) return;
+      cyclePages=lcm(cyclePages, n/gcd(n,spm_li));
     });
-    return maxP;
+    return Math.max(1,Math.min(Math.round(cyclePages),96));
   }
   document.getElementById('mpi-prev')?.addEventListener('click',()=>{
     _measureViewPage=Math.max(0,_measureViewPage-1);
