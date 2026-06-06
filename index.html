@@ -1543,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.14</span>
+    <span class="app-version">v3.20.15</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9565,6 +9565,7 @@ function drawLinear(){
     const spmP=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
     cycElU=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmP)*DENOM)%totalU+totalU)%totalU;
     activePage=Math.floor(cycElU/CAP_U);
+    _linearCyclePage=activePage; // sync pour l'indicateur DOM
   }
   const startU=activePage*CAP_U;
   const dispU=Math.min(CAP_U,totalU-startU);
@@ -9901,6 +9902,7 @@ function setupCanvasInteraction(){
           const maxP=_getLinearMaxPages();
           if(dx<0) _linearCyclePage=Math.min(maxP-1,_linearCyclePage+1);
           else     _linearCyclePage=Math.max(0,_linearCyclePage-1);
+          _updateLinearPageIndicator();
         } else {
           if(dx<0) _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
           else     _measureViewPage=Math.max(0,_measureViewPage-1);
@@ -14884,11 +14886,11 @@ setView('circle');                                             // Vue circulaire
   });
   document.getElementById('lci-prev')?.addEventListener('click',()=>{
     _linearCyclePage=Math.max(0,_linearCyclePage-1);
-    drawCircles();
+    _updateLinearPageIndicator(); drawCircles();
   });
   document.getElementById('lci-next')?.addEventListener('click',()=>{
     _linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);
-    drawCircles();
+    _updateLinearPageIndicator(); drawCircles();
   });
 }());
 // Aligner padding-top body sur la hauteur réelle de la topbar
