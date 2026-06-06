@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.6</span>
+    <span class="app-version">v3.20.7</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4230,7 +4230,14 @@ function _applyPendingGroove(){
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
   // Si en lecture : programmer le changement au prochain cycle (enchaînement fluide)
-  if(playing){_pendingGrooveId=grooveId;_updatePendingGrooveUI();return;}
+  if(playing){
+    _pendingGrooveId=grooveId;
+    // Forcer le re-déclenchement de l'animation d'entrée même si un autre groove était déjà en attente
+    const _gpb=document.getElementById('groove-preset-btn');
+    if(_gpb){_gpb.classList.remove('groove-pending','groove-beat-flash');void _gpb.offsetWidth;}
+    _updatePendingGrooveUI();
+    return;
+  }
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
   currentGrooveId=grooveId;
