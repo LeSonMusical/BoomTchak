@@ -1150,9 +1150,8 @@ body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
 body.band-muted .nav-tab-off-badge.sons-badge,body.metro-muted .nav-tab-off-badge.metro-badge{display:inline}
 body.band-muted .band-instr-btn{opacity:.28;filter:grayscale(.6);pointer-events:none}
 .metro-off .mpv-tog-accent-group .mpv-word-btn{opacity:.28}
-.sbar-off-badge{font-size:8px;font-weight:700;color:#d94040;margin-left:3px;display:none;line-height:1}
-body.band-muted .band-bar .sbar-off-badge,body.metro-muted .temps-bar .sbar-off-badge{display:inline}
-body.dark-mode .sbar-off-badge{color:#f06060}
+body.metro-muted #metro-pattern-viz{opacity:.28;pointer-events:none}
+.sbar-off-badge{font-size:8px;font-weight:700;margin-left:3px;line-height:1}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1552,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.21</span>
+    <span class="app-version">v3.20.22</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -5800,7 +5799,7 @@ function buildBandSection(){
   const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';leftCol.title='Mute/Unmute sons';
   const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent=bandMuted?'🔇':'🔊';
   leftCol.appendChild(lblIco);
-  const sonsOffBadge=document.createElement('span');sonsOffBadge.className='sbar-off-badge';sonsOffBadge.textContent='off';
+  const sonsOffBadge=document.createElement('span');sonsOffBadge.className='sbar-off-badge';sonsOffBadge.textContent=bandMuted?'off':'on';sonsOffBadge.style.color=bandMuted?'#d94040':'#2d5f80';
   leftCol.appendChild(sonsOffBadge);
   row1.appendChild(leftCol);
 
@@ -8890,6 +8889,8 @@ function _applyBandMute(muted){
   if(btnV)btnV.classList.toggle('muted',muted);
   const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
   if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
+  const badge=document.querySelector('.band-bar .sbar-off-badge');
+  if(badge){badge.textContent=muted?'off':'on';badge.style.color=muted?'#d94040':'#2d5f80';}
   if(circleView)drawCircles();
 }
 function setMetroGlobal(on){
@@ -8897,8 +8898,8 @@ function setMetroGlobal(on){
   document.body.classList.toggle('metro-muted',!on);
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
-  const navIco=document.querySelector('#nav-tab-metro .nav-tab-ico');
-  if(navIco)navIco.textContent=on?'⏱️':'🔕';
+  const metroBadge=document.querySelector('.temps-bar .sbar-off-badge');
+  if(metroBadge){metroBadge.textContent=on?'on':'off';metroBadge.style.color=on?'#3A8C6E':'#d94040';}
   const btnTop=document.getElementById('btn-tempo');
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
@@ -13852,13 +13853,8 @@ function attachEvents(){
     let _startX=0,_startVol=0,_down=false,_dragMoved=false,_lastTap=0;
 
     function setBandMuted(muted, showMsg){
-      bandMuted=muted;
-      const icon=document.getElementById('sons-icon');
-      if(icon)icon.textContent=muted?'🔇':'🔊';
+      _applyBandMute(muted);
       btnV.classList.toggle('muted',muted);
-      const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
-      if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
-      if(circleView) drawCircles();
       if(showMsg){
         _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(muted?'#aaa':'#4AC9A0')+'">'+(muted?'off':'on')+'</span>');
         clearTimeout(_dragOverlay._sonTimer);
@@ -14823,9 +14819,9 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 _initEncycloPanel();
 // Sync état initial métro (sans overlay)
-(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const navIco=document.querySelector('#nav-tab-metro .nav-tab-ico');if(navIco)navIco.textContent=on?'⏱️':'🔕';})();
+(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}})();
 // Sync état initial band mute
-if(bandMuted){document.body.classList.add('band-muted');const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent='🔇';}
+(function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🔊';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 // ── Init navigation pages vue Mesure ──────────────────────────────────────
