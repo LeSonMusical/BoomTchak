@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.10</span>
+    <span class="app-version">v3.20.11</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -3809,7 +3809,7 @@ function stopPlay(){
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
-  _measureViewPage = 0; _linearCyclePage = 0; _rightStripPage=[-1,-1,-1]; // retour page 0 à l'arrêt
+  _measureViewPage = 0; _linearCyclePage = 0; // retour page 0 à l'arrêt
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
     drawCircles(); // met à jour l'indicateur via son appel interne
@@ -4240,8 +4240,7 @@ function applyGroove(grooveId){
   }
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
-  currentGrooveId=grooveId;
-  _linearCyclePage=0;
+  currentGrooveId=grooveId; _linearCyclePage=0;
   grooveDirty=false; metroDirty=false; bandDirty=false; updateGrooveSaveBtn();
   updateGrooveNameTopBar();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
@@ -8930,7 +8929,7 @@ function _getMeasureMaxPages(){
   return maxP;
 }
 function _getLinearMaxPages(){
-  const DENOM=6, CAP_U=48*DENOM;
+  const DENOM=6, CAP_U=24*DENOM;
   const su=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
   const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
   let totalU=0;
@@ -9409,7 +9408,7 @@ function drawCircles(){
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
   ctx.fillStyle='#1a1a18'; ctx.fill();
-  _circleBadge=null;
+  _circleBadges=[];
   // Indicateur de page mesure (mis à jour chaque frame)
   _updateMeasurePageIndicator(_mGlobalPage);
 }
@@ -9465,7 +9464,7 @@ function _metroBeatMarks(viewMode){
   return marks;
 }
 
-let _circleBadge=null; // {x,y,w,h,action} en coordonnées canvas
+let _circleBadges=[]; // [{x,y,w,h,action}, ...] en coordonnées canvas
 
 function drawLinear(){
   const cv=document.getElementById('rhythm-canvas'); if(!cv) return;
@@ -9474,10 +9473,6 @@ function drawLinear(){
   const isDark=document.body.classList.contains('dark-mode');
   ctx.clearRect(0,0,W,H);
   const mSteps=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
-  // Unités de temps : multiples de 6 (PPCM de 1,2,3 → gère ×2 /2 T)
-  // 1 croche normale = 6 unités
-  // doubleOn → step = 3 u ; halfOn → step = 12 u ; ternOn → step = 4 u
-  // doubleOn+ternOn → 2 u ; halfOn+ternOn → 8 u
   const DENOM=6;
   function stepU(li){
     const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
@@ -9487,66 +9482,82 @@ function drawLinear(){
   const su=LAYERS.map((_,li)=>stepU(li));
   const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
   const measU=mSteps*DENOM;
-  // Cycle = PPCM des patterns seuls (indépendant de la mesure) ; mesure = repère visuel uniquement
   let totalU=0;
   LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
   if(!totalU) totalU=measU;
-  const CAP_U=48*DENOM;
+  // Pagination : 24 pas par page
+  const CAP_U=24*DENOM;
   const numPages=Math.ceil(totalU/CAP_U);
+  const isCapped=numPages>1;
   // Page active : auto-suivi pendant la lecture, page manuelle sinon
   let activePage=_linearCyclePage;
   let cycElU=0;
   if(playing){
     const spmP=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const nowP=getAC().currentTime-prefs.audioOffset;
-    const elUP=((nowP-linearCycleStartTime)/(60/spmP)*DENOM);
-    cycElU=((elUP%totalU)+totalU)%totalU;
+    cycElU=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmP)*DENOM)%totalU+totalU)%totalU;
     activePage=Math.floor(cycElU/CAP_U);
   }
   const startU=activePage*CAP_U;
   const dispU=Math.min(CAP_U,totalU-startU);
-  const isCapped=numPages>1;
   const marginX=8, marginY=16;
   const rowH=Math.floor((H-2*marginY)/3);
-  const uW=(W-2*marginX)/dispU; // pixels par unité
-  // dotR basé sur l'unité la plus petite
+  const uW=(W-2*marginX)/dispU;
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
   const half=DENOM/2;
-  // Label de page (en haut, centré) quand le cycle dépasse la page
+  // Label de page + flèches jaunes ◀ ▶ (cliquables)
+  _circleBadges=[];
   if(isCapped){
     const totalSteps=Math.round(totalU/DENOM);
     const p1=Math.round(startU/DENOM)+1;
     const p2=Math.min(totalSteps,Math.round((startU+dispU)/DENOM));
+    const label=`${p1}–${p2} / ${totalSteps} pas`;
     ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillStyle=isDark?'#C89040':'#8B6000';
-    ctx.fillText(`Cycle ${totalSteps} pas — ${p1}–${p2} (page ${activePage+1}/${numPages})`, W/2, 2);
+    ctx.fillText(label, W/2, 2);
+    // Flèches ◀ ▶
+    const arrowY=0, arrowH=14;
+    const lw=ctx.measureText(label).width;
+    const arrowGap=4;
+    const lArrowX=W/2-lw/2-arrowGap-16, rArrowX=W/2+lw/2+arrowGap;
+    const arrowW=16;
+    ctx.font='bold 10px sans-serif'; ctx.textBaseline='top';
+    if(activePage>0){
+      ctx.fillStyle='#C8A820'; ctx.textAlign='right';
+      ctx.fillText('◀', lArrowX+arrowW, arrowY+2);
+      _circleBadges.push({x:lArrowX,y:arrowY,w:arrowW,h:arrowH,action:()=>{_linearCyclePage=Math.max(0,_linearCyclePage-1);drawCircles();}});
+    }
+    if(activePage<numPages-1){
+      ctx.fillStyle='#C8A820'; ctx.textAlign='left';
+      ctx.fillText('▶', rArrowX, arrowY+2);
+      _circleBadges.push({x:rArrowX,y:arrowY,w:arrowW,h:arrowH,action:()=>{_linearCyclePage=Math.min(numPages-1,_linearCyclePage+1);drawCircles();}});
+    }
   }
-  // Lignes de temps (beats) — légères, entre les séparateurs de mesure
+  // Lignes de temps (beats)
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
-    const firstBeat=Math.ceil(startU/beatU);
-    const lastBeat=Math.ceil((startU+dispU)/beatU);
-    for(let b=firstBeat;b<=lastBeat;b++){
-      if(b*beatU%measU===0)continue;
-      const x=marginX+uW*(b*beatU-startU+half); if(x<marginX-2||x>W-marginX+2)continue;
+    const bStart=Math.floor(startU/beatU), bEnd=Math.ceil((startU+dispU)/beatU);
+    for(let b=bStart;b<=bEnd;b++){
+      const absU=b*beatU; if(absU%measU===0)continue;
+      const x=marginX+uW*(absU-startU+half); if(x<marginX-2||x>W-marginX+2)continue;
       ctx.beginPath();ctx.moveTo(x,marginY-2);ctx.lineTo(x,H-marginY+2);
       ctx.strokeStyle=isDark?'#373533':'#e0dcd4';ctx.lineWidth=0.5;ctx.stroke();
     }
   }
   // Séparateurs de mesures
-  const firstMeas=Math.floor(startU/measU), lastMeas=Math.ceil((startU+dispU)/measU);
-  for(let m=firstMeas;m<=lastMeas;m++){
+  const mStart=Math.floor(startU/measU), mEnd=Math.ceil((startU+dispU)/measU);
+  for(let m=mStart;m<=mEnd;m++){
     const x=marginX+uW*(m*measU-startU+half); if(x<marginX-2||x>W-marginX+2) continue;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
-    ctx.lineWidth=(m===firstMeas)?1.5:0.75; ctx.stroke();
+    ctx.lineWidth=m===mStart?1.5:0.75; ctx.stroke();
     if(m>0){
       ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
       ctx.fillStyle=isDark?'#555':'#bbb';
       ctx.fillText('M'+m, x, marginY-1);
     }
   }
+  // Steps + indicateurs de répétition (donut comme vue mesure)
   [0,1,2].forEach(li=>{
     const pat=state[li].pattern, n=pat.length, col=CIRCLE_COLORS[li], isMuted=state[li].muted;
     const y=marginY+rowH*li+rowH/2;
@@ -9557,40 +9568,37 @@ function drawLinear(){
     const totalReps=Math.ceil(totalU/cu);
     const blinkPhaseL=(Date.now()%650)/650;
     const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
-    // Dessiner les steps + indicateurs de répétition
     for(let rep=0;rep<totalReps;rep++){
-      const repStartU=rep*cu, repEndU=(rep+1)*cu;
-      // Sauter ce rep si hors de la page affichée
-      if(repEndU<=startU||repStartU>=startU+dispU) continue;
-      // Indicateur de répétition ↺ (sauf 1ère occurrence)
-      if(rep>0){
-        const xRep=marginX+uW*(repStartU-startU);
-        const bracketY=y-dotR-3;
-        // Ligne verticale de reprise
-        ctx.save();
-        ctx.beginPath(); ctx.moveTo(xRep,bracketY+6); ctx.lineTo(xRep,bracketY);
-        ctx.strokeStyle=col.stroke+'88'; ctx.lineWidth=0.8; ctx.stroke();
-        ctx.font='bold 8px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='bottom';
-        ctx.fillStyle=col.stroke+'bb';
-        ctx.fillText('↺', xRep+2, bracketY+1);
-        ctx.restore();
-      }
-      // Separateur pointillé entre répétitions
+      const repStartU=rep*cu;
+      if(repStartU>=startU+dispU) break;
+      if((rep+1)*cu<=startU) continue;
+      // Séparateur pointillé en début de répétition (sauf rep 0)
       if(rep>0){
         const xSep=marginX+uW*(repStartU-startU);
         ctx.save(); ctx.beginPath(); ctx.moveTo(xSep,y-dotR-2); ctx.lineTo(xSep,y+dotR+2);
         ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
         ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
       }
-      // Steps de cette répétition
       for(let si=0;si<n;si++){
         const absU=repStartU+si*s;
         if(absU<startU||absU>=startU+dispU) continue;
         const x=marginX+uW*(absU-startU+half);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
+        const isRepeat=rep>0;
         const isNewL=rep===0&&!!state[li].recNewSteps?.has(si);
         if(isNewL) ctx.globalAlpha=blinkAlphaL;
-        if(isOn){
+        if(isRepeat&&isOn){
+          // Donut : même style que vue mesure
+          ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'55':col.fill+'cc'; ctx.fill();
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.30,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        } else if(isRepeat&&isSoft){
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.72,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'33':col.fill+'77'; ctx.fill();
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        } else if(isOn){
           ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
           ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
           ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
@@ -9614,7 +9622,7 @@ function drawLinear(){
       const y=marginY+rowH*li+rowH/2;
       const col=CIRCLE_COLORS[li], isMuted=state[li].muted;
       const cu=cycU[li], s=su[li];
-      const curSiRaw=Math.floor(cycElU/s); // position globale en steps
+      const curSiRaw=Math.floor(cycElU/s);
       const absU=curSiRaw*s;
       if(absU<startU||absU>=startU+dispU) return;
       const curSi=Math.floor((cycElU%cu)/s)%n;
@@ -9623,7 +9631,6 @@ function drawLinear(){
       ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
       ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
     });
-    // Aiguille dorée
     const needleU=cycElU-startU;
     if(needleU>=0&&needleU<dispU){
       const nx=marginX+uW*(needleU+half);
@@ -9631,11 +9638,10 @@ function drawLinear(){
       ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
     }
   }
-  _circleBadge=null;
 }
 
 function circleHitTest(x, y){
-  if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
+  for(const b of _circleBadges){if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true,action:b.action};}
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   // Clic dans le strip gauche → ouvre volet mod du layer correspondant (vue circulaire)
   if(circleModeView!=='linear' && x < CIRC_LABEL_W){
@@ -9656,18 +9662,16 @@ function circleHitTest(x, y){
     }
   }
   if(circleModeView==='linear'){
-    const DENOM=6, CAP_U=48*DENOM;
+    const DENOM=6, CAP_U=24*DENOM;
     const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
     const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
     let totU=0;
     LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=totU>0?lcm(totU,cycUL[li]):cycUL[li];});
     if(!totU) totU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
-    // Page active (identique à drawLinear)
     let hitPage=_linearCyclePage;
     if(playing){
       const spmH=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-      const elUH=((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmH)*DENOM);
-      const cycElUH=((elUH%totU)+totU)%totU;
+      const cycElUH=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmH)*DENOM)%totU+totU)%totU;
       hitPage=Math.floor(cycElUH/CAP_U);
     }
     const startUH=hitPage*CAP_U;
@@ -9680,13 +9684,12 @@ function circleHitTest(x, y){
     for(let li=0;li<3;li++){
       const n=state[li].pattern.length; if(!n) continue;
       const layY=marginY+rowH*li+rowH/2;
-      const cu=cycUL[li], s=suL[li];
-      const repS=Math.floor(startUH/cu), repE=Math.ceil((startUH+dispU)/cu);
-      for(let rep=repS;rep<=repE;rep++){
+      const totalReps=Math.ceil(totU/cycUL[li]);
+      for(let rep=0;rep<totalReps;rep++){
         for(let si=0;si<n;si++){
-          const absU=(rep*n+si)*s, dp=absU-startUH;
-          if(dp+s<=0)continue; if(dp>=dispU)break;
-          const sx=marginX+uW*(dp+3);
+          const absU=rep*cycUL[li]+si*suL[li];
+          if(absU<startUH||absU>=startUH+dispU) continue;
+          const sx=marginX+uW*(absU-startUH+3);
           if(Math.hypot(x-sx,y-layY)<=dotR+5) return{li,si};
         }
       }
@@ -9740,8 +9743,25 @@ function setupCanvasInteraction(){
     const scaleX = cv.width/rect.width, scaleY = cv.height/rect.height;
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
-    if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
-    if(hit.rightLi!==undefined){ _triggerRightFlash(hit.rightLi); return; }
+    if(hit.badge){ if(hit.action) hit.action(); return; }
+    if(hit.rightLi!==undefined){
+      const _rLi=hit.rightLi;
+      if(!playing){
+        const _spmN=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+        const _mPN=(60/_spmN)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
+        const _nN=state[_rLi].pattern.length;
+        const _spmRN=Math.max(1,Math.round(_mPN/getBeatSec(_rLi)));
+        const _plrN=Math.ceil(_nN/_spmRN);
+        if(_plrN>1){
+          _measureViewPage=(_measureViewPage+1)%_getMeasureMaxPages();
+          _updateMeasurePageIndicator(_measureViewPage);
+          drawCircles();
+          return;
+        }
+      }
+      _triggerRightFlash(_rLi);
+      return;
+    }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
       // S'assurer que les volets layers sont visibles avant de toggle le panel mod
@@ -9782,20 +9802,26 @@ function setupCanvasInteraction(){
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
   cv.addEventListener('mousemove',e=>{
-    if(circleModeView==='linear'){cv.style.cursor='';return;}
+    if(circleModeView==='linear'){
+      const rect2=cv.getBoundingClientRect();
+      const bx=(e.clientX-rect2.left)*(cv.width/rect2.width), by=(e.clientY-rect2.top)*(cv.height/rect2.height);
+      const onBadge=_circleBadges.some(b=>bx>=b.x&&bx<=b.x+b.w&&by>=b.y&&by<=b.y+b.h);
+      cv.style.cursor=onBadge?'pointer':'';
+      return;
+    }
     const rect=cv.getBoundingClientRect();
     const _cx=(e.clientX-rect.left)*(cv.width/rect.width);
     cv.style.cursor=(_cx<CIRC_LABEL_W||(circleModeView==='measure'&&_cx>cv.width-72))?'pointer':'';
   });
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
-  // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
+  // Touch
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
   let _cvSwipeStartX = null, _cvSwipeMode = null; // 'measure' | 'linear'
   cv.addEventListener('touchstart', e=>{
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
     const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
-    // Swipe vue Mesure (zone haute, hors strip droit)
+    // Swipe vue Mesure (zone haute centrale)
     if(circleModeView==='measure' && canvasY<50 && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
       _cvSwipeStartX=t.clientX; _cvSwipeMode='measure'; e.preventDefault(); return;
     }
