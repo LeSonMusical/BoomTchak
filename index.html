@@ -1551,7 +1551,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.24</span>
+    <span class="app-version">v3.20.25</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9309,8 +9309,7 @@ function drawCircles(){
       if(isNew) ctx.globalAlpha=1;
     }
 
-    // Aiguille interleaved : dessinée APRÈS les dots du ring li, AVANT le ring intérieur suivant
-    // Les rings plus intérieurs dessinés après seront naturellement au-dessus de cette aiguille
+    // Aiguille interleaved — les rings intérieurs dessinés après passent au-dessus naturellement
     {
       const rN=radii[li], colN=CIRCLE_COLORS[li];
       const angN=-Math.PI/2+fracs[li]*2*Math.PI;
@@ -9318,35 +9317,14 @@ function drawCircles(){
       const isMeas=circleModeView==='measure';
       const nCol=isMeas?'#C8961A':colN.fill;
       const endA=isMeas?'cc':'ff';
+      // Dégradé simple 3 stops : monte plus vite pour les rings intérieurs,
+      // plus tard pour les extérieurs → poids visuel concentré près du ring propre
+      const midF =[0.35, 0.55, 0.65][li];
+      const midA =['88', '66', '55'][li];
       const grad=ctx.createLinearGradient(cx,cy,exN,eyN);
-      grad.addColorStop(0,nCol+'00');
-      if(li===0){
-        // Zone propre dès le centre — fade-in lissé
-        grad.addColorStop(0.30,nCol+'55');
-        grad.addColorStop(0.60,nCol+'aa');
-        grad.addColorStop(1.00,nCol+endA);
-      } else if(li===1){
-        const f0=radii[0]/rN; // ≈ 0.718 — frontière zone ring0/ring1
-        // dim lissé dans zone ring0, puis rampe vers plein dans zone propre
-        grad.addColorStop(0.10,    nCol+'30');
-        grad.addColorStop(f0-0.14, nCol+'38');
-        grad.addColorStop(f0-0.01, nCol+'42');
-        grad.addColorStop(f0+0.07, nCol+'70');
-        grad.addColorStop(f0+0.20, nCol+'aa');
-        grad.addColorStop(1.00,    nCol+endA);
-      } else {
-        const f0=radii[0]/rN, f1=radii[1]/rN; // ≈ 0.560 et 0.780
-        // très dim zone ring0, medium dim zone ring1, rampe plein dans zone propre
-        grad.addColorStop(0.06,    nCol+'22');
-        grad.addColorStop(f0-0.11, nCol+'30');
-        grad.addColorStop(f0,      nCol+'3c');
-        grad.addColorStop(f0+0.06, nCol+'48');
-        grad.addColorStop(f1-0.09, nCol+'50');
-        grad.addColorStop(f1-0.01, nCol+'58');
-        grad.addColorStop(f1+0.07, nCol+'80');
-        grad.addColorStop(f1+0.20, nCol+'b0');
-        grad.addColorStop(1.00,    nCol+endA);
-      }
+      grad.addColorStop(0,     nCol+'00');
+      grad.addColorStop(midF,  nCol+midA);
+      grad.addColorStop(1.00,  nCol+endA);
       ctx.save();
       if(state[li].muted) ctx.globalAlpha=0.12;
       ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(exN,eyN);
