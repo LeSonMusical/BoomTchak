@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.7</span>
+    <span class="app-version">v3.20.8</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4659,37 +4659,37 @@ function openPresetModal(cfg){
       const showS=cat==='all'||cat==='son';
       const showM=cat==='all'||cat==='metro';
       let items=[];
+      // Déduplication globale : un même id ne peut apparaître qu'une fois quelle que soit la source
+      const coveredKeys=new Set();
+      const addItem=item=>{if(coveredKeys.has(item.id))return;coveredKeys.add(item.id);items.push(item);};
       if(showMisc)
         ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
-          .forEach(m=>items.push({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
+          .forEach(m=>addItem({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
       // Articles custom (encycloIndex) — masqués si en attente de suppression
       (packCours.encycloIndex||[])
         .filter(e=>!e._hiddenPending&&(cat==='all'||cat===(e.category||'concepts')))
-        .forEach(e=>items.push({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
+        .forEach(e=>addItem({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
       if(showG)
         packCours.grooves
           .filter(g=>encFamFilter==='all'||(g.familles||[]).includes(encFamFilter))
-          .forEach(g=>items.push({id:g.id,nom:g.nom,typeBadge:'G',hasC:hasEncycloContent(g.id)}));
+          .forEach(g=>addItem({id:g.id,nom:g.nom,typeBadge:'G',hasC:hasEncycloContent(g.id)}));
       if(showP)
         packCours.patterns
           .filter(p=>encFamFilter==='all'||(p.familles||[]).includes(encFamFilter))
-          .forEach(p=>{const key=p.encyclo_ref||p.id;items.push({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
+          .forEach(p=>{const key=p.encyclo_ref||p.id;addItem({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
       if(showB)
         (packCours.bands||[])
           .filter(b=>!b.localDeletePending)
           .filter(b=>encFamFilter==='all'||(b.familles||[]).includes(encFamFilter))
-          .forEach(b=>items.push({id:b.id,nom:b.nom,typeBadge:'B',hasC:hasEncycloContent(b.id)}));
+          .forEach(b=>addItem({id:b.id,nom:b.nom,typeBadge:'B',hasC:hasEncycloContent(b.id)}));
       if(showS)
         (packCours.soundPresets||[])
           .filter(sp=>encFamFilter==='all'||(sp.familles_ids||[]).includes(encFamFilter))
-          .forEach(sp=>items.push({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
+          .forEach(sp=>addItem({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
       if(showM){
-        // Collecter toutes les clés déjà couvertes par patterns/grooves/bands/sons
-        const coveredKeys=new Set(items.map(i=>i.id));
         metroPresets
           .filter(p=>encFamFilter==='all'||(p.familles_ids||[]).includes(encFamFilter))
-          .filter(p=>!coveredKeys.has(p.id)) // dédupliquer : skip si déjà un item avec cet id
-          .forEach(p=>items.push({id:p.id,nom:p.label||p.nom||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
+          .forEach(p=>addItem({id:p.id,nom:p.label||p.nom||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
       }
       if(searchQuery){const q=searchQuery.toLowerCase();items=items.filter(i=>i.nom.toLowerCase().includes(q));}
       if(encContentFilter==='written') items=items.filter(i=>i.hasC);
@@ -11901,6 +11901,7 @@ function buildPublishSection() {
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
           `<button class="btn-pub-enc-del-confirm" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Supprimer</button>` +
           `<button class="btn-pub-enc-del-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
@@ -11915,6 +11916,7 @@ function buildPublishSection() {
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
           `<button class="btn-pub-enc-del-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>` +
           `<button class="btn-pub-enc-del-tx-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
