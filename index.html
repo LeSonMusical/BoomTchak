@@ -1138,8 +1138,12 @@ body.dark-mode .mpi-btn{color:#A090D0}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
-#linear-cycle-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
-#lci-nav-row{display:none;position:absolute;top:3px;justify-content:center;align-items:center;gap:0;pointer-events:auto}
+#linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-top:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0}
+#lci-info,#lci-range{flex:1;font-size:11px;color:#888;white-space:nowrap}
+#lci-range{text-align:right}
+#lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
+body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-top-color:rgba(200,150,26,0.15)}
+body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
@@ -1539,7 +1543,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.12</span>
+    <span class="app-version">v3.20.13</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1842,14 +1846,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
         <span class="mpi-layer c-noise" id="mpi-l2"></span>
       </div>
     </div>
-    <!-- Indicateur de page (vue Cycle linéaire, cycle > 24 pas) -->
-    <div id="linear-cycle-indicator" style="display:none">
-      <div id="lci-nav-row">
-        <button class="mpi-btn" id="lci-prev">◀</button>
-        <span id="lci-label"></span>
-        <button class="mpi-btn" id="lci-next">▶</button>
-      </div>
+  </div>
+  <!-- Barre info/pagination vue Cycle linéaire -->
+  <div id="linear-cycle-indicator" style="display:none">
+    <span id="lci-info"></span>
+    <div id="lci-nav-row">
+      <button class="mpi-btn" id="lci-prev">◀</button>
+      <span id="lci-label"></span>
+      <button class="mpi-btn" id="lci-next">▶</button>
     </div>
+    <span id="lci-range"></span>
   </div>
   <div class="hdivider"></div>
 </div>
@@ -9083,22 +9089,28 @@ function _updateLinearPageIndicator(){
   const container=document.getElementById('linear-cycle-indicator');
   if(!container) return;
   const show=circleModeView==='linear' && layersOuverts && circleView;
-  container.style.display=show?'block':'none';
+  container.style.display=show?'flex':'none';
   if(!show) return;
-  const maxPages=_getLinearMaxPages();
-  const navRow=document.getElementById('lci-nav-row');
-  if(navRow){
-    const rcv=document.getElementById('rhythm-canvas');
-    const lciEl=container;
-    let leftPx='50%', tr='translateX(-50%)';
-    if(rcv&&lciEl){
-      const rcvR=rcv.getBoundingClientRect(), lciR=lciEl.getBoundingClientRect();
-      if(lciR.width>0){leftPx=Math.round(rcvR.left-lciR.left+rcvR.width/2)+'px';}
-    }
-    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:3px;left:'+leftPx+';transform:translateX(-50%);justify-content:center;align-items:center;gap:0;pointer-events:auto';
+  const DENOM=6, CAP_U=24*DENOM;
+  const su=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
+  const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
+  let totalU=0;
+  LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
+  if(!totalU) totalU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
+  const totalSteps=Math.round(totalU/DENOM);
+  const maxPages=Math.ceil(totalU/CAP_U);
+  const activePage=Math.min(_linearCyclePage,maxPages-1);
+  const infoEl=document.getElementById('lci-info');
+  if(infoEl) infoEl.textContent='Cycle · '+totalSteps+' pas';
+  const rangeEl=document.getElementById('lci-range');
+  if(rangeEl){
+    const pageStart=activePage*24+1;
+    const pageEnd=Math.min((activePage+1)*24,totalSteps);
+    rangeEl.textContent='pas '+pageStart+'–'+pageEnd;
   }
+  const navRow=document.getElementById('lci-nav-row');
+  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
   if(maxPages>1){
-    const activePage=Math.min(_linearCyclePage,maxPages-1);
     const lbl=document.getElementById('lci-label');
     if(lbl){
       lbl.innerHTML='';
