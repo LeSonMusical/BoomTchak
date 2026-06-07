@@ -1113,32 +1113,15 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 /* ─── VUE CIRCULAIRE ─── */
 #circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:0;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
-/* ── Indicateur page mesure (haut-droite, sans cadre) ── */
-#measure-page-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
-#mpi-info,#mpi-range{flex:1;font-size:10px;color:#888;white-space:nowrap}
-#mpi-range{text-align:right}
-#mpi-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
-body.dark-mode #measure-page-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
-body.dark-mode #mpi-info,body.dark-mode #mpi-range{color:#666}
+/* ── Dots de navigation et boutons (utilisés par #cycle-info-bar) ── */
 .mpi-btn{background:none;border:none;padding:0 4px;font-size:15px;cursor:pointer;color:#7060B0;line-height:1.6;opacity:.9}
 .mpi-btn:disabled{opacity:.18;cursor:default}
 body.dark-mode .mpi-btn{color:#A090D0}
-#mpi-label{font-size:10px;font-weight:700;min-width:32px;text-align:center;color:#6B5FA5;white-space:nowrap;display:flex;align-items:center;gap:1px}
 .mpi-dot{font-size:8px;opacity:.32;color:#6B5FA5;line-height:1;transition:all .15s;cursor:default}
 .mpi-dot.active{font-size:11px;opacity:1}
 body.dark-mode .mpi-btn{color:#555}
-body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
-#linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
-#lci-info,#lci-range{flex:1;font-size:10px;color:#888;white-space:nowrap}
-#lci-range{text-align:right}
-#lci-range.lci-interactive{color:#7060B0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent;font-weight:600}
-#lci-range.lci-interactive:hover{color:#5040A0}
-#lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
-body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
-body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
-body.dark-mode #lci-range.lci-interactive{color:#A090D0}
-body.dark-mode #lci-range.lci-interactive:hover{color:#C0B0F0}
+
 /* ── OFF state indicators ─────────────────────────────────────────────── */
 .nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none;margin-top:1px}
 body.band-muted .nav-tab-off-badge.sons-badge{display:block}
@@ -1194,22 +1177,22 @@ body.show-rib.view-circle #rhythm-info-wrap{order:4}
 body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
-/* CycleInfo bar (entre section-groove et canvas) */
-#cycle-info-bar{display:flex;align-items:center;font-size:9px;color:#999;padding:1px 6px 2px;box-sizing:border-box;width:100%;gap:0;border-top:1px solid rgba(0,0,0,.07)}
-.cib-left{flex-shrink:0;white-space:nowrap}
-.cib-center{flex:1;display:flex;align-items:center;justify-content:center;gap:1px;font-size:9px;color:#888;font-style:italic}
-.cib-right{flex-shrink:0;min-width:36px;text-align:right;font-size:9px;color:#6B5FA5;font-weight:700;white-space:nowrap}
-.cib-center .mpi-btn{font-size:10px;padding:0 2px;background:none;border:none;cursor:pointer;color:#8878C8;line-height:1.4}
+/* CycleInfo bar (entre section-groove et canvas) — même design que les indicateurs de page */
+#cycle-info-bar{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
+.cib-left{flex:1;font-size:10px;color:#888;white-space:nowrap}
+.cib-center{display:flex;align-items:center;gap:0;justify-content:center}
+.cib-right{flex:1;text-align:right;font-size:10px;color:#888;white-space:nowrap}
+.cib-center .mpi-btn{background:none;border:none;padding:0 4px;font-size:15px;cursor:pointer;color:#7060B0;line-height:1.6;opacity:.9}
 .cib-center .mpi-btn:disabled{opacity:.18;cursor:default}
-.cib-center .mpi-dot{font-size:7px;opacity:.35;color:#6B5FA5;cursor:default}
-.cib-center .mpi-dot.active{font-size:10px;opacity:1}
-.cib-page-btn{font-size:9px;padding:1px 4px;background:rgba(107,95,165,.1);border:1px solid rgba(107,95,165,.3);border-radius:3px;cursor:pointer;color:#6B5FA5;line-height:1.4}
-.cib-page-btn:hover{background:rgba(107,95,165,.2)}
-body.dark-mode #cycle-info-bar{color:#555;border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .cib-right{color:#9080C0}
-body.dark-mode .cib-center .mpi-btn{color:#9080C0}
-body.dark-mode .cib-center .mpi-dot{color:#9080C0}
-body.dark-mode .cib-page-btn{background:rgba(144,128,192,.12);border-color:rgba(144,128,192,.3);color:#9080C0}
+.cib-center .mpi-dot{font-size:8px;opacity:.32;color:#6B5FA5;line-height:1;transition:all .15s;cursor:default}
+.cib-center .mpi-dot.active{font-size:11px;opacity:1}
+.cib-center-label{font-size:10px;font-style:italic;color:#aaa}
+.cib-right-interactive{color:#7060B0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;font-weight:600;-webkit-tap-highlight-color:transparent}
+.cib-right-interactive:hover{color:#5040A0}
+body.dark-mode #cycle-info-bar{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
+body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
+body.dark-mode .cib-right-interactive{color:#A090D0}
+body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer : grille 9 colonnes (sig | spacer | L0 | gap | L1 | gap | L2 | spacer | hamburger) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
 .rib-grid{display:grid;grid-template-columns:auto 1fr auto 5px auto 5px auto 1fr auto;width:100%;align-items:center;row-gap:3px}
@@ -1578,7 +1561,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.7</span>
+    <span class="app-version">v3.21.8</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -1867,26 +1850,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <div id="canvas-view-bar"></div>
-    <!-- Barre info/pagination vue Cycle linéaire (au-dessus du canvas) -->
-    <div id="linear-cycle-indicator" style="display:none">
-      <span id="lci-info"></span>
-      <div id="lci-nav-row">
-        <button class="mpi-btn" id="lci-prev">◀</button>
-        <span id="lci-label"></span>
-        <button class="mpi-btn" id="lci-next">▶</button>
-      </div>
-      <span id="lci-range"></span>
-    </div>
-    <!-- Barre info/pagination vue Mesure (au-dessus du canvas) -->
-    <div id="measure-page-indicator" style="display:none">
-      <span id="mpi-info"></span>
-      <div id="mpi-nav-row">
-        <button class="mpi-btn" id="mpi-prev">◀</button>
-        <span id="mpi-label"></span>
-        <button class="mpi-btn" id="mpi-next">▶</button>
-      </div>
-      <span id="mpi-range"></span>
-    </div>
+
     <canvas id="rhythm-canvas"></canvas>
   <div class="hdivider"></div>
 </div>
@@ -9171,45 +9135,8 @@ function _startLinearFlash(li,si){
   _mirrorFlashRaf=requestAnimationFrame(_go);
 }
 function _updateLinearPageIndicator(){
-  const container=document.getElementById('linear-cycle-indicator');
-  if(!container) return;
   const show=circleModeView==='linear' && layersOuverts && circleView;
-  container.style.display=show?'flex':'none';
   if(!show) return;
-  const {totalU,pageU,numPages:maxPages,pageSteps}=_getLinearCycleInfo();
-  const DENOM=6;
-  const totalSteps=Math.round(totalU/DENOM);
-  const activePage=Math.min(_linearCyclePage,maxPages-1);
-  const infoEl=document.getElementById('lci-info');
-  if(infoEl) infoEl.textContent='Cycle · '+totalSteps+' pas';
-  const rangeEl=document.getElementById('lci-range');
-  if(rangeEl){
-    const pageStart=activePage*pageSteps+1;
-    const pageEnd=Math.min((activePage+1)*pageSteps,totalSteps);
-    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
-    const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
-    rangeEl.textContent='pas '+pageStart+'–'+pageEnd;
-    rangeEl.classList.toggle('lci-interactive',validOpts.length>0);
-    rangeEl.title=validOpts.length>0?'Cliquer pour changer la taille de page ('+validOpts.join('/')+' pas)':'';
-  }
-  const navRow=document.getElementById('lci-nav-row');
-  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
-  if(maxPages>1){
-    const lbl=document.getElementById('lci-label');
-    if(lbl){
-      lbl.innerHTML='';
-      for(let p=0;p<maxPages;p++){
-        const d=document.createElement('span');
-        d.className='mpi-dot'+(p===activePage?' active':'');
-        d.textContent=p===activePage?'●':'○';
-        lbl.appendChild(d);
-      }
-    }
-    const prev=document.getElementById('lci-prev');
-    const next=document.getElementById('lci-next');
-    if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
-    if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
-  }
   updateCycleInfoBar(0);
 }
 
@@ -9496,7 +9423,7 @@ function drawCircles(){
       // Cycle global = PPCM des plr de chaque layer (en mesures)
       const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
       const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
-      // Cycle global info → DOM bar (#measure-page-indicator), plus de texte sur canvas
+      // Cycle global info → DOM bar (#cycle-info-bar), plus de texte sur canvas
       // Flash arc — secteur correspondant à la page visible (STOP)
       const _flashNow=_mesureRightFlash&&(performance.now()<_mesureRightFlash.endMs||_mesureRightFlash.hold);
       if(_flashNow){
@@ -10040,47 +9967,8 @@ function _moveRow2ToStepView(){
 
 // ── _updateMeasurePageIndicator(globalPage) ────────────────────────────────
 function _updateMeasurePageIndicator(globalPage){
-  const el=document.getElementById('measure-page-indicator'); if(!el) return;
   const baseShow=circleModeView==='measure' && layersOuverts && circleView;
-  if(!baseShow){el.style.display='none';return;}
-  const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
-  const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
-  let maxPages=1;
-  LAYERS.forEach((_,li)=>{
-    const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
-    const n=state[li].pattern.length;
-    if(!n) return;
-    maxPages=lcm(maxPages,n/gcd(n,Math.max(1,spm_li)));
-  });
-  maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
-  if(maxPages<=1){el.style.display='none';return;}
-  el.style.display='flex';
-  const activePage=globalPage%maxPages;
-  // Gauche : "Cycle · N mes"
-  const infoEl=document.getElementById('mpi-info');
-  if(infoEl) infoEl.textContent=maxPages>1?'Cycle · '+maxPages+' mes':'';
-  // Droite : "Mes p/N"
-  const rangeEl=document.getElementById('mpi-range');
-  if(rangeEl) rangeEl.textContent='Mes '+(activePage+1)+(maxPages>1?'/'+maxPages:'');
-  // Centre : dots + flèches
-  const navRow=document.getElementById('mpi-nav-row');
-  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
-  if(maxPages>1){
-    const lbl=document.getElementById('mpi-label');
-    if(lbl){
-      lbl.innerHTML='';
-      for(let p=0;p<maxPages;p++){
-        const d=document.createElement('span');
-        d.className='mpi-dot'+(p===activePage?' active':'');
-        d.textContent=p===activePage?'●':'○';
-        lbl.appendChild(d);
-      }
-    }
-    const prev=document.getElementById('mpi-prev');
-    const next=document.getElementById('mpi-next');
-    if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
-    if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
-  }
+  if(!baseShow) return;
   updateCycleInfoBar(globalPage);
 }
 
@@ -10127,7 +10015,28 @@ function updateCycleInfoBar(globalPage){
   if(isPatternView){
     centerEl.innerHTML='<span style="font-style:italic;color:#aaa">1 tour = 1 pattern cycle</span>';
   } else if(isCycleView){
-    centerEl.innerHTML='';
+    // Centre : nav dots+flèches (même logique que l'ancien lci-nav-row)
+    const linInfo=_getLinearCycleInfo();
+    const maxPagesC=linInfo.numPages;
+    const activePage=Math.min(_linearCyclePage,maxPagesC-1);
+    if(maxPagesC>1){
+      let dotsHtml='';
+      for(let p=0;p<maxPagesC&&p<8;p++){
+        dotsHtml+=`<span class="mpi-dot${p===activePage?' active':''}">${p===activePage?'●':'○'}</span>`;
+      }
+      const pDis=playing||activePage<=0,nDis=playing||activePage>=maxPagesC-1;
+      centerEl.innerHTML=`<button class="mpi-btn" id="cib-lc-prev"${pDis?' disabled':''} style="opacity:${pDis?.18:1}">◀</button>${dotsHtml}<button class="mpi-btn" id="cib-lc-next"${nDis?' disabled':''} style="opacity:${nDis?.18:1}">▶</button>`;
+      centerEl.querySelector('#cib-lc-prev')?.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(!playing){_linearCyclePage=Math.max(0,_linearCyclePage-1);_updateLinearPageIndicator();drawCircles();}
+      });
+      centerEl.querySelector('#cib-lc-next')?.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(!playing){_linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);_updateLinearPageIndicator();drawCircles();}
+      });
+    } else {
+      centerEl.innerHTML='';
+    }
   } else if(isMeasureView){
     // Dots + flèches navigation mesures
     const spmG=posToSPM(parseInt(document.getElementById('bpm')?.value||'500'))*globalSpeedMult;
@@ -10174,6 +10083,27 @@ function updateCycleInfoBar(globalPage){
     maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
     const page=(globalPage||0)%maxPages;
     rightEl.textContent=maxPages>1?`mes ${page+1}/${maxPages}`:'';
+  } else if(isCycleView){
+    // Droite : plage "pas X-Y" interactive (même logique que l'ancien lci-range)
+    const linInfoR=_getLinearCycleInfo();
+    const totalStepsR=Math.round(linInfoR.totalU/6);
+    const activePageR=Math.min(_linearCyclePage,linInfoR.numPages-1);
+    const pageStart=activePageR*linInfoR.pageSteps+1;
+    const pageEnd=Math.min((activePageR+1)*linInfoR.pageSteps,totalStepsR);
+    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalStepsR);
+    if(validOpts.length>0){
+      rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-lc-range" title="Changer la taille de page (${validOpts.join('/')} pas)">pas ${pageStart}–${pageEnd}</span>`;
+      rightEl.querySelector('#cib-lc-range')?.addEventListener('click',e=>{
+        e.stopPropagation();
+        const idx=validOpts.indexOf(_lciMaxPageSize);
+        _lciMaxPageSize=validOpts[(idx+1)%validOpts.length];
+        _linearCyclePage=0;
+        _updateLinearPageIndicator();drawCircles();
+      });
+    } else {
+      rightEl.textContent=totalStepsR>0?`pas ${pageStart}–${pageEnd}`:'';
+    }
   } else if(isStepView){
     // Bouton page mesures : "1-8", "9-16", etc. — clic pour changer l'échelle
     const mC=Math.max(1,Math.round(measureCroches));
@@ -10184,7 +10114,7 @@ function updateCycleInfoBar(globalPage){
     const mesStart=pageIdx*ps+1;
     const mesEnd=Math.min((pageIdx+1)*ps,totalMes);
     const rangeLabel=totalMes<=ps?`1-${totalMes}`:`${mesStart}-${mesEnd}`;
-    rightEl.innerHTML=`<button class="cib-page-btn" id="cib-step-size" title="Changer l'échelle (mesures par page)">${rangeLabel}</button>`;
+    rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-step-size" title="Changer l'échelle (mesures par page)">${rangeLabel}</span>`;
     rightEl.querySelector('#cib-step-size')?.addEventListener('click',e=>{
       e.stopPropagation();
       const idx=_CIB_PAGE_SIZES.indexOf(_cibStepPageSize);
@@ -10235,11 +10165,9 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); _updateLinearPageIndicator(); updateCycleInfoBar(_measureViewPage); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); updateCycleInfoBar(_measureViewPage); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
-    _updateMeasurePageIndicator(_measureViewPage); // cache l'indicateur hors vue cercle
-    _updateLinearPageIndicator(); // cache l'indicateur cycle linéaire hors vue
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
     if(isStepSeq) _moveRow2ToStepView();
@@ -15122,48 +15050,7 @@ _initEncycloPanel();
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 // ── Init navigation pages vue Mesure ──────────────────────────────────────
-(function(){
-  function _getMeasureMaxPages(){
-    const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
-    const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
-    if(!mSec) return 1;
-    let cyclePages=1;
-    LAYERS.forEach((_,li)=>{
-      const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
-      const n=state[li].pattern.length;
-      if(!n) return;
-      cyclePages=lcm(cyclePages, n/gcd(n,spm_li));
-    });
-    return Math.max(1,Math.min(Math.round(cyclePages),96));
-  }
-  document.getElementById('mpi-prev')?.addEventListener('click',()=>{
-    _measureViewPage=Math.max(0,_measureViewPage-1);
-    drawCircles();
-  });
-  document.getElementById('mpi-next')?.addEventListener('click',()=>{
-    _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
-    drawCircles();
-  });
-  document.getElementById('lci-prev')?.addEventListener('click',()=>{
-    _linearCyclePage=Math.max(0,_linearCyclePage-1);
-    _updateLinearPageIndicator(); drawCircles();
-  });
-  document.getElementById('lci-next')?.addEventListener('click',()=>{
-    _linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);
-    _updateLinearPageIndicator(); drawCircles();
-  });
-  document.getElementById('lci-range')?.addEventListener('click',()=>{
-    const {totalU}=_getLinearCycleInfo();
-    const totalSteps=Math.round(totalU/6);
-    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
-    const opts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
-    if(!opts.length) return;
-    const idx=opts.indexOf(_lciMaxPageSize);
-    _lciMaxPageSize=opts[(idx+1)%opts.length];
-    _linearCyclePage=0;
-    _updateLinearPageIndicator(); drawCircles();
-  });
-}());
+
 // Aligner padding-top body sur la hauteur réelle de la topbar
 (()=>{const tb=document.querySelector('.top-bar');if(tb)document.body.style.paddingTop=tb.offsetHeight+'px';})();
 </script>
