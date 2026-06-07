@@ -313,7 +313,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 #mini-visu{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none}
 .gvb-btns{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 28px}
 /* Chevron Groove.view (entre Mesure et Step) — jaune, contrôle l'affichage canvas/vue */
-.gvb-collapse-btn{flex-shrink:0;font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;margin:0 4px;transition:color .12s,border-color .12s,opacity .12s;position:relative;z-index:2}
+.gvb-collapse-btn{font-size:12px;background:none;border:1px solid rgba(200,150,26,.55);color:#C8961A;cursor:pointer;padding:2px 5px;line-height:1.4;-webkit-tap-highlight-color:transparent;min-width:22px;text-align:center;border-radius:4px;transition:color .12s,border-color .12s,opacity .12s;position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:2}
 .gvb-collapse-btn:not(.open){border-color:#C8961A;color:#8B6914;font-weight:700;background:none}
 .gvb-collapse-btn.open{border-color:rgba(123,94,167,.3);color:rgba(123,94,167,.55);font-weight:400;background:none}
 .gvb-collapse-btn:hover{opacity:.85}
@@ -1562,7 +1562,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.13</span>
+    <span class="app-version">v3.21.14</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4169,6 +4169,14 @@ function updateSettingsBadge(){
 }
 let layersOuverts = true;
 let layerPanelsOuverts = false;
+function _doToggleLayerPanels(){
+  layerPanelsOuverts=!layerPanelsOuverts;
+  const lw=document.getElementById('layers-wrap');
+  if(lw)lw.style.display=layerPanelsOuverts?'':'none';
+  const lmb=document.getElementById('layers-mod-bar');
+  if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
+  updateRhythmInfoBar();
+}
 let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
@@ -6044,20 +6052,12 @@ function buildGrooveSection(){
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
   gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);
-  // Chevron Groove.view (entre Mesure/Step) — affichage canvas/vue
+  // Chevron Groove.view (déplacé à droite, position absolue) — affichage canvas/vue
   const btnCollapse=document.createElement('button');
   btnCollapse.className='gvb-collapse-btn'+(layersOuverts?' open':'');
   btnCollapse.id='groove-collapse';
   btnCollapse.textContent=layersOuverts?'▼':'▶';
   btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
-  // Hamburger tricolore (extrême droite) — masque/affiche les 3 volets layer
-  const btnLayersToggle=document.createElement('button');
-  btnLayersToggle.className='gvb-layers-btn'+(layerPanelsOuverts?' open':'');
-  btnLayersToggle.id='groove-layers-toggle';
-  btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
-  ['#378ADD','#D85A30','#1D9E75'].forEach(col=>{
-    const bar=document.createElement('span');bar.className='gvb-bar';bar.style.background=col;btnLayersToggle.appendChild(bar);
-  });
 
   l1.appendChild(gLeft);l1.appendChild(gCenter);l1.appendChild(gRight);
   header.appendChild(l1);
@@ -6086,7 +6086,6 @@ function buildGrooveSection(){
   ];
   const gvbBtns=document.createElement('div');gvbBtns.className='gvb-btns';
   _viewDefs.forEach((d,i)=>{
-    if(i===2) gvbBtns.appendChild(btnCollapse); // chevron entre Mesure et Step
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
     if(!layersOuverts)b.style.display='none';
@@ -6094,7 +6093,7 @@ function buildGrooveSection(){
     gvbBtns.appendChild(b);
   });
   l3.appendChild(gvbBtns);
-  l3.appendChild(btnLayersToggle); // hamburger à l'extrême droite
+  l3.appendChild(btnCollapse); // chevron à l'extrême droite (position absolute)
   // Clic sur le fond de la groove-view-bar → ouvre volet mod du layer correspondant (mini-VU zones)
   // Zone gauche=layer0, centre=layer2, droite=layer1 (correspond aux positions halos mini-VU)
   l3.addEventListener('click',e=>{
@@ -6172,18 +6171,7 @@ function buildGrooveSection(){
     updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
-  // Hamburger : masque/affiche les 3 volets layer uniquement (pas rhythm-info, pas canvas)
-  const _toggleLayerPanels=()=>{
-    layerPanelsOuverts=!layerPanelsOuverts;
-    const lw=document.getElementById('layers-wrap');
-    if(lw)lw.style.display=layerPanelsOuverts?'':'none';
-    const lmb=document.getElementById('layers-mod-bar');
-    if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
-    btnLayersToggle.classList.toggle('open',layerPanelsOuverts);
-    btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
-    updateRhythmInfoBar();
-  };
-  btnLayersToggle.addEventListener('click',e=>{e.stopPropagation();_toggleLayerPanels();});
+  // Hamburger layers : désormais dans l'InfoLayer — branché sur _doToggleLayerPanels()
 
   // Famille → ouvre modal
   btnFam.addEventListener('click',()=>{
@@ -9837,8 +9825,7 @@ function setupCanvasInteraction(){
         layerPanelsOuverts=true;
         const lw=document.getElementById('layers-wrap');
         if(lw)lw.style.display='';
-        const togBtn=document.getElementById('groove-layers-toggle');
-        if(togBtn){togBtn.classList.add('open');togBtn.title='Masquer layers';}
+        // layerPanelsOuverts déjà true ci-dessus, updateRhythmInfoBar rebuild le btn
       }
       const modPanel=document.getElementById('mod-panel-'+li);
       if(modPanel){
@@ -10570,8 +10557,7 @@ function updateRhythmInfoBar(){
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
   });
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
-    // Hamburger InfoLayer : toggle layerPanelsOuverts (même effet que le hamburger de la groove-view-bar)
-    document.querySelector('#groove-view-bar .gvb-layers-btn')?.click();
+    _doToggleLayerPanels();
   });
   el.querySelectorAll('.rib-layer-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
