@@ -1194,9 +1194,19 @@ body.show-rib.view-circle #rhythm-info-wrap{order:4}
 body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
-/* Ligne info cycle : sous la groove-view-bar en vue cycle/mesure */
-#cycle-info-strip{display:none;width:100%;text-align:center;font-size:9px;color:#999;padding:2px 8px;box-sizing:border-box}
-body.dark-mode #cycle-info-strip{color:#666}
+/* Row 0 InfoLayer : GrooveCycleInfo (style cycle-info-strip) */
+.rib-row0{display:flex;align-items:center;font-size:9px;color:#999;padding:1px 6px 2px;box-sizing:border-box;width:100%;gap:0}
+.rib-r0-left{flex-shrink:0}
+#rib-nav-center{flex:1;display:flex;align-items:center;justify-content:center;gap:1px}
+#rib-nav-right{flex-shrink:0;min-width:36px;text-align:right;font-size:9px;color:#6B5FA5;font-weight:700}
+#rib-nav-center .mpi-btn{font-size:10px;padding:0 2px;background:none;border:none;cursor:pointer;color:#8878C8;line-height:1.4}
+#rib-nav-center .mpi-btn:disabled{opacity:.18;cursor:default}
+#rib-nav-center .mpi-dot{font-size:7px;opacity:.35;color:#6B5FA5;cursor:default}
+#rib-nav-center .mpi-dot.active{font-size:10px;opacity:1}
+body.dark-mode .rib-row0{color:#555}
+body.dark-mode #rib-nav-right{color:#9080C0}
+body.dark-mode #rib-nav-center .mpi-btn{color:#9080C0}
+body.dark-mode #rib-nav-center .mpi-dot{color:#9080C0}
 /* InfoLayer : grille 9 colonnes (sig | spacer | L0 | gap | L1 | gap | L2 | spacer | hamburger) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
 .rib-grid{display:grid;grid-template-columns:auto 1fr auto 5px auto 5px auto 1fr auto;width:100%;align-items:center;row-gap:3px}
@@ -1565,7 +1575,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.5</span>
+    <span class="app-version">v3.21.6</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6459,10 +6469,6 @@ function buildLayers(){
   cont.innerHTML='';_layerCPRefreshers.length=0;
   // Barre info rythmique : placée dans #rhythm-info-wrap (sous la groove view)
   const riWrap=document.getElementById('rhythm-info-wrap');
-  if(riWrap&&!document.getElementById('cycle-info-strip')){
-    const cis=document.createElement('div');cis.id='cycle-info-strip';
-    riWrap.insertBefore(cis,riWrap.firstChild);
-  }
   let ribDiv=document.getElementById('rhythm-info-bar');
   if(!ribDiv){
     ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
@@ -9196,6 +9202,7 @@ function _updateLinearPageIndicator(){
     if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
     if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
   }
+  _updateRibNav(0);
 }
 
 function drawCircles(){
@@ -10066,6 +10073,58 @@ function _updateMeasurePageIndicator(globalPage){
     if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
     if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
   }
+  _updateRibNav(globalPage);
+}
+
+// ── _updateRibNav(globalPage) : met à jour la navigation row 0 du bloc InfoLayer ──
+function _updateRibNav(globalPage){
+  const centerEl=document.getElementById('rib-nav-center');
+  const rightEl=document.getElementById('rib-nav-right');
+  if(!centerEl||!rightEl)return;
+  const isMeasureView=circleModeView==='measure'&&circleView;
+  const isCycleView=circleModeView==='linear';
+  if(!isMeasureView&&!isCycleView){centerEl.innerHTML='';rightEl.textContent='';return;}
+  if(isCycleView){
+    // Vue Cycle : plage des mesures
+    const _cf=LAYERS.map((_,li)=>_cycleInCrochesFrac(li));
+    const _Dc=lcm(_cf[0].den,lcm(_cf[1].den,_cf[2].den));
+    const _Nc=_cf.map(f=>f.num*(_Dc/f.den));
+    const _LcmNc=lcm(_Nc[0],lcm(_Nc[1],_Nc[2]));
+    const _mC=currentSig?(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):8;
+    const _gM=gcd(_LcmNc,_Dc*_mC);
+    const _nr=_LcmNc/_gM,_dr=(_Dc*_mC)/_gM;
+    const totalMes=_dr===1?_nr:_nr/_dr;
+    centerEl.innerHTML='';
+    rightEl.textContent=totalMes>1?`mes 1-${Math.round(totalMes)}`:'';
+    return;
+  }
+  // Vue Mesure : dots + flèches
+  const spmG=posToSPM(parseInt(document.getElementById('bpm')?.value||'500'))*globalSpeedMult;
+  const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
+  let maxPages=1;
+  LAYERS.forEach((_,li)=>{
+    const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
+    const n=state[li].pattern.length; if(!n)return;
+    maxPages=lcm(maxPages,n/gcd(n,Math.max(1,spm_li)));
+  });
+  maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
+  if(maxPages<=1){centerEl.innerHTML='';rightEl.textContent='';return;}
+  const page=globalPage%maxPages;
+  let dotsHtml='';
+  for(let p=0;p<maxPages&&p<8;p++){
+    dotsHtml+=`<span class="mpi-dot${p===page?' active':''}">${p===page?'●':'○'}</span>`;
+  }
+  const pDis=playing||page<=0,nDis=playing||page>=maxPages-1;
+  centerEl.innerHTML=`<button class="mpi-btn" id="rib-prev"${pDis?' disabled':''} style="opacity:${pDis?.18:1}">◀</button>${dotsHtml}<button class="mpi-btn" id="rib-next"${nDis?' disabled':''} style="opacity:${nDis?.18:1}">▶</button>`;
+  rightEl.textContent=`mes ${page+1}/${maxPages}`;
+  centerEl.querySelector('#rib-prev')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(!playing&&_measureViewPage>0){_measureViewPage--;_updateMeasurePageIndicator(_measureViewPage);if(circleView)drawCircles();}
+  });
+  centerEl.querySelector('#rib-next')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(!playing&&_measureViewPage<maxPages-1){_measureViewPage++;_updateMeasurePageIndicator(_measureViewPage);if(circleView)drawCircles();}
+  });
 }
 
 // ── _applyView() : applique viewShape + viewCycle* au DOM ─────────────────
@@ -10418,12 +10477,7 @@ function updateRhythmInfoBar(){
   // ── Col 4 : détail par layer avec couleurs (si ratio significatif) ──
   const showCol4=hasSignificantRatio;
   const sigLabelSimple=typeof computeSigLabelSimple==='function'?computeSigLabelSimple():'';
-  // ── cycle-info-strip : info cycle — toujours visible ──
-  const cisEl=document.getElementById('cycle-info-strip');
-  if(cisEl){
-    cisEl.style.display='block';
-    cisEl.textContent=`Cycle : ${cycTpsStr} tps = ${cycMesStr} mes. à ${sigLabelSimple}`;
-  }
+
   // ── Rhythm info bar : visible si au moins un layer a des pas ──
   const hasAnyPattern=LAYERS.some((_,li)=>state[li].pattern.length>0);
   document.body.classList.toggle('has-rib',hasAnyPattern);
@@ -10479,7 +10533,8 @@ function updateRhythmInfoBar(){
   }).join('');
   const phenoHtml=phenoLabel?`<div class="rib-row3"><span class="rib-pheno">${phenoLabel}</span></div>`:'';
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid"><button class="rib-sig-btn rib-grid-sig" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>${layerCells}${modBtnHtml}${infoCells}</div>${phenoHtml}`;
+  const row0Html=`<div class="rib-row0"><span class="rib-r0-left">Cycle de ${cycMesStr}&thinsp;mes.</span><span id="rib-nav-center"></span><span id="rib-nav-right"></span></div>`;
+  el.innerHTML=row0Html+`<div class="rib-grid"><button class="rib-sig-btn rib-grid-sig" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>${layerCells}${modBtnHtml}${infoCells}</div>${phenoHtml}`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
@@ -10495,6 +10550,7 @@ function updateRhythmInfoBar(){
       updateRhythmInfoBar(); drawCircles();
     });
   });
+  _updateRibNav(playing?_mGlobalPageLast:_measureViewPage);
 }
 
 function visualLoopCircle(){
