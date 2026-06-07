@@ -337,6 +337,12 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
+.gvb-meter-view{flex:1;display:none;align-items:center;justify-content:center;gap:10px;padding:0 28px;font-size:11px;color:#7B5EA7;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;z-index:2}
+.gvb-meter-view .gmv-sig{font-weight:700;color:#C8961A;font-size:12px}
+.gvb-meter-view .gmv-bpm{font-weight:600}
+.gvb-meter-view .gmv-swing{opacity:.7;font-size:10px}
+body.dark-mode .gvb-meter-view{color:#9B8FD5}
+body.dark-mode .gvb-meter-view .gmv-sig{color:#C8961A}
 #layer-edit-bar{display:none}
 .leb-pat-lbl,.leb-steps,.leb-cnt,.leb-step-sep,.leb-pipe,.leb-sig,.leb-cycle,.leb-mod-chevron,.leb-mod-btn{display:none}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
@@ -1562,7 +1568,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.15</span>
+    <span class="app-version">v3.21.16</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6091,7 +6097,12 @@ function buildGrooveSection(){
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     gvbBtns.appendChild(b);
   });
+  if(!layersOuverts)gvbBtns.style.display='none';
+  const gvbMeter=document.createElement('div');
+  gvbMeter.id='gvb-meter-view';gvbMeter.className='gvb-meter-view';
+  gvbMeter.style.display=layersOuverts?'none':'flex';
   l3.appendChild(gvbBtns);
+  l3.appendChild(gvbMeter);
   l3.appendChild(btnCollapse); // chevron à l'extrême droite (position absolute)
   // Clic sur le fond de la groove-view-bar → ouvre volet mod du layer correspondant (mini-VU zones)
   // Zone gauche=layer0, centre=layer2, droite=layer1 (correspond aux positions halos mini-VU)
@@ -6152,7 +6163,7 @@ function buildGrooveSection(){
     _grooveOnSelect(list[Math.floor(Math.random()*list.length)].id);
   });
 
-  // Chevron : toggle Groove.view (canvas) + Groove.InfoLine (#cycle-info-bar) uniquement
+  // Chevron : toggle Groove.view (canvas + InfoLine) + swap boutons vue ↔ Meter.view
   const _toggleLayers=()=>{
     layersOuverts=!layersOuverts;
     const cv=document.getElementById('circle-view');
@@ -6161,6 +6172,10 @@ function buildGrooveSection(){
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(sr)sr.style.display=layersOuverts?'':'none';
     if(cib)cib.style.display=layersOuverts?'':'none';
+    // Swap : boutons vue ↔ Meter.view
+    gvbBtns.style.display=layersOuverts?'':'none';
+    const gm=document.getElementById('gvb-meter-view');
+    if(gm){gm.style.display=layersOuverts?'none':'flex';if(!layersOuverts)_updateGvbMeterView();}
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
@@ -8892,6 +8907,20 @@ function updateBeatDisplay(){
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
   // Recalibrer startTime → synchro visuelle après changement de tempo
   recalibrateStartTimes();
+  _updateGvbMeterView();
+}
+function _updateGvbMeterView(){
+  const el=document.getElementById('gvb-meter-view');
+  if(!el||el.style.display==='none')return;
+  const fbs=currentSig?.equivalence||currentSig?.felBeatSteps||2;
+  const sym=symFromFelBeatSteps(fbs);
+  const bpmPos=+document.getElementById('bpm')?.value||500;
+  const bpm=Math.round(posToBPM(bpmPos));
+  const sig=computeSigLabel?.()|| `${currentSig?.nbDivisions||4}/${currentSig?.beatUnit||4}`;
+  const swPct=Math.round(50+swingVal*25);
+  const swName=swingVal>0.01?getSwingName(swPct):'';
+  el.innerHTML=`<span class="gmv-sig">${sig}</span><span class="gmv-bpm">${sym}=${bpm}</span>`+(swName?`<span class="gmv-swing">${swName}</span>`:'');
+  el.onclick=()=>openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:id=>changeSig(id)});
 }
 function _syncBtnVolAllMuted(){
   const btnV=document.getElementById('btn-vol');if(!btnV)return;
@@ -10558,6 +10587,21 @@ function updateRhythmInfoBar(){
     btn.addEventListener('click',()=>{
       const li=+btn.dataset.li;
       state[li].muted=!state[li].muted;
+      // Sync btn-mute-lbl (3Layers.Pattern)
+      const bml=document.getElementById('btn-mute-lbl-'+li);
+      if(bml){bml.classList.toggle('muted',state[li].muted);bml.title=(state[li].muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+      // Sync layerDiv muted-layer
+      const ld=document.querySelector('.layer.'+LAYERS[li].cls);
+      if(ld)ld.classList.toggle('muted-layer',state[li].muted);
+      // Sync step-rows row2
+      const _sd=document.getElementById('steps-'+LAYERS[li].id);
+      const _r2=_sd?.closest('.layer-row2');
+      if(_r2)_r2.classList.toggle('muted',state[li].muted);
+      // Sync bouton mute Sons/Instruments
+      const _sk=['low','high','noise'][li];
+      const _smb=document.querySelector(`.sound-layer[data-sound-key="${_sk}"] .btn-mute-lbl`);
+      if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+      _syncBtnVolAllMuted();
       updateRhythmInfoBar(); drawCircles();
     });
   });
