@@ -1553,7 +1553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.37</span>
+    <span class="app-version">v3.20.38</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9610,8 +9610,8 @@ function drawLinear(){
     const repLast=Math.ceil((startU+dispU)/cu);
     for(let rep=repFirst;rep<repLast;rep++){
       if(rep%2===0) continue; // bandes impaires uniquement
-      const x0=Math.max(marginX,marginX+uW*(rep*cu-startU));
-      const x1=Math.min(W-marginX,marginX+uW*((rep+1)*cu-startU));
+      const x0=Math.max(marginX,marginX+uW*(rep*cu+half-startU));
+      const x1=Math.min(W-marginX,marginX+uW*((rep+1)*cu+half-startU));
       if(x1<=x0) continue;
       ctx.fillStyle=isDark?col.fill+'18':col.fill+'0D';
       ctx.fillRect(x0,marginY+rowH*li,x1-x0,rowH);
@@ -9656,8 +9656,8 @@ function drawLinear(){
       if((rep+1)*cu<=startU) continue;
       // Crochet de cycle : ligne du haut + barre simple sur le 1er et le dernier step
       if(totalReps>1){
-        const xL=marginX+uW*(repStartU+half-startU);          // centre du 1er step
-        const xR=marginX+uW*(repStartU+(n-1)*s+half-startU); // centre du dernier step
+        const xL=marginX+uW*(repStartU+half-startU);    // centre du 1er step
+        const xR=marginX+uW*(repStartU+cu+half-startU); // centre du 1er step du cycle suivant
         const yT=y-dotR-4;
         const yB=y+dotR+4;
         const c=col.stroke+'88';
