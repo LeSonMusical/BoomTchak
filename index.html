@@ -337,19 +337,8 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .gvb-btn{flex:0 0 52px;font-size:9px;padding:3px 2px;border-radius:8px;border:1px solid rgba(123,94,167,.4);background:rgba(123,94,167,.07);color:#6B5FA5;cursor:pointer;text-align:center;font-weight:600;transition:background .12s,color .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-sizing:border-box;position:relative;z-index:2}
 .gvb-btn:hover{background:rgba(123,94,167,.15)}
 .gvb-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94}
-#layer-edit-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.08);width:100%;box-sizing:border-box}
-.leb-pat-lbl{font-size:9px;color:#aaa;flex-shrink:0;margin-right:2px}
-.leb-steps{display:flex;align-items:center;flex-shrink:0}
-.leb-cnt{font-size:9px;font-weight:700}
-.leb-step-sep{color:#bbb;font-size:9px;margin:0 2px}
-.leb-pipe{color:#ddd;margin:0 4px;font-size:9px;flex-shrink:0}
-.leb-sig{color:#3A8C6E;cursor:pointer;font-weight:700;font-size:9px;text-decoration:underline dotted;text-underline-offset:2px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.leb-sig:hover{color:#1D6B50}
-.leb-cycle{flex:1;color:#888;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.leb-mod-chevron{color:#bbb;font-size:8px}
-.leb-mod-btn{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid rgba(200,150,26,.55);background:rgba(0,0,0,.04);cursor:pointer;flex-shrink:0;white-space:nowrap;opacity:.88;line-height:1.4;-webkit-tap-highlight-color:transparent;margin-left:auto}
-.leb-mod-btn:hover{opacity:1;background:rgba(0,0,0,.07)}
-.leb-mod-btn.active{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.25);opacity:1}
+#layer-edit-bar{display:none}
+.leb-pat-lbl,.leb-steps,.leb-cnt,.leb-step-sep,.leb-pipe,.leb-sig,.leb-cycle,.leb-mod-chevron,.leb-mod-btn{display:none}
 .groove-name-btn{font-weight:700;font-size:14px;color:#6B4C10;background:transparent;border:none;cursor:pointer;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;line-height:1.4;text-align:center}
 .groove-name-btn:hover{color:#3A2000}
 .groove-name-btn::after{display:none}
@@ -1207,23 +1196,27 @@ body.has-rib.step-seq #rhythm-info-wrap{display:block;width:100%}
 /* border-left supprimé sur #rhythm-info-wrap (v3.16.44) */
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
 @media(min-width:600px){body.has-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
-#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
-#rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
-/* Signature : violet clair, cliquable → toggle Metro */
-#rhythm-info-bar .rib-sig{color:#7A9BBB;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
-#rhythm-info-bar .rib-sig:hover{color:#3A8C6E}
-/* Phénomène : jaune Groove */
-#rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic}
-/* Boutons mute layer */
-#rhythm-info-bar .rib-layer-btn{background:none;border:1.5px solid;border-radius:4px;padding:1px 6px 1px 5px;cursor:pointer;font-size:10px;line-height:1.3;display:inline-flex;align-items:baseline;gap:2px;transition:opacity .15s,filter .15s}
+#rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:center;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
+#rhythm-info-bar .rib-row1{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
+#rhythm-info-bar .rib-row2{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:12px}
+#rhythm-info-bar .rib-l2-item{font-size:8px;opacity:.72;white-space:nowrap}
+#rhythm-info-bar .rib-row3{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
+#rhythm-info-bar .rib-sig-btn{background:none;border:1.5px solid #3A8C6E;border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;color:#2A6A50;line-height:1.3;-webkit-tap-highlight-color:transparent}
+#rhythm-info-bar .rib-layer-btn{background:none;border:1.5px solid;border-radius:4px;padding:1px 6px 1px 5px;cursor:pointer;font-size:10px;line-height:1.3;display:inline-flex;align-items:baseline;gap:2px;transition:opacity .15s,filter .15s;-webkit-tap-highlight-color:transparent}
 #rhythm-info-bar .rib-layer-btn.muted{opacity:.3;filter:grayscale(.6)}
 #rhythm-info-bar .rib-layer-btn .rib-steps{font-weight:700;font-size:11px}
 #rhythm-info-bar .rib-layer-btn .rib-note{font-size:12px;line-height:1}
+#rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
+#rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic;font-size:9px}
 body.dark-mode #rhythm-info-bar{color:#666}
-body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
+body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A;border-color:#2A6A50}
+body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
 /* compat rétro: has-poly-rhythm → has-rib */
 body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
 @media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
+/* Groove-view-bar : info cycle à gauche */
+.gvb-cycle-info{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:8px;color:#999;white-space:nowrap;pointer-events:none;z-index:1;line-height:1.2}
+body.dark-mode .gvb-cycle-info{color:#666}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
@@ -1233,9 +1226,8 @@ body.step-seq #step-rows-wrap{display:flex;padding-left:2px}
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Layer muté : steps actifs atténués (comme vue circulaire) */
 #step-rows-wrap .layer-row2.muted .step.on,#step-rows-wrap .layer-row2.muted .step.soft{opacity:.3}
-/* Strip info gauche en step-seq (nb pas, unité, durée) */
-.step-seq-info{display:none;width:54px;flex-shrink:0;padding:2px 3px 2px;font-size:9px;line-height:1.4;align-self:center;box-sizing:border-box}
-body.step-seq .step-seq-info{display:flex!important;flex-direction:column;justify-content:center}
+/* Strip info gauche step-seq — supprimé v3.21 */
+.step-seq-info{display:none!important}
 
 /* ─── RÉGLAGES / THÈME ─── */
 .theme-toggle{display:flex;gap:3px}
@@ -1557,7 +1549,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.0</span>
+    <span class="app-version">v3.21.1</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6098,6 +6090,8 @@ function buildGrooveSection(){
     {key:'pas',   label:'Step',    shape:'linear', cycle:'pattern'},
     {key:'cycle', label:'Cycle',   shape:'linear', cycle:'cycle'}
   ];
+  const gvbCycInfo=document.createElement('span');gvbCycInfo.id='gvb-cycle-info';gvbCycInfo.className='gvb-cycle-info';
+  l3.appendChild(gvbCycInfo);
   const gvbBtns=document.createElement('div');gvbBtns.className='gvb-btns';
   _viewDefs.forEach((d,i)=>{
     if(i===2) gvbBtns.appendChild(btnCollapse); // chevron entre Mesure et Step
@@ -9404,8 +9398,8 @@ function drawCircles(){
       ctx.globalAlpha = 1;
     }
   }
-  // Labels 3 lignes (nb pas / unité / durée) centrés verticalement — modes Pattern ET Mesure
-  {
+  // Labels 3 lignes (nb pas / unité / durée) — supprimés v3.21 (info dans rhythm-info-bar)
+  if(false){
     const isDark2 = document.body.classList.contains('dark-mode');
     const lSpacing = Math.min(36, Math.max(26, H * 0.2)); // espacement entre couches
     const lineH = 11; // espacement entre lignes d'un même layer
@@ -10391,37 +10385,70 @@ function updateRhythmInfoBar(){
   const phenoLabel=phenoParts.join(' · ');
   // ── Col 4 : détail par layer avec couleurs (si ratio significatif) ──
   const showCol4=hasSignificantRatio;
-  // ── leb-cycle : toujours mis à jour ──
-  const lebCycleEl=document.getElementById('leb-cycle');
-  if(lebCycleEl)lebCycleEl.innerHTML=`cycle de ${cycTpsStr}&thinsp;tps&thinsp;=&thinsp;${cycMesStr}&thinsp;mes.`;
+  // ── gvb-cycle-info : info cycle dans la groove-view-bar ──
+  const sigLabelSimple=typeof computeSigLabelSimple==='function'?computeSigLabelSimple():'';
+  const gvbCycInfoEl=document.getElementById('gvb-cycle-info');
+  if(gvbCycInfoEl) gvbCycInfoEl.innerHTML=`Cycle&thinsp;${cycTpsStr}&thinsp;tps&thinsp;=&thinsp;${cycMesStr}&thinsp;mes.&thinsp;à&thinsp;${sigLabelSimple}`;
   // ── Rhythm info bar : toujours visible si au moins un layer a des pas ──
   const hasAnyPattern=LAYERS.some((_,li)=>state[li].pattern.length>0);
   document.body.classList.toggle('has-rib',hasAnyPattern);
   document.body.classList.toggle('has-poly-rhythm',hasAnyPattern&&!!phenoLabel);
   if(!hasAnyPattern){el.style.display='none';return;}
-  // ── Boutons layer : nb de pas + figure de note + mute toggle ──
+  // ── Ligne 1 : [sig] [3 boutons layer mute] [mod] ──
   const LCOLS=['#378ADD','#D85A30','#1D9E75'];
-  const layerHtml=LAYERS.map((_,li)=>{
+  const layerBtns=LAYERS.map((_,li)=>{
     const n=state[li].pattern.length;
     if(!n) return '';
     const col=LCOLS[li];
     const muted=!!state[li].muted;
-    return `<button class="rib-layer-btn${muted?' muted':''}" data-li="${li}"
-      style="color:${col};border-color:${col}"
-      title="${muted?'Activer':'Muter'} layer ${li+1}">
-      <span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span>
-    </button>`;
+    return `<button class="rib-layer-btn${muted?' muted':''}" data-li="${li}" style="color:${col};border-color:${col}" title="${muted?'Activer':'Muter'} layer ${li+1}"><span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span></button>`;
   }).join('');
-  const phenoHtml=phenoLabel?`<span class="rib-sep">·</span><span class="rib-pheno">${phenoLabel}</span>`:'';
+  const anyModOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
+  const row1=`<button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>${layerBtns}<button class="rib-mod-btn" id="rib-mod-btn"><span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span>&thinsp;${anyModOpen?'▼':'▶'}</button>`;
+  // ── Ligne 2 : info par vue ──
+  const isMesureCycle=(circleModeView==='measure')||(viewShape==='linear'&&viewCycleLinear==='cycle');
+  const row2items=LAYERS.map((_,li)=>{
+    const n=state[li].pattern.length; if(!n)return '';
+    const col=LCOLS[li];
+    if(isMesureCycle){
+      const cf2=_cycleInCrochesFrac(li);
+      const mC=measureCroches;
+      const g=gcd(cf2.num,cf2.den*mC);
+      const mN=cf2.num/g, mD=(cf2.den*mC)/g;
+      const mesStr=mD===1?mN+' mes':_fracStr(mN,mD)+' mes';
+      return `<span class="rib-l2-item" style="color:${col}">●&thinsp;${mesStr}</span>`;
+    } else {
+      const {num,den}=_layerDurFrac(li);
+      const whole=Math.floor(num/den),rem=num%den;
+      const durStr=(rem===0?whole:(whole===0?_fracStr(rem,den):whole+'+'+_fracStr(rem,den)))+' tps';
+      return `<span class="rib-l2-item" style="color:${col}">●&thinsp;${durStr}</span>`;
+    }
+  }).join('');
+  const row3=phenoLabel?`<span class="rib-pheno">${phenoLabel}</span>`:'';
   el.style.display='flex';
-  el.innerHTML=layerHtml+phenoHtml;
-  // Handlers mute
+  el.innerHTML=`<div class="rib-row1">${row1}</div><div class="rib-row2">${row2items}</div>${row3?`<div class="rib-row3">${row3}</div>`:''}`;
+  // ── Handlers ──
+  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
+    openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
+  });
+  el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
+    const panels=[...document.querySelectorAll('.layer-mod-panel')];
+    const open=panels.some(p=>!p.classList.contains('hidden'));
+    const btns=[...document.querySelectorAll('.btn-layer-toggle')];
+    panels.forEach((p,i)=>{
+      const b=btns[i];
+      if(open&&!p.classList.contains('hidden')){p.classList.add('hidden');if(b){b.textContent='mod ▶';b.classList.remove('open');}}
+      else if(!open&&p.classList.contains('hidden')){p.classList.remove('hidden');if(b){b.textContent='mod ▼';b.classList.add('open');}}
+    });
+    if(!open) setTimeout(()=>document.getElementById('layers-wrap')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+    else window.scrollTo({top:0,behavior:'smooth'});
+    updateRhythmInfoBar();
+  });
   el.querySelectorAll('.rib-layer-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const li=+btn.dataset.li;
       state[li].muted=!state[li].muted;
-      updateRhythmInfoBar();
-      drawCircles();
+      updateRhythmInfoBar(); drawCircles();
     });
   });
 }
