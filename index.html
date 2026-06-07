@@ -1187,9 +1187,10 @@ body.view-circle #section-encyclo{order:5}
 }
 
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
-/* Visibilité gérée par body.show-rib (JS) : layersOuverts || layerPanelsOuverts */
+/* Toujours visible quand has-rib (has-rib = au moins 1 layer avec des pas) */
 #rhythm-info-wrap{display:none}
-body.show-rib #rhythm-info-wrap{display:block;order:4;width:100%}
+body.show-rib #rhythm-info-wrap{display:block;width:100%}
+body.show-rib.view-circle #rhythm-info-wrap{order:4}
 body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
@@ -1207,11 +1208,14 @@ body.dark-mode #cycle-info-strip{color:#666}
 .rib-grid-i0{grid-column:3;grid-row:2;justify-self:center}
 .rib-grid-i1{grid-column:5;grid-row:2;justify-self:center}
 .rib-grid-i2{grid-column:7;grid-row:2;justify-self:center}
-/* Hamburger bars dans le bouton hamburger InfoLayer */
-#rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2px;align-items:center}
-#rhythm-info-bar .rib-hbr-bar{display:block;width:13px;height:2px;border-radius:1px}
-/* Barre mod globale au-dessus de 3PatternLayer (dans layers-wrap) */
-.layers-mod-bar{display:flex;justify-content:flex-end;padding:2px 6px 0;align-items:center}
+/* Hamburger bars InfoLayer — même dimensions que gvb-layers-btn */
+#rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2.5px;align-items:center}
+#rhythm-info-bar .rib-hbr-bar{display:block;width:14px;height:2px;border-radius:1px}
+#rhythm-info-bar .rib-mod-btn{padding:4px 6px}
+/* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
+#layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
+body.view-circle #layers-mod-bar{order:5}
+@media(min-width:600px){body.view-circle #layers-mod-bar{flex:0 0 100%;flex-shrink:0}}
 .layers-mod-all-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
 body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 #rhythm-info-bar .rib-l2-item{font-size:8px;opacity:.72;white-space:nowrap}
@@ -1561,7 +1565,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.4</span>
+    <span class="app-version">v3.21.5</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6176,7 +6180,6 @@ function buildGrooveSection(){
     const sr=document.getElementById('step-rows-wrap');
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
-    document.body.classList.toggle('show-rib',document.body.classList.contains('has-rib')&&(layersOuverts||layerPanelsOuverts));
     const l3el=document.getElementById('groove-view-bar');
     if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
     btnCollapse.textContent=layersOuverts?'▼':'▶';
@@ -6191,9 +6194,10 @@ function buildGrooveSection(){
     layerPanelsOuverts=!layerPanelsOuverts;
     const lw=document.getElementById('layers-wrap');
     if(lw)lw.style.display=layerPanelsOuverts?'':'none';
+    const lmb=document.getElementById('layers-mod-bar');
+    if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
     btnLayersToggle.classList.toggle('open',layerPanelsOuverts);
     btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
-    document.body.classList.toggle('show-rib',document.body.classList.contains('has-rib')&&(layersOuverts||layerPanelsOuverts));
     updateRhythmInfoBar();
   };
   btnLayersToggle.addEventListener('click',e=>{e.stopPropagation();_toggleLayerPanels();});
@@ -6464,12 +6468,11 @@ function buildLayers(){
     ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
     if(riWrap) riWrap.appendChild(ribDiv); else cont.appendChild(ribDiv);
   }
-  // Barre mod globale au-dessus des 3 layer panels (à l'intérieur de layers-wrap)
-  const lwEl=document.getElementById('layers-wrap');
-  if(lwEl&&!document.getElementById('layers-mod-bar')){
-    const lmBar=document.createElement('div');lmBar.id='layers-mod-bar';lmBar.className='layers-mod-bar';
-    const layersEl=document.getElementById('layers');
-    lwEl.insertBefore(lmBar,layersEl||null);
+  // Barre mod globale — sibling AVANT layers-wrap (pas à l'intérieur)
+  if(!document.getElementById('layers-mod-bar')){
+    const lmBar=document.createElement('div');lmBar.id='layers-mod-bar';
+    const lwEl2=document.getElementById('layers-wrap');
+    if(lwEl2&&lwEl2.parentNode) lwEl2.parentNode.insertBefore(lmBar,lwEl2);
   }
 
   LAYERS.forEach((layer,li)=>{
@@ -6974,9 +6977,11 @@ function buildLayers(){
   });
   if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   buildLayerEditBar();
-  // Appliquer l'état initial des layers-wrap (layerPanelsOuverts peut être false au démarrage)
+  // Appliquer l'état initial des layers-wrap et layers-mod-bar
   const _lwInit=document.getElementById('layers-wrap');
   if(_lwInit) _lwInit.style.display=layerPanelsOuverts?'':'none';
+  const _lmbInit=document.getElementById('layers-mod-bar');
+  if(_lmbInit) _lmbInit.style.display=layerPanelsOuverts?'flex':'none';
   updateRhythmInfoBar();
 }
 
@@ -10093,6 +10098,8 @@ function _applyView(){
   const srAV = document.getElementById('step-rows-wrap');
   if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
   if(lw) lw.style.display = layerPanelsOuverts ? '' : 'none';
+  const lmbAV=document.getElementById('layers-mod-bar');
+  if(lmbAV) lmbAV.style.display=layerPanelsOuverts?'flex':'none';
   // step-rows-wrap = vue Groove (chevron), pas les volets layer
   if(srAV) srAV.style.display = layersOuverts ? '' : 'none';
 
@@ -10421,7 +10428,7 @@ function updateRhythmInfoBar(){
   const hasAnyPattern=LAYERS.some((_,li)=>state[li].pattern.length>0);
   document.body.classList.toggle('has-rib',hasAnyPattern);
   document.body.classList.toggle('has-poly-rhythm',hasAnyPattern&&!!phenoLabel);
-  document.body.classList.toggle('show-rib',hasAnyPattern&&(layersOuverts||layerPanelsOuverts));
+  document.body.classList.toggle('show-rib',hasAnyPattern);
   if(!hasAnyPattern){el.style.display='none';return;}
   // ── Grille 5 colonnes : sig | L0 | L1 | L2 | mod ──
   const LCOLS=['#378ADD','#D85A30','#1D9E75'];
