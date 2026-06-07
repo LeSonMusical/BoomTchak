@@ -75,7 +75,7 @@ body.dark-mode .pref-ao-btn{background:#252528;border-color:#555;color:#a89fd0}
 .btn-sm-tempo:hover{background:#f0ede8}
 .btn-sm-tempo.active{background:#ddeeff;border-color:#5599cc;color:#1155aa}
 /* ─── SECTION TEMPS ─── */
-.temps-bar{background:linear-gradient(180deg,#F5FDFA 0%,#EDF7F4 25%,#BEE0D5 58%,#68B09A 82%,#3A8C6E 100%);border-left:3px solid #3A8C6E;box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6)}
+.temps-bar{background:linear-gradient(180deg,#F5FDFA 0%,#EDF7F4 25%,#BEE0D5 58%,#68B09A 82%,#3A8C6E 100%);box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6)}
 .temps-bar .section-bar-lbl{color:#555}
 .sig-sel{display:none}
 .sig-sel-btn{font-size:9px;padding:1px 5px;border:1px solid #C0C8D0;border-radius:4px;background:#fff;color:#444;flex:1;cursor:pointer;min-width:48px;max-width:160px;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;}
@@ -297,7 +297,7 @@ body.dark-mode .btn-new-groove{color:#E8CC60;border-color:rgba(232,204,96,.35)}
 .btn-volet{padding:2px 5px;cursor:pointer;font-size:10px;font-weight:500;background:transparent;border:none;border-radius:4px;color:#bbb;flex-shrink:0;white-space:nowrap;transition:color .12s}
 .btn-volet:hover,.btn-volet.open{color:#555}
 /* barre groove : dorée */
-.groove-bar{background:linear-gradient(180deg,#FFFCE8 0%,#FFE585 38%,#ECC030 70%,#D4A010 100%);border-left:3px solid #C8961A;box-shadow:0 5px 12px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.65)}
+.groove-bar{background:linear-gradient(180deg,#FFFCE8 0%,#FFE585 38%,#ECC030 70%,#D4A010 100%);box-shadow:0 5px 12px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.65)}
 .groove-bar .section-bar-lbl{color:#8B6914}
 .groove-bar select{border:1px solid #d4b86a}
 .btn-volet-groove{color:#9A7020 !important}
@@ -383,7 +383,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* barre band : bleue */
 .btn-volet-band{color:#ccc !important}
 .btn-volet-band:hover,.btn-volet-band.open{color:#4A7FA5 !important}
-.band-bar{background:linear-gradient(180deg,#F5F9FD 0%,#EEF4F8 25%,#AACCDF 58%,#5A98B8 82%,#4A7FA5 100%);border-left:3px solid #4A7FA5;box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6);display:none}
+.band-bar{background:linear-gradient(180deg,#F5F9FD 0%,#EEF4F8 25%,#AACCDF 58%,#5A98B8 82%,#4A7FA5 100%);box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.6);display:none}
 .band-bar.visible{display:flex;flex-direction:column}
 .band-bar .section-bar-lbl{color:#2d5f80}
 .band-bar select{border:1px solid #8ab4d0}
@@ -433,7 +433,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0}
 /* Indent visuel : les layers appartiennent au groove */
-#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;padding-left:2px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
@@ -662,7 +662,8 @@ body.dark-mode .enc-toc-item:hover{background:#353330;color:#ddd;border-color:#6
 .nav-tab.active{color:#9A7010;background:rgba(200,150,26,.1)}
 #nav-tab-metro.active{background:rgba(58,140,110,.2);color:#1C6048}
 #nav-tab-sons.active{background:rgba(74,127,165,.2);color:#1A3D5A}
-.nav-tab .nav-tab-ico{font-size:18px;line-height:1.1}
+.nav-tab .nav-tab-ico{font-size:18px;line-height:1.1;position:relative;display:inline-block}
+body.metro-muted #nav-tab-metro .nav-tab-ico::after{content:'';position:absolute;top:50%;left:50%;width:130%;height:2px;background:rgba(140,140,140,.78);transform:translate(-50%,-50%) rotate(-45deg);border-radius:1px;pointer-events:none}
 .nav-tab .nav-tab-lbl{font-size:8.5px;font-weight:700;letter-spacing:.01em}
 .nav-play-wrap{display:flex;align-items:center;justify-content:center;padding:0 6px;flex-shrink:0}
 .nav-cap-ann{flex:1;display:none;align-items:center;justify-content:center;border:none;background:rgba(192,57,43,.1);color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent}
@@ -1121,14 +1122,15 @@ body.dark-mode .fam-tag-band{background:#1e2830;border-color:#4A7FA5;color:#8ab4
 .lib-batch-del:disabled{opacity:.35;cursor:default}
 
 /* ─── VUE CIRCULAIRE ─── */
-#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:6px 0 1.25rem;flex-shrink:0}
+#circle-view{position:relative;display:none;flex-direction:column;align-items:center;padding:0;flex-shrink:0}
 body.view-circle #circle-view{display:flex}
 /* ── Indicateur page mesure (haut-droite, sans cadre) ── */
-#measure-page-indicator{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
-.mpi-layers{position:absolute;right:6px;top:0;bottom:0;pointer-events:none}
-.mpi-layer{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}
-.mpi-layer{font-size:9px;font-weight:600;color:var(--cs);line-height:1.6;white-space:nowrap}
-#mpi-nav-row{position:absolute;top:3px;display:none;justify-content:center;align-items:center;gap:0px;pointer-events:auto}
+#measure-page-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
+#mpi-info,#mpi-range{flex:1;font-size:10px;color:#888;white-space:nowrap}
+#mpi-range{text-align:right}
+#mpi-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
+body.dark-mode #measure-page-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
+body.dark-mode #mpi-info,body.dark-mode #mpi-range{color:#666}
 .mpi-btn{background:none;border:none;padding:0 4px;font-size:15px;cursor:pointer;color:#7060B0;line-height:1.6;opacity:.9}
 .mpi-btn:disabled{opacity:.18;cursor:default}
 body.dark-mode .mpi-btn{color:#A090D0}
@@ -1138,27 +1140,43 @@ body.dark-mode .mpi-btn{color:#A090D0}
 body.dark-mode .mpi-btn{color:#555}
 body.dark-mode #mpi-label{color:#9080C0}
 body.dark-mode .mpi-dot{color:#9080C0}
+#linear-cycle-indicator{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
+#lci-info,#lci-range{flex:1;font-size:10px;color:#888;white-space:nowrap}
+#lci-range{text-align:right}
+#lci-range.lci-interactive{color:#7060B0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;-webkit-tap-highlight-color:transparent;font-weight:600}
+#lci-range.lci-interactive:hover{color:#5040A0}
+#lci-nav-row{display:flex;align-items:center;gap:0;justify-content:center}
+body.dark-mode #linear-cycle-indicator{background:rgba(200,150,26,0.04);border-bottom-color:rgba(200,150,26,0.15)}
+body.dark-mode #lci-info,body.dark-mode #lci-range{color:#666}
+body.dark-mode #lci-range.lci-interactive{color:#A090D0}
+body.dark-mode #lci-range.lci-interactive:hover{color:#C0B0F0}
+/* ── OFF state indicators ─────────────────────────────────────────────── */
+.nav-tab-off-badge{font-size:8px;font-weight:700;color:#d94040;line-height:1;letter-spacing:.01em;display:none;margin-top:1px}
+body.band-muted .nav-tab-off-badge.sons-badge{display:block}
+body.band-muted .band-instr-btn{opacity:.28;filter:grayscale(.6);pointer-events:none}
+.metro-off .mpv-tog-accent-group .mpv-word-btn{opacity:.28}
+body.metro-muted #metro-pattern-viz{opacity:.28;pointer-events:none}
+.sbar-off-badge{font-size:8px;font-weight:700;margin-left:3px;line-height:1}
 body.view-circle .layer-row2{display:none!important}   /* grille steps masquée — cercle la remplace */
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
-#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #C8961A;padding-left:4px;background:transparent}
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 4px 2px;background:transparent}
 
 .circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
 .circle-mode-btn.active{opacity:1;background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .circle-mode-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
-body.dark-mode #view-mode-bar{border-left-color:#8B6914}
+
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
-/* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle #circle-view{width:100%;order:3}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
-body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px)}
+body.view-circle #view-mode-bar{order:3;width:100%}
 body.view-circle #layers-wrap{order:5;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
@@ -1173,22 +1191,22 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
-  body.view-circle.circle-linear #circle-view{flex:0 0 calc(100% - 4px);width:calc(100% - 4px)}
+  body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
   /* view-mode-bar suit section-groove dans le flex-wrap */
-  body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px);flex-shrink:0}
+  body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
 }
 
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px}
+body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
 body.has-poly-rhythm.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.has-poly-rhythm.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
-body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;margin-left:4px;width:calc(100% - 4px)}
+body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;width:100%}
 /* border-left supprimé sur #rhythm-info-wrap (v3.16.44) */
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
-@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
+@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 /* Signature : violet clair, cliquable → toggle Metro */
@@ -1206,8 +1224,7 @@ body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
 #step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
-body.step-seq #step-rows-wrap{display:flex;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
-body.dark-mode.step-seq #step-rows-wrap{border-left-color:#8B6914}
+body.step-seq #step-rows-wrap{display:flex;padding-left:2px}
 /* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Layer muté : steps actifs atténués (comme vue circulaire) */
@@ -1270,8 +1287,7 @@ body.dark-mode .encyclo-cat-lbl{color:#888}
 body.dark-mode .encyclo-l2{border-top-color:rgba(255,255,255,.06)}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
-body.dark-mode #layers{border-left-color:#8B6914}
-body.dark-mode.view-circle #circle-view{border-left-color:#8B6914}
+
 body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
@@ -1634,7 +1650,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <div id="temps-wrap">
   <div class="section-bar temps-bar" id="section-temps">
     <div class="sbar-row1">
-      <button class="btn-metro-main" id="btn-metro-main">⏱️</button>
+      <button class="btn-metro-main" id="btn-metro-main">⏱️</button><span class="sbar-off-badge">off</span>
       <div class="sbar-center">
         <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
         <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
@@ -1737,7 +1753,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
             <span style="flex:1">moyen</span>
             <span style="flex:1">faible</span>
           </div>
-          <div style="display:flex;gap:2px">
+          <div class="mpv-tog-accent-group" style="display:flex;gap:2px">
             <button class="mpv-word-btn on" id="mpv-tog-A" style="flex:1;padding:3px 2px;min-height:24px">^</button>
             <button class="mpv-word-btn on" id="mpv-tog-P" style="flex:1;padding:3px 2px;min-height:24px">&gt;</button>
             <button class="mpv-word-btn" id="mpv-tog-p" style="flex:1;padding:3px 2px;min-height:24px">-</button>
@@ -1826,21 +1842,27 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- Vue circulaire / linéaire (canvas) -->
   <div id="circle-view">
     <div id="canvas-view-bar"></div>
-    <canvas id="rhythm-canvas"></canvas>
-    <!-- Indicateur de page (vue Mesure, pattern > 1 mesure) -->
+    <!-- Barre info/pagination vue Cycle linéaire (au-dessus du canvas) -->
+    <div id="linear-cycle-indicator" style="display:none">
+      <span id="lci-info"></span>
+      <div id="lci-nav-row">
+        <button class="mpi-btn" id="lci-prev">◀</button>
+        <span id="lci-label"></span>
+        <button class="mpi-btn" id="lci-next">▶</button>
+      </div>
+      <span id="lci-range"></span>
+    </div>
+    <!-- Barre info/pagination vue Mesure (au-dessus du canvas) -->
     <div id="measure-page-indicator" style="display:none">
-      <div class="mpi-nav" id="mpi-nav-row">
+      <span id="mpi-info"></span>
+      <div id="mpi-nav-row">
         <button class="mpi-btn" id="mpi-prev">◀</button>
-        <span id="mpi-label">Mes 1</span>
+        <span id="mpi-label"></span>
         <button class="mpi-btn" id="mpi-next">▶</button>
       </div>
-      <div class="mpi-layers">
-        <span class="mpi-layer c-low"   id="mpi-l0"></span>
-        <span class="mpi-layer c-high"  id="mpi-l1"></span>
-        <span class="mpi-layer c-noise" id="mpi-l2"></span>
-      </div>
+      <span id="mpi-range"></span>
     </div>
-  </div>
+    <canvas id="rhythm-canvas"></canvas>
   <div class="hdivider"></div>
 </div>
 
@@ -1990,10 +2012,12 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
     <button class="nav-tab" id="nav-tab-metro">
       <span class="nav-tab-ico">⏱️</span>
       <span class="nav-tab-lbl">Tic-Tac</span>
+      <span class="nav-tab-off-badge metro-badge">off</span>
     </button>
     <button class="nav-tab" id="nav-tab-sons">
       <span class="nav-tab-ico">🔊</span>
       <span class="nav-tab-lbl">Sons</span>
+      <span class="nav-tab-off-badge sons-badge">off</span>
     </button>
   </div>
   <!-- Capture Annuler — remplace la paire gauche en rec-tapped -->
@@ -2675,7 +2699,7 @@ let state=LAYERS.map(()=>({
   patternId:null,
   stepPos:0, nextStepTime:0, startTime:0,
   muted:false, halfOn:false, doubleOn:false, ternOn:false,
-  pendingHalf:false, pendingDouble:false, pendingClear:false,
+  pendingHalf:false, pendingDouble:false, pendingClear:false, pendingTern:null, ternStartTime:0,
   nextSpeedDir:'double',
   wrapped:false,
   recArmed:false, recording:false, recMode:'replace', originalPattern:null, prevPattern:null, recBuffer:null,
@@ -3390,17 +3414,43 @@ function scheduler(){
           });
           updateGlobalSpeedBtns();
         }
-        if(state[li].pendingClear||state[li].pendingHalf||state[li].pendingDouble){
+        if(state[li].pendingClear||state[li].pendingHalf||state[li].pendingDouble||state[li].pendingTern!=null){
           // Calcul totalU avant/après pour recalibrer l'aiguille vue linéaire (évite saut visuel)
           const _calcTU=()=>{let u=0;LAYERS.forEach((_,lj)=>{if(state[lj].pattern.length>0){const m=state[lj].doubleOn?2:state[lj].halfOn?0.5:1,tf=state[lj].ternOn?2/3:1,s=Math.round(6*tf/m);const c=state[lj].pattern.length*s;u=u>0?lcm(u,c):c;}});return u;};
           const _oldTU=_calcTU();
-          if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;}
-          if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;}
-          if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;}
-          const _newTU=_calcTU();
-          if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
-            const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
-            if(_bspm>0){const _bss=60/_bspm;const _t0=state[li].nextStepTime;const _elU=(_t0-linearCycleStartTime)/_bss*6;const _k=Math.round(_elU/_newTU);linearCycleStartTime=_t0-_k*_newTU/6*_bss;}
+          let _anySpeedChange=false;
+          if(state[li].pendingClear){state[li].halfOn=false;state[li].doubleOn=false;state[li].pendingClear=false;_anySpeedChange=true;}
+          if(state[li].pendingHalf){state[li].halfOn=true;state[li].doubleOn=false;state[li].pendingHalf=false;_anySpeedChange=true;}
+          if(state[li].pendingDouble){state[li].doubleOn=true;state[li].halfOn=false;state[li].pendingDouble=false;_anySpeedChange=true;}
+          if(state[li].pendingTern!=null){
+            if(!state[li].ternOn&&state[li].pendingTern===true){
+              // Activation T : si=0 normal = frontière mesure → appliquer immédiatement
+              state[li].ternOn=true; state[li].ternStartTime=state[li].nextStepTime; state[li].pendingTern=null; _anySpeedChange=true;
+            } else if(state[li].ternOn&&state[li].pendingTern===false){
+              // Désactivation T : si=0 ternaire ≠ frontière mesure → attendre l'alignement
+              let _doT=true;
+              const _spm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
+              if(_spm>0){
+                const _mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
+                const _ns=(60/_spm)/_mult;
+                const _measSteps=(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4));
+                const _measDur=_measSteps*_ns;
+                if(_measDur>0){const _el=state[li].nextStepTime-(state[li].ternStartTime||0);const _fr=(_el%_measDur)/_measDur;_doT=_fr<0.08||_fr>0.92;}
+              }
+              if(_doT){state[li].ternOn=false;state[li].pendingTern=null;_anySpeedChange=true;}
+              // else : on attend le prochain si=0 aligné sur la mesure
+            } else {
+              state[li].ternOn=state[li].pendingTern; state[li].pendingTern=null; _anySpeedChange=true;
+            }
+          }
+          // Recalibrer startTime → le visuel repart de zéro au même moment que l'audio
+          if(_anySpeedChange){
+            state[li].startTime=state[li].nextStepTime;
+            const _newTU=_calcTU();
+            if(_newTU>0&&_oldTU>0&&_newTU!==_oldTU){
+              const _bspm=posToSPM(parseInt(document.getElementById('bpm')?.value||0));
+              if(_bspm>0){const _bss=60/_bspm;const _t0=state[li].nextStepTime;const _elU=(_t0-linearCycleStartTime)/_bss*6;const _k=Math.round(_elU/_newTU);linearCycleStartTime=_t0-_k*_newTU/6*_bss;}
+            }
           }
         }
         // RPL rec : appliquer le buffer du cycle précédent au début du nouveau cycle
@@ -3809,7 +3859,7 @@ function stopPlay(){
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
-  _measureViewPage = 0; // retour page 0 à l'arrêt
+  _measureViewPage = 0; _linearCyclePage = 0; // retour page 0 à l'arrêt
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
     drawCircles(); // met à jour l'indicateur via son appel interne
@@ -4161,7 +4211,7 @@ function _applyPendingGroove(){
       state[li].stepPos=0;state[li].nextStepTime=schedT;state[li].startTime=schedT;
       state[li].muted=_wasMutedAll||(gl.mute||false);
       state[li].halfOn=gl.halfOn||false;state[li].doubleOn=gl.doubleOn||false;state[li].ternOn=gl.ternOn||false;
-      state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=false;
+      state[li].pendingHalf=false;state[li].pendingDouble=false;state[li].pendingClear=false;state[li].pendingTern=null;
       state[li].nextSpeedDir=gl.doubleOn?'half':'double';state[li].wrapped=false;
     }catch(e){console.error('_applyPendingGroove L'+li+':',e);}
   });
@@ -4218,6 +4268,7 @@ function _applyPendingGroove(){
       }
     }
     updateGlobalSpeedBtns();
+    _linearCyclePage=0; _rightStripPage=[-1,-1,-1];
     LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
     buildLayers();if(circleView)drawCircles();
     buildBandSection();updateGrooveSelect();updateEncycloPresetBtn(groove.id);updateSpmDisplay();
@@ -4229,10 +4280,17 @@ function _applyPendingGroove(){
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
   // Si en lecture : programmer le changement au prochain cycle (enchaînement fluide)
-  if(playing){_pendingGrooveId=grooveId;_updatePendingGrooveUI();return;}
+  if(playing){
+    _pendingGrooveId=grooveId;
+    // Forcer le re-déclenchement de l'animation d'entrée même si un autre groove était déjà en attente
+    const _gpb=document.getElementById('groove-preset-btn');
+    if(_gpb){_gpb.classList.remove('groove-pending','groove-beat-flash');void _gpb.offsetWidth;}
+    _updatePendingGrooveUI();
+    return;
+  }
   // Annuler tous les enregistrements en cours (annule la prise, restaure originalPattern)
   if(recLayers.length>0)[...recLayers].forEach(li=>stopRec(li,false));
-  currentGrooveId=grooveId;
+  currentGrooveId=grooveId; _linearCyclePage=0;
   grooveDirty=false; metroDirty=false; bandDirty=false; updateGrooveSaveBtn();
   updateGrooveNameTopBar();
   LAYERS.forEach((_,li)=>setLayerDirty(li,false)); // nouveau groove = état frais
@@ -4265,6 +4323,7 @@ function applyGroove(grooveId){
     state[li].pendingHalf=false;
     state[li].pendingDouble=false;
     state[li].pendingClear=false;
+    state[li].pendingTern=null;
     state[li].nextSpeedDir=gl.doubleOn?'half':'double';
     state[li].wrapped=false;
     }catch(e){console.error('applyGroove L'+li+':',e);}
@@ -4335,6 +4394,7 @@ function applyGroove(grooveId){
   pendingGlobalMult=1;
   updateGlobalSpeedBtns();
 
+  _rightStripPage=[-1,-1,-1];
   // Synchroniser les états pad/soft avant reconstruction DOM
   LAYERS.forEach((_,li)=>_inferPadStateFromPattern(li));
   // Reconstruire le DOM des couches et sons
@@ -4650,37 +4710,37 @@ function openPresetModal(cfg){
       const showS=cat==='all'||cat==='son';
       const showM=cat==='all'||cat==='metro';
       let items=[];
+      // Déduplication globale : un même id ne peut apparaître qu'une fois quelle que soit la source
+      const coveredKeys=new Set();
+      const addItem=item=>{if(coveredKeys.has(item.id))return;coveredKeys.add(item.id);items.push(item);};
       if(showMisc)
         ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
-          .forEach(m=>items.push({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
+          .forEach(m=>addItem({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
       // Articles custom (encycloIndex) — masqués si en attente de suppression
       (packCours.encycloIndex||[])
         .filter(e=>!e._hiddenPending&&(cat==='all'||cat===(e.category||'concepts')))
-        .forEach(e=>items.push({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
+        .forEach(e=>addItem({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
       if(showG)
         packCours.grooves
           .filter(g=>encFamFilter==='all'||(g.familles||[]).includes(encFamFilter))
-          .forEach(g=>items.push({id:g.id,nom:g.nom,typeBadge:'G',hasC:hasEncycloContent(g.id)}));
+          .forEach(g=>addItem({id:g.id,nom:g.nom,typeBadge:'G',hasC:hasEncycloContent(g.id)}));
       if(showP)
         packCours.patterns
           .filter(p=>encFamFilter==='all'||(p.familles||[]).includes(encFamFilter))
-          .forEach(p=>{const key=p.encyclo_ref||p.id;items.push({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
+          .forEach(p=>{const key=p.encyclo_ref||p.id;addItem({id:key,nom:p.nom,typeBadge:'P',hasC:hasEncycloContent(key)});});
       if(showB)
         (packCours.bands||[])
           .filter(b=>!b.localDeletePending)
           .filter(b=>encFamFilter==='all'||(b.familles||[]).includes(encFamFilter))
-          .forEach(b=>items.push({id:b.id,nom:b.nom,typeBadge:'B',hasC:hasEncycloContent(b.id)}));
+          .forEach(b=>addItem({id:b.id,nom:b.nom,typeBadge:'B',hasC:hasEncycloContent(b.id)}));
       if(showS)
         (packCours.soundPresets||[])
           .filter(sp=>encFamFilter==='all'||(sp.familles_ids||[]).includes(encFamFilter))
-          .forEach(sp=>items.push({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
+          .forEach(sp=>addItem({id:sp.id,nom:sp.nom,typeBadge:'S',hasC:hasEncycloContent(sp.id)}));
       if(showM){
-        // Collecter toutes les clés déjà couvertes par patterns/grooves/bands/sons
-        const coveredKeys=new Set(items.map(i=>i.id));
         metroPresets
           .filter(p=>encFamFilter==='all'||(p.familles_ids||[]).includes(encFamFilter))
-          .filter(p=>!coveredKeys.has(p.id)) // dédupliquer : skip si déjà un item avec cet id
-          .forEach(p=>items.push({id:p.id,nom:p.label||p.nom||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
+          .forEach(p=>addItem({id:p.id,nom:p.label||p.nom||p.id,typeBadge:'♩',hasC:hasEncycloContent(p.id)}));
       }
       if(searchQuery){const q=searchQuery.toLowerCase();items=items.filter(i=>i.nom.toLowerCase().includes(q));}
       if(encContentFilter==='written') items=items.filter(i=>i.hasC);
@@ -5770,6 +5830,8 @@ function buildBandSection(){
   const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';leftCol.title='Mute/Unmute sons';
   const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent=bandMuted?'🔇':'🔊';
   leftCol.appendChild(lblIco);
+  const sonsOffBadge=document.createElement('span');sonsOffBadge.className='sbar-off-badge';sonsOffBadge.textContent=bandMuted?'off':'on';sonsOffBadge.style.color=bandMuted?'#d94040':'#2d5f80';
+  leftCol.appendChild(sonsOffBadge);
   row1.appendChild(leftCol);
 
   // Col centre : ◀ [preset] ▶ 💾
@@ -6528,6 +6590,16 @@ function buildLayers(){
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
+    seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
+    seqInfo.addEventListener('click',()=>{
+      const mp=document.getElementById('mod-panel-'+li);if(!mp)return;
+      const isHidden=mp.classList.contains('hidden');
+      mp.classList.toggle('hidden');
+      const ld=document.getElementById('layer-div-'+li);
+      const tb=ld?.querySelector('.btn-layer-toggle');
+      if(tb){tb.textContent=isHidden?'mod ▼':'mod ▶';tb.classList.toggle('open',isHidden);}
+      if(isHidden){updateLayerEditBar();setTimeout(()=>mp.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+    });
     row2.appendChild(seqInfo);
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
@@ -6545,6 +6617,7 @@ function buildLayers(){
     const _reszMark=()=>{
       nPas.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
+      _updateLinearPageIndicator();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
     };
@@ -6589,7 +6662,7 @@ function buildLayers(){
       if(state[li].pendingHalf){nextHalf=true;nextDbl=false;}
       if(state[li].pendingDouble){nextDbl=true;nextHalf=false;}
       unitSel.value=nextDbl?'×2':nextHalf?'÷2':'=';
-      if(bTern){bTern.classList.toggle('on',state[li].ternOn);bTern.style.color='';}
+      if(bTern){const _td=state[li].pendingTern!=null?state[li].pendingTern:state[li].ternOn;bTern.classList.toggle('on',_td);bTern.style.color='';}
       if(_updateStepUnitLbl)_updateStepUnitLbl();
       updateStepSeqInfo(li);
     };
@@ -6606,7 +6679,11 @@ function buildLayers(){
       _syncPadToPattern(li);
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
-    bTern.addEventListener('click',()=>{state[li].ternOn=!state[li].ternOn;updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();});
+    bTern.addEventListener('click',()=>{
+      if(!playing){state[li].ternOn=!state[li].ternOn;state[li].pendingTern=null;}
+      else{state[li].pendingTern=state[li].pendingTern!=null?!state[li].pendingTern:!state[li].ternOn;}
+      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
+    });
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
 
@@ -8838,18 +8915,26 @@ function _syncBtnVolAllMuted(){
 }
 function _applyBandMute(muted){
   bandMuted=muted;
+  document.body.classList.toggle('band-muted',muted);
   const icon=document.getElementById('sons-icon');
   if(icon)icon.textContent=muted?'🔇':'🔊';
+  const navIco=document.querySelector('#nav-tab-sons .nav-tab-ico');
+  if(navIco)navIco.textContent=muted?'🔇':'🔊';
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('muted',muted);
   const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
   if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
+  const badge=document.querySelector('.band-bar .sbar-off-badge');
+  if(badge){badge.textContent=muted?'off':'on';badge.style.color=muted?'#d94040':'#2d5f80';}
   if(circleView)drawCircles();
 }
 function setMetroGlobal(on){
   metro.muted=!on;
+  document.body.classList.toggle('metro-muted',!on);
   const btnMain=document.getElementById('btn-metro-main');
   if(btnMain) btnMain.classList.toggle('on',on);
+  const metroBadge=document.querySelector('.temps-bar .sbar-off-badge');
+  if(metroBadge){metroBadge.textContent=on?'on':'off';metroBadge.style.color=on?'#3A8C6E':'#d94040';}
   const btnTop=document.getElementById('btn-tempo');
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
@@ -8894,20 +8979,42 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
+let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
+let _lciMaxPageSize = 24;       // nb max de pas par page en vue Cycle (16/24/48, défaut 24)
 let _mGlobalPageLast = 0;      // dernière page calculée pendant la lecture (pour hit-test)
+let _rightStripPage = [-1,-1,-1]; // par layer : -1 = tout, 0..n-1 = mesure spécifique
 function _getMeasureMaxPages(){
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
-  if(!mSec)return 1;
-  let maxP=1;
+  if(!mSec) return 1;
+  let cyclePages=1;
   LAYERS.forEach((_,li)=>{
     const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
-    const pages=Math.ceil(state[li].pattern.length/spm_li);
-    if(pages>maxP)maxP=pages;
+    const n=state[li].pattern.length;
+    if(!n) return;
+    cyclePages=lcm(cyclePages, n/gcd(n,spm_li));
   });
-  return maxP;
+  return Math.max(1,Math.min(Math.round(cyclePages),96));
 }
+function _getLinearCycleInfo(){
+  const DENOM=6;
+  const su=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
+  let totalU=0;
+  LAYERS.forEach((_,li)=>{const cu=state[li].pattern.length*su[li];if(cu>0) totalU=totalU>0?lcm(totalU,cu):cu;});
+  if(!totalU) totalU=(currentSig.nbDivisions||4)*(currentSig.subdivision||1)*DENOM;
+  const totalSteps=Math.round(totalU/DENOM);
+  const mSteps=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+  const MAX_PAGE=Math.max(_lciMaxPageSize,mSteps); // au moins 1 mesure entière par page
+  if(totalSteps<=MAX_PAGE) return {totalU,pageU:totalU,numPages:1,pageSteps:totalSteps};
+  // Plus grand k*mSteps ≤ MAX_PAGE qui divise totalSteps exactement
+  let pageSteps=mSteps;
+  const kMax=Math.floor(MAX_PAGE/mSteps);
+  for(let k=kMax;k>=1;k--){ if(totalSteps%(k*mSteps)===0){pageSteps=k*mSteps;break;} }
+  return {totalU,pageU:pageSteps*DENOM,numPages:Math.ceil(totalU/(pageSteps*DENOM)),pageSteps};
+}
+function _getLinearMaxPages(){ return _getLinearCycleInfo().numPages; }
 let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir vue mesure
+let _linearTapFlash  = null;   // idem pour vue Cycle linéaire
 let _mirrorFlashRaf = null;
 let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
@@ -8935,14 +9042,12 @@ function resizeCanvas(){
   const isDesktop2 = window.innerWidth >= 600;
   if(circleModeView==='linear'){
     const canvW=Math.max(160, Math.min(isDesktop2?480:frameW2-16, frameW2-8));
-    const canvH=96;
+    const canvH=110;
     cv.width=canvW; cv.height=canvH;
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    const toggleEl2=document.getElementById('circle-mode-toggle');
-    const toggleH2=toggleEl2?(toggleEl2.offsetHeight+4):0;
-    wrap.style.height=(canvH+toggleH2)+'px';
+    wrap.style.height=''; // hauteur auto : circle-view s'adapte à ses enfants (canvas + lci bar)
     drawCircles(); return;
   }
   const dotR = 10;
@@ -8972,21 +9077,6 @@ function resizeCanvas(){
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
   wrap.style.height = (physH + toggleH) + 'px';
-  // Aligner #measure-page-indicator avec les labels couche du strip gauche
-  {
-    const topPad = Math.round(szNatural/2 - (r2+dotR+6));
-    const mpiEl = document.getElementById('measure-page-indicator');
-    const barEl = document.getElementById('canvas-view-bar');
-    const barH = (barEl && barEl.offsetHeight > 4) ? barEl.offsetHeight : 28;
-    if(mpiEl){
-      // Aligner .mpi-layers avec les canvas label centers
-      const mpiLayers = mpiEl.querySelector('.mpi-layers');
-      if(mpiLayers){
-        mpiLayers.style.top = Math.round(barH + (topPad + 12) * scale - 7) + 'px';
-        mpiLayers.style.gap = Math.max(1, Math.round(22*scale - 14)) + 'px';
-      }
-    }
-  }
   drawCircles();
 }
 
@@ -8997,11 +9087,11 @@ function _triggerRightFlash(li, hold=false){
   const spmR=Math.max(1,Math.round(mPS/getBeatSec(li)));
   let sa,ea;
   if(n<spmR){
+    // Pattern plus court qu'une mesure → surligne l'arc proportionnel (fraction 1/p)
     sa=-Math.PI/2; ea=-Math.PI/2+(n/spmR)*2*Math.PI;
   } else {
-    const plr=Math.ceil(n/spmR);
-    const page=playing?(_mGlobalPageLast%plr):(_measureViewPage%plr);
-    sa=-Math.PI/2+(page/plr)*2*Math.PI; ea=-Math.PI/2+((page+1)/plr)*2*Math.PI;
+    // Pattern couvre ≥ 1 mesure → surligne tout le cercle
+    sa=-Math.PI/2; ea=3*Math.PI/2;
   }
   const now=performance.now();
   // hold=true : arc reste allumé indéfiniment (effacé par touchend) ; sinon flash 600ms
@@ -9026,6 +9116,58 @@ function _startMirrorFlash(li,si){
     drawCircles();_mirrorFlashRaf=requestAnimationFrame(_go);
   };
   _mirrorFlashRaf=requestAnimationFrame(_go);
+}
+function _startLinearFlash(li,si){
+  _linearTapFlash={li,si,startTime:performance.now(),endTime:performance.now()+480};
+  if(_mirrorFlashRaf)cancelAnimationFrame(_mirrorFlashRaf);
+  const _go=()=>{
+    if(!_linearTapFlash||performance.now()>=_linearTapFlash.endTime){
+      _linearTapFlash=null;drawCircles();_mirrorFlashRaf=null;return;
+    }
+    drawCircles();_mirrorFlashRaf=requestAnimationFrame(_go);
+  };
+  _mirrorFlashRaf=requestAnimationFrame(_go);
+}
+function _updateLinearPageIndicator(){
+  const container=document.getElementById('linear-cycle-indicator');
+  if(!container) return;
+  const show=circleModeView==='linear' && layersOuverts && circleView;
+  container.style.display=show?'flex':'none';
+  if(!show) return;
+  const {totalU,pageU,numPages:maxPages,pageSteps}=_getLinearCycleInfo();
+  const DENOM=6;
+  const totalSteps=Math.round(totalU/DENOM);
+  const activePage=Math.min(_linearCyclePage,maxPages-1);
+  const infoEl=document.getElementById('lci-info');
+  if(infoEl) infoEl.textContent='Cycle · '+totalSteps+' pas';
+  const rangeEl=document.getElementById('lci-range');
+  if(rangeEl){
+    const pageStart=activePage*pageSteps+1;
+    const pageEnd=Math.min((activePage+1)*pageSteps,totalSteps);
+    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
+    rangeEl.textContent='pas '+pageStart+'–'+pageEnd;
+    rangeEl.classList.toggle('lci-interactive',validOpts.length>0);
+    rangeEl.title=validOpts.length>0?'Cliquer pour changer la taille de page ('+validOpts.join('/')+' pas)':'';
+  }
+  const navRow=document.getElementById('lci-nav-row');
+  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
+  if(maxPages>1){
+    const lbl=document.getElementById('lci-label');
+    if(lbl){
+      lbl.innerHTML='';
+      for(let p=0;p<maxPages;p++){
+        const d=document.createElement('span');
+        d.className='mpi-dot'+(p===activePage?' active':'');
+        d.textContent=p===activePage?'●':'○';
+        lbl.appendChild(d);
+      }
+    }
+    const prev=document.getElementById('lci-prev');
+    const next=document.getElementById('lci-next');
+    if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
+    if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
+  }
 }
 
 function drawCircles(){
@@ -9139,10 +9281,8 @@ function drawCircles(){
           }
         }
       } else {
-        // Pattern > 1 mesure : afficher la tranche de la page courante (WYSIWYH)
-        const pagesForLayer = Math.ceil(n / spm_li);
-        const layerPage = _mGlobalPage % pagesForLayer;
-        const pageStart = layerPage * spm_li;
+        // Pattern > 1 mesure : tranche du cycle global — offset = (page × spm_li) % n
+        const pageStart = (_mGlobalPage * spm_li) % n;
         const pageEnd = Math.min(pageStart + spm_li, n);
         for(let si=pageStart; si<pageEnd; si++){
           const frac = (si - pageStart) * getBeatSec(li) / _mPageSec;
@@ -9207,6 +9347,30 @@ function drawCircles(){
         ctx.lineWidth=2.5;ctx.stroke();
       }
       if(isNew) ctx.globalAlpha=1;
+    }
+
+    // Aiguille interleaved — les rings intérieurs dessinés après passent au-dessus naturellement
+    {
+      const rN=radii[li], colN=CIRCLE_COLORS[li];
+      const angN=-Math.PI/2+fracs[li]*2*Math.PI;
+      const exN=cx+rN*Math.cos(angN), eyN=cy+rN*Math.sin(angN);
+      const isMeas=circleModeView==='measure';
+      const nCol=isMeas?'#C8961A':colN.fill;
+      const endA=isMeas?'cc':'ff';
+      // Dégradé simple 3 stops : monte plus vite pour les rings intérieurs,
+      // plus tard pour les extérieurs → poids visuel concentré près du ring propre
+      const midF =[0.35, 0.55, 0.65][li];
+      const midA =['88', '66', '55'][li];
+      const grad=ctx.createLinearGradient(cx,cy,exN,eyN);
+      grad.addColorStop(0,     nCol+'00');
+      grad.addColorStop(midF,  nCol+midA);
+      grad.addColorStop(1.00,  nCol+endA);
+      ctx.save();
+      if(state[li].muted) ctx.globalAlpha=0.12;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(exN,eyN);
+      ctx.strokeStyle=grad; ctx.lineWidth=isMeas?2.5:3;
+      ctx.lineCap='round'; ctx.stroke();
+      ctx.restore();
     }
   });
 
@@ -9283,24 +9447,13 @@ function drawCircles(){
       const _layInfo=[0,1,2].map(li=>{
         const n=state[li].pattern.length;
         const spm_liR=Math.max(1,Math.round(_mPageSec/getBeatSec(li)));
-        const plr=n>=spm_liR?Math.ceil(n/spm_liR):0; // 0 = pattern < 1 mesure
+        const plr=n>=spm_liR?n/gcd(n,spm_liR):0; // cycle en mesures via pgcd (0 = pattern < 1 mesure)
         return{n,spm_liR,plr};
       });
       // Cycle global = PPCM des plr de chaque layer (en mesures)
       const _activePlrs=_layInfo.filter(l=>l.plr>0).map(l=>l.plr);
       const _globalPlr=_activePlrs.length?_activePlrs.reduce((a,b)=>lcm(a,b)):1;
-      // Ligne violet cycle global — haut du canvas, seulement si cycle > 1 mesure
-      if(_globalPlr>1){
-        ctx.font='bold 10px sans-serif';
-        ctx.globalAlpha=0.85; ctx.fillStyle='#8866cc';
-        if(playing){
-          const _gLp=(_mGlobalPage%_globalPlr)+1;
-          ctx.fillText('mes. '+_gLp+'/'+_globalPlr,textX,10);
-        } else {
-          ctx.fillText('cycle '+_globalPlr+' mes.',textX,10);
-        }
-        ctx.globalAlpha=1;
-      }
+      // Cycle global info → DOM bar (#measure-page-indicator), plus de texte sur canvas
       // Flash arc — secteur correspondant à la page visible (STOP)
       const _flashNow=_mesureRightFlash&&(performance.now()<_mesureRightFlash.endMs||_mesureRightFlash.hold);
       if(_flashNow){
@@ -9325,19 +9478,13 @@ function drawCircles(){
           // Pattern < 1 mesure → fraction
           const g=gcd(n,spm_liR);fracStr=n/g+'/'+(spm_liR/g)+' mes';alpha=0.9;doVeil=true;
         } else if(!playing){
-          // Transport STOP
           if(plr===1){fracStr='1 mes';alpha=0.6;}
-          else{
-            const cp=(_measureViewPage%plr)+1;
-            fracStr='◀ '+cp+'/'+plr+' ▶';
-            alpha=1;bigFont=true;
-          }
+          else{fracStr=plr+' mes';alpha=1;bigFont=true;}
           doVeil=false;
         } else {
-          // Transport PLAY
-          if(plr===1) return; // 1 mesure exacte → masqué
+          if(plr===1) return;
           const lp=_mGlobalPage%plr+1;
-          fracStr=lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
+          fracStr='mes. '+lp+'/'+plr;alpha=1;doVeil=false;bigFont=true;
         }
         ctx.font=(bigFont?'bold 13px':'bold 11px')+' sans-serif';
         const tw=ctx.measureText(fracStr).width;
@@ -9352,36 +9499,12 @@ function drawCircles(){
     }
   }
 
-  // Aiguilles — dégradé transparent au centre, opaque à leur cercle ; atténuées si layer muté
-  LAYERS.forEach((_, li)=>{
-    const r = radii[li];
-    const col = CIRCLE_COLORS[li];
-    const ang = -Math.PI/2 + fracs[li]*2*Math.PI;
-    const ex = cx + r*Math.cos(ang), ey = cy + r*Math.sin(ang);
-
-    const isMeasure = circleModeView === 'measure';
-    const nCol = isMeasure ? '#C8961A' : col.fill;
-    const grad = ctx.createLinearGradient(cx, cy, ex, ey);
-    grad.addColorStop(0,    nCol+'00');
-    grad.addColorStop(0.4,  nCol+(isMeasure ? '66' : 'cc'));
-    grad.addColorStop(1,    nCol+(isMeasure ? 'cc' : 'ff'));
-
-    ctx.save();
-    if(state[li].muted){
-      ctx.globalAlpha = 0.12; // muté → aiguille quasi-invisible
-    } else if(!isMeasure){
-      ctx.globalAlpha = [1.0, 0.68, 0.40][li]; // superposition : couche 1 domine, 3 s'efface
-    }
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey);
-    ctx.strokeStyle = grad; ctx.lineWidth = isMeasure ? 2.5 : 3;
-    ctx.lineCap = 'round'; ctx.stroke();
-    ctx.restore();
-  });
+  // (aiguilles dessinées en interleaved dans le loop [2,1,0] ci-dessus pour l'effet de profondeur)
 
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
   ctx.fillStyle='#1a1a18'; ctx.fill();
-  _circleBadge=null;
+  _circleBadges=[];
   // Indicateur de page mesure (mis à jour chaque frame)
   _updateMeasurePageIndicator(_mGlobalPage);
 }
@@ -9437,7 +9560,7 @@ function _metroBeatMarks(viewMode){
   return marks;
 }
 
-let _circleBadge=null; // {x,y,w,h,action} en coordonnées canvas
+let _circleBadges=[]; // [{x,y,w,h,action}, ...] en coordonnées canvas
 
 function drawLinear(){
   const cv=document.getElementById('rhythm-canvas'); if(!cv) return;
@@ -9446,10 +9569,6 @@ function drawLinear(){
   const isDark=document.body.classList.contains('dark-mode');
   ctx.clearRect(0,0,W,H);
   const mSteps=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
-  // Unités de temps : multiples de 6 (PPCM de 1,2,3 → gère ×2 /2 T)
-  // 1 croche normale = 6 unités
-  // doubleOn → step = 3 u ; halfOn → step = 12 u ; ternOn → step = 4 u
-  // doubleOn+ternOn → 2 u ; halfOn+ternOn → 8 u
   const DENOM=6;
   function stepU(li){
     const mult=state[li].doubleOn?2:state[li].halfOn?0.5:1;
@@ -9459,101 +9578,123 @@ function drawLinear(){
   const su=LAYERS.map((_,li)=>stepU(li));
   const cycU=LAYERS.map((_,li)=>state[li].pattern.length*su[li]);
   const measU=mSteps*DENOM;
-  // Cycle = PPCM des patterns seuls (indépendant de la mesure) ; mesure = repère visuel uniquement
   let totalU=0;
   LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totalU=totalU>0?lcm(totalU,cycU[li]):cycU[li];});
   if(!totalU) totalU=measU;
-  const CAP_U=64*DENOM, isCapped=totalU>CAP_U;
-  const dispU=Math.min(totalU,CAP_U);
-  const numMeasures=Math.ceil(dispU/measU);
+  // Pagination intelligente (alignée sur les mesures)
+  const {pageU:CAP_U,numPages}=_getLinearCycleInfo();
+  const isCapped=numPages>1;
+  // Page active : auto-suivi pendant la lecture, page manuelle sinon
+  let activePage=Math.min(_linearCyclePage,Math.max(0,numPages-1)); // clamp si cycle réduit
+  let cycElU=0;
+  if(playing){
+    const spmP=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+    cycElU=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmP)*DENOM)%totalU+totalU)%totalU;
+    activePage=Math.floor(cycElU/CAP_U);
+  }
+  _linearCyclePage=activePage; // sync pour l'indicateur DOM
+  const startU=activePage*CAP_U;
+  const dispU=Math.min(CAP_U,totalU-startU);
   const marginX=8, marginY=16;
   const rowH=Math.floor((H-2*marginY)/3);
-  const uW=(W-2*marginX)/dispU; // pixels par unité
-  // dotR basé sur l'unité la plus petite
+  const uW=(W-2*marginX)/dispU;
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
-  // half = DENOM/2 : décalage universel pour aligner marqueurs ET dots sur la grille de base
-  // (aiguille : cycElU+DENOM/2 ; dots : uPos+DENOM/2 — indépendant de la vitesse du layer)
   const half=DENOM/2;
   // Bandes alternées par répétition de cycle (fond teinté couleur layer)
   [0,1,2].forEach(li=>{
     if(!state[li].pattern.length) return;
     const col=CIRCLE_COLORS[li];
     const cu=cycU[li]; if(!cu) return;
-    const numReps=Math.ceil(dispU/cu);
-    for(let rep=0;rep<numReps;rep++){
+    const repFirst=Math.floor(startU/cu);
+    const repLast=Math.ceil((startU+dispU)/cu);
+    for(let rep=repFirst;rep<repLast;rep++){
       if(rep%2===0) continue; // bandes impaires uniquement
-      const x0=marginX+uW*rep*cu;
-      const x1=Math.min(marginX+uW*Math.min((rep+1)*cu,dispU),W-marginX);
+      const x0=Math.max(marginX,marginX+uW*(rep*cu-startU));
+      const x1=Math.min(W-marginX,marginX+uW*((rep+1)*cu-startU));
+      if(x1<=x0) continue;
       ctx.fillStyle=isDark?col.fill+'18':col.fill+'0D';
       ctx.fillRect(x0,marginY+rowH*li,x1-x0,rowH);
     }
   });
-  // Lignes de temps (beats) — légères, entre les séparateurs de mesure
+  // Lignes de temps (beats)
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
-    const numBeats=Math.ceil(dispU/beatU)+1;
-    for(let b=0;b<numBeats;b++){
-      if(b*beatU%measU===0)continue; // mesure dessinée séparément
-      const x=marginX+uW*(b*beatU+half); if(x>W-marginX+2)break;
+    const bStart=Math.floor(startU/beatU), bEnd=Math.ceil((startU+dispU)/beatU);
+    for(let b=bStart;b<=bEnd;b++){
+      const absU=b*beatU; if(absU%measU===0)continue;
+      const x=marginX+uW*(absU-startU+half); if(x<marginX-2||x>W-marginX+2)continue;
       ctx.beginPath();ctx.moveTo(x,marginY-2);ctx.lineTo(x,H-marginY+2);
       ctx.strokeStyle=isDark?'#373533':'#e0dcd4';ctx.lineWidth=0.5;ctx.stroke();
     }
   }
-  // Séparateurs de mesures (alignés sur le centre du premier step de chaque mesure)
-  for(let m=0;m<=numMeasures;m++){
-    const x=marginX+uW*(m*measU+half); if(x>W-marginX+2) break;
+  // Séparateurs de mesures
+  const mStart=Math.floor(startU/measU), mEnd=Math.ceil((startU+dispU)/measU);
+  for(let m=mStart;m<=mEnd;m++){
+    const x=marginX+uW*(m*measU-startU+half); if(x<marginX-2||x>W-marginX+2) continue;
     ctx.beginPath(); ctx.moveTo(x,marginY-6); ctx.lineTo(x,H-marginY+6);
     ctx.strokeStyle=isDark?'#484440':'#d5d0c8';
-    ctx.lineWidth=m===0?1.5:0.75; ctx.stroke();
-    if(m>0){
-      ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-      ctx.fillStyle=isDark?'#555':'#bbb';
-      ctx.fillText('M'+m, x, marginY-1);
-    }
+    ctx.lineWidth=m===mStart?1.5:0.75; ctx.stroke();
+    ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillStyle=isDark?'#555':'#bbb';
+    ctx.fillText('M'+(m+1), x, marginY-1);
   }
+  // Steps + indicateurs de répétition (donut comme vue mesure)
   [0,1,2].forEach(li=>{
     const pat=state[li].pattern, n=pat.length, col=CIRCLE_COLORS[li], isMuted=state[li].muted;
     const y=marginY+rowH*li+rowH/2;
     const cu=cycU[li], s=su[li];
     ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y);
     ctx.strokeStyle=col.track; ctx.lineWidth=1; ctx.stroke();
-    // Barre de reprise musicale à chaque frontière de cycle layer (fin+début)
-    for(let rep=1;rep*cu<=dispU;rep++){
-      const xBar=marginX+uW*rep*cu;
-      const barHalf=rowH*0.40;
-      const dotOff=Math.min(rowH/5,7);
-      const dotRad=Math.min(2.2,rowH/9);
-      const c=col.stroke+'99';
-      ctx.save();
-      // trait fin gauche
-      ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
-      ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
-      // trait épais droite
-      ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
-      ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
-      // deux points
-      ctx.fillStyle=c;
-      ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
-      ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
-      ctx.restore();
-    }
+    if(!n||!cu) return;
+    const totalReps=Math.ceil(totalU/cu);
     const blinkPhaseL=(Date.now()%650)/650;
     const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
-    const numReps=Math.ceil(dispU/cu);
-    for(let rep=0;rep<numReps;rep++){
+    for(let rep=0;rep<totalReps;rep++){
+      const repStartU=rep*cu;
+      if(repStartU>=startU+dispU) break;
+      if((rep+1)*cu<=startU) continue;
+      // Barre de reprise musicale en début de répétition (sauf rep 0)
+      if(rep>0){
+        const xBar=marginX+uW*(repStartU-startU);
+        const barHalf=rowH*0.40;
+        const dotOff=Math.min(rowH/5,7);
+        const dotRad=Math.min(2.2,rowH/9);
+        const c=col.stroke+'99';
+        ctx.save();
+        ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
+        ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
+        ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
+        ctx.fillStyle=c;
+        ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
+        ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
+        ctx.restore();
+      }
       for(let si=0;si<n;si++){
-        const uPos=(si+rep*n)*s; if(uPos>=dispU) break;
-        const x=marginX+uW*(uPos+DENOM/2);
+        const absU=repStartU+si*s;
+        if(absU<startU||absU>=startU+dispU) continue;
+        const x=marginX+uW*(absU-startU+half);
         const isOn=pat[si]==='X', isSoft=pat[si]==='x';
+        const isRepeat=rep>0;
         const isNewL=rep===0&&!!state[li].recNewSteps?.has(si);
         if(isNewL) ctx.globalAlpha=blinkAlphaL;
-        if(isOn){
+        if(isRepeat&&isOn){
+          // Donut : même style que vue mesure
+          ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'55':col.fill+'cc'; ctx.fill();
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.30,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        } else if(isRepeat&&isSoft){
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.72,0,2*Math.PI);
+          ctx.fillStyle=isMuted?col.fill+'33':col.fill+'77'; ctx.fill();
+          ctx.beginPath(); ctx.arc(x,y,dotR*0.27,0,2*Math.PI);
+          ctx.fillStyle=isDark?'#2c2a28':'#f0ede8'; ctx.fill();
+        } else if(isOn){
           ctx.beginPath(); ctx.arc(x,y,dotR,0,2*Math.PI);
           ctx.fillStyle=isMuted?col.fill+'50':col.fill; ctx.fill();
           ctx.strokeStyle=isMuted?col.stroke+'50':col.stroke; ctx.lineWidth=0.8; ctx.stroke();
         } else if(isSoft){
-          // Son faible : disque plein plus petit et transparent
           ctx.beginPath(); ctx.arc(x,y,dotR*0.72,0,2*Math.PI);
           ctx.fillStyle=isMuted?col.fill+'33':col.fill+'aa'; ctx.fill();
           ctx.strokeStyle=isMuted?col.stroke+'33':col.stroke+'66'; ctx.lineWidth=0.8; ctx.stroke();
@@ -9563,46 +9704,48 @@ function drawLinear(){
           ctx.strokeStyle=isDark?col.stroke+'55':'#ccc'; ctx.lineWidth=0.5; ctx.stroke();
         }
         if(isNewL) ctx.globalAlpha=1;
+        // Flash miroir linéaire : halo sur toutes les occurrences du step édité
+        if(_linearTapFlash && _linearTapFlash.li===li && _linearTapFlash.si===si){
+          const _pn=performance.now(),_pr=Math.min(1,(_pn-_linearTapFlash.startTime)/450);
+          const _fa=0.85*(1-_pr), _fr=(isOn?dotR:dotR*0.72)+1.5+_pr*5;
+          ctx.beginPath(); ctx.arc(x,y,_fr,0,2*Math.PI);
+          ctx.strokeStyle=isDark?`rgba(255,210,70,${_fa})`:`rgba(130,50,210,${_fa})`;
+          ctx.lineWidth=2.5; ctx.stroke();
+        }
       }
     }
   });
-  if(isCapped){
-    ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillStyle=isDark?'#C89040':'#8B6000';
-    ctx.fillText('Cycle complet: '+Math.round(totalU/DENOM)+' pas — affiché: '+Math.round(dispU/DENOM), W/2, 2);
-  }
-  // Aiguille + highlight step courant
+  // Aiguille + highlight step courant (anneau blanc comme vue mesure)
   if(playing){
-    const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
-    const baseStepSec=60/spm;
-    const now=getAC().currentTime-prefs.audioOffset;
-    // linearCycleStartTime : référence fixe au play, jamais recalibrée → position PPCM correcte
-    const elU=((now-linearCycleStartTime)/baseStepSec*DENOM);
-    const cycElU=((elU%totalU)+totalU)%totalU; // unités dans le cycle PPCM
-    // Highlight step courant par layer (anneau couleur) — uniquement sur les steps joués
     [0,1,2].forEach(li=>{
       const n=state[li].pattern.length; if(!n) return;
       const y=marginY+rowH*li+rowH/2;
-      const col=CIRCLE_COLORS[li], isMuted=state[li].muted;
-      const curRep=Math.floor(cycElU/cycU[li]);
-      const curSi=Math.floor((cycElU%cycU[li])/su[li])%n;
-      if(state[li].pattern[curSi]==='.') return; // silence : pas d'anneau
-      const uPos=(curRep*n+curSi)*su[li];
-      if(uPos>=dispU) return;
-      const x=marginX+uW*(uPos+DENOM/2);
-      ctx.beginPath(); ctx.arc(x,y,dotR+2.5,0,2*Math.PI);
-      ctx.strokeStyle=isMuted?col.stroke+'55':col.stroke; ctx.lineWidth=1.8; ctx.stroke();
+      const cu=cycU[li], s=su[li];
+      const isMuted=state[li].muted;
+      const curSiRaw=Math.floor(cycElU/s);
+      const absU=curSiRaw*s;
+      if(absU<startU||absU>=startU+dispU) return;
+      const curSi=Math.floor((cycElU%cu)/s)%n;
+      const curStep=state[li].pattern[curSi];
+      if(curStep==='.'||isMuted) return;
+      const dotSz=curStep==='X'?dotR:dotR*0.72;
+      const x=marginX+uW*(absU-startU+half);
+      ctx.beginPath(); ctx.arc(x,y,dotSz,0,2*Math.PI);
+      ctx.strokeStyle='rgba(255,255,255,0.82)'; ctx.lineWidth=2; ctx.stroke();
     });
-    // Aiguille dorée — décalée de +½ step (DENOM/2=3u) pour coïncider avec le centre du cercle
-    const nx=marginX+((cycElU+DENOM/2)%totalU)/totalU*(W-2*marginX);
-    ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
-    ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+    const needleU=cycElU-startU;
+    if(needleU>=0&&needleU<dispU){
+      const nx=marginX+uW*(needleU+half);
+      ctx.save(); ctx.beginPath(); ctx.moveTo(nx,marginY-4); ctx.lineTo(nx,H-marginY+4);
+      ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+    }
   }
-  _circleBadge=null;
+  // Indicateur de page DOM (flèches + dots)
+  _updateLinearPageIndicator();
 }
 
 function circleHitTest(x, y){
-  if(_circleBadge){const b=_circleBadge;if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true};}
+  for(const b of _circleBadges){if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h) return{badge:true,action:b.action};}
   const cv = document.getElementById('rhythm-canvas'); if(!cv) return null;
   // Clic dans le strip gauche → ouvre volet mod du layer correspondant (vue circulaire)
   if(circleModeView!=='linear' && x < CIRC_LABEL_W){
@@ -9610,7 +9753,7 @@ function circleHitTest(x, y){
     const lSpacing=Math.min(36,Math.max(26,H*0.2));
     for(let li=0;li<3;li++){
       const lCY=cy+(li-1)*lSpacing;
-      if(y>=lCY-18 && y<=lCY+18) return{labelLi:li};
+      if(y>=lCY-22 && y<=lCY+22) return{labelLi:li};
     }
   }
   // Clic dans le strip droit (vue Mesure) → illumination arc
@@ -9619,19 +9762,22 @@ function circleHitTest(x, y){
     const lSpacing=Math.min(36,Math.max(26,H*0.2));
     for(let li=0;li<3;li++){
       const lCY=cy+(li-1)*lSpacing;
-      if(y>=lCY-18 && y<=lCY+18) return{rightLi:li};
+      if(y>=lCY-22 && y<=lCY+22) return{rightLi:li};
     }
   }
   if(circleModeView==='linear'){
-    // Recalcul des positions identiques à drawLinear()
-    const mStepsL=(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1);
     const DENOM=6;
+    const {totalU:totU,pageU:CAP_U}=_getLinearCycleInfo();
     const suL=LAYERS.map((_,li)=>{const m=state[li].doubleOn?2:state[li].halfOn?0.5:1,tf=state[li].ternOn?2/3:1;return Math.round(DENOM*tf/m);});
     const cycUL=LAYERS.map((_,li)=>state[li].pattern.length*suL[li]);
-    let totU=0;
-    LAYERS.forEach((_,li)=>{if(state[li].pattern.length>0) totU=totU>0?lcm(totU,cycUL[li]):cycUL[li];});
-    if(!totU) totU=mStepsL*DENOM;
-    const dispU=Math.min(totU,64*DENOM);
+    let hitPage=_linearCyclePage;
+    if(playing){
+      const spmH=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
+      const cycElUH=(((getAC().currentTime-prefs.audioOffset-linearCycleStartTime)/(60/spmH)*DENOM)%totU+totU)%totU;
+      hitPage=Math.floor(cycElUH/CAP_U);
+    }
+    const startUH=hitPage*CAP_U;
+    const dispU=Math.min(CAP_U,totU-startUH);
     const marginX=8,marginY=16;
     const rowH=Math.floor((cv.height-2*marginY)/3);
     const uW=(cv.width-2*marginX)/dispU;
@@ -9640,11 +9786,12 @@ function circleHitTest(x, y){
     for(let li=0;li<3;li++){
       const n=state[li].pattern.length; if(!n) continue;
       const layY=marginY+rowH*li+rowH/2;
-      const numReps=Math.ceil(dispU/cycUL[li]);
-      for(let rep=0;rep<numReps;rep++){
+      const totalReps=Math.ceil(totU/cycUL[li]);
+      for(let rep=0;rep<totalReps;rep++){
         for(let si=0;si<n;si++){
-          const uPos=(si+rep*n)*suL[li]; if(uPos>=dispU) break;
-          const sx=marginX+uW*(uPos+3);
+          const absU=rep*cycUL[li]+si*suL[li];
+          if(absU<startUH||absU>=startUH+dispU) continue;
+          const sx=marginX+uW*(absU-startUH+3);
           if(Math.hypot(x-sx,y-layY)<=dotR+5) return{li,si};
         }
       }
@@ -9670,9 +9817,8 @@ function circleHitTest(x, y){
               if(frac<1) pts.push({si, a:-Math.PI/2+2*Math.PI*frac});
             }
         } else {
-          const pagesForLayer = Math.ceil(n/spm_li);
-          const layerPage = (playing ? _mGlobalPageLast : _measureViewPage) % pagesForLayer;
-          const pageStart = layerPage * spm_li;
+          const refPage = playing ? _mGlobalPageLast : _measureViewPage;
+          const pageStart = (refPage * spm_li) % n;
           const pageEnd = Math.min(pageStart + spm_li, n);
           for(let si=pageStart; si<pageEnd; si++){
             const frac=(si-pageStart)*getBeatSec(li)/measureSecM;
@@ -9698,7 +9844,7 @@ function setupCanvasInteraction(){
     const scaleX = cv.width/rect.width, scaleY = cv.height/rect.height;
     const hit = circleHitTest((ex-rect.left)*scaleX, (ey-rect.top)*scaleY);
     if(!hit) return;
-    if(hit.badge){ if(_circleBadge?.action) _circleBadge.action(); return; }
+    if(hit.badge){ if(hit.action) hit.action(); return; }
     if(hit.rightLi!==undefined){
       const _rLi=hit.rightLi;
       if(!playing){
@@ -9719,6 +9865,14 @@ function setupCanvasInteraction(){
     }
     if(hit.labelLi!==undefined){
       const li=hit.labelLi;
+      // S'assurer que les volets layers sont visibles avant de toggle le panel mod
+      if(!layerPanelsOuverts){
+        layerPanelsOuverts=true;
+        const lw=document.getElementById('layers-wrap');
+        if(lw)lw.style.display='';
+        const togBtn=document.getElementById('groove-layers-toggle');
+        if(togBtn){togBtn.classList.add('open');togBtn.title='Masquer layers';}
+      }
       const modPanel=document.getElementById('mod-panel-'+li);
       if(modPanel){
         const isHidden=modPanel.classList.contains('hidden');
@@ -9735,12 +9889,20 @@ function setupCanvasInteraction(){
     const STEP_CYCLE={'.':'X','X':'x','x':'.'};
     const newVal=STEP_CYCLE[state[li].pattern[si]]??'.';
     state[li].pattern[si]=newVal;
-    // Flash miroir : signaler visuellement toutes les occurrences du step en vue mesure
+    // Flash miroir : toutes les occurrences du step (vue mesure et vue cycle linéaire)
     if(circleModeView==='measure'){
       const _spmF=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
       const _msF=(60/_spmF)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4));
       const _slF=Math.max(1,Math.round(_msF/getBeatSec(li)));
       if(state[li].pattern.length<=_slF&&Math.ceil(_slF/state[li].pattern.length)>=2) _startMirrorFlash(li,si);
+    } else if(circleModeView==='linear'){
+      // Flash si le pattern se répète au moins 2 fois dans le cycle PPCM
+      const DENOM=6;
+      const sL=state[li].doubleOn?3:state[li].halfOn?12:state[li].ternOn?4:6;
+      const cuL=state[li].pattern.length*sL;
+      let totUL=0;
+      LAYERS.forEach((_,lj)=>{const sj=state[lj].doubleOn?3:state[lj].halfOn?12:state[lj].ternOn?4:6;const cj=state[lj].pattern.length*sj;if(cj>0) totUL=totUL>0?lcm(totUL,cj):cj;});
+      if(cuL>0&&Math.ceil(totUL/cuL)>=2) _startLinearFlash(li,si);
     }
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
@@ -9755,29 +9917,60 @@ function setupCanvasInteraction(){
     cv.style.cursor=(_cx<CIRC_LABEL_W||(circleModeView==='measure'&&_cx>cv.width-72))?'pointer':'';
   });
   cv.addEventListener('mouseleave',()=>cv.style.cursor='');
-  // Touch : prévenir le scroll uniquement quand le touch démarre sur un dot
+  // Touch
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
+  let _cvSwipeStartX = null, _cvSwipeMode = null; // 'measure' | 'linear'
   cv.addEventListener('touchstart', e=>{
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
-    const hit=circleHitTest((t.clientX-rect.left)*sx,(t.clientY-rect.top)*sy);
+    const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
+    // Swipe vue Mesure (zone haute centrale)
+    if(circleModeView==='measure' && canvasY<50 && canvasX<cv.width-72 && _getMeasureMaxPages()>1){
+      _cvSwipeStartX=t.clientX; _cvSwipeMode='measure'; e.preventDefault(); return;
+    }
+    // Swipe vue Cycle linéaire
+    if(circleModeView==='linear' && _getLinearMaxPages()>1){
+      _cvSwipeStartX=t.clientX; _cvSwipeMode='linear'; e.preventDefault(); return;
+    }
+    const hit=circleHitTest(canvasX,canvasY);
     _cvTouchIsRight=!!(hit&&hit.rightLi!==undefined);
     _cvTouchOnDot=!!(hit&&!hit.badge);
     if(_cvTouchOnDot)e.preventDefault();
-    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true); // allumé au toucher, hold jusqu'au relâcher
+    if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true);
+  },{passive:false});
+  cv.addEventListener('touchmove', e=>{
+    if(_cvSwipeStartX!==null) e.preventDefault();
   },{passive:false});
   cv.addEventListener('touchend', e=>{
+    if(_cvSwipeStartX!==null){
+      const dx=e.changedTouches[0].clientX-_cvSwipeStartX;
+      const mode=_cvSwipeMode;
+      _cvSwipeStartX=null; _cvSwipeMode=null;
+      if(Math.abs(dx)>=30){
+        if(mode==='linear'){
+          const maxP=_getLinearMaxPages();
+          if(dx<0) _linearCyclePage=Math.min(maxP-1,_linearCyclePage+1);
+          else     _linearCyclePage=Math.max(0,_linearCyclePage-1);
+          _updateLinearPageIndicator();
+        } else {
+          if(dx<0) _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
+          else     _measureViewPage=Math.max(0,_measureViewPage-1);
+          _updateMeasurePageIndicator(_measureViewPage);
+        }
+        drawCircles();
+      }
+      return;
+    }
     if(!_cvTouchOnDot)return;
     _cvTouchOnDot=false;
     if(_cvTouchIsRight){
       _cvTouchIsRight=false;
-      // Éteindre l'arc maintenu au relâcher du doigt
       if(_mesureRightFlash?.hold){
         _mesureRightFlash=null;
         if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
         drawCircles();
       }
-      return; // déjà géré dans touchstart
+      return;
     }
     const t=e.changedTouches[0];onPt(t.clientX,t.clientY);
   },{passive:true});
@@ -9809,73 +10002,45 @@ function _moveRow2ToStepView(){
 // ── _updateMeasurePageIndicator(globalPage) ────────────────────────────────
 function _updateMeasurePageIndicator(globalPage){
   const el=document.getElementById('measure-page-indicator'); if(!el) return;
-  const show = circleModeView==='measure' && layersOuverts && circleView;
-  el.style.display = show ? 'block' : 'none';
-  if(!show) return;
-
-  // Calcul mPageSec interne
+  const baseShow=circleModeView==='measure' && layersOuverts && circleView;
+  if(!baseShow){el.style.display='none';return;}
   const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
   const mPageSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):0;
-
-  // Calcul des pages par layer
   let maxPages=1;
-  const pageInfos=[];
   LAYERS.forEach((_,li)=>{
     const spm_li=mPageSec>0?Math.max(1,Math.round(mPageSec/getBeatSec(li))):state[li].pattern.length;
     const n=state[li].pattern.length;
-    const pages=Math.ceil(n/Math.max(1,spm_li));
-    if(pages>maxPages) maxPages=pages;
-    pageInfos.push({pages});
+    if(!n) return;
+    maxPages=lcm(maxPages,n/gcd(n,Math.max(1,spm_li)));
   });
-
-  // Labels fraction : dessinés sur canvas (strip droit) — DOM labels vidés
-  [0,1,2].forEach(li=>{ const m=document.getElementById('mpi-l'+li); if(m){m.textContent='';m.style.cssText='';} });
-
-  // Nav row : en haut du cercle, centré sur le canvas (pas sur #circle-view qui est décalé gauche)
+  maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
+  if(maxPages<=1){el.style.display='none';return;}
+  el.style.display='flex';
+  const activePage=globalPage%maxPages;
+  // Gauche : "Cycle · N mes"
+  const infoEl=document.getElementById('mpi-info');
+  if(infoEl) infoEl.textContent=maxPages>1?'Cycle · '+maxPages+' mes':'';
+  // Droite : "Mes p/N"
+  const rangeEl=document.getElementById('mpi-range');
+  if(rangeEl) rangeEl.textContent='Mes '+(activePage+1)+(maxPages>1?'/'+maxPages:'');
+  // Centre : dots + flèches
   const navRow=document.getElementById('mpi-nav-row');
-  if(navRow){
-    const _rcv=document.getElementById('rhythm-canvas');
-    const _mpiEl=document.getElementById('measure-page-indicator');
-    let leftPx='50%', transformVal='translateX(-50%)';
-    if(_rcv && _mpiEl){
-      const _rcvR=_rcv.getBoundingClientRect(), _mpiR=_mpiEl.getBoundingClientRect();
-      if(_mpiR.width>0){
-        leftPx=Math.round(_rcvR.left - _mpiR.left + _rcvR.width/2)+'px';
-        transformVal='translateX(-50%)';
-      }
-    }
-    navRow.style.cssText='display:'+(maxPages>1?'flex':'none')+';position:absolute;top:1px;left:'+leftPx+';transform:'+transformVal+';justify-content:center;align-items:center;gap:0px;pointer-events:auto';
-  }
-
+  if(navRow) navRow.style.display=maxPages>1?'flex':'none';
   if(maxPages>1){
-    const displayPage=(globalPage%maxPages)+1;
     const lbl=document.getElementById('mpi-label');
     if(lbl){
       lbl.innerHTML='';
       for(let p=0;p<maxPages;p++){
         const d=document.createElement('span');
-        d.className='mpi-dot'+(p===displayPage-1?' active':'');
-        d.textContent=p===displayPage-1?'●':'○';
+        d.className='mpi-dot'+(p===activePage?' active':'');
+        d.textContent=p===activePage?'●':'○';
         lbl.appendChild(d);
       }
     }
     const prev=document.getElementById('mpi-prev');
     const next=document.getElementById('mpi-next');
-    // Flèches : invisibles quand transport=play, visibles et lumineuses quand stop
-    if(prev){
-      prev.disabled=playing||globalPage<=0;
-      prev.style.opacity=(playing||globalPage<=0)?'0.18':'1';
-    }
-    if(next){
-      next.disabled=playing||globalPage>=(maxPages-1);
-      next.style.opacity=(playing||globalPage>=(maxPages-1))?'0.18':'1';
-    }
-
-    // Proposition D — toast one-shot au premier changement de page
-    if(displayPage>1 && !localStorage.getItem('ptk_mpi_toast')){
-      localStorage.setItem('ptk_mpi_toast','1');
-      showToast('Vue Mesure : ce pattern fait '+maxPages+' mesures — la vue change de page à chaque mesure');
-    }
+    if(prev){prev.disabled=playing||activePage<=0;prev.style.opacity=(playing||activePage<=0)?'0.18':'1';}
+    if(next){next.disabled=playing||activePage>=maxPages-1;next.style.opacity=(playing||activePage>=maxPages-1)?'0.18':'1';}
   }
 }
 
@@ -9914,10 +10079,11 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); _updateMeasurePageIndicator(_measureViewPage); _updateLinearPageIndicator(); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     _updateMeasurePageIndicator(_measureViewPage); // cache l'indicateur hors vue cercle
+    _updateLinearPageIndicator(); // cache l'indicateur cycle linéaire hors vue
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
     if(isStepSeq) _moveRow2ToStepView();
@@ -11893,6 +12059,7 @@ function buildPublishSection() {
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
           `<button class="btn-pub-enc-del-confirm" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #c04040;border-radius:4px;background:#fde8e8;color:#c04040;cursor:pointer">↑ Supprimer</button>` +
           `<button class="btn-pub-enc-del-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
@@ -11907,6 +12074,7 @@ function buildPublishSection() {
           `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#fde8e8;color:#c04040;flex-shrink:0">🗑 Article</span>` +
         `</div>` +
         `<div style="display:flex;gap:5px">` +
+          `<button class="btn-pub-enc-view" data-key="${e.key}" style="font-size:10px;padding:3px 8px;border:1px solid #5599cc;border-radius:4px;background:#eef4f8;color:#2d5f80;cursor:pointer">Voir</button>` +
           `<button class="btn-pub-enc-del-tx" data-key="${e.key}" style="font-size:10px;padding:2px 8px;border:1px solid #1D9E75;border-radius:4px;background:#f0fff8;color:#0F6E56;cursor:pointer">Envoyer</button>` +
           `<button class="btn-pub-enc-del-tx-cancel" data-key="${e.key}" style="font-size:10px;padding:2px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#999;cursor:pointer">Annuler</button>` +
         `</div></div>`;
@@ -13751,13 +13919,8 @@ function attachEvents(){
     let _startX=0,_startVol=0,_down=false,_dragMoved=false,_lastTap=0;
 
     function setBandMuted(muted, showMsg){
-      bandMuted=muted;
-      const icon=document.getElementById('sons-icon');
-      if(icon)icon.textContent=muted?'🔇':'🔊';
+      _applyBandMute(muted);
       btnV.classList.toggle('muted',muted);
-      const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
-      if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
-      if(circleView) drawCircles();
       if(showMsg){
         _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(muted?'#aaa':'#4AC9A0')+'">'+(muted?'off':'on')+'</span>');
         clearTimeout(_dragOverlay._sonTimer);
@@ -14440,9 +14603,19 @@ function attachEvents(){
   });
 
   // ── Nav tabs ──
-  document.getElementById('nav-tab-metro').addEventListener('click',()=>setNavSection('metro'));
-  document.getElementById('nav-tab-sons').addEventListener('click',()=>setNavSection('sons'));
-  document.getElementById('nav-tab-encyclo').addEventListener('click',()=>setNavSection('encyclo'));
+  (()=>{
+    function attachNavTabLongPress(id,onShort,onLong){
+      const el=document.getElementById(id); if(!el) return;
+      let lt=null,fired=false;
+      el.addEventListener('pointerdown',()=>{fired=false;lt=setTimeout(()=>{lt=null;fired=true;onLong();},450);});
+      el.addEventListener('pointercancel',()=>{if(lt){clearTimeout(lt);lt=null;}});
+      el.addEventListener('pointerup',()=>{if(lt){clearTimeout(lt);lt=null;}});
+      el.addEventListener('click',()=>{if(fired){fired=false;return;}onShort();});
+    }
+    attachNavTabLongPress('nav-tab-metro',()=>setNavSection('metro'),()=>setMetroGlobal(!!metro.muted));
+    attachNavTabLongPress('nav-tab-sons',()=>setNavSection('sons'),()=>_applyBandMute(!bandMuted));
+    document.getElementById('nav-tab-encyclo').addEventListener('click',()=>setNavSection('encyclo'));
+  })();
 
   // ── Play ──
   document.getElementById('btn-play').addEventListener('click',togglePlay);
@@ -14712,7 +14885,9 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 document.getElementById('temps-wrap').style.display='none';   // Temps masqué par défaut
 _initEncycloPanel();
 // Sync état initial métro (sans overlay)
-(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);})();
+(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}})();
+// Sync état initial band mute
+(function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🔊';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 // ── Init navigation pages vue Mesure ──────────────────────────────────────
@@ -14721,13 +14896,14 @@ setView('circle');                                             // Vue circulaire
     const spmG=posToSPM(parseInt(document.getElementById('bpm').value||'500'))*globalSpeedMult;
     const mSec=spmG>0?(60/spmG)*(currentSig.nbDivisions||4)*(8/(currentSig.beatUnit||4)):0;
     if(!mSec) return 1;
-    let maxP=1;
+    let cyclePages=1;
     LAYERS.forEach((_,li)=>{
       const spm_li=Math.max(1,Math.round(mSec/getBeatSec(li)));
-      const pages=Math.ceil(state[li].pattern.length/spm_li);
-      if(pages>maxP) maxP=pages;
+      const n=state[li].pattern.length;
+      if(!n) return;
+      cyclePages=lcm(cyclePages, n/gcd(n,spm_li));
     });
-    return maxP;
+    return Math.max(1,Math.min(Math.round(cyclePages),96));
   }
   document.getElementById('mpi-prev')?.addEventListener('click',()=>{
     _measureViewPage=Math.max(0,_measureViewPage-1);
@@ -14736,6 +14912,25 @@ setView('circle');                                             // Vue circulaire
   document.getElementById('mpi-next')?.addEventListener('click',()=>{
     _measureViewPage=Math.min(_getMeasureMaxPages()-1,_measureViewPage+1);
     drawCircles();
+  });
+  document.getElementById('lci-prev')?.addEventListener('click',()=>{
+    _linearCyclePage=Math.max(0,_linearCyclePage-1);
+    _updateLinearPageIndicator(); drawCircles();
+  });
+  document.getElementById('lci-next')?.addEventListener('click',()=>{
+    _linearCyclePage=Math.min(_getLinearMaxPages()-1,_linearCyclePage+1);
+    _updateLinearPageIndicator(); drawCircles();
+  });
+  document.getElementById('lci-range')?.addEventListener('click',()=>{
+    const {totalU}=_getLinearCycleInfo();
+    const totalSteps=Math.round(totalU/6);
+    const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const opts=[16,24,48].filter(o=>Math.max(o,mS)<totalSteps);
+    if(!opts.length) return;
+    const idx=opts.indexOf(_lciMaxPageSize);
+    _lciMaxPageSize=opts[(idx+1)%opts.length];
+    _linearCyclePage=0;
+    _updateLinearPageIndicator(); drawCircles();
   });
 }());
 // Aligner padding-top body sur la hauteur réelle de la topbar
