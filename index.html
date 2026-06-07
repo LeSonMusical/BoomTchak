@@ -1561,7 +1561,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.8</span>
+    <span class="app-version">v3.21.9</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10013,7 +10013,7 @@ function updateCycleInfoBar(globalPage){
 
   // ── Colonne centre ──
   if(isPatternView){
-    centerEl.innerHTML='<span style="font-style:italic;color:#aaa">1 tour = 1 pattern cycle</span>';
+    centerEl.innerHTML='<span style="color:#888">1 tour = 1 boucle de pattern</span>';
   } else if(isCycleView){
     // Centre : nav dots+flèches (même logique que l'ancien lci-nav-row)
     const linInfo=_getLinearCycleInfo();
@@ -10048,7 +10048,7 @@ function updateCycleInfoBar(globalPage){
       maxPages=lcm(maxPages,n/gcd(n,Math.max(1,spm_li)));
     });
     maxPages=Math.max(1,Math.min(Math.round(maxPages),96));
-    if(maxPages<=1){centerEl.innerHTML='';}
+    if(maxPages<=1){centerEl.innerHTML='<span style="color:#888">1 tour = 1 mesure</span>';}
     else {
       const page=(globalPage||0)%maxPages;
       let dotsHtml='';
@@ -10067,7 +10067,7 @@ function updateCycleInfoBar(globalPage){
       });
     }
   } else if(isStepView){
-    centerEl.innerHTML='';
+    centerEl.innerHTML='<span style="color:#888">Step sequencer</span>';
   }
 
   // ── Colonne droite ──
@@ -10084,16 +10084,20 @@ function updateCycleInfoBar(globalPage){
     const page=(globalPage||0)%maxPages;
     rightEl.textContent=maxPages>1?`mes ${page+1}/${maxPages}`:'';
   } else if(isCycleView){
-    // Droite : plage "pas X-Y" interactive (même logique que l'ancien lci-range)
+    // Droite : plage en mesures (mes. X–Y)
     const linInfoR=_getLinearCycleInfo();
-    const totalStepsR=Math.round(linInfoR.totalU/6);
     const activePageR=Math.min(_linearCyclePage,linInfoR.numPages-1);
-    const pageStart=activePageR*linInfoR.pageSteps+1;
-    const pageEnd=Math.min((activePageR+1)*linInfoR.pageSteps,totalStepsR);
+    const totalMesF=cycMesNr/cycMesDr;
+    const mesPerPageF=totalMesF/linInfoR.numPages;
+    const mesStartF=activePageR*mesPerPageF+1;
+    const mesEndF=Math.min((activePageR+1)*mesPerPageF,totalMesF);
+    const fmtM=v=>{const r=Math.round(v*2)/2;return Number.isInteger(r)?r:r.toFixed(1).replace('.0','');};
     const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
+    const totalStepsR=Math.round(linInfoR.totalU/6);
     const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalStepsR);
+    const rangeStr=`mes. ${fmtM(mesStartF)}–${fmtM(mesEndF)}`;
     if(validOpts.length>0){
-      rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-lc-range" title="Changer la taille de page (${validOpts.join('/')} pas)">pas ${pageStart}–${pageEnd}</span>`;
+      rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-lc-range" title="Changer la taille de page">${rangeStr}</span>`;
       rightEl.querySelector('#cib-lc-range')?.addEventListener('click',e=>{
         e.stopPropagation();
         const idx=validOpts.indexOf(_lciMaxPageSize);
@@ -10102,27 +10106,10 @@ function updateCycleInfoBar(globalPage){
         _updateLinearPageIndicator();drawCircles();
       });
     } else {
-      rightEl.textContent=totalStepsR>0?`pas ${pageStart}–${pageEnd}`:'';
+      rightEl.textContent=rangeStr;
     }
   } else if(isStepView){
-    // Bouton page mesures : "1-8", "9-16", etc. — clic pour changer l'échelle
-    const mC=Math.max(1,Math.round(measureCroches));
-    const maxSteps=Math.max(...LAYERS.map((_,li)=>state[li].pattern.length));
-    const totalMes=mC>0?Math.ceil(maxSteps/mC):1;
-    const ps=_cibStepPageSize;
-    const pageIdx=_linearCyclePage||0;
-    const mesStart=pageIdx*ps+1;
-    const mesEnd=Math.min((pageIdx+1)*ps,totalMes);
-    const rangeLabel=totalMes<=ps?`1-${totalMes}`:`${mesStart}-${mesEnd}`;
-    rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-step-size" title="Changer l'échelle (mesures par page)">${rangeLabel}</span>`;
-    rightEl.querySelector('#cib-step-size')?.addEventListener('click',e=>{
-      e.stopPropagation();
-      const idx=_CIB_PAGE_SIZES.indexOf(_cibStepPageSize);
-      _cibStepPageSize=_CIB_PAGE_SIZES[(idx+1)%_CIB_PAGE_SIZES.length];
-      _linearCyclePage=0;
-      updateCycleInfoBar(0);
-      _updateLinearPageIndicator();
-    });
+    rightEl.textContent='';
   } else {
     rightEl.textContent='';
   }
