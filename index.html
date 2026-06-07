@@ -1198,15 +1198,20 @@ body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-
 body.dark-mode #cycle-info-strip{color:#666}
 /* InfoLayer : grille 5 colonnes (sig | L0 | L1 | L2 | mod) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
-.rib-grid{display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;width:100%;align-items:center;row-gap:3px}
-.rib-grid-sig{grid-column:1;grid-row:1;justify-self:start}
+.rib-grid{display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;width:100%;align-items:center;row-gap:3px;column-gap:2px}
+.rib-grid-sig{grid-column:1;grid-row:1;justify-self:start;padding-right:7px;border-right:1px solid rgba(0,0,0,.1)}
 .rib-grid-l0{grid-column:2;grid-row:1;justify-self:center}
 .rib-grid-l1{grid-column:3;grid-row:1;justify-self:center}
 .rib-grid-l2{grid-column:4;grid-row:1;justify-self:center}
-.rib-grid-mod{grid-column:5;grid-row:1;justify-self:end}
+.rib-grid-mod{grid-column:5;grid-row:1;justify-self:end;padding-left:7px;border-left:1px solid rgba(0,0,0,.1)}
 .rib-grid-i0{grid-column:2;grid-row:2;justify-self:center}
 .rib-grid-i1{grid-column:3;grid-row:2;justify-self:center}
 .rib-grid-i2{grid-column:4;grid-row:2;justify-self:center}
+body.dark-mode .rib-grid-sig{border-right-color:rgba(255,255,255,.1)}
+body.dark-mode .rib-grid-mod{border-left-color:rgba(255,255,255,.1)}
+/* Hamburger bars dans le bouton mod quand layerPanels sont fermés */
+#rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2px;align-items:center}
+#rhythm-info-bar .rib-hbr-bar{display:block;width:13px;height:2px;border-radius:1px}
 #rhythm-info-bar .rib-l2-item{font-size:8px;opacity:.72;white-space:nowrap}
 #rhythm-info-bar .rib-row3{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:1px 0}
 #rhythm-info-bar .rib-sig-btn{background:none;border:1.5px solid #3A8C6E;border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;color:#2A6A50;line-height:1.3;-webkit-tap-highlight-color:transparent}
@@ -1554,7 +1559,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.2</span>
+    <span class="app-version">v3.21.3</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -4179,7 +4184,7 @@ function updateSettingsBadge(){
   }
 }
 let layersOuverts = true;
-let layerPanelsOuverts = true;
+let layerPanelsOuverts = false;
 let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let currentEncycloId = 'poumtchak';
@@ -6187,6 +6192,7 @@ function buildGrooveSection(){
     btnLayersToggle.classList.toggle('open',layerPanelsOuverts);
     btnLayersToggle.title=layerPanelsOuverts?'Masquer layers':'Afficher layers';
     document.body.classList.toggle('show-rib',document.body.classList.contains('has-rib')&&(layersOuverts||layerPanelsOuverts));
+    updateRhythmInfoBar();
   };
   btnLayersToggle.addEventListener('click',e=>{e.stopPropagation();_toggleLayerPanels();});
 
@@ -6959,6 +6965,9 @@ function buildLayers(){
   });
   if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   buildLayerEditBar();
+  // Appliquer l'état initial des layers-wrap (layerPanelsOuverts peut être false au démarrage)
+  const _lwInit=document.getElementById('layers-wrap');
+  if(_lwInit) _lwInit.style.display=layerPanelsOuverts?'':'none';
   updateRhythmInfoBar();
 }
 
@@ -10415,7 +10424,11 @@ function updateRhythmInfoBar(){
     const col=LCOLS[li],muted=!!state[li].muted;
     return `<button class="rib-layer-btn rib-grid-l${li}${muted?' muted':''}" data-li="${li}" style="color:${col};border-color:${col}" title="${muted?'Activer':'Muter'} layer ${li+1}"><span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span></button>`;
   }).join('');
+  // ── Bouton mod : hamburger (ouvre layers) si panels fermés, sinon toggle mod panels ──
   const anyModOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
+  const modBtnHtml=layerPanelsOuverts
+    ?`<button class="rib-mod-btn rib-grid-mod" id="rib-mod-btn" title="Modules"><span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span>&thinsp;${anyModOpen?'▼':'▶'}</button>`
+    :`<button class="rib-mod-btn rib-grid-mod" id="rib-mod-btn" title="Afficher layers"><span class="rib-hbr"><span class="rib-hbr-bar" style="background:#378ADD"></span><span class="rib-hbr-bar" style="background:#D85A30"></span><span class="rib-hbr-bar" style="background:#1D9E75"></span></span></button>`;
   // ── Ligne 2 : info par vue, centrée sous chaque bouton ──
   const isMesureCycle=(circleModeView==='measure')||(viewShape==='linear'&&viewCycleLinear==='cycle');
   const infoCells=[0,1,2].map(li=>{
@@ -10437,12 +10450,17 @@ function updateRhythmInfoBar(){
   }).join('');
   const phenoHtml=phenoLabel?`<div class="rib-row3"><span class="rib-pheno">${phenoLabel}</span></div>`:'';
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid"><button class="rib-sig-btn rib-grid-sig" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>${layerCells}<button class="rib-mod-btn rib-grid-mod" id="rib-mod-btn"><span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span>&thinsp;${anyModOpen?'▼':'▶'}</button>${infoCells}</div>${phenoHtml}`;
+  el.innerHTML=`<div class="rib-grid"><button class="rib-sig-btn rib-grid-sig" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>${layerCells}${modBtnHtml}${infoCells}</div>${phenoHtml}`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
   });
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
+    if(!layerPanelsOuverts){
+      // Ouvre les layer panels (equivalent to clicking the hamburger in groove-view-bar)
+      document.querySelector('#groove-view-bar .gvb-layers-btn')?.click();
+      return;
+    }
     const panels=[...document.querySelectorAll('.layer-mod-panel')];
     const open=panels.some(p=>!p.classList.contains('hidden'));
     const btns=[...document.querySelectorAll('.btn-layer-toggle')];
