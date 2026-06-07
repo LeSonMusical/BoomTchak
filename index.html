@@ -1553,7 +1553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.34</span>
+    <span class="app-version">v3.20.35</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9637,7 +9637,7 @@ function drawLinear(){
     ctx.lineWidth=m===mStart?1.5:0.75; ctx.stroke();
     ctx.font='8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillStyle=isDark?'#555':'#bbb';
-    ctx.fillText('M'+(m+1), x, marginY-1);
+    ctx.fillText('m'+(m+1), x, marginY-1);
   }
   // Steps + indicateurs de répétition (donut comme vue mesure)
   [0,1,2].forEach(li=>{
@@ -9654,22 +9654,38 @@ function drawLinear(){
       const repStartU=rep*cu;
       if(repStartU>=startU+dispU) break;
       if((rep+1)*cu<=startU) continue;
-      // Barre de reprise musicale en début de répétition (sauf rep 0)
-      if(rep>0){
-        const xBar=marginX+uW*(repStartU-startU);
-        const barHalf=rowH*0.40;
-        const dotOff=Math.min(rowH/5,7);
-        const dotRad=Math.min(2.2,rowH/9);
-        const c=col.stroke+'99';
-        ctx.save();
-        ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
-        ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
-        ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
-        ctx.fillStyle=c;
-        ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
-        ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
-        ctx.restore();
+      // Barres de reprise encadrant le 1er pattern (|: ... :|)
+      if(totalReps>1){
+        const barHalf=rowH*0.40,dotOff=Math.min(rowH/5,7),dotRad=Math.min(2.2,rowH/9),c=col.stroke+'99';
+        if(rep===0){
+          // Ouverture |: — trait fin + trait épais + points à droite
+          const xBar=marginX+uW*(repStartU-startU);
+          if(xBar>=marginX-2&&xBar<=W-marginX+2){
+            ctx.save();
+            ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
+            ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
+            ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
+            ctx.fillStyle=c;
+            ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
+            ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
+            ctx.restore();
+          }
+        } else if(rep===1){
+          // Fermeture :| — points à gauche + trait épais + trait fin
+          const xBar=marginX+uW*(repStartU-startU);
+          if(xBar>=marginX-2&&xBar<=W-marginX+2){
+            ctx.save();
+            ctx.fillStyle=c;
+            ctx.beginPath();ctx.arc(xBar-6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
+            ctx.beginPath();ctx.arc(xBar-6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
+            ctx.beginPath();ctx.moveTo(xBar-2.5,y-barHalf);ctx.lineTo(xBar-2.5,y+barHalf);
+            ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
+            ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();
+            ctx.restore();
+          }
+        }
       }
       for(let si=0;si<n;si++){
         const absU=repStartU+si*s;
