@@ -1537,7 +1537,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.2</span>
+    <span class="app-version">v3.20.34</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9475,6 +9475,20 @@ function drawLinear(){
   // half = DENOM/2 : décalage universel pour aligner marqueurs ET dots sur la grille de base
   // (aiguille : cycElU+DENOM/2 ; dots : uPos+DENOM/2 — indépendant de la vitesse du layer)
   const half=DENOM/2;
+  // Bandes alternées par répétition de cycle (fond teinté couleur layer)
+  [0,1,2].forEach(li=>{
+    if(!state[li].pattern.length) return;
+    const col=CIRCLE_COLORS[li];
+    const cu=cycU[li]; if(!cu) return;
+    const numReps=Math.ceil(dispU/cu);
+    for(let rep=0;rep<numReps;rep++){
+      if(rep%2===0) continue; // bandes impaires uniquement
+      const x0=marginX+uW*rep*cu;
+      const x1=Math.min(marginX+uW*Math.min((rep+1)*cu,dispU),W-marginX);
+      ctx.fillStyle=isDark?col.fill+'18':col.fill+'0D';
+      ctx.fillRect(x0,marginY+rowH*li,x1-x0,rowH);
+    }
+  });
   // Lignes de temps (beats) — légères, entre les séparateurs de mesure
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
@@ -9504,12 +9518,25 @@ function drawLinear(){
     const cu=cycU[li], s=su[li];
     ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y);
     ctx.strokeStyle=col.track; ctx.lineWidth=1; ctx.stroke();
-    // Séparateurs de répétitions (pointillés couleur layer)
+    // Barre de reprise musicale à chaque frontière de cycle layer (fin+début)
     for(let rep=1;rep*cu<=dispU;rep++){
-      const x=marginX+uW*rep*cu;
-      ctx.save(); ctx.beginPath(); ctx.moveTo(x,y-dotR-2); ctx.lineTo(x,y+dotR+2);
-      ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
-      ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
+      const xBar=marginX+uW*rep*cu;
+      const barHalf=rowH*0.40;
+      const dotOff=Math.min(rowH/5,7);
+      const dotRad=Math.min(2.2,rowH/9);
+      const c=col.stroke+'99';
+      ctx.save();
+      // trait fin gauche
+      ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
+      ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+      // trait épais droite
+      ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
+      ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
+      // deux points
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
+      ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
+      ctx.restore();
     }
     const blinkPhaseL=(Date.now()%650)/650;
     const blinkAlphaL=0.625+0.375*Math.cos(blinkPhaseL*2*Math.PI);
