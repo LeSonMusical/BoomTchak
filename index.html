@@ -1561,7 +1561,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.10</span>
+    <span class="app-version">v3.21.11</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10114,10 +10114,15 @@ function updateCycleInfoBar(globalPage){
     const fmtM=v=>{const r=Math.round(v*2)/2;return Number.isInteger(r)?r:r.toFixed(1).replace('.0','');};
     const mS=Math.max(1,(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(currentSig.subdivision||1));
     const totalStepsR=Math.round(linInfoR.totalU/6);
-    const validOpts=[16,24,48].filter(o=>Math.max(o,mS)<totalStepsR);
+    const // Toutes les tailles de page de 1 mesure jusqu'à 48 pas max, inférieures au total
+    const validOpts=Array.from({length:Math.floor(48/mS)},(_,i)=>(i+1)*mS).filter(o=>o<totalStepsR);
+    // Snap _lciMaxPageSize à l'option valide la plus proche
+    if(validOpts.length>0&&!validOpts.includes(_lciMaxPageSize)){
+      _lciMaxPageSize=validOpts.reduce((a,b)=>Math.abs(b-_lciMaxPageSize)<Math.abs(a-_lciMaxPageSize)?b:a);
+    }
     const rangeStr=`mes. ${fmtM(mesStartF)}–${fmtM(mesEndF)}`;
-    if(validOpts.length>0){
-      rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-lc-range" title="Changer la taille de page">${rangeStr}</span>`;
+    if(validOpts.length>1){
+      rightEl.innerHTML=`<span class="cib-right-interactive" id="cib-lc-range" title="Zoom : ${Math.floor(validOpts[0]/mS)}–${Math.floor(validOpts[validOpts.length-1]/mS)} mes. par page">${rangeStr}</span>`;
       rightEl.querySelector('#cib-lc-range')?.addEventListener('click',e=>{
         e.stopPropagation();
         const idx=validOpts.indexOf(_lciMaxPageSize);
