@@ -1193,16 +1193,13 @@ body.dark-mode #cycle-info-bar{background:rgba(200,150,26,0.04);border-bottom-co
 body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
-/* InfoLayer : grille 3 colonnes (gauche 1fr | centre auto | droite 1fr) */
+/* InfoLayer : grille 5 col (tempo 1fr | ⏱ | centre auto | 🔊 | ≡) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
-.rib-grid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);width:100%;align-items:center;column-gap:4px}
-/* Colonne gauche : metro toggle + tempo + slider */
-.rib-left{display:flex;flex-direction:column;gap:2px;align-items:flex-start;min-width:0;overflow:hidden}
-.rib-left-top{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;min-width:0}
-.rib-metro-btn{position:relative;font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;flex-shrink:0}
-.rib-metro-btn:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:115%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
-.rib-tempo-val{font-size:10px;color:#6B5FA5;font-weight:600;white-space:nowrap}
-.rib-tempo-slider{width:100%;cursor:pointer;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;flex-shrink:0}
+.rib-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto auto;grid-template-rows:auto auto;width:100%;column-gap:4px;row-gap:2px;align-items:center}
+/* Col 1 : sig + tempo (row 1) / slider (row 2) */
+.rib-left-top{grid-column:1;grid-row:1;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;overflow:hidden}
+.rib-tempo-val{font-size:11px;color:#6B5FA5;font-weight:700;white-space:nowrap}
+.rib-tempo-slider{grid-column:1;grid-row:2;width:100%;cursor:pointer;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
 .rib-tempo-slider::-moz-range-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
@@ -1212,18 +1209,20 @@ body.dark-mode .rib-tempo-slider::-webkit-slider-runnable-track{background:rgba(
 body.dark-mode .rib-tempo-slider::-webkit-slider-thumb{background:#9B8FD5;border-color:#1a1a1a}
 body.dark-mode .rib-tempo-slider::-moz-range-track{background:rgba(155,143,213,.2)}
 body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-color:#1a1a1a}
-/* Colonne centre : 3 layers (prioritaire, auto-width) */
-.rib-center{display:flex;flex-direction:column;align-items:center;gap:2px}
+/* Col 2 : bouton metro (span 2 lignes) */
+.rib-metro-btn{grid-column:2;grid-row:1/span 2;align-self:stretch;display:flex;align-items:center;justify-content:center;position:relative;font-size:17px;background:none;border:none;cursor:pointer;min-width:28px;padding:0 2px;-webkit-tap-highlight-color:transparent}
+.rib-metro-btn:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:80%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
+/* Col 3 : 3 layers centre (span 2 lignes) */
+.rib-center{grid-column:3;grid-row:1/span 2;display:flex;flex-direction:column;align-items:center;gap:2px}
 .rib-layer-row{display:flex;align-items:center;gap:5px}
 .rib-info-row{display:flex;align-items:center;gap:5px}
-/* Colonne droite : son + hamburger */
-.rib-right{display:flex;align-items:center;gap:4px;justify-content:flex-end}
-.rib-son-btn{position:relative;font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+/* Col 4 : bouton son (span 2 lignes) */
+.rib-son-btn{grid-column:4;grid-row:1/span 2;align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:17px;background:none;border:none;cursor:pointer;min-width:28px;padding:0 2px;-webkit-tap-highlight-color:transparent}
 .rib-son-btn.muted{opacity:.45}
-/* Hamburger bars InfoLayer */
-#rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2px;align-items:center}
-#rhythm-info-bar .rib-hbr-bar{display:block;width:17px;height:2.5px;border-radius:1px}
-#rhythm-info-bar .rib-mod-btn{padding:3px 3px}
+/* Col 5 : hamburger (span 2 lignes, plus grand) */
+#rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:3px;align-items:center}
+#rhythm-info-bar .rib-hbr-bar{display:block;width:20px;height:3px;border-radius:1px}
+#rhythm-info-bar .rib-mod-btn{grid-column:5;grid-row:1/span 2;align-self:stretch;display:flex;align-items:center;justify-content:center;padding:4px 5px}
 /* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
@@ -1237,7 +1236,7 @@ body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 #rhythm-info-bar .rib-layer-btn.muted{opacity:.3;filter:grayscale(.6)}
 #rhythm-info-bar .rib-layer-btn .rib-steps{font-weight:700;font-size:11px}
 #rhythm-info-bar .rib-layer-btn .rib-note{font-size:12px;line-height:1}
-#rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:3px 3px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
+#rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:4px 5px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
 #rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic;font-size:9px}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A;border-color:#2A6A50}
@@ -1577,7 +1576,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.21</span>
+    <span class="app-version">v3.21.22</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10581,14 +10580,19 @@ function updateRhythmInfoBar(){
   const _rbSym=symFromFelBeatSteps(_rbEq);
   const _metroOn=!metro.muted;
   const _sonMuted=bandMuted;
-  // ── Colonne gauche : metro on/off + tempo + slider ──
-  const leftHtml=`<div class="rib-left"><div class="rib-left-top"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1"></div>`;
-  // ── Colonne centre : 3 layers (prioritaire) ──
+  // Col 1 row 1 : sig btn + tempo val
+  const leftTopHtml=`<div class="rib-left-top"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div>`;
+  // Col 1 row 2 : slider (enfant direct grille)
+  const sliderHtml=`<input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1">`;
+  // Col 2 : metro btn (span 2 lignes)
+  const metroHtml=`<button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button>`;
+  // Col 3 : centre 3 layers (span 2 lignes)
   const centerHtml=`<div class="rib-center"><div class="rib-layer-row">${layerCells}</div><div class="rib-info-row">${infoCells}</div></div>`;
-  // ── Colonne droite : son on/off + hamburger ──
-  const rightHtml=`<div class="rib-right"><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>${modBtnHtml}</div>`;
+  // Col 4 : son btn (span 2 lignes)
+  const sonHtml=`<button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>`;
+  // Col 5 : hamburger (span 2 lignes) — modBtnHtml
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid">${leftHtml}${centerHtml}${rightHtml}</div>${phenoHtml}`;
+  el.innerHTML=`<div class="rib-grid">${leftTopHtml}${sliderHtml}${metroHtml}${centerHtml}${sonHtml}${modBtnHtml}</div>${phenoHtml}`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
