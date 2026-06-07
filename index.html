@@ -1208,6 +1208,7 @@ body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 #rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2.5px;align-items:center}
 #rhythm-info-bar .rib-hbr-bar{display:block;width:14px;height:2px;border-radius:1px}
 #rhythm-info-bar .rib-mod-btn{padding:4px 6px}
+.rib-grid-mod{grid-row:1/span 2;align-self:stretch}
 /* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
@@ -1561,7 +1562,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.12</span>
+    <span class="app-version">v3.21.13</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9972,14 +9973,15 @@ function _updateMeasurePageIndicator(globalPage){
   updateCycleInfoBar(globalPage);
 }
 
-// ── _cibUpdateDotsOnly() : MAJ légère dots/flèches sans réécriture innerHTML ──
+// ── _cibUpdateDotsOnly() : MAJ légère dots/flèches + plage mesures sans réécriture innerHTML ──
 // Appelé depuis drawLinear à chaque frame — ne touche pas au DOM global
 function _cibUpdateDotsOnly(){
   const bar=document.getElementById('cycle-info-bar');
   if(!bar) return;
   const centerEl=bar.querySelector('.cib-center');
   if(!centerEl) return;
-  const maxPagesC=_getLinearMaxPages();
+  const linInfo=_getLinearCycleInfo();
+  const maxPagesC=linInfo.numPages;
   const activePage=Math.min(_linearCyclePage,maxPagesC-1);
   centerEl.querySelectorAll('.mpi-dot').forEach((d,p)=>{
     const isActive=p===activePage;
@@ -9990,6 +9992,24 @@ function _cibUpdateDotsOnly(){
   const next=centerEl.querySelector('#cib-lc-next');
   if(prev){prev.disabled=activePage<=0;prev.style.opacity=activePage<=0?'0.18':'1';}
   if(next){next.disabled=activePage>=maxPagesC-1;next.style.opacity=activePage>=maxPagesC-1?'0.18':'1';}
+  // MAJ plage de mesures dans la colonne droite
+  const rightEl=bar.querySelector('.cib-right');
+  const rangeSpan=rightEl?.querySelector('#cib-lc-range');
+  if(rangeSpan&&maxPagesC>1){
+    const cf=LAYERS.map((_,li)=>_cycleInCrochesFrac(li));
+    const Dc=lcm(cf[0].den,lcm(cf[1].den,cf[2].den));
+    const Nc=cf.map(f=>f.num*(Dc/f.den));
+    const LcmNc=lcm(Nc[0],lcm(Nc[1],Nc[2]));
+    const measureCroches=currentSig?(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):8;
+    const gM=gcd(LcmNc,Dc*measureCroches);
+    const cycMesNr=LcmNc/gM,cycMesDr=(Dc*measureCroches)/gM;
+    const totalMesF=cycMesNr/cycMesDr;
+    const mesPerPageF=totalMesF/maxPagesC;
+    const mesStartF=activePage*mesPerPageF+1;
+    const mesEndF=Math.min((activePage+1)*mesPerPageF,totalMesF);
+    const fmtM=v=>{const r=Math.round(v*2)/2;return Number.isInteger(r)?r:r.toFixed(1).replace('.0','');};
+    rangeSpan.textContent=`mes. ${fmtM(mesStartF)}–${fmtM(mesEndF)}`;
+  }
 }
 
 // ── updateCycleInfoBar(globalPage) : CycleInfo entre section-groove et canvas ──
