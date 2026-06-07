@@ -1562,7 +1562,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.14</span>
+    <span class="app-version">v3.21.15</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6088,7 +6088,6 @@ function buildGrooveSection(){
   _viewDefs.forEach((d,i)=>{
     const b=document.createElement('button');
     b.className='gvb-btn';b.dataset.viewKey=d.key;b.textContent=d.label;
-    if(!layersOuverts)b.style.display='none';
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     gvbBtns.appendChild(b);
   });
@@ -6153,22 +6152,18 @@ function buildGrooveSection(){
     _grooveOnSelect(list[Math.floor(Math.random()*list.length)].id);
   });
 
-  // Collapse ˅/˄ — ne cache que la vue canvas (pas les 3 layers)
-  // Chevron : affichage Groove.view (canvas + boutons vue + mini-VU)
-  // Chevron : canvas + boutons vue + polymétrie (rien sur layers-wrap)
+  // Chevron : toggle Groove.view (canvas) + Groove.InfoLine (#cycle-info-bar) uniquement
   const _toggleLayers=()=>{
     layersOuverts=!layersOuverts;
     const cv=document.getElementById('circle-view');
     const sr=document.getElementById('step-rows-wrap');
+    const cib=document.getElementById('cycle-info-bar');
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
-    if(sr)sr.style.display=layersOuverts&&document.body.classList.contains('step-seq')?'flex':'none';
-    const l3el=document.getElementById('groove-view-bar');
-    if(l3el) l3el.querySelectorAll('.gvb-btn').forEach(b=>b.style.display=layersOuverts?'':'none');
+    if(sr)sr.style.display=layersOuverts?'':'none';
+    if(cib)cib.style.display=layersOuverts?'':'none';
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
     btnCollapse.title=layersOuverts?'Masquer vue':'Afficher vue';
-    if(layersOuverts)_miniVuStop(); else _miniVuStart();
-    updateViewModeBar();
   };
   btnCollapse.addEventListener('click',e=>{e.stopPropagation();_toggleLayers();});
   // Hamburger layers : désormais dans l'InfoLayer — branché sur _doToggleLayerPanels()
