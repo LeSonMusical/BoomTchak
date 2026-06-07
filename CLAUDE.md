@@ -19,6 +19,29 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Version `MAJEUR.MINEUR.PATCH` bumpée à chaque commit (dans `<span class="app-version">`).
 - **SQL migrations** : tout script SQL à exécuter par Lamberio (migration, seed, correctif DB) doit être écrit **directement dans l'interface de chat Claude**, pas uniquement dans la description de la PR ou dans les fichiers.
 
+## Direction design UI — Session 2026-06-07
+
+### Décision acte : suppression des bordures latérales jaunes (v3.20.32)
+Les bordures `border-left: 2px solid #C8961A` et `margin-left: 4px` qui couraient le long du canvas, des layers, de la view-mode-bar et du step-sequencer ont été supprimées. Le contenu Groove est désormais pleine largeur.
+
+**Raisonnement :** signal redondant (le canvas communique déjà la zone Groove), espace volé (~10px), artefact visuel asymétrique, incohérence avec le paradigme drawer de Capture/Jeu.
+
+### Principe directeur validé
+> **Le seul signal coloré qui mérite de persister est celui des layers** (bleu/rouge/vert) — parce qu'il a une fonction de décodage direct : cette couleur = cette couche dans le canvas = ces boutons.
+> Tout le reste (couleurs de section : jaune Groove, teal Metro, bleu Band) est un repère secondaire, pas un délimiteur spatial.
+
+### Deux systèmes coexistent — à unifier progressivement
+L'appli mélange deux paradigmes :
+- **Volets empilés** (Groove, Metro, Band, Encyclo) — architecture originale, coexistence verticale
+- **Drawers pleine largeur** (Capture, Jeu) — paradigme plus récent, meilleur sur mobile
+
+**Prochaine étape identifiée (non commitée) :** évaluer si Metro et Band en tant que drawers full-width (activés par nav-tab → slide-up) est préférable à l'empilement actuel. Tester si la vision simultanée Groove + Metro a une vraie valeur pédagogique ou si elle complexifie l'interface.
+
+### Ce qui ne change PAS
+- Les couleurs de section (`#C8961A` jaune Groove, `#3A8C6E` teal Metro, `#2d5f80` bleu Band) restent comme codes d'identité dans les headers de section et les accents (boutons, badges)
+- Les borders jaunes des **headers de section** (`.groove-bar`, `.temps-bar`, `.band-bar`) sont conservées — elles délimitent le header, pas le contenu
+- La bottom-bar garde sa `border-top: 2px solid #C8961A` — elle ancre l'appli visuellement
+
 ## Règles CRUD (bible — à respecter impérativement)
 
 **Règle 1 — Symétrie TX/MX**

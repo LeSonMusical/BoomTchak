@@ -433,7 +433,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0}
 /* Indent visuel : les layers appartiennent au groove */
-#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
+#layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;padding-left:2px}
 .layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
@@ -1161,23 +1161,22 @@ body.view-circle .layer-row2{display:none!important}   /* grille steps masquée 
 body.view-circle .hdivider{display:none}
 #rhythm-canvas{display:block;touch-action:pan-y;cursor:pointer}
 /* Barre de sous-mode (↺ Pattern / ↺ Mesure en ◎ ; ↺ Pattern / ↺ Cycle en ☰) */
-#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 0 2px;margin-left:4px;border-left:2px solid #C8961A;padding-left:4px;background:transparent}
+#view-mode-bar{display:flex;gap:3px;justify-content:center;padding:3px 4px 2px;background:transparent}
 
 .circle-mode-btn{font-size:9px;padding:2px 4px;border-radius:8px;border:1px solid #c0b8f0;background:#f5f3ff;color:#6B5FA5;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s;min-width:44px;text-align:center;box-sizing:border-box}
 .circle-mode-btn.active{opacity:1;background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
 body.dark-mode .circle-mode-btn{background:#2a2440;color:#a09ad0;border-color:#5a5090}
 body.dark-mode .circle-mode-btn.active{background:#5A4F94;color:#fff;border-color:#5A4F94;font-weight:700}
-body.dark-mode #view-mode-bar{border-left-color:#8B6914}
+
 
 /* Portrait : cercle pleine largeur, controls empilés dessous */
 /* Vue circulaire — portrait : layers sous le canvas */
 body.view-circle .frame{display:flex;flex-direction:column}
-/* canvas : barre groove + width ajustée pour margin-left:4px */
-body.view-circle #circle-view{width:calc(100% - 4px);order:3;margin-left:4px;border-left:2px solid #C8961A}
+body.view-circle #circle-view{width:100%;order:3}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2}
-body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px)}
+body.view-circle #view-mode-bar{order:3;width:100%}
 body.view-circle #layers-wrap{order:5;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
@@ -1192,22 +1191,22 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
-  body.view-circle.circle-linear #circle-view{flex:0 0 calc(100% - 4px);width:calc(100% - 4px)}
+  body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
   /* view-mode-bar suit section-groove dans le flex-wrap */
-  body.view-circle #view-mode-bar{order:3;width:calc(100% - 4px);flex-shrink:0}
+  body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
 }
 
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:calc(100% - 4px);margin-left:4px}
+body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
 body.has-poly-rhythm.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
 body.has-poly-rhythm.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
-body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;margin-left:4px;width:calc(100% - 4px)}
+body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;width:100%}
 /* border-left supprimé sur #rhythm-info-wrap (v3.16.44) */
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
-@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 calc(100% - 4px);flex-shrink:0}}
+@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 /* Signature : violet clair, cliquable → toggle Metro */
@@ -1225,8 +1224,7 @@ body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
 #step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
-body.step-seq #step-rows-wrap{display:flex;margin-left:4px;border-left:2px solid #C8961A;padding-left:6px}
-body.dark-mode.step-seq #step-rows-wrap{border-left-color:#8B6914}
+body.step-seq #step-rows-wrap{display:flex;padding-left:2px}
 /* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
 #step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
 /* Layer muté : steps actifs atténués (comme vue circulaire) */
@@ -1289,8 +1287,7 @@ body.dark-mode .encyclo-cat-lbl{color:#888}
 body.dark-mode .encyclo-l2{border-top-color:rgba(255,255,255,.06)}
 body.dark-mode .sound-sep{background:#333330}
 body.dark-mode .sl-row label{color:#666}
-body.dark-mode #layers{border-left-color:#8B6914}
-body.dark-mode.view-circle #circle-view{border-left-color:#8B6914}
+
 body.dark-mode .layer{background:#252522;border-color:rgba(255,255,255,.1)}
 body.dark-mode .layer-row1{background:rgba(0,0,0,.35);border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .layer-row2{background:#252522}
@@ -1556,7 +1553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.31</span>
+    <span class="app-version">v3.20.32</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
