@@ -1553,7 +1553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.36</span>
+    <span class="app-version">v3.20.37</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9654,28 +9654,17 @@ function drawLinear(){
       const repStartU=rep*cu;
       if(repStartU>=startU+dispU) break;
       if((rep+1)*cu<=startU) continue;
-      // Crochet de cycle : rectangle sans barre inférieure + double barres verticales (sans points)
-      // Englobe chaque répétition du pattern — |‖ ligne du haut ‖|
+      // Crochet de cycle : ligne du haut + barre simple sur le 1er et le dernier step
       if(totalReps>1){
-        const xL=marginX+uW*(repStartU-startU);
-        const xR=marginX+uW*(repStartU+cu-startU);
-        const yT=y-dotR-4; // dessus des cercles
-        const yB=y+dotR+4; // dessous des cercles (pas de trait ici)
+        const xL=marginX+uW*(repStartU+half-startU);          // centre du 1er step
+        const xR=marginX+uW*(repStartU+(n-1)*s+half-startU); // centre du dernier step
+        const yT=y-dotR-4;
+        const yB=y+dotR+4;
         const c=col.stroke+'88';
         ctx.save(); ctx.setLineDash([]);
-        // Ligne du haut (clippée à la zone visible)
-        const xLc=Math.max(xL,marginX), xRc=Math.min(xR,W-marginX);
-        if(xRc>xLc){ctx.beginPath();ctx.moveTo(xLc,yT);ctx.lineTo(xRc,yT);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();}
-        // Double barre gauche |‖ (si visible)
-        if(xL>=marginX-2&&xL<=W-marginX+2){
-          ctx.beginPath();ctx.moveTo(xL,yT);ctx.lineTo(xL,yB);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();
-          ctx.beginPath();ctx.moveTo(xL+2.5,yT);ctx.lineTo(xL+2.5,yB);ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
-        }
-        // Double barre droite ‖| (si visible)
-        if(xR>=marginX-2&&xR<=W-marginX+2){
-          ctx.beginPath();ctx.moveTo(xR-2.5,yT);ctx.lineTo(xR-2.5,yB);ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
-          ctx.beginPath();ctx.moveTo(xR,yT);ctx.lineTo(xR,yB);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();
-        }
+        if(xR>xL){const xLc=Math.max(xL,marginX),xRc=Math.min(xR,W-marginX);if(xRc>xLc){ctx.beginPath();ctx.moveTo(xLc,yT);ctx.lineTo(xRc,yT);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();}}
+        if(xL>=marginX-2&&xL<=W-marginX+2){ctx.beginPath();ctx.moveTo(xL,yT);ctx.lineTo(xL,yB);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();}
+        if(xR>=marginX-2&&xR<=W-marginX+2){ctx.beginPath();ctx.moveTo(xR,yT);ctx.lineTo(xR,yB);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke();}
         ctx.restore();
       }
       for(let si=0;si<n;si++){
