@@ -1193,11 +1193,14 @@ body.dark-mode #cycle-info-bar{background:rgba(200,150,26,0.04);border-bottom-co
 body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
-/* InfoLayer : grille 9 colonnes (sig | spacer | L0 | gap | L1 | gap | L2 | spacer | hamburger) */
+/* InfoLayer : grille 3 colonnes (gauche 1fr | centre auto | droite 1fr) */
 #rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
-.rib-grid{display:grid;grid-template-columns:auto 1fr auto 5px auto 5px auto 1fr auto;width:100%;align-items:center;row-gap:3px}
-.rib-grid-sig{grid-column:1;grid-row:1/span 2;justify-self:start;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:54px}
-.rib-sig-top-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.rib-grid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);width:100%;align-items:center;column-gap:4px}
+/* Colonne gauche : metro toggle + tempo + slider */
+.rib-left{display:flex;flex-direction:column;gap:2px;align-items:flex-start;min-width:0;overflow:hidden}
+.rib-left-top{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;min-width:0}
+.rib-metro-btn{position:relative;font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.rib-metro-btn:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:115%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
 .rib-tempo-val{font-size:10px;color:#6B5FA5;font-weight:600;white-space:nowrap}
 .rib-tempo-slider{width:100%;cursor:pointer;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;flex-shrink:0}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
@@ -1209,18 +1212,18 @@ body.dark-mode .rib-tempo-slider::-webkit-slider-runnable-track{background:rgba(
 body.dark-mode .rib-tempo-slider::-webkit-slider-thumb{background:#9B8FD5;border-color:#1a1a1a}
 body.dark-mode .rib-tempo-slider::-moz-range-track{background:rgba(155,143,213,.2)}
 body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-color:#1a1a1a}
-.rib-grid-l0{grid-column:3;grid-row:1;justify-self:center}
-.rib-grid-l1{grid-column:5;grid-row:1;justify-self:center}
-.rib-grid-l2{grid-column:7;grid-row:1;justify-self:center}
-.rib-grid-mod{grid-column:9;grid-row:1;justify-self:end}
-.rib-grid-i0{grid-column:3;grid-row:2;justify-self:center}
-.rib-grid-i1{grid-column:5;grid-row:2;justify-self:center}
-.rib-grid-i2{grid-column:7;grid-row:2;justify-self:center}
+/* Colonne centre : 3 layers (prioritaire, auto-width) */
+.rib-center{display:flex;flex-direction:column;align-items:center;gap:2px}
+.rib-layer-row{display:flex;align-items:center;gap:5px}
+.rib-info-row{display:flex;align-items:center;gap:5px}
+/* Colonne droite : son + hamburger */
+.rib-right{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.rib-son-btn{position:relative;font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.rib-son-btn.muted{opacity:.45}
 /* Hamburger bars InfoLayer */
 #rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:2px;align-items:center}
 #rhythm-info-bar .rib-hbr-bar{display:block;width:17px;height:2.5px;border-radius:1px}
 #rhythm-info-bar .rib-mod-btn{padding:3px 3px}
-.rib-grid-mod{grid-row:1;align-self:center}
 /* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
@@ -1574,7 +1577,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.20</span>
+    <span class="app-version">v3.21.21</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -8922,6 +8925,8 @@ function _syncBtnVolAllMuted(){
   const icon=document.getElementById('sons-icon');
   if(icon)icon.textContent=allMuted?'🔇':'🔊';
   btnV.classList.toggle('muted',allMuted);
+  const ribSon=document.getElementById('rib-son-btn');
+  if(ribSon){ribSon.classList.toggle('muted',allMuted);ribSon.textContent=allMuted?'🔇':'🔊';}
   if(circleView)drawCircles();
 }
 function _applyBandMute(muted){
@@ -8954,6 +8959,7 @@ function setMetroGlobal(on){
   }
   document.getElementById('btn-sig-top')?.classList.toggle('metro-on', on);
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
+  document.getElementById('rib-metro-btn')?.classList.toggle('on',on);
   // Si on remet ON et que tous les types sont éteints → rétablir ^ et >
   if(on && !metro.accentOn && !metro.tempsOn && !metro.subdivOn){
     metro.accentOn=true; metro.tempsOn=true;
@@ -10573,12 +10579,35 @@ function updateRhythmInfoBar(){
   const _rbEq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
   const _rbBpm=Math.round(_rbSpm/_rbEq);
   const _rbSym=symFromFelBeatSteps(_rbEq);
-  const sigColHtml=`<div class="rib-grid-sig"><div class="rib-sig-top-row"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1"></div>`;
+  const _metroOn=!metro.muted;
+  const _sonMuted=bandMuted;
+  // ── Colonne gauche : metro on/off + tempo + slider ──
+  const leftHtml=`<div class="rib-left"><div class="rib-left-top"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1"></div>`;
+  // ── Colonne centre : 3 layers (prioritaire) ──
+  const centerHtml=`<div class="rib-center"><div class="rib-layer-row">${layerCells}</div><div class="rib-info-row">${infoCells}</div></div>`;
+  // ── Colonne droite : son on/off + hamburger ──
+  const rightHtml=`<div class="rib-right"><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>${modBtnHtml}</div>`;
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid">${sigColHtml}${layerCells}${modBtnHtml}${infoCells}</div>${phenoHtml}`;
+  el.innerHTML=`<div class="rib-grid">${leftHtml}${centerHtml}${rightHtml}</div>${phenoHtml}`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
+  });
+  el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{
+    setMetroGlobal(metro.muted); // toggle : muted→on, on→muted
+  });
+  el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
+    const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
+    if(anyUnmuted)_layerMuteSnapshot=LAYERS.map((_,li)=>state[li].muted);
+    LAYERS.forEach((_,li)=>{
+      const t=anyUnmuted?true:(_layerMuteSnapshot?_layerMuteSnapshot[li]:false);
+      state[li].muted=t;
+      const ld=document.querySelector('.layer.'+LAYERS[li].cls);if(ld)ld.classList.toggle('muted-layer',t);
+      const bm=document.getElementById('btn-mute-lbl-'+li);if(bm){bm.classList.toggle('muted',t);bm.title=(t?'Activer : ':'Muet : ')+LAYERS[li].label;}
+    });
+    if(!anyUnmuted)_layerMuteSnapshot=null;
+    _syncBtnVolAllMuted();
+    updateRhythmInfoBar();drawCircles();
   });
   el.querySelector('#rib-bpm-slider')?.addEventListener('input',function(){
     const ms=document.getElementById('bpm');
