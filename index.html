@@ -1561,7 +1561,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.9</span>
+    <span class="app-version">v3.21.10</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9706,8 +9706,8 @@ function drawLinear(){
       ctx.strokeStyle='rgba(200,160,40,0.82)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
     }
   }
-  // Indicateur de page DOM (flèches + dots)
-  _updateLinearPageIndicator();
+  // Mise à jour légère des dots actifs dans cycle-info-bar (sans réécrire le HTML)
+  _cibUpdateDotsOnly();
 }
 
 function circleHitTest(x, y){
@@ -9970,6 +9970,26 @@ function _updateMeasurePageIndicator(globalPage){
   const baseShow=circleModeView==='measure' && layersOuverts && circleView;
   if(!baseShow) return;
   updateCycleInfoBar(globalPage);
+}
+
+// ── _cibUpdateDotsOnly() : MAJ légère dots/flèches sans réécriture innerHTML ──
+// Appelé depuis drawLinear à chaque frame — ne touche pas au DOM global
+function _cibUpdateDotsOnly(){
+  const bar=document.getElementById('cycle-info-bar');
+  if(!bar) return;
+  const centerEl=bar.querySelector('.cib-center');
+  if(!centerEl) return;
+  const maxPagesC=_getLinearMaxPages();
+  const activePage=Math.min(_linearCyclePage,maxPagesC-1);
+  centerEl.querySelectorAll('.mpi-dot').forEach((d,p)=>{
+    const isActive=p===activePage;
+    d.classList.toggle('active',isActive);
+    d.textContent=isActive?'●':'○';
+  });
+  const prev=centerEl.querySelector('#cib-lc-prev');
+  const next=centerEl.querySelector('#cib-lc-next');
+  if(prev){prev.disabled=activePage<=0;prev.style.opacity=activePage<=0?'0.18':'1';}
+  if(next){next.disabled=activePage>=maxPagesC-1;next.style.opacity=activePage>=maxPagesC-1?'0.18':'1';}
 }
 
 // ── updateCycleInfoBar(globalPage) : CycleInfo entre section-groove et canvas ──
