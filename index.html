@@ -1553,7 +1553,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.33</span>
+    <span class="app-version">v3.20.34</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -9601,6 +9601,22 @@ function drawLinear(){
   const minU=Math.min(...LAYERS.map((_,li)=>state[li].pattern.length>0?su[li]:999));
   const dotR=Math.min(7,Math.max(2,Math.floor(uW*minU/2)-1));
   const half=DENOM/2;
+  // Bandes alternées par répétition de cycle (fond teinté couleur layer)
+  [0,1,2].forEach(li=>{
+    if(!state[li].pattern.length) return;
+    const col=CIRCLE_COLORS[li];
+    const cu=cycU[li]; if(!cu) return;
+    const repFirst=Math.floor(startU/cu);
+    const repLast=Math.ceil((startU+dispU)/cu);
+    for(let rep=repFirst;rep<repLast;rep++){
+      if(rep%2===0) continue; // bandes impaires uniquement
+      const x0=Math.max(marginX,marginX+uW*(rep*cu-startU));
+      const x1=Math.min(W-marginX,marginX+uW*((rep+1)*cu-startU));
+      if(x1<=x0) continue;
+      ctx.fillStyle=isDark?col.fill+'18':col.fill+'0D';
+      ctx.fillRect(x0,marginY+rowH*li,x1-x0,rowH);
+    }
+  });
   // Lignes de temps (beats)
   const beatU=(currentSig.equivalence||currentSig.felBeatSteps||2)*DENOM;
   if(beatU<measU&&beatU>0){
@@ -9638,12 +9654,22 @@ function drawLinear(){
       const repStartU=rep*cu;
       if(repStartU>=startU+dispU) break;
       if((rep+1)*cu<=startU) continue;
-      // Séparateur pointillé en début de répétition (sauf rep 0)
+      // Barre de reprise musicale en début de répétition (sauf rep 0)
       if(rep>0){
-        const xSep=marginX+uW*(repStartU-startU);
-        ctx.save(); ctx.beginPath(); ctx.moveTo(xSep,y-dotR-2); ctx.lineTo(xSep,y+dotR+2);
-        ctx.strokeStyle=col.stroke+'55'; ctx.lineWidth=0.75;
-        ctx.setLineDash([2,2]); ctx.stroke(); ctx.restore();
+        const xBar=marginX+uW*(repStartU-startU);
+        const barHalf=rowH*0.40;
+        const dotOff=Math.min(rowH/5,7);
+        const dotRad=Math.min(2.2,rowH/9);
+        const c=col.stroke+'99';
+        ctx.save();
+        ctx.beginPath();ctx.moveTo(xBar,y-barHalf);ctx.lineTo(xBar,y+barHalf);
+        ctx.strokeStyle=c;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(xBar+2.5,y-barHalf);ctx.lineTo(xBar+2.5,y+barHalf);
+        ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.stroke();
+        ctx.fillStyle=c;
+        ctx.beginPath();ctx.arc(xBar+6.5,y-dotOff,dotRad,0,2*Math.PI);ctx.fill();
+        ctx.beginPath();ctx.arc(xBar+6.5,y+dotOff,dotRad,0,2*Math.PI);ctx.fill();
+        ctx.restore();
       }
       for(let si=0;si<n;si++){
         const absU=repStartU+si*s;
