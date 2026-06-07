@@ -1562,7 +1562,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.17</span>
+    <span class="app-version">v3.21.18</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -6091,7 +6091,7 @@ function buildGrooveSection(){
     b.addEventListener('click',()=>{setView(d.shape);setViewCycle(d.cycle);});
     gvbBtns.appendChild(b);
   });
-  if(!layersOuverts){gvbBtns.style.display='none';_miniVuStart();}
+  if(!layersOuverts){gvbBtns.style.visibility='hidden';_miniVuStart();}
   l3.appendChild(gvbBtns);
   l3.appendChild(btnCollapse); // chevron à l'extrême droite (position absolute)
   // Clic sur le fond de la groove-view-bar → ouvre volet mod du layer correspondant (mini-VU zones)
@@ -6162,8 +6162,8 @@ function buildGrooveSection(){
     if(cv)cv.style.display=(layersOuverts&&circleView)?'flex':'none';
     if(sr)sr.style.display=layersOuverts?'':'none';
     if(cib)cib.style.display=layersOuverts?'':'none';
-    // Swap : boutons vue ↔ mini-VU Meter.view
-    gvbBtns.style.display=layersOuverts?'':'none';
+    // Swap : boutons vue ↔ mini-VU Meter.view (visibility pour garder la taille du volet)
+    gvbBtns.style.visibility=layersOuverts?'':'hidden';
     if(layersOuverts)_miniVuStop();else _miniVuStart();
     btnCollapse.textContent=layersOuverts?'▼':'▶';
     btnCollapse.classList.toggle('open',layersOuverts);
