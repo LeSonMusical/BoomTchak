@@ -1200,26 +1200,30 @@ body.view-circle #section-encyclo{order:5}
 /* ─── BARRE INFO RYTHMIQUE GLOBALE (#rhythm-info-wrap direct enfant de .frame) ─── */
 /* Portrait vue-circle : après view-mode-bar/circle-view (order:3), avant layers (order:5) */
 #rhythm-info-wrap{display:none}
-body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
-body.has-poly-rhythm.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
-body.has-poly-rhythm.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
-body.has-poly-rhythm.step-seq #rhythm-info-wrap{display:block;width:100%}
+body.has-rib.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
+body.has-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:10px}
+body.has-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:8px;margin-bottom:4px}
+body.has-rib.step-seq #rhythm-info-wrap{display:block;width:100%}
 /* border-left supprimé sur #rhythm-info-wrap (v3.16.44) */
 /* Desktop ≥600px : pleine largeur sous canvas+layers */
-@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
-#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px 8px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
+@media(min-width:600px){body.has-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
+#rhythm-info-bar{display:none;width:100%;flex-shrink:0;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;padding:3px 6px 4px;font-size:9px;color:#aaa;box-sizing:border-box}
 #rhythm-info-bar .rib-sep{color:#ccc;margin:0 1px}
 /* Signature : violet clair, cliquable → toggle Metro */
 #rhythm-info-bar .rib-sig{color:#7A9BBB;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
 #rhythm-info-bar .rib-sig:hover{color:#3A8C6E}
 /* Phénomène : jaune Groove */
 #rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic}
-#rhythm-info-bar .rib-col4{font-weight:600}
-#rhythm-info-bar .rib-col4-sep{color:#aaa;margin:0 1px}
-/* step-seq : rhythm-info-wrap est en flux normal (block), pas besoin d'order */
+/* Boutons mute layer */
+#rhythm-info-bar .rib-layer-btn{background:none;border:1.5px solid;border-radius:4px;padding:1px 6px 1px 5px;cursor:pointer;font-size:10px;line-height:1.3;display:inline-flex;align-items:baseline;gap:2px;transition:opacity .15s,filter .15s}
+#rhythm-info-bar .rib-layer-btn.muted{opacity:.3;filter:grayscale(.6)}
+#rhythm-info-bar .rib-layer-btn .rib-steps{font-weight:700;font-size:11px}
+#rhythm-info-bar .rib-layer-btn .rib-note{font-size:12px;line-height:1}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sep{color:#444}
-body.dark-mode #rhythm-info-bar .rib-col4-sep{color:#555}
+/* compat rétro: has-poly-rhythm → has-rib */
+body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
+@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
@@ -1553,7 +1557,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.20.38</span>
+    <span class="app-version">v3.21.0</span>
   </div>
   <!-- CENTER→RIGHT: controls rapides -->
   <div class="top-bar-controls">
@@ -10319,6 +10323,16 @@ function _openMetroUnitFromSig(){
     if(b)b.classList.toggle('open',show);
   });
 }
+// ── Figure de note pour l'unité d'un step layer ──
+function _stepNoteStr(li){
+  const d=state[li].doubleOn,h=state[li].halfOn,t=state[li].ternOn;
+  if(d&&t) return '♬<sub>3</sub>';
+  if(h&&t) return '♩<sub>3</sub>';
+  if(d)    return '♬';
+  if(h)    return '♩';
+  if(t)    return '♪<sub>3</sub>';
+  return '♪';
+}
 // ── Durée du cycle en croches (1/8) par layer ──
 function _cycleInCrochesFrac(li){
   const s=state[li],n=s.pattern.length;
@@ -10380,12 +10394,36 @@ function updateRhythmInfoBar(){
   // ── leb-cycle : toujours mis à jour ──
   const lebCycleEl=document.getElementById('leb-cycle');
   if(lebCycleEl)lebCycleEl.innerHTML=`cycle de ${cycTpsStr}&thinsp;tps&thinsp;=&thinsp;${cycMesStr}&thinsp;mes.`;
-  // ── Rhythm info bar : visible uniquement si phénomène poly/hémiole ──
-  document.body.classList.toggle('has-poly-rhythm',!!phenoLabel);
-  if(!phenoLabel){el.style.display='none';return;}
-  // ── Assemblage (phénomène uniquement — col4 retiré car info redondante) ──
+  // ── Rhythm info bar : toujours visible si au moins un layer a des pas ──
+  const hasAnyPattern=LAYERS.some((_,li)=>state[li].pattern.length>0);
+  document.body.classList.toggle('has-rib',hasAnyPattern);
+  document.body.classList.toggle('has-poly-rhythm',hasAnyPattern&&!!phenoLabel);
+  if(!hasAnyPattern){el.style.display='none';return;}
+  // ── Boutons layer : nb de pas + figure de note + mute toggle ──
+  const LCOLS=['#378ADD','#D85A30','#1D9E75'];
+  const layerHtml=LAYERS.map((_,li)=>{
+    const n=state[li].pattern.length;
+    if(!n) return '';
+    const col=LCOLS[li];
+    const muted=!!state[li].muted;
+    return `<button class="rib-layer-btn${muted?' muted':''}" data-li="${li}"
+      style="color:${col};border-color:${col}"
+      title="${muted?'Activer':'Muter'} layer ${li+1}">
+      <span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span>
+    </button>`;
+  }).join('');
+  const phenoHtml=phenoLabel?`<span class="rib-sep">·</span><span class="rib-pheno">${phenoLabel}</span>`:'';
   el.style.display='flex';
-  el.innerHTML=`<span class="rib-pheno" title="Caractère rythmique">${phenoLabel}</span>`;
+  el.innerHTML=layerHtml+phenoHtml;
+  // Handlers mute
+  el.querySelectorAll('.rib-layer-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const li=+btn.dataset.li;
+      state[li].muted=!state[li].muted;
+      updateRhythmInfoBar();
+      drawCircles();
+    });
+  });
 }
 
 function visualLoopCircle(){
