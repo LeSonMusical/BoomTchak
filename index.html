@@ -27,7 +27,7 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:0 .85rem .5rem}
 
 /* ─── TOP BAR ─── */
-.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:7px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:3px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .app-title-block{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;line-height:1.15;gap:0;cursor:pointer;padding:2px 4px;border-radius:4px;-webkit-tap-highlight-color:transparent}
 .app-title-block:hover .app-name{text-decoration:underline dotted}
 .app-name{font-size:13px;font-weight:700;color:#8B6914;letter-spacing:.01em}
@@ -48,8 +48,11 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 .view-bar-sep{color:#ccc;font-size:10px;padding:0 2px;flex-shrink:0}
 
 /* ─── MENU SETTINGS DROPDOWN ─── */
-.settings-menu-wrap{position:relative}
-.settings-menu{position:absolute;top:calc(100% + 4px);right:0;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain}
+.settings-menu-wrap{position:static;flex:1;display:flex;align-items:stretch}
+.settings-menu-wrap .nav-tab{flex:1}
+/* Menu settings positionné en fixed (indépendant du parent) au-dessus de la bottom bar */
+#settings-menu-anchor{position:fixed;bottom:0;right:0;pointer-events:none;width:0;height:0;overflow:visible;z-index:199}
+.settings-menu{position:fixed;bottom:68px;right:8px;background:#e8e5e0;border:1px solid #c8c5c0;border-radius:6px;min-width:min(300px,92vw);max-width:min(300px,92vw);box-sizing:border-box;box-shadow:0 -4px 14px rgba(0,0,0,.18);z-index:200;display:none;overflow-y:auto;overflow-x:hidden;max-height:min(88vh,700px);overscroll-behavior:contain;pointer-events:auto}
 .settings-menu.open{display:block}
 .smenu-row{padding:9px 12px;font-size:12px;border-top:1px solid #e0ddd8;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--txt)}
 .smenu-row:first-child{border-top:none}
@@ -1572,23 +1575,16 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- TOP BAR — nom + version uniquement -->
 <div class="top-bar">
-  <!-- LEFT: app identity (tap = ouvre article BoomTchak) -->
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.23</span>
+    <span class="app-version">v3.21.24</span>
   </div>
-  <!-- CENTER→RIGHT: controls rapides -->
-  <div class="top-bar-controls">
-    <button class="btn-top" id="btn-tempo" title="Court: mute métro · Long: section · Glisser: tempo"><div class="metro-row"><span class="metro-icon">⏱</span><span class="metro-bpm">♩=100</span></div><div class="metro-track"><div class="metro-track-fill"></div></div></button>
-    <button class="btn-top btn-sig-top" id="btn-sig-top" title="Changer la signature"><span id="sig-top-lbl">4/4</span></button>
-    <button class="btn-top" id="btn-vol" title="Court : mute · Appui long : section Sons · Glisser : volume"><div class="sons-row"><span id="sons-icon">🔊</span></div><div class="sons-vol-track"><div id="sons-vol-fill"></div></div></button>
-  </div>
-  <!-- FAR RIGHT: settings -->
-  <div class="settings-menu-wrap">
-    <button class="btn-top btn-auth-status" id="btn-settings" title="Réglages"><span id="auth-status-icon">👤</span></button>
-    <span id="settings-badge" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
+</div>
+
+<!-- Settings menu : position:fixed au-dessus de la bottom bar -->
+<div id="settings-menu-anchor">
     <div class="settings-menu" id="panel-settings">
         <!-- Ligne 1 : Thème -->
         <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
@@ -2039,10 +2035,13 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
       <span class="nav-tab-ico">📖</span>
       <span class="nav-tab-lbl">Encyclo</span>
     </button>
-    <button class="nav-tab" id="btn-jouer">
-      <span class="nav-tab-ico">🤚</span>
-      <span class="nav-tab-lbl">Jouer</span>
-    </button>
+    <div class="settings-menu-wrap">
+      <button class="nav-tab" id="btn-settings" title="Connexion · Réglages">
+        <span class="nav-tab-ico" id="auth-status-icon">👤</span>
+        <span class="nav-tab-lbl">…</span>
+      </button>
+      <span id="settings-badge" style="display:none;position:absolute;top:6px;right:6px;width:7px;height:7px;background:#e03050;border-radius:50%;pointer-events:none;border:1px solid #fff"></span>
+    </div>
   </div>
   <!-- Kept for JS compatibility -->
   <div id="btn-rec-box" style="display:none">
@@ -14717,7 +14716,7 @@ function attachEvents(){
   });
   const _closeSettingsMenu = e => {
     const menu = document.getElementById('panel-settings');
-    if (menu.classList.contains('open') && !e.target.closest('.settings-menu-wrap')) {
+    if (menu.classList.contains('open') && !e.target.closest('.settings-menu-wrap') && !e.target.closest('.settings-menu')) {
       menu.classList.remove('open');
       document.getElementById('btn-settings').classList.remove('active');
     }
