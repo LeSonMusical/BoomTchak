@@ -1202,9 +1202,9 @@ body.dark-mode #rhythm-info-bar{background:rgba(255,255,255,.04);border-color:rg
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
-.rib-left-right{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;gap:1px;padding:1px 0}
-.rib-left-top{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden;min-width:0}
-.rib-tempo-val{font-size:11px;color:#6B5FA5;font-weight:700;white-space:nowrap;flex-shrink:0}
+.rib-left-right{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;cursor:ew-resize;touch-action:none;user-select:none}
+.rib-left-top{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;pointer-events:none}
+.rib-tempo-val{font-size:12px;color:#6B5FA5;font-weight:700;white-space:nowrap;text-align:center}
 .rib-tempo-slider{width:100%;cursor:ew-resize;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
@@ -1576,7 +1576,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.21.30</span>
+    <span class="app-version">v3.21.31</span>
   </div>
 </div>
 
@@ -10528,7 +10528,7 @@ function updateRhythmInfoBar(){
   const _rbSym=symFromFelBeatSteps(_rbEq);
   const _metroOn=!metro.muted;
   const _sonMuted=bandMuted;
-  const leftHtml=`<div class="rib-left"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><div class="rib-left-right"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1"></div></div>`;
+  const leftHtml=`<div class="rib-left"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div></div></div>`;
   // Col 2 : 3 layers centré absolu (span 2 lignes) — chaque col layer empile bouton+info
   const centerHtml=`<div class="rib-center">${layerCols}</div>`;
   // Col 3 : son + hamburger (span 2 lignes via .rib-right)
@@ -10546,22 +10546,34 @@ function updateRhythmInfoBar(){
     _applyBandMute(!bandMuted);
   });
   {
-    const slider=el.querySelector('#rib-bpm-slider');
+  {
+    const zone=el.querySelector('#rib-tempo-zone');
+    const bpmMaster=document.getElementById('bpm');
+    const DRAG_PX=6,POS_PER_PX=2;
     let _ribDrag=false,_ribStartX=0,_ribStartVal=0;
-    slider?.addEventListener('pointerdown',e=>{_ribDrag=false;_ribStartX=e.clientX;_ribStartVal=parseInt(slider.value);});
-    slider?.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-_ribStartX)>5)_ribDrag=true;});
-    slider?.addEventListener('pointerup',()=>{if(!_ribDrag)slider.value=_ribStartVal;_ribDrag=false;});
-    slider?.addEventListener('input',function(){
-      if(!_ribDrag)return;
-      const ms=document.getElementById('bpm');
-      if(ms){ms.value=this.value;ms.dispatchEvent(new Event('input'));}
+    zone?.addEventListener('pointerdown',e=>{
+      _ribDrag=false;_ribStartX=e.clientX;_ribStartVal=parseInt(bpmMaster?.value||500);
+      zone.setPointerCapture(e.pointerId);e.preventDefault();
+    },{passive:false});
+    zone?.addEventListener('pointermove',e=>{
+      if(!zone.hasPointerCapture(e.pointerId))return;
+      e.preventDefault();
+      const dx=e.clientX-_ribStartX;
+      if(!_ribDrag&&Math.abs(dx)<DRAG_PX)return;
+      _ribDrag=true;
+      const newVal=Math.max(0,Math.min(1000,Math.round(_ribStartVal+dx*POS_PER_PX)));
+      if(bpmMaster){bpmMaster.value=newVal;bpmMaster.dispatchEvent(new Event('input'));}
       const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
-      const _bpm=Math.round(posToSPM(parseInt(this.value))*(globalSpeedMult||1)/_eq);
+      const _bpm=Math.round(posToSPM(newVal)*(globalSpeedMult||1)/_eq);
       const _sym=symFromFelBeatSteps(_eq);
       _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
-      clearTimeout(_dragOverlay._ribSliderTimer);
-      _dragOverlay._ribSliderTimer=setTimeout(()=>_dragOverlay.hide(),600);
+    },{passive:false});
+    zone?.addEventListener('pointerup',()=>{
+      _dragOverlay.hide();
+      if(!_ribDrag)setNavSection('metro');
+      _ribDrag=false;
     });
+    zone?.addEventListener('pointercancel',()=>{_dragOverlay.hide();_ribDrag=false;});
   }
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
     _doToggleLayerPanels();
