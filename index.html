@@ -28,10 +28,10 @@ body.drawer-open{padding-bottom:calc(68px + 220px)}
 
 /* ─── TOP BAR ─── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:3px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.app-title-block{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;line-height:1.15;gap:0;cursor:pointer;padding:2px 4px;border-radius:4px;-webkit-tap-highlight-color:transparent}
-.app-title-block:hover .app-name{text-decoration:underline dotted}
-.app-name{font-size:13px;font-weight:700;color:#8B6914;letter-spacing:.01em}
-.app-version{font-size:8px;color:#aaa;font-weight:400}
+.app-title-block{display:flex;flex-direction:row;align-items:baseline;flex-shrink:0;gap:5px;cursor:pointer;padding:2px 4px;border-radius:4px;-webkit-tap-highlight-color:transparent}
+.app-name{font-size:14px;font-weight:900;letter-spacing:.02em;line-height:1}
+.app-name .an-b{color:#D85A30}.app-name .an-o{color:#C8961A}.app-name .an-o2{color:#C8961A}.app-name .an-m{color:#1D9E75}.app-name .an-t{color:#3A8C6E}.app-name .an-c{color:#378ADD}.app-name .an-h{color:#9B5FB0}.app-name .an-a{color:#D85A30}.app-name .an-k{color:#1D9E75}
+.app-version{font-size:8px;color:#bbb;font-weight:400;align-self:baseline}
 .btn-auth-status{font-size:19px;padding:0 6px;flex-shrink:0;line-height:1;height:30px;display:flex;align-items:center}
 .top-bar-controls{flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
 .btn-sig-top{font-size:11px;padding:2px 7px;flex-shrink:0;letter-spacing:.02em}
@@ -1271,7 +1271,7 @@ body.dark-mode{background:#18181a;color:#e0ddd8}
 body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
-body.dark-mode .app-name{color:#C8961A}
+body.dark-mode .app-name .an-b{color:#F07050}body.dark-mode .app-name .an-o,.app-name .an-o2{color:#E8CC60}body.dark-mode .app-name .an-m{color:#4DC98A}body.dark-mode .app-name .an-t{color:#5AAA8A}body.dark-mode .app-name .an-c{color:#6BA8E0}body.dark-mode .app-name .an-h{color:#C080D8}body.dark-mode .app-name .an-a{color:#F07050}body.dark-mode .app-name .an-k{color:#4DC98A}
 body.dark-mode #btn-sig-top{color:#666;border-color:#444;background:#222220;opacity:.5}
 body.dark-mode #btn-sig-top.metro-on{opacity:1;color:#888}
 body.dark-mode #btn-sig-top.active{background:rgba(58,140,110,.2);color:#5AAA8A;border-color:#3A8C6E;opacity:1}
@@ -1578,8 +1578,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <!-- TOP BAR — nom + version uniquement -->
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
-    <span class="app-name">BoomTchak</span>
-    <span class="app-version">v3.21.24</span>
+    <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
+    <span class="app-version">v3.21.25</span>
   </div>
 </div>
 
@@ -1661,8 +1661,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
           <span>🎵 Export MIDI…</span>
         </div>
       </div>
-    </div>
-</div>
+</div><!-- /settings-menu-anchor -->
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
