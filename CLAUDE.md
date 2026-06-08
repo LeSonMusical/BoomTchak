@@ -1,7 +1,7 @@
 # BoomTchak — Instructions Claude Code
 
 ## Projet
-App web pédagogique rythme, single-file `index.html` (~10500 lignes), vanilla JS, Supabase.
+App web pédagogique rythme, single-file `index.html` (~15100 lignes), vanilla JS, Supabase.
 Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 
 ## Principe WYSIWYH (What You See Is What You Hear) — règle absolue
@@ -109,7 +109,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.19.x** (session 2026-06-02)
+**v3.22.x** (session 2026-06-08)
 
 ---
 
@@ -172,6 +172,17 @@ Lamberio fournira un document de référence au début de la session. Le cahier 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.22.0 | PatternInfoLine gauche : jauge tempo discrète (`.rib-tempo-gauge`) sous le BPM ; clôture session 2026-06-08 |
+| v3.21.32 | Fix SyntaxError accolade double dans `updateRhythmInfoBar` (JS entier inopérant) |
+| v3.21.31 | PatternInfoLine gauche : suppression slider, zone drag tempo (`#rib-tempo-zone`) — glissé=tempo, tap=volet métro ; tempo centré |
+| v3.21.30 | Fix `#rib-son-btn` → `_applyBandMute(!bandMuted)` (nav-bar Sons + badge mis à jour) ; vue cycle : `mes. N` quand 1 seule mesure |
+| v3.21.29 | PatternInfoLine droite : hamburger\|sig\|son (gauche→droite) ; hamburger carré (`align-self:stretch`, `min-width:22px`) ; `margin-top` canvas→InfoLine réduit 10px→4px |
+| v3.21.28 | Fix toggle Tic-Tac nav (`temps-content.open` comme source de vérité) ; règle « un volet à la fois » (Tic-Tac↔Sons) ; `.rib-sig-btn` sans border ; hamburger moins haut |
+| v3.21.27 | PatternInfoLine : bloc stylisé (border+radius+fond) ; `.rib-left` (⏱ pleine hauteur + tempo+slider) ; slider drag-only ; suppression calculs phénomènes poly |
+| v3.21.26 | Fix crashs JS init : null-guards sur `btn-tempo`, `btn-vol`, `btn-jouer` (retirés du DOM en v3.21.24) |
+| v3.21.25 | Fix `</div>` orphelin ; BoomTchak lettres colorées top bar ; nom+version sur même ligne |
+| v3.21.24 | Top bar réduite (nom+version uniquement) ; bouton … connexion/réglages déplacé dans bottom bar |
+| v3.21.23 | PatternInfoLine : centre absolu garanti (`1fr auto 1fr`) ; info alignée sous chaque layer ; overlay tempo slider ; clôture session 2026-06-07 |
 | v3.17.0 | Hamburger layers visible en déplié (opacity .38 + border discret) ; clôture session 2026-05-31 |
 | v3.16.88 | groove-view-bar : hamburger `position:absolute right:4px` ; `gvb-btns padding:0 28px` symétrique → chevron centré sur point vert mini-VU (W*0.5) |
 | v3.16.87 | Fix séparation chevron/hamburger : `rhythm-info-wrap` → chevron ; `layers-wrap` → hamburger seul ; `setView()` : `lw` suit `layerPanelsOuverts`, `srAV` suit `layersOuverts` |
