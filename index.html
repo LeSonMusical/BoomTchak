@@ -1579,7 +1579,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.21.25</span>
+    <span class="app-version">v3.21.26</span>
   </div>
 </div>
 
@@ -14142,6 +14142,7 @@ function attachEvents(){
   {
     const btnT=document.getElementById('btn-tempo');
     const bpmSlider=document.getElementById('bpm');
+    if(btnT){
     const LONG_MS=350, DRAG_PX=6, POS_PER_PX=2;
     let _startX=0,_startVal=0,_down=false,_dragMoved=false,_longFired=false,_longTimer=null,_lastTap=0;
 
@@ -14180,10 +14181,12 @@ function attachEvents(){
     });
 
     btnT.addEventListener('pointercancel',()=>{ clearTimeout(_longTimer); _down=false; _dragOverlay.hide(); });
+    } // end if(btnT)
   }
   // ── Btn Vol (top bar) : court=mute band, double tap=section, glisser=volume ──
   {
     const btnV=document.getElementById('btn-vol');
+    if(btnV){
     const DRAG_PX=6;
     let _startX=0,_startVol=0,_down=false,_dragMoved=false,_lastTap=0;
 
@@ -14258,6 +14261,7 @@ function attachEvents(){
 
     btnV.addEventListener('pointercancel',()=>{ _clearLong(); _down=false; _dragOverlay.hide(); });
     updateBandVolFill();
+    } // end if(btnV)
   }
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     setMetroGlobal(metro.muted);
@@ -14893,12 +14897,12 @@ function attachEvents(){
   const btnJouer=document.getElementById('btn-jouer');
   const playDrawer=document.getElementById('play-drawer');
   const _syncJouerOpen=()=>{
-    jouerOpen=playDrawer.classList.contains('open');
-    btnJouer.classList.toggle('active',jouerOpen&&recLayers.length===0);
+    jouerOpen=playDrawer?.classList.contains('open')??false;
+    btnJouer?.classList.toggle('active',jouerOpen&&recLayers.length===0);
     document.body.classList.toggle('drawer-open',jouerOpen);
     buildSoundPanel();
   };
-  btnJouer.addEventListener('click',()=>{
+  btnJouer?.addEventListener('click',()=>{
     playDrawer.classList.toggle('open');
     _syncJouerOpen();
   });
