@@ -1576,7 +1576,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.21.29</span>
+    <span class="app-version">v3.21.30</span>
   </div>
 </div>
 
@@ -8937,6 +8937,8 @@ function _applyBandMute(muted){
   if(leftIco)leftIco.textContent=muted?'🔇':'🔊';
   const badge=document.querySelector('.band-bar .sbar-off-badge');
   if(badge){badge.textContent=muted?'off':'on';badge.style.color=muted?'#d94040':'#2d5f80';}
+  const ribSon=document.getElementById('rib-son-btn');
+  if(ribSon){ribSon.classList.toggle('muted',muted);ribSon.textContent=muted?'🔇':'🔊';}
   if(circleView)drawCircles();
 }
 function setMetroGlobal(on){
@@ -10012,7 +10014,7 @@ function _cibUpdateDotsOnly(){
     const mesStartF=activePage*mesPerPageF+1;
     const mesEndF=Math.min((activePage+1)*mesPerPageF,totalMesF);
     const fmtM=v=>{const r=Math.round(v*2)/2;return Number.isInteger(r)?r:r.toFixed(1).replace('.0','');};
-    rangeSpan.textContent=`mes. ${fmtM(mesStartF)}–${fmtM(mesEndF)}`;
+    rangeSpan.textContent=fmtM(mesStartF)===fmtM(mesEndF)?`mes. ${fmtM(mesStartF)}`:`mes. ${fmtM(mesStartF)}–${fmtM(mesEndF)}`;
   }
 }
 
@@ -10541,17 +10543,7 @@ function updateRhythmInfoBar(){
     setMetroGlobal(metro.muted); // toggle : muted→on, on→muted
   });
   el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
-    const anyUnmuted=LAYERS.some((_,li)=>!state[li].muted);
-    if(anyUnmuted)_layerMuteSnapshot=LAYERS.map((_,li)=>state[li].muted);
-    LAYERS.forEach((_,li)=>{
-      const t=anyUnmuted?true:(_layerMuteSnapshot?_layerMuteSnapshot[li]:false);
-      state[li].muted=t;
-      const ld=document.querySelector('.layer.'+LAYERS[li].cls);if(ld)ld.classList.toggle('muted-layer',t);
-      const bm=document.getElementById('btn-mute-lbl-'+li);if(bm){bm.classList.toggle('muted',t);bm.title=(t?'Activer : ':'Muet : ')+LAYERS[li].label;}
-    });
-    if(!anyUnmuted)_layerMuteSnapshot=null;
-    _syncBtnVolAllMuted();
-    updateRhythmInfoBar();drawCircles();
+    _applyBandMute(!bandMuted);
   });
   {
     const slider=el.querySelector('#rib-bpm-slider');
