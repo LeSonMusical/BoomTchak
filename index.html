@@ -1580,7 +1580,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.22.0</span>
+    <span class="app-version">v3.22.1</span>
   </div>
 </div>
 
@@ -4729,8 +4729,16 @@ function openPresetModal(cfg){
         ENCYCLO_MISC.filter(m=>cat==='all'||m.category===cat)
           .forEach(m=>addItem({id:m.id,nom:m.nom,typeBadge:'M',hasC:hasEncycloContent(m.id)}));
       // Articles custom (encycloIndex) — masqués si en attente de suppression
+      // Exclure les IDs déjà portés par un groove/pattern/band/son/metro (ils ont leur propre section)
+      const _linkedEncIds=new Set([
+        ...packCours.grooves.map(g=>g.id),
+        ...packCours.patterns.map(p=>p.encyclo_ref||p.id),
+        ...(packCours.bands||[]).map(b=>b.id),
+        ...(packCours.soundPresets||[]).map(s=>s.id),
+        ...metroPresets.map(p=>p.id),
+      ]);
       (packCours.encycloIndex||[])
-        .filter(e=>!e._hiddenPending&&(cat==='all'||cat===(e.category||'concepts')))
+        .filter(e=>!e._hiddenPending&&!_linkedEncIds.has(e.id)&&(cat==='all'||cat===(e.category||'concepts')))
         .forEach(e=>addItem({id:e.id,nom:e.nom,typeBadge:'✎',hasC:hasEncycloContent(e.id)}));
       if(showG)
         packCours.grooves
@@ -10942,7 +10950,11 @@ function sbMergeSchoolData({ patterns, grooves, familles, encyclo, metroPresets:
     }
     // Index standalone : ni lié à un item (item_ref), ni hard-codé (ENCYCLO_MISC), avec titre
     if (!e.item_ref && !_miscKeys.has(e.key) && e.titre) {
-      packCours.encycloIndex.push({ id: e.key, nom: e.titre, category: e.category || 'concepts', source: 'school' });
+      // Corriger le nom si le titre DB vaut la clé brute (article sauvé avant le fix titre)
+      const _gm = packCours.grooves.find(g=>g.id===e.key);
+      const _pm = packCours.patterns.find(p=>(p.encyclo_ref||p.id)===e.key);
+      const _nom = (_gm||_pm) ? (_gm?.nom||_pm?.nom) : (e.titre !== e.key ? e.titre : e.key);
+      packCours.encycloIndex.push({ id: e.key, nom: _nom, category: e.category || 'concepts', source: 'school' });
     }
   });
   // Merge des familles de métronome (P6 : conserver localDirty, trier par ordre)
@@ -11484,8 +11496,12 @@ async function sbSubmitEncycloTX(key) {
   if (!entry) return false;
   const txKey = 'tx_' + authProfile.id + '_' + key;
   const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
-  const titre = entry.titre || idxEntry?.nom || key;
-  const category = idxEntry?.category || 'concepts';
+  const _grooveMatchTX = packCours.grooves?.find(g=>g.id===key);
+  const _patMatchTX = packCours.patterns?.find(p=>(p.encyclo_ref||p.id)===key);
+  const _itemMatchTX = _grooveMatchTX || _patMatchTX;
+  const titre = entry.titre || idxEntry?.nom || _itemMatchTX?.nom || key;
+  const category = idxEntry?.category || (_grooveMatchTX?'groove':_patMatchTX?'pattern':'concepts');
+  const item_ref = _itemMatchTX ? key : undefined;
   try {
     await sbFetch('/rest/v1/encyclo', {
       method: 'POST',
@@ -11494,6 +11510,7 @@ async function sbSubmitEncycloTX(key) {
         key: txKey,
         titre,
         category,
+        ...(item_ref !== undefined ? { item_ref } : {}),
         sections: entry.sections || [],
         scope: 'teacher', approved: false, owner_id: authProfile.id,
       }),
@@ -11620,8 +11637,13 @@ async function sbSaveEncycloEntry(key) {
   const entry = packCours.encyclo?.[key];
   if (!entry) return;
   const idxEntry = (packCours.encycloIndex||[]).find(e=>e.id===key);
-  const titre = entry.titre || idxEntry?.nom || key;
-  const category = idxEntry?.category || 'concepts';
+  // Chercher le nom lisible si c'est un article lié à un groove/pattern
+  const _grooveMatch = packCours.grooves?.find(g=>g.id===key);
+  const _patMatch = packCours.patterns?.find(p=>(p.encyclo_ref||p.id)===key);
+  const _itemMatch = _grooveMatch || _patMatch;
+  const titre = entry.titre || idxEntry?.nom || _itemMatch?.nom || key;
+  const category = idxEntry?.category || (_grooveMatch?'groove':_patMatch?'pattern':'concepts');
+  const item_ref = _itemMatch ? key : undefined;
   // Conversion héritage chapo+bullets → sections[] si l'entrée n'a pas encore migré
   let sections = entry.sections || [];
   if (!sections.length && (entry.chapo || entry.bullets?.length)) {
@@ -11638,6 +11660,7 @@ async function sbSaveEncycloEntry(key) {
         key,
         titre,
         category,
+        ...(item_ref !== undefined ? { item_ref } : {}),
         sections,
         scope:   'school',
         approved: true,
