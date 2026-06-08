@@ -1228,7 +1228,6 @@ body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-col
 /* Hamburger dans .rib-right */
 #rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:3px;align-items:center}
 #rhythm-info-bar .rib-hbr-bar{display:block;width:20px;height:3px;border-radius:1px}
-#rhythm-info-bar .rib-mod-btn{align-self:stretch;display:flex;align-items:center;justify-content:center;padding:3px 5px}
 /* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
@@ -1237,14 +1236,14 @@ body.view-circle #layers-mod-bar{order:5}
 body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 #rhythm-info-bar .rib-l2-item{font-size:8px;opacity:.72;white-space:nowrap}
 #rhythm-info-bar .rib-row3{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;padding:1px 0}
-#rhythm-info-bar .rib-sig-btn{background:none;border:1.5px solid #3A8C6E;border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;color:#2A6A50;line-height:1.3;-webkit-tap-highlight-color:transparent}
+#rhythm-info-bar .rib-sig-btn{background:none;border:none;padding:1px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#2A6A50;line-height:1.3;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 #rhythm-info-bar .rib-layer-btn{background:none;border:1.5px solid;border-radius:4px;padding:1px 6px 1px 5px;cursor:pointer;font-size:10px;line-height:1.3;display:inline-flex;align-items:baseline;gap:2px;transition:opacity .15s,filter .15s;-webkit-tap-highlight-color:transparent}
 #rhythm-info-bar .rib-layer-btn.muted{opacity:.3;filter:grayscale(.6)}
 #rhythm-info-bar .rib-layer-btn .rib-steps{font-weight:700;font-size:11px}
 #rhythm-info-bar .rib-layer-btn .rib-note{font-size:12px;line-height:1}
-#rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:4px 5px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
+#rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:2px 5px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;align-self:center;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 body.dark-mode #rhythm-info-bar{color:#666}
-body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A;border-color:#2A6A50}
+body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A}
 body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
@@ -1577,7 +1576,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.21.27</span>
+    <span class="app-version">v3.21.28</span>
   </div>
 </div>
 
@@ -10298,9 +10297,7 @@ function _toggleMetroPanel(){
 
 // ── Navigation tabs ──────────────────────────────────────────────────────────
 function _syncNavTabs(){
-  // btn-tempo.active est mis à jour de façon synchrone dans _navSetMetro → source de vérité fiable
-  const btnT=document.getElementById('btn-tempo');
-  const metroOpen=btnT&&btnT.classList.contains('active');
+  const metroOpen=document.getElementById('temps-content')?.classList.contains('open')||false;
   const tmM=document.getElementById('nav-tab-metro');
   const tmS=document.getElementById('nav-tab-sons');
   const tmE=document.getElementById('nav-tab-encyclo');
@@ -10348,12 +10345,15 @@ function _navCloseJouer(){
   if(bj)bj.classList.remove('active');
 }
 function setNavSection(name){
-  // Chaque bouton est un toggle pur, sans fermeture des autres sections
+  const metroOpen=document.getElementById('temps-content')?.classList.contains('open')||false;
   if(name==='metro'){
-    const isOpen=document.getElementById('btn-tempo')?.classList.contains('active');
-    _navSetMetro(!isOpen);
+    const open=!metroOpen;
+    if(open){ _navSetSons(false); }
+    _navSetMetro(open);
   } else if(name==='sons'){
-    _navSetSons(!sonsOuvert);
+    const open=!sonsOuvert;
+    if(open){ _navSetMetro(false); }
+    _navSetSons(open);
   } else if(name==='encyclo'){
     toggleEncyclo(!encycloOuvert);
   }
