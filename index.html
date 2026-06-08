@@ -1196,14 +1196,16 @@ body.dark-mode #cycle-info-bar{background:rgba(200,150,26,0.04);border-bottom-co
 body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
-/* InfoLayer : grille 3 col (left 1fr | centre auto | right 1fr) — centre absolu garanti */
-#rhythm-info-bar{display:none;width:100%;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 6px 5px;font-size:9px;color:#aaa;box-sizing:border-box;gap:2px}
-.rib-grid{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto;width:100%;column-gap:4px;row-gap:2px;align-items:center}
-/* Col 1 row 1 : sig + tempo + metro (metro margin-left:auto) */
-.rib-left-top{grid-column:1;grid-row:1;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;overflow:hidden}
+/* InfoLayer — bloc stylisé 2 lignes */
+#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 4px;font-size:9px;color:#aaa;box-sizing:border-box;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);border-radius:8px;margin:2px 4px;width:calc(100% - 8px)}
+body.dark-mode #rhythm-info-bar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)}
+.rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
+/* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
+.rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
+.rib-left-right{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;gap:1px;padding:1px 0}
+.rib-left-top{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:hidden;min-width:0}
 .rib-tempo-val{font-size:11px;color:#6B5FA5;font-weight:700;white-space:nowrap;flex-shrink:0}
-/* Col 1 row 2 : slider tempo */
-.rib-tempo-slider{grid-column:1;grid-row:2;width:100%;cursor:pointer;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent}
+.rib-tempo-slider{width:100%;cursor:ew-resize;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
 .rib-tempo-slider::-moz-range-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
@@ -1213,20 +1215,20 @@ body.dark-mode .rib-tempo-slider::-webkit-slider-runnable-track{background:rgba(
 body.dark-mode .rib-tempo-slider::-webkit-slider-thumb{background:#9B8FD5;border-color:#1a1a1a}
 body.dark-mode .rib-tempo-slider::-moz-range-track{background:rgba(155,143,213,.2)}
 body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-color:#1a1a1a}
-/* Metro btn : dans .rib-left-top, poussé à l'extrême droite */
-.rib-metro-btn{margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;font-size:17px;background:none;border:none;cursor:pointer;min-width:28px;padding:0 2px;-webkit-tap-highlight-color:transparent}
+/* Metro btn : pleine hauteur, sibling de .rib-left-right */
+.rib-metro-btn{flex-shrink:0;align-self:stretch;display:flex;align-items:center;justify-content:center;position:relative;font-size:19px;background:none;border:none;cursor:pointer;min-width:30px;padding:0 2px;-webkit-tap-highlight-color:transparent}
 .rib-metro-btn:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:80%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
-/* Col 2 : 3 layers centré absolu (span 2 lignes) — colonnes par layer */
-.rib-center{grid-column:2;grid-row:1/span 2;display:flex;align-items:center;gap:5px}
+/* Col 2 : 3 layers centré absolu — colonnes par layer */
+.rib-center{grid-column:2;display:flex;align-items:center;gap:5px}
 .rib-layer-col{display:flex;flex-direction:column;align-items:center;gap:2px}
-/* Col 3 : droite — son + hamburger (span 2 lignes) */
-.rib-right{grid-column:3;grid-row:1/span 2;align-self:stretch;display:flex;align-items:center;justify-content:flex-end;gap:4px}
-.rib-son-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;background:none;border:none;cursor:pointer;min-width:28px;padding:0 2px;-webkit-tap-highlight-color:transparent}
+/* Col 3 : droite — son + hamburger */
+.rib-right{grid-column:3;display:flex;align-items:stretch;justify-content:flex-end;gap:3px}
+.rib-son-btn{flex-shrink:0;align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:19px;background:none;border:none;cursor:pointer;min-width:30px;padding:0 2px;-webkit-tap-highlight-color:transparent}
 .rib-son-btn.muted{opacity:.45}
 /* Hamburger dans .rib-right */
 #rhythm-info-bar .rib-hbr{display:flex;flex-direction:column;gap:3px;align-items:center}
 #rhythm-info-bar .rib-hbr-bar{display:block;width:20px;height:3px;border-radius:1px}
-#rhythm-info-bar .rib-mod-btn{align-self:stretch;display:flex;align-items:center;justify-content:center;padding:4px 5px}
+#rhythm-info-bar .rib-mod-btn{align-self:stretch;display:flex;align-items:center;justify-content:center;padding:3px 5px}
 /* Barre mod globale — sibling de layers-wrap, juste au-dessus des layer panels */
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
@@ -1241,13 +1243,9 @@ body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 #rhythm-info-bar .rib-layer-btn .rib-steps{font-weight:700;font-size:11px}
 #rhythm-info-bar .rib-layer-btn .rib-note{font-size:12px;line-height:1}
 #rhythm-info-bar .rib-mod-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:4px 5px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
-#rhythm-info-bar .rib-pheno{color:#C8961A;font-style:italic;font-size:9px}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A;border-color:#2A6A50}
 body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
-/* compat rétro: has-poly-rhythm */
-body.has-poly-rhythm.view-circle #rhythm-info-wrap{display:block;order:4;width:100%}
-@media(min-width:600px){body.has-poly-rhythm.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
@@ -1579,7 +1577,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.21.26</span>
+    <span class="app-version">v3.21.27</span>
   </div>
 </div>
 
@@ -10470,56 +10468,10 @@ function updateRhythmInfoBar(){
   const el=document.getElementById('rhythm-info-bar');
   if(!el)return;
   if(!state||!state[0]||!state[0].pattern){el.style.display='none';return;}
-  // ── Cycles en croches par layer ──
-  const cf=LAYERS.map((_,li)=>_cycleInCrochesFrac(li));
-  const Dc=lcm(cf[0].den,lcm(cf[1].den,cf[2].den));
-  const Nc=cf.map(f=>f.num*(Dc/f.den));
-  const gcAll=gcd(Nc[0],gcd(Nc[1],Nc[2]));
-  const ratioC=Nc.map(v=>v/gcAll);
-  // ── Ratio significatif : ∃ paire a,b où a%b≠0 ET b%a≠0 ──
-  const hasSignificantRatio=ratioC.some((a,i)=>ratioC.some((b,j)=>i!==j&&a%b!==0&&b%a!==0));
-  // ── Mesure en croches → comparaison avec PPCM ──
-  const fbs=currentSig?(currentSig.equivalence||currentSig.felBeatSteps||2):2;
   const measureCroches=currentSig?(currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4)):8;
-  const measureNcUnits=measureCroches*Dc;
-  const LcmNc=lcm(Nc[0],lcm(Nc[1],Nc[2]));
-  // ── Hémiole : le PPCM des cycles divise la mesure (resync intra-mesure) ──
-  const isHemiole=hasSignificantRatio&&measureNcUnits>0&&LcmNc>0&&measureNcUnits%LcmNc===0;
-  const isPolymetrie=hasSignificantRatio&&!isHemiole;
-  // ── Primitives : supprimer valeurs multiples d'une autre plus petite ──
-  const uniqueC=[...new Set(ratioC)];
-  const primC=uniqueC.filter(v=>!uniqueC.some(u=>u!==v&&v%u===0)).sort((a,b)=>a-b);
-  const col3ratio=primC.join(':');
-  // ── Durée du cycle en mesures et en temps ──
-  const gM=gcd(LcmNc,Dc*measureCroches);
-  const cycMesNr=LcmNc/gM, cycMesDr=(Dc*measureCroches)/gM;
-  const cycMesStr=cycMesDr===1?cycMesNr+'':_fracStr(cycMesNr,cycMesDr);
-  const gT=gcd(LcmNc,Dc*fbs);
-  const cycTpsNr=LcmNc/gT, cycTpsDr=(Dc*fbs)/gT;
-  const cycTpsStr=cycTpsDr===1?cycTpsNr+'':_fracStr(cycTpsNr,cycTpsDr);
-  // ── Caractères additionnels ──
-  const sigLabel=currentSig?computeSigLabel():'';
-  const isAsym=sigLabel.includes('+');
-  const ternFlags=LAYERS.map((_,li)=>!!state[li].ternOn);
-  const ternAll=ternFlags.every(Boolean);
-  const ternNone=ternFlags.every(t=>!t);
-  const hasTernMix=!ternAll&&!ternNone;
-  // ── Labels phénomène (col 3) ──
-  const phenoParts=[];
-  if(isAsym)phenoParts.push('Asymétrique '+sigLabel);
-  else if(ternAll)phenoParts.push('Ternaire');
-  if(hasTernMix)phenoParts.push('Polyrythmie');
-  if(isHemiole)phenoParts.push('Hémiole '+col3ratio);
-  else if(isPolymetrie)phenoParts.push('Polymétrie '+col3ratio);
-  const phenoLabel=phenoParts.join(' · ');
-  // ── Col 4 : détail par layer avec couleurs (si ratio significatif) ──
-  const showCol4=hasSignificantRatio;
   const sigLabelSimple=typeof computeSigLabelSimple==='function'?computeSigLabelSimple():'';
-
-  // ── Rhythm info bar : visible si au moins un layer a des pas ──
   const hasAnyPattern=LAYERS.some((_,li)=>state[li].pattern.length>0);
   document.body.classList.toggle('has-rib',hasAnyPattern);
-  document.body.classList.toggle('has-poly-rhythm',hasAnyPattern&&!!phenoLabel);
   document.body.classList.toggle('show-rib',hasAnyPattern);
   if(!hasAnyPattern){el.style.display='none';return;}
   // ── Centre : 3 colonnes layer (bouton + info empilés) ──
@@ -10565,7 +10517,6 @@ function updateRhythmInfoBar(){
     }
     return `<div class="rib-layer-col">${btnHtml}<span class="rib-l2-item" style="color:${col}">${txt}</span></div>`;
   }).join('');
-  const phenoHtml=phenoLabel?`<div class="rib-row3"><span class="rib-pheno">${phenoLabel}</span></div>`:'';
   // BPM courant pour colonne gauche
   const _rbs=document.getElementById('bpm');
   const _rbPos=_rbs?parseInt(_rbs.value):500;
@@ -10575,16 +10526,13 @@ function updateRhythmInfoBar(){
   const _rbSym=symFromFelBeatSteps(_rbEq);
   const _metroOn=!metro.muted;
   const _sonMuted=bandMuted;
-  // Col 1 row 1 : sig + tempo + metro (metro pushé à droite par margin-left:auto)
-  const leftTopHtml=`<div class="rib-left-top"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button></div>`;
-  // Col 1 row 2 : slider tempo (enfant direct grille)
-  const sliderHtml=`<input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1">`;
+  const leftHtml=`<div class="rib-left"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><div class="rib-left-right"><div class="rib-left-top"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><input type="range" class="rib-tempo-slider" id="rib-bpm-slider" min="0" max="1000" value="${_rbPos}" step="1"></div></div>`;
   // Col 2 : 3 layers centré absolu (span 2 lignes) — chaque col layer empile bouton+info
   const centerHtml=`<div class="rib-center">${layerCols}</div>`;
   // Col 3 : son + hamburger (span 2 lignes via .rib-right)
   const rightHtml=`<div class="rib-right"><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>${modBtnHtml}</div>`;
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid">${leftTopHtml}${sliderHtml}${centerHtml}${rightHtml}</div>${phenoHtml}`;
+  el.innerHTML=`<div class="rib-grid">${leftHtml}${centerHtml}${rightHtml}</div>`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
@@ -10605,16 +10553,24 @@ function updateRhythmInfoBar(){
     _syncBtnVolAllMuted();
     updateRhythmInfoBar();drawCircles();
   });
-  el.querySelector('#rib-bpm-slider')?.addEventListener('input',function(){
-    const ms=document.getElementById('bpm');
-    if(ms){ms.value=this.value;ms.dispatchEvent(new Event('input'));}
-    const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
-    const _bpm=Math.round(posToSPM(parseInt(this.value))*(globalSpeedMult||1)/_eq);
-    const _sym=symFromFelBeatSteps(_eq);
-    _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
-    clearTimeout(_dragOverlay._ribSliderTimer);
-    _dragOverlay._ribSliderTimer=setTimeout(()=>_dragOverlay.hide(),600);
-  });
+  {
+    const slider=el.querySelector('#rib-bpm-slider');
+    let _ribDrag=false,_ribStartX=0,_ribStartVal=0;
+    slider?.addEventListener('pointerdown',e=>{_ribDrag=false;_ribStartX=e.clientX;_ribStartVal=parseInt(slider.value);});
+    slider?.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-_ribStartX)>5)_ribDrag=true;});
+    slider?.addEventListener('pointerup',()=>{if(!_ribDrag)slider.value=_ribStartVal;_ribDrag=false;});
+    slider?.addEventListener('input',function(){
+      if(!_ribDrag)return;
+      const ms=document.getElementById('bpm');
+      if(ms){ms.value=this.value;ms.dispatchEvent(new Event('input'));}
+      const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
+      const _bpm=Math.round(posToSPM(parseInt(this.value))*(globalSpeedMult||1)/_eq);
+      const _sym=symFromFelBeatSteps(_eq);
+      _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
+      clearTimeout(_dragOverlay._ribSliderTimer);
+      _dragOverlay._ribSliderTimer=setTimeout(()=>_dragOverlay.hide(),600);
+    });
+  }
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
     _doToggleLayerPanels();
   });
