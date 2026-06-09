@@ -1622,11 +1622,18 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-accents-row{display:flex;gap:4px;flex-shrink:0}
 .metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
 .metro-acc-card input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:44px;background:transparent;cursor:pointer;flex:1}
-.metro-acc-card input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,#3A8C6E calc(var(--pct,50%)),#e4e4e0 calc(var(--pct,50%)))}
-.metro-acc-card input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#3A8C6E;margin-top:-6px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.metro-acc-card input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--gc,#3A8C6E) calc(var(--pct,50%)),#e4e4e0 calc(var(--pct,50%)))}
+.metro-acc-card input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gc,#3A8C6E);margin-top:-6px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+/* Bouton toggle acc-card : couleur du type */
+.metro-acc-card .mpv-word-btn{background:#f5f4f0;border-color:var(--btn-c,#ccc);color:var(--btn-c,#888)}
+.metro-acc-card .mpv-word-btn.on{background:var(--btn-c,#3A8C6E);color:#fff;border-color:var(--btn-c,#3A8C6E)}
 .metro-acc-card input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:#e4e4e0}
-.metro-acc-card input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:#3A8C6E}
+.metro-acc-card input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--gc,#3A8C6E)}
 .metro-acc-card input[type=range]:disabled{opacity:.25;cursor:default}
+.metro-onoff-btn{flex-shrink:0;font-size:14px;padding:2px 6px;border:1.5px solid #ccc;border-radius:5px;background:#f5f4f0;color:#888;cursor:pointer;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+body.dark-mode .metro-onoff-btn{background:#2e2e2b;border-color:#444;color:#888}
+body.dark-mode .metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 .metro-tap-p2-row{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;flex-shrink:0;padding:2px 0}
 .metro-tap-p2-phrase{display:flex;align-items:center;gap:5px;font-size:10px;color:#888;justify-content:center;flex-wrap:nowrap}
 /* Landscape : chips sur 1 ligne, colonne métrique plus large */
@@ -1656,7 +1663,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.6</span>
+    <span class="app-version">v3.23.7</span>
   </div>
 </div>
 
@@ -1787,6 +1794,8 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
               <button class="metro-unit-chip" data-unit="3">♩.</button>
               <button class="metro-unit-chip" data-unit="2">♩♩</button>
             </div>
+            <!-- Équivalence : 1 beat = X (vert si différent de l'unité métrique) -->
+            <span id="metro-equiv-display" style="font-size:10px;color:#bbb;font-weight:600;line-height:1.3;text-align:center;white-space:nowrap"></span>
             <!-- Selects cachés conservés pour compatibilité JS -->
             <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" style="display:none">
               <option value="4">♩</option><option value="8">♪</option>
@@ -1824,8 +1833,9 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : Vol global (3/4) + Subdiv (extrême droite) -->
+          <!-- Ligne haute : On/Off + Vol global (3/4) + Subdiv (extrême droite) -->
           <div class="metro-battue-toprow">
+            <button id="btn-metro-onoff-p2" class="metro-onoff-btn" title="Métronome on/off">⏱</button>
             <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:3;min-width:0" title="Volume global">
             <span id="metro-vol-val" style="font-size:9px;color:#aaa;white-space:nowrap;padding:0 4px;min-width:28px;text-align:right">80%</span>
             <div style="display:flex;flex-direction:column;align-items:center;gap:1px;margin-left:auto;padding-left:8px;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0">
@@ -1843,16 +1853,16 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
           <!-- 3 cartes volume par niveau (toggle intégré, sans label ni %) -->
           <div class="metro-accents-row">
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%">
-              <button class="mpv-word-btn on" id="mpv-tog-A" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">^</button>
+              <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%;--gc:#2A4870">
+              <button class="mpv-word-btn on" id="mpv-tog-A" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#2A4870">^</button>
             </div>
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%">
-              <button class="mpv-word-btn on" id="mpv-tog-P" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">&gt;</button>
+              <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%;--gc:#3A8C6E">
+              <button class="mpv-word-btn on" id="mpv-tog-P" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#3A8C6E">&gt;</button>
             </div>
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%">
-              <button class="mpv-word-btn" id="mpv-tog-p" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">-</button>
+              <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%;--gc:#6FAF98">
+              <button class="mpv-word-btn" id="mpv-tog-p" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#6FAF98">-</button>
             </div>
           </div>
           <!-- Tap tempo panel 2 -->
@@ -9175,6 +9185,7 @@ function setMetroGlobal(on){
   document.getElementById('btn-sig-top')?.classList.toggle('metro-on', on);
   document.getElementById('temps-content')?.classList.toggle('metro-off',!on);
   document.getElementById('rib-metro-btn')?.classList.toggle('on',on);
+  document.getElementById('btn-metro-onoff-p2')?.classList.toggle('on',on);
   // Si on remet ON et que tous les types sont éteints → rétablir ^ et >
   if(on && !metro.accentOn && !metro.tempsOn && !metro.subdivOn){
     metro.accentOn=true; metro.tempsOn=true;
@@ -10715,6 +10726,17 @@ function _syncUnitChips(){
   // Sync mpv-beats-val (nombre de divisions)
   const bv=document.getElementById('mpv-beats-val');
   if(bv&&currentSig?.nbDivisions)bv.textContent=currentSig.nbDivisions;
+  // Affichage équivalence (1 beat = X) — vert si différent de l'unité métrique
+  const equivEl=document.getElementById('metro-equiv-display');
+  if(equivEl){
+    const beatSym=typeof symFromFelBeatSteps==='function'?symFromFelBeatSteps(equiv):'♩';
+    const beatUnit=currentSig?.beatUnit||4;
+    const NATURAL_FBS={8:1,4:2,2:4,1:8};
+    const naturalFBS=NATURAL_FBS[beatUnit]||2;
+    const isDifferent=(equiv!==naturalFBS);
+    equivEl.textContent='1 beat = '+beatSym;
+    equivEl.style.color=isDifferent?'#3A8C6E':'#bbb';
+  }
 }
 
 function _initMetroPanelDrag(){
@@ -14733,6 +14755,9 @@ function attachEvents(){
   document.getElementById('btn-metro-main').addEventListener('click',()=>{
     setMetroGlobal(metro.muted);
   });
+  document.getElementById('btn-metro-onoff-p2')?.addEventListener('click',()=>{
+    setMetroGlobal(metro.muted);
+  });
   document.getElementById('btn-metro-enc-info')?.addEventListener('click',()=>{
     if(currentSig?.id){showEncycloEntry(currentSig.id);if(!encycloOuvert)toggleEncyclo(true);}
   });
@@ -15083,6 +15108,7 @@ function attachEvents(){
       if(mb) mb.classList.toggle('on',!_metroSavedMuted);
       _tapTimes=[]; _tapCalculated=false;
       tapCount.textContent='';
+      _dragOverlay.hide();
     }
 
     // Lance un timer : si pas de tap pendant 3 temps → reset visible automatiquement
@@ -15106,6 +15132,7 @@ function attachEvents(){
       if(_tapCalculated){
         _tapTimes=[now]; _tapCalculated=false;
         tapCount.textContent='1/'+_tapN;
+        _dragOverlay.show('<span style="font-size:32px;font-weight:900;color:#3A8C6E">1</span><span style="font-size:18px;font-weight:400;color:#aaa">/'+_tapN+'</span>');
         _scheduleSilenceReset(); return;
       }
       if(_tapTimes.length===0){
@@ -15115,7 +15142,9 @@ function attachEvents(){
       }
       _tapTimes.push(now);
       const numTaps=_tapTimes.length;
-      tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
+      const tapLabel=Math.min(numTaps,_tapN)+'/'+_tapN;
+      tapCount.textContent=tapLabel;
+      _dragOverlay.show('<span style="font-size:32px;font-weight:900;color:#3A8C6E">'+Math.min(numTaps,_tapN)+'</span><span style="font-size:18px;font-weight:400;color:#aaa">/'+_tapN+'</span>');
       if(numTaps>=_tapN){
         const recent=_tapTimes.slice(-_tapN);
         const intervals=[];
@@ -15125,6 +15154,8 @@ function attachEvents(){
         const spm=Math.round((60000/avgMs)*equiv);
         document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*equiv,Math.min(_BPM_MAX*equiv,spm)));
         updateBeatDisplay();
+        const _calcBpm=Math.round(posToBPM(parseInt(document.getElementById('bpm').value)));
+        _dragOverlay.show('<span style="font-size:28px;font-weight:900">'+_calcBpm+'</span><br><span style="font-size:11px;font-weight:400;opacity:.7">BPM</span>');
         _tapCalculated=true; tapCount.textContent='▶';
         _tapLaunchTimer=setTimeout(()=>{
           metro.muted=_metroSavedMuted;
@@ -15631,7 +15662,7 @@ _initEncycloPanel();
 _initMetroPanelDrag();
 _syncUnitChips();
 // Sync état initial métro (sans overlay)
-(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}})();
+(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}document.getElementById('btn-metro-onoff-p2')?.classList.toggle('on',on);})();
 // Sync état initial band mute
 (function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🔊';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
 _syncNavTabs(); // Sync onglets de nav
