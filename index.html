@@ -1616,16 +1616,22 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-tap-p1-btn:active{background:rgba(58,140,110,.12)}
 /* Panel 2 */
 .metro-pane-battue{display:flex;flex-direction:column;gap:5px;height:100%}
-.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-left,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
-.metro-battue-toprow{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.metro-vol-left{display:flex;flex-direction:column;align-items:stretch;gap:1px;flex:1;min-width:0}
+.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-gauge-h,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
+.metro-battue-toprow{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.metro-vol-gauge-h{position:relative;height:10px;border-radius:5px;background:#ddd;cursor:pointer;overflow:hidden;flex:1;touch-action:none;min-width:0}
+.metro-vol-gauge-h-fill{position:absolute;left:0;top:0;bottom:0;background:#3A8C6E;border-radius:5px;pointer-events:none}
 .metro-subdiv-right{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
-.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px}
-.mpv-acc-drag{width:100%;flex:1;min-height:52px;font-size:22px;font-weight:900;border:1.5px solid var(--btn-c,#ccc);border-radius:6px;cursor:ns-resize;touch-action:none;color:#fff;background:linear-gradient(to top,var(--btn-c,#3A8C6E) var(--vol-fill,50%),#f5f4f0 var(--vol-fill,50%));-webkit-tap-highlight-color:transparent}
-.mpv-acc-drag:not(.on){background:#f5f4f0;color:var(--btn-c,#888);opacity:.55}
+.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 3px}
+.mpv-acc-toggle{width:100%;font-size:13px;font-weight:800;padding:4px 2px;border:1.5px solid var(--btn-c,#ccc);border-radius:5px;cursor:pointer;background:#f5f4f0;color:var(--btn-c,#888);-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.mpv-acc-toggle.on{background:var(--btn-c,#3A8C6E);color:#fff;border-color:var(--btn-c,#3A8C6E)}
+.metro-acc-gauge-v{position:relative;width:100%;flex:1;min-height:40px;border-radius:5px;background:#e4e4e0;cursor:ns-resize;overflow:hidden;touch-action:none}
+.metro-acc-gauge-v::after{content:'';position:absolute;left:0;right:0;bottom:0;height:var(--pct,50%);background:var(--btn-c,#3A8C6E);border-radius:inherit;pointer-events:none}
 .metro-acc-vol-val{font-size:9px;color:#888;font-weight:600;line-height:1}
-body.dark-mode .mpv-acc-drag{background:linear-gradient(to top,var(--btn-c,#3A8C6E) var(--vol-fill,50%),#2a2a27 var(--vol-fill,50%))}
-body.dark-mode .mpv-acc-drag:not(.on){background:#2a2a27}
+body.dark-mode .metro-vol-gauge-h{background:#333}
+body.dark-mode .metro-vol-gauge-h-fill{background:#4DB899}
+body.dark-mode .mpv-acc-toggle{background:#2e2e2b;border-color:#444;color:#888}
+body.dark-mode .mpv-acc-toggle.on{background:var(--btn-c,#3A8C6E);color:#fff;border-color:var(--btn-c,#3A8C6E)}
+body.dark-mode .metro-acc-gauge-v{background:#333}
 .metro-frac-num-row{display:flex;align-items:center;justify-content:center;gap:2px;width:100%}
 .metro-frac-n{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;min-width:24px;text-align:center}
 .metro-frac-bar{width:90%;height:2px;background:#3A8C6E;margin:3px 0 2px;border-radius:1px}
@@ -1634,16 +1640,8 @@ body.dark-mode .mpv-acc-drag:not(.on){background:#2a2a27}
 .metro-battue-pattern{flex:3;min-height:0;display:flex;flex-direction:column}
 .metro-battue-pattern .metro-pat-viz{flex:1;min-height:50px}
 .metro-accents-row{display:flex;gap:4px;flex-shrink:0}
-.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
-.metro-acc-card input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:44px;background:transparent;cursor:pointer;flex:1}
-.metro-acc-card input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--gc,#3A8C6E) calc(var(--pct,50%)),#e4e4e0 calc(var(--pct,50%)))}
-.metro-acc-card input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gc,#3A8C6E);margin-top:-6px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-/* Bouton toggle acc-card : couleur du type */
-.metro-acc-card .mpv-word-btn{background:#f5f4f0;border-color:var(--btn-c,#ccc);color:var(--btn-c,#888)}
-.metro-acc-card .mpv-word-btn.on{background:var(--btn-c,#3A8C6E);color:#fff;border-color:var(--btn-c,#3A8C6E)}
-.metro-acc-card input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:#e4e4e0}
-.metro-acc-card input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--gc,#3A8C6E)}
-.metro-acc-card input[type=range]:disabled{opacity:.25;cursor:default}
+.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
+body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
 .metro-onoff-btn{min-width:80px;height:30px;font-size:14px;font-weight:700;padding:0 18px;border:1.5px solid #ccc;border-radius:6px;background:#f5f4f0;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-onoff-btn{background:#2e2e2b;border-color:#444;color:#888}
@@ -1673,6 +1671,16 @@ body.dark-mode .metro-equiv-menu.non-default{border-color:#4DB899;color:#4DB899}
 body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
 body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
 body.dark-mode .metro-sig-display{color:#4DB899 !important}
+/* Beat-unit picker popup */
+#beat-unit-picker{position:fixed;background:#fff;border:1.5px solid #3A8C6E;border-radius:10px;padding:6px;display:none;flex-direction:column;gap:4px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.22);min-width:80px}
+#beat-unit-picker.open{display:flex}
+.bup-opt{font-size:18px;font-weight:700;padding:6px 12px;border-radius:6px;border:1.5px solid transparent;background:transparent;color:#333;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.bup-opt.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+.bup-opt:hover{background:#e8f5f0}
+body.dark-mode #beat-unit-picker{background:#252522;border-color:#3A8C6E}
+body.dark-mode .bup-opt{color:#ccc}
+body.dark-mode .bup-opt.active{background:#3A8C6E;color:#fff}
+body.dark-mode .bup-opt:hover{background:#1E2C28}
 </style>
 </head>
 <body>
@@ -1681,7 +1689,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.13</span>
+    <span class="app-version">v3.23.14</span>
   </div>
 </div>
 
@@ -1863,11 +1871,10 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : Vol (gauche) | On/Off (centre) | Subdiv (droite) -->
+          <!-- Ligne haute : Vol jauge (gauche) | On/Off (centre) | Subdiv (droite) -->
           <div class="metro-battue-toprow">
-            <div class="metro-vol-left">
-              <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" title="Volume global">
-              <span id="metro-vol-val" style="font-size:9px;color:#aaa;text-align:center">80%</span>
+            <div class="metro-vol-gauge-h" id="metro-vol-gauge" title="Volume global">
+              <div class="metro-vol-gauge-h-fill" id="metro-vol-gauge-fill" style="width:80%"></div>
             </div>
             <button id="btn-metro-onoff-p2" class="metro-onoff-btn on" title="Métronome on/off">On</button>
             <div class="metro-subdiv-right">
@@ -1882,23 +1889,27 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
           <div class="metro-battue-pattern">
             <div class="metro-pat-viz" id="metro-pattern-viz"></div>
           </div>
-          <!-- 3 cartes accent : bouton drag vertical (↑↓ = volume, tap = toggle) -->
+          <!-- 3 cartes accent : toggle + jauge verticale -->
           <div class="metro-accents-row">
             <div class="metro-acc-card">
-              <button class="mpv-acc-drag on" id="mpv-tog-A" data-vol-key="A" style="--btn-c:#2A4870;--vol-fill:100%">^</button>
+              <button class="mpv-acc-toggle on" id="mpv-tog-A" style="--btn-c:#2A4870">^</button>
+              <div class="metro-acc-gauge-v" id="acc-gauge-A" style="--btn-c:#2A4870;--pct:100%"></div>
               <span class="metro-acc-vol-val" id="metro-vol-A-val">100%</span>
             </div>
             <div class="metro-acc-card">
-              <button class="mpv-acc-drag on" id="mpv-tog-P" data-vol-key="P" style="--btn-c:#3A8C6E;--vol-fill:70%">&gt;</button>
+              <button class="mpv-acc-toggle on" id="mpv-tog-P" style="--btn-c:#3A8C6E">&gt;</button>
+              <div class="metro-acc-gauge-v" id="acc-gauge-P" style="--btn-c:#3A8C6E;--pct:70%"></div>
               <span class="metro-acc-vol-val" id="metro-vol-P-val">70%</span>
             </div>
             <div class="metro-acc-card">
-              <button class="mpv-acc-drag" id="mpv-tog-p" data-vol-key="p" style="--btn-c:#6FAF98;--vol-fill:40%">-</button>
+              <button class="mpv-acc-toggle" id="mpv-tog-p" style="--btn-c:#6FAF98">-</button>
+              <div class="metro-acc-gauge-v" id="acc-gauge-p" style="--btn-c:#6FAF98;--pct:40%"></div>
               <span class="metro-acc-vol-val" id="metro-vol-p-val">40%</span>
             </div>
           </div>
-          <!-- Sliders cachés conservés pour compatibilité JS (audio + presets) -->
+          <!-- Éléments cachés pour compatibilité JS (audio + presets) -->
           <div style="display:none">
+            <input type="range" id="metro-vol" min="0" max="100" value="80">
             <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%">
             <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%">
             <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%">
@@ -1916,6 +1927,13 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
       </div>
     </div>
   </div><!-- /metro-panel -->
+  <!-- Beat-unit picker popup -->
+  <div id="beat-unit-picker" role="listbox" aria-label="Unité de battue">
+    <button class="bup-opt" data-fbs="1">♪</button>
+    <button class="bup-opt active" data-fbs="2">♩</button>
+    <button class="bup-opt" data-fbs="3">♩.</button>
+    <button class="bup-opt" data-fbs="4">♩♩</button>
+  </div>
   <!-- Compat ancien volet : éléments fantômes pour JS qui cherche encore ces IDs -->
   <div id="temps-wrap" style="display:none">
   <div id="section-temps" style="display:none">
@@ -10631,14 +10649,18 @@ function initMetroWheel(){
     try{fresh.setPointerCapture(e.pointerId);}catch(_){}
     const cx=sz/2,cy=sz/2;
     const dx=e.offsetX-cx,dy=e.offsetY-cy;
-    // Zone sym= (au-dessus du BPM) → cycle équivalence
+    // Zone sym= (au-dessus du BPM) → ouvre le picker BeatUnit
     if(Math.abs(dx)<SYM_R&&Math.abs(dy-SYM_CY)<SYM_R){
-      const batSel=document.getElementById('battue-sel');
-      if(batSel){
-        const cur=parseInt(batSel.value)||2;
-        batSel.value=cur>=4?1:cur+1;
-        batSel.dispatchEvent(new Event('change'));
-        if(typeof _syncUnitChips==='function')_syncUnitChips();
+      const picker=document.getElementById('beat-unit-picker');
+      if(picker){
+        const rect=fresh.getBoundingClientRect();
+        const px=rect.left+e.offsetX,py=rect.top+e.offsetY;
+        picker.style.left=Math.max(4,Math.min(window.innerWidth-90,px-40))+'px';
+        picker.style.top=Math.max(4,py-picker.offsetHeight-8)+'px';
+        picker.classList.add('open');
+        // Marquer l'option courante
+        const curFbs=currentSig?.equivalence||2;
+        picker.querySelectorAll('.bup-opt').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.fbs)===curFbs));
       }
       return;
     }
@@ -15215,6 +15237,7 @@ function attachEvents(){
       if(_tapCalculated){
         _tapTimes=[now]; _tapCalculated=false;
         tapCount.textContent='1/'+_tapN;
+        _dragOverlay.show('<span style="font-size:32px;font-weight:900;color:#3A8C6E">1</span><span style="font-size:18px;font-weight:400;color:#aaa">/'+_tapN+'</span>');
         _scheduleSilenceReset(); return;
       }
       if(_tapTimes.length===0){
@@ -15225,6 +15248,7 @@ function attachEvents(){
       _tapTimes.push(now);
       const numTaps=_tapTimes.length;
       tapCount.textContent=Math.min(numTaps,_tapN)+'/'+_tapN;
+      _dragOverlay.show('<span style="font-size:32px;font-weight:900;color:#3A8C6E">'+Math.min(numTaps,_tapN)+'</span><span style="font-size:18px;font-weight:400;color:#aaa">/'+_tapN+'</span>');
       if(numTaps>=_tapN){
         const recent=_tapTimes.slice(-_tapN);
         const intervals=[];
@@ -15235,6 +15259,7 @@ function attachEvents(){
         document.getElementById('bpm').value=spmToPos(Math.max(_BPM_MIN*equiv,Math.min(_BPM_MAX*equiv,spm)));
         updateBeatDisplay();
         _tapCalculated=true; tapCount.textContent='▶';
+        _dragOverlay.show('<span style="font-size:28px;font-weight:900">'+Math.round(posToBPM(parseInt(document.getElementById('bpm').value)))+'</span><br><span style="font-size:11px;font-weight:400;opacity:.7">BPM</span>');
         _tapLaunchTimer=setTimeout(()=>{
           metro.muted=_metroSavedMuted;
           const mb=document.getElementById('btn-metro-main');
