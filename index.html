@@ -1652,6 +1652,8 @@ body.dark-mode .metro-tab{background:#2e2e2b;color:#777;border-color:#444}
 body.dark-mode .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+.metro-unit-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;text-align:center;-webkit-appearance:none;appearance:none;text-align-last:center}
+body.dark-mode .metro-unit-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
 .metro-equiv-row{display:flex;align-items:center;gap:3px;width:100%;margin-top:2px}
 .metro-equiv-1t{font-size:9px;color:#aaa;white-space:nowrap;flex-shrink:0;line-height:1}
 .metro-equiv-chips{display:flex;gap:2px;flex:1}
@@ -1672,7 +1674,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.8</span>
+    <span class="app-version">v3.23.9</span>
   </div>
 </div>
 
@@ -1797,12 +1799,11 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
               <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
             </div>
             <span class="metro-metric-lbl" style="margin-top:6px">Unité</span>
-            <div class="metro-unit-chips" id="metro-unit-chips">
-              <button class="metro-unit-chip" data-unit="8">♪</button>
-              <button class="metro-unit-chip active" data-unit="4">♩</button>
-              <button class="metro-unit-chip" data-unit="3">♩.</button>
-              <button class="metro-unit-chip" data-unit="2">♩♩</button>
-            </div>
+            <select class="metro-unit-menu" id="metro-unit-menu">
+              <option value="2">♩♩ — /2</option>
+              <option value="4" selected>♩ — /4</option>
+              <option value="8">♪ — /8</option>
+            </select>
             <!-- Équivalence battue (felBeatSteps) — vert si ≠ du défaut métrique -->
             <span class="metro-metric-lbl" style="margin-top:6px">Équivalence</span>
             <div class="metro-equiv-row">
@@ -10727,28 +10728,31 @@ function drawMetroWheel(){
 
 function _syncUnitChips(){
   const batSel=document.getElementById('battue-sel');
-  const mpvUnit=document.getElementById('mpv-unit-sel');
   if(!batSel)return;
   const equiv=parseInt(batSel.value)||2;
-  // data-unit → felBeatSteps mapping
-  const U2F={8:1,4:2,3:3,2:4};
-  document.querySelectorAll('#metro-unit-chips .metro-unit-chip').forEach(chip=>{
-    chip.classList.toggle('active',U2F[parseInt(chip.dataset.unit)]===equiv);
-  });
-  // Sync sig-unit-display (aussi mis à jour par updateSigDisplays mais au cas où)
+  const beatUnit=currentSig?.beatUnit||4;
+  const nbDiv=currentSig?.nbDivisions||4;
+
+  // Sync menu MetricTimeUnit (dénominateur signature)
+  const unitMenu=document.getElementById('metro-unit-menu');
+  if(unitMenu&&unitMenu.value!==String(beatUnit)){
+    // N'émet pas d'event pour éviter de boucler
+    unitMenu.value=String(beatUnit);
+    // Si valeur absente du menu (ex. beatUnit=16), on ignore
+  }
+
+  // Sync sig-unit-display
   const disp=document.getElementById('sig-unit-display');
   if(disp&&typeof _sigFracHtml==='function'){
-    const nb=currentSig?.nbDivisions||4,u=currentSig?.beatUnit||4;
-    disp.innerHTML=_sigFracHtml(nb+'/'+u);
+    disp.innerHTML=_sigFracHtml(nbDiv+'/'+beatUnit);
   }
   // Sync mpv-beats-val (nombre de divisions)
   const bv=document.getElementById('mpv-beats-val');
-  if(bv&&currentSig?.nbDivisions)bv.textContent=currentSig.nbDivisions;
-  // Sync chips Équivalence (felBeatSteps) — non-default = vert
+  if(bv)bv.textContent=nbDiv;
+
+  // Sync chips Équivalence (BeatTimeUnit / felBeatSteps) — vert si ≠ défaut naturel
   const equivWrap=document.getElementById('metro-equiv-chips');
   if(equivWrap){
-    const beatUnit=currentSig?.beatUnit||4;
-    const nbDiv=currentSig?.nbDivisions||4;
     const natEquiv=(beatUnit===8)?((nbDiv%3===0&&nbDiv>=6)?3:1):(beatUnit===2?4:2);
     equivWrap.querySelectorAll('.metro-equiv-chip').forEach(chip=>{
       const fbs=parseInt(chip.dataset.fbs);
@@ -10810,27 +10814,26 @@ function _initMetroPanelDrag(){
   if(tabT)tabT.addEventListener('click',()=>_switchMetroPane('metro-pane-tempo'));
   if(tabB)tabB.addEventListener('click',()=>_switchMetroPane('metro-pane-battue'));
 
-  // Chips d'unité → mpv-unit-sel uniquement (beatUnit cosmétique)
-  // L'équivalence (felBeatSteps) se reset au défaut naturel de la nouvelle unité
-  const U2M={8:8,4:4,3:8,2:2}; // data-unit → mpv-unit-sel value (♩.=compound→8)
-  // Équivalence naturelle par data-unit (indépendante des nbDivisions, sauf ♪)
-  const U2NatEquiv={8:1,4:2,3:3,2:4}; // ♩.→3 car c'est un raccourci "composé"
-  const chipsWrap=document.getElementById('metro-unit-chips');
-  if(chipsWrap){
-    chipsWrap.querySelectorAll('.metro-unit-chip').forEach(chip=>{
-      chip.addEventListener('click',()=>{
-        const du=parseInt(chip.dataset.unit);
-        chipsWrap.querySelectorAll('.metro-unit-chip').forEach(c=>c.classList.remove('active'));
-        chip.classList.add('active');
-        // Metric unit (beatUnit) — cosmétique
-        const mpvU=document.getElementById('mpv-unit-sel');
-        if(mpvU){mpvU.value=U2M[du]||4;mpvU.dispatchEvent(new Event('change'));}
-        // Équivalence → reset au défaut naturel de cette unité
-        const natEquiv=U2NatEquiv[du]||2;
-        const batSel=document.getElementById('battue-sel');
-        if(batSel){batSel.value=natEquiv;batSel.dispatchEvent(new Event('change'));}
-        if(typeof buildSigFromControls==='function')buildSigFromControls();
-      });
+  // Menu MetricTimeUnit (dénominateur signature) → beatUnit uniquement
+  // Changer MetricTimeUnit reset BeatTimeUnit au défaut naturel (sans changer l'inverse)
+  function _naturalBeatTimeUnit(beatUnit, nbDiv){
+    if(beatUnit===2) return 4;   // ♩♩
+    if(beatUnit===8) return (nbDiv%3===0&&nbDiv>=6)?3:1; // ♩. composé ou ♪ aksak
+    return 2; // ♩ pour /4 (defaut)
+  }
+  const unitMenu=document.getElementById('metro-unit-menu');
+  if(unitMenu){
+    unitMenu.addEventListener('change',function(){
+      const bu=parseInt(this.value)||4;
+      // Sync hidden mpv-unit-sel
+      const mpvU=document.getElementById('mpv-unit-sel');
+      if(mpvU){mpvU.value=bu;mpvU.dispatchEvent(new Event('change'));}
+      // Reset BeatTimeUnit au défaut naturel
+      const nbDiv=currentSig?.nbDivisions||4;
+      const natFbs=_naturalBeatTimeUnit(bu,nbDiv);
+      const batSel=document.getElementById('battue-sel');
+      if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
+      if(typeof buildSigFromControls==='function')buildSigFromControls();
     });
   }
 
