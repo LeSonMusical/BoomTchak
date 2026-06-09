@@ -1589,7 +1589,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
 .metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start;padding-top:6px;padding-left:4px}
-.metro-col-wheel{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden}
+.metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
 .metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
 #metro-wheel.dragging{cursor:grabbing}
@@ -1603,10 +1603,15 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 /* Swing column */
 .metro-swing-val{font-size:9px;color:#3A8C6E;font-weight:700;text-align:center;cursor:pointer}
 .metro-swing-name{font-size:8px;color:#aaa;text-align:center;line-height:1.2}
-.metro-swing-v-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:40px;width:100%;margin-top:4px}
-.metro-swing-v-wrap input[type=range]{transform:rotate(-90deg);width:72px;cursor:pointer;accent-color:#3A8C6E;flex-shrink:0}
-body.dark-mode .metro-swing-v-wrap input[type=range]::-webkit-slider-runnable-track{background:#333}
-body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{background:#333}
+.metro-swing-v-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:40px;width:100%}
+.metro-swing-v-wrap input[type=range]{transform:rotate(-90deg);width:72px;cursor:pointer;flex-shrink:0;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(to right,#3A8C6E 0%,#3A8C6E 0%,#e4e4e0 0%)}
+.metro-swing-v-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#3A8C6E;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-4px;cursor:pointer}
+.metro-swing-v-wrap input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px}
+.metro-swing-v-wrap input[type=range]::-moz-range-progress{background:#3A8C6E;height:6px;border-radius:3px}
+.metro-swing-v-wrap input[type=range]::-moz-range-track{background:#e4e4e0;height:6px;border-radius:3px}
+body.dark-mode .metro-swing-v-wrap input[type=range]{background:linear-gradient(to right,#3A8C6E 0%,#3A8C6E 0%,#2e2e2b 0%)}
+body.dark-mode .metro-swing-v-wrap input[type=range]::-webkit-slider-thumb{background:#4DB899;border-color:#1a1a18}
+body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{background:#2e2e2b}
 .metro-tap-p1-btn{font-size:11px;font-weight:700;color:rgba(58,140,110,.8);border:1.5px solid rgba(58,140,110,.45);border-radius:12px;padding:4px 14px;cursor:pointer;background:transparent;touch-action:manipulation;-webkit-tap-highlight-color:transparent;line-height:1.4;margin-top:2px;white-space:nowrap;flex-shrink:0}
 .metro-tap-p1-btn:active{background:rgba(58,140,110,.12)}
 /* Panel 2 */
@@ -1615,11 +1620,13 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-battue-pattern{flex:2;min-height:0;display:flex;flex-direction:column}
 .metro-battue-pattern .metro-pat-viz{flex:1;min-height:50px}
 .metro-accents-row{display:flex;gap:4px;flex-shrink:0}
-.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
-.metro-acc-card-lbl{font-size:11px;font-weight:700;color:#3A8C6E;line-height:1}
-.metro-acc-card-name{font-size:8px;color:#aaa;line-height:1}
-.metro-acc-card input[type=range]{width:100%;accent-color:#3A8C6E}
-.metro-acc-card-val{font-size:8px;color:#888}
+.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
+.metro-acc-card input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:44px;background:transparent;cursor:pointer;flex:1}
+.metro-acc-card input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,#3A8C6E calc(var(--pct,50%)),#e4e4e0 calc(var(--pct,50%)))}
+.metro-acc-card input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#3A8C6E;margin-top:-6px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.metro-acc-card input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:#e4e4e0}
+.metro-acc-card input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:#3A8C6E}
+.metro-acc-card input[type=range]:disabled{opacity:.25;cursor:default}
 .metro-tap-p2-row{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;flex-shrink:0;padding:2px 0}
 .metro-tap-p2-phrase{display:flex;align-items:center;gap:5px;font-size:10px;color:#888;justify-content:center;flex-wrap:nowrap}
 /* Landscape : chips sur 1 ligne, colonne métrique plus large */
@@ -1640,6 +1647,7 @@ body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
 body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
+body.dark-mode .metro-sig-display{color:#4DB899 !important}
 </style>
 </head>
 <body>
@@ -1648,7 +1656,7 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.5</span>
+    <span class="app-version">v3.23.6</span>
   </div>
 </div>
 
@@ -1789,19 +1797,19 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
               <option value="3">♩.</option><option value="4">♩♩</option>
             </select>
           </div>
-          <!-- Col centrale : Molette tempo + TAP en bas -->
+          <!-- Col centrale : Molette tempo (TAP dessiné dans le canvas en bas) -->
           <div class="metro-col-wheel">
             <canvas id="metro-wheel"></canvas>
-            <button class="metro-tap-p1-btn" id="btn-tap-p1">TAP 4</button>
+            <button id="btn-tap-p1" style="display:none" aria-hidden="true"></button>
           </div>
           <!-- Col droite : Swing -->
           <div class="metro-col-swing">
             <span class="metro-metric-lbl">Swing</span>
             <span class="metro-swing-val" id="swing-display" title="Tap : réinitialiser (Straight)">50%</span>
+            <span class="metro-swing-name" id="swing-name">Straight</span>
             <div class="metro-swing-v-wrap">
               <input type="range" id="swing-slider" min="0" max="100" value="0" step="1">
             </div>
-            <span class="metro-swing-name" id="swing-name">Straight</span>
           </div>
         </div>
         <!-- Éléments cachés pour compatibilité JS -->
@@ -1816,12 +1824,11 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : Vol global + Subdiv -->
+          <!-- Ligne haute : Vol global (3/4) + Subdiv (extrême droite) -->
           <div class="metro-battue-toprow">
-            <span style="font-size:9px;color:#888;white-space:nowrap">Vol</span>
-            <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:1" title="Volume global">
-            <span id="metro-vol-val" style="font-size:9px;color:#aaa;white-space:nowrap;min-width:26px">80%</span>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-left:6px;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0">
+            <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:3;min-width:0" title="Volume global">
+            <span id="metro-vol-val" style="font-size:9px;color:#aaa;white-space:nowrap;padding:0 4px;min-width:28px;text-align:right">80%</span>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;margin-left:auto;padding-left:8px;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0">
               <span style="font-size:8px;color:#aaa">Subdiv</span>
               <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
                 <option value="1">×1</option><option value="2">×2</option>
@@ -1836,15 +1843,15 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
           <!-- 3 cartes volume par niveau (toggle intégré, sans label ni %) -->
           <div class="metro-accents-row">
             <div class="metro-acc-card">
-              <input type="range" class="metro-acc-gauge" id="metro-vol-A" min="0" max="100" value="100" style="--gc:#5577A8;--pct:100%">
+              <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%">
               <button class="mpv-word-btn on" id="mpv-tog-A" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">^</button>
             </div>
             <div class="metro-acc-card">
-              <input type="range" class="metro-acc-gauge" id="metro-vol-P" min="0" max="100" value="70" style="--gc:#3A8C6E;--pct:70%">
+              <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%">
               <button class="mpv-word-btn on" id="mpv-tog-P" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">&gt;</button>
             </div>
             <div class="metro-acc-card">
-              <input type="range" class="metro-acc-gauge" id="metro-vol-p" min="0" max="100" value="40" style="--gc:#6FAF98;--pct:40%">
+              <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%">
               <button class="mpv-word-btn" id="mpv-tog-p" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px">-</button>
             </div>
           </div>
@@ -9034,7 +9041,12 @@ function updateSwingDisplay(){
   const n=document.getElementById('swing-name');
   if(n) n.textContent=getSwingName(mpc);
   const sl=document.getElementById('swing-slider');
-  if(sl) sl.value=Math.round(Math.sqrt(Math.max(0,swingVal))*100);
+  if(sl){
+    const v=Math.round(Math.sqrt(Math.max(0,swingVal))*100);
+    sl.value=v;
+    // Gradient vert pour la partie remplie
+    sl.style.background=`linear-gradient(to right,#3A8C6E 0%,#3A8C6E ${v}%,${document.body.classList.contains('dark-mode')?'#2e2e2b':'#e4e4e0'} ${v}%)`;
+  }
 }
 function getAudioOffsetName(ms){
   if(ms<-50)return'Avance forte';
@@ -10532,8 +10544,7 @@ function initMetroWheel(){
   if(!cv)return;
   const wrap=cv.parentElement;
   if(!wrap)return;
-  const tapBtnH=(document.getElementById('btn-tap-p1')?.offsetHeight||28)+4;
-  const sz=Math.min(wrap.clientWidth||180, (wrap.clientHeight||240)-tapBtnH);
+  const sz=Math.min(wrap.clientWidth||180, wrap.clientHeight||240);
   if(sz<20)return;
   const dpr=window.devicePixelRatio||1;
   cv.width=sz*dpr; cv.height=sz*dpr;
@@ -10549,7 +10560,13 @@ function initMetroWheel(){
   _wheelDragActive=false; _wheelLastAngle=null;
   drawMetroWheelOn(_wheelCtx,sz);
 
+  // Ajuste la longueur du slider Swing à ~2/3 du diamètre
+  const swSlider=document.getElementById('swing-slider');
+  if(swSlider)swSlider.style.width=Math.round(sz*0.67)+'px';
+
   const TAP_R=sz*0.21;
+  const BTAP_DY=sz*0.36; // décalage vertical du bouton TAP bas (relatif au centre)
+  const BTAP_W=sz*0.19,BTAP_H=sz*0.06; // demi-largeur et demi-hauteur du bouton TAP
   let _dragActive=false,_lastAngle=null,_tapT=null;
 
   fresh.addEventListener('pointerdown',e=>{
@@ -10557,7 +10574,10 @@ function initMetroWheel(){
     try{fresh.setPointerCapture(e.pointerId);}catch(_){}
     const cx=sz/2,cy=sz/2;
     const dx=e.offsetX-cx,dy=e.offsetY-cy;
+    // Zone TAP centrale
     if(Math.sqrt(dx*dx+dy*dy)<TAP_R){_tapT=performance.now();return;}
+    // Zone bouton TAP bas (dans l'arc gap)
+    if(Math.abs(dx)<BTAP_W&&Math.abs(dy-BTAP_DY)<BTAP_H*2){_tapT=performance.now();return;}
     _dragActive=true; _lastAngle=Math.atan2(dy,dx);
   },{passive:false});
 
@@ -10631,21 +10651,44 @@ function drawMetroWheelOn(ctx,sz){
     ctx.lineWidth=maj?1.5:0.8; ctx.stroke();
   }
 
-  // BPM (grand nombre central)
+  // BPM (grand nombre — centre exact)
   ctx.fillStyle=dark?'#e8e8e8':'#1c1c1c';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.font=`bold ${Math.round(sz*0.25)}px system-ui,sans-serif`;
-  ctx.fillText(String(bpm),cx,cy+sz*0.03);
+  ctx.fillText(String(bpm),cx,cy);
 
-  // Symbole note (au-dessus)
+  // Symbole note (au-dessus du BPM)
   ctx.font=`${Math.round(sz*0.11)}px system-ui,sans-serif`;
   ctx.fillStyle='#3A8C6E';
-  ctx.fillText(sym+'=',cx,cy-sz*0.15);
+  ctx.fillText(sym+'=',cx,cy-sz*0.18);
 
-  // Nom du tempo (en dessous)
-  ctx.font=`${Math.round(sz*0.09)}px system-ui,sans-serif`;
+  // Nom du tempo (en dessous du BPM)
+  const tempoName=typeof getTempoName==='function'?getTempoName(bpm):'';
+  ctx.font=`${Math.round(sz*0.085)}px system-ui,sans-serif`;
   ctx.fillStyle=dark?'#666':'#999';
-  ctx.fillText(typeof getTempoName==='function'?getTempoName(bpm):'',cx,cy+sz*0.18);
+  ctx.fillText(tempoName,cx,cy+sz*0.16);
+
+  // Bouton TAP dans l'arc gap (bas du cadran)
+  const tapLblY=cy+sz*0.36;
+  const tapW=sz*0.38;const tapH=sz*0.115;
+  const tr=tapH*0.45;
+  ctx.beginPath();
+  ctx.moveTo(cx-tapW/2+tr,tapLblY-tapH/2);
+  ctx.lineTo(cx+tapW/2-tr,tapLblY-tapH/2);
+  ctx.quadraticCurveTo(cx+tapW/2,tapLblY-tapH/2,cx+tapW/2,tapLblY-tapH/2+tr);
+  ctx.lineTo(cx+tapW/2,tapLblY+tapH/2-tr);
+  ctx.quadraticCurveTo(cx+tapW/2,tapLblY+tapH/2,cx+tapW/2-tr,tapLblY+tapH/2);
+  ctx.lineTo(cx-tapW/2+tr,tapLblY+tapH/2);
+  ctx.quadraticCurveTo(cx-tapW/2,tapLblY+tapH/2,cx-tapW/2,tapLblY+tapH/2-tr);
+  ctx.lineTo(cx-tapW/2,tapLblY-tapH/2+tr);
+  ctx.quadraticCurveTo(cx-tapW/2,tapLblY-tapH/2,cx-tapW/2+tr,tapLblY-tapH/2);
+  ctx.closePath();
+  ctx.fillStyle=dark?'rgba(58,140,110,.15)':'rgba(58,140,110,.09)';ctx.fill();
+  ctx.strokeStyle=dark?'rgba(58,140,110,.45)':'rgba(58,140,110,.40)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.fillStyle=dark?'rgba(58,140,110,.85)':'rgba(58,140,110,.80)';
+  ctx.font=`bold ${Math.round(sz*0.08)}px system-ui,sans-serif`;
+  ctx.textBaseline='middle';
+  ctx.fillText('TAP '+(typeof _tapN!=='undefined'?_tapN:'4'),cx,tapLblY);
 }
 
 function drawMetroWheel(){
@@ -10760,8 +10803,8 @@ function _initMetroPanelDrag(){
   }
   // Expose une fonction pour sync le texte du bouton TAP P1
   window._syncTapP1Btn=function(){
-    const b=document.getElementById('btn-tap-p1');
-    if(b)b.textContent='TAP '+_tapN;
+    // Le texte TAP N est désormais dessiné dans le canvas
+    drawMetroWheel();
   };
   window._syncTapP1Btn();
 }
