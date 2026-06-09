@@ -3260,6 +3260,8 @@ function _setAccVol(lv,val){
   const sl=document.getElementById('metro-vol-'+lv);
   if(sl){sl.value=val;sl.style.setProperty('--pct',val+'%');}
   const ve=document.getElementById('metro-vol-'+lv+'-val');if(ve)ve.textContent=val+'%';
+  const gauge=document.getElementById('acc-gauge-'+lv);if(gauge)gauge.style.setProperty('--pct',val+'%');
+  // vol global gauge fill sync (for lv-based global — not used here but keep uniform)
   const btn=document.getElementById('mpv-tog-'+lv);if(btn)btn.style.setProperty('--vol-fill',val+'%');
 }
 
@@ -9248,6 +9250,8 @@ function setMetroGlobal(on){
   const p2btn=document.getElementById('btn-metro-onoff-p2');
   if(p2btn){p2btn.classList.toggle('on',on);p2btn.textContent=on?'On':'Off';}
   document.getElementById('metro-pane-battue')?.classList.toggle('metro-off',!on);
+  // Sync jauge vol global
+  {const gFill=document.getElementById('metro-vol-gauge-fill');const gSl=document.getElementById('metro-vol');if(gFill&&gSl)gFill.style.width=gSl.value+'%';}
   // Si on remet ON et que tous les types sont éteints → rétablir ^ et >
   if(on && !metro.accentOn && !metro.tempsOn && !metro.subdivOn){
     metro.accentOn=true; metro.tempsOn=true;
@@ -14979,40 +14983,79 @@ function attachEvents(){
       ['pointerup','pointercancel'].forEach(ev=>bpmValEl.addEventListener(ev,()=>{_bpmDragActive=false;}));
     }
   }
-  // ── Boutons drag accent (↑↓ = volume, tap = toggle) ──
+  // ── Boutons toggle accent ──
   ['A','P','p'].forEach(lv=>{
     const btn=document.getElementById('mpv-tog-'+lv);
     if(!btn)return;
-    let _dy0=0,_y0=0,_v0=0,_dragging=false,_didDrag=false;
-    btn.addEventListener('pointerdown',e=>{
+    btn.addEventListener('click',()=>{
+      if(lv==='A'){metro.accentOn=!metro.accentOn;btn.classList.toggle('on',metro.accentOn);}
+      else if(lv==='P'){metro.tempsOn=!metro.tempsOn;btn.classList.toggle('on',metro.tempsOn);}
+      else{metro.subdivOn=!metro.subdivOn;btn.classList.toggle('on',metro.subdivOn);}
+      renderMetroPatternViz();_syncMetroVolDisabled();
+      if(!metro.accentOn&&!metro.tempsOn&&!metro.subdivOn)setMetroGlobal(false);
+      if(circleView)drawCircles();
+      setMetroDirty(true);updateMetroSaveBtn();
+    });
+  });
+  // ── Jauges verticales accent (drag haut=plus, bas=moins) ──
+  ['A','P','p'].forEach(lv=>{
+    const gauge=document.getElementById('acc-gauge-'+lv);
+    if(!gauge)return;
+    let _y0=0,_v0=0,_dragging=false;
+    gauge.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      try{btn.setPointerCapture(e.pointerId);}catch(_){}
-      _y0=e.clientY; _dy0=0; _didDrag=false; _dragging=true;
+      try{gauge.setPointerCapture(e.pointerId);}catch(_){}
+      _y0=e.clientY; _dragging=true;
       _v0=lv==='A'?(metro.volA??100):lv==='P'?(metro.volP??70):(metro.volp??40);
     },{passive:false});
-    btn.addEventListener('pointermove',e=>{
+    gauge.addEventListener('pointermove',e=>{
       if(!_dragging)return;
-      const dy=_y0-e.clientY; // haut = positif = augmente volume
-      if(!_didDrag&&Math.abs(dy)<6)return;
-      _didDrag=true;
-      const newV=Math.max(0,Math.min(100,Math.round(_v0+dy*0.6)));
+      const dy=_y0-e.clientY;
+      const newV=Math.max(0,Math.min(100,Math.round(_v0+dy*0.8)));
       _setAccVol(lv,newV);
       setMetroDirty(true);updateMetroSaveBtn();
     },{passive:false});
-    ['pointerup','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>{
-      if(!_dragging)return; _dragging=false;
-      if(!_didDrag){
-        // Tap → toggle on/off
-        if(lv==='A'){metro.accentOn=!metro.accentOn;btn.classList.toggle('on',metro.accentOn);}
-        else if(lv==='P'){metro.tempsOn=!metro.tempsOn;btn.classList.toggle('on',metro.tempsOn);}
-        else{metro.subdivOn=!metro.subdivOn;btn.classList.toggle('on',metro.subdivOn);}
-        renderMetroPatternViz();_syncMetroVolDisabled();
-        if(!metro.accentOn&&!metro.tempsOn&&!metro.subdivOn)setMetroGlobal(false);
-        if(circleView)drawCircles();
-        setMetroDirty(true);updateMetroSaveBtn();
-      }
-    }));
+    ['pointerup','pointercancel'].forEach(ev=>gauge.addEventListener(ev,()=>{_dragging=false;}));
+    // Tap sur la jauge = set vol absolu selon position Y
+    gauge.addEventListener('click',e=>{
+      const rect=gauge.getBoundingClientRect();
+      const fromBottom=rect.bottom-e.clientY;
+      const pct=Math.max(0,Math.min(100,Math.round((fromBottom/rect.height)*100)));
+      _setAccVol(lv,pct);
+      setMetroDirty(true);updateMetroSaveBtn();
+    });
   });
+  // ── Jauge horizontale volume global ──
+  {
+    const gEl=document.getElementById('metro-vol-gauge');
+    const gFill=document.getElementById('metro-vol-gauge-fill');
+    const gSlider=document.getElementById('metro-vol');
+    function _setGlobalVol(val){
+      val=Math.max(0,Math.min(100,Math.round(val)));
+      if(gSlider){gSlider.value=val;gSlider.dispatchEvent(new Event('input'));}
+      if(gFill)gFill.style.width=val+'%';
+    }
+    if(gEl){
+      let _gDragging=false,_gX0=0,_gV0=80;
+      gEl.addEventListener('pointerdown',e=>{
+        e.preventDefault();
+        try{gEl.setPointerCapture(e.pointerId);}catch(_){}
+        _gX0=e.clientX; _gDragging=true;
+        _gV0=parseInt(gSlider?.value)||80;
+      },{passive:false});
+      gEl.addEventListener('pointermove',e=>{
+        if(!_gDragging)return;
+        const rect=gEl.getBoundingClientRect();
+        const pct=Math.max(0,Math.min(100,Math.round(((e.clientX-rect.left)/rect.width)*100)));
+        _setGlobalVol(pct);
+      },{passive:false});
+      ['pointerup','pointercancel'].forEach(ev=>gEl.addEventListener(ev,()=>{
+        if(!_gDragging)return; _gDragging=false;
+      }));
+      // Sync fill on slider change (for backward compat)
+      if(gSlider)gSlider.addEventListener('input',()=>{if(gFill)gFill.style.width=gSlider.value+'%';});
+    }
+  }
   // ── Flèches dénominateur (cycle 2→4→8→16) ──
   {
     const DEN_VALS=[2,4,8,16];
@@ -15032,6 +15075,29 @@ function attachEvents(){
         if(typeof _syncUnitChips==='function')_syncUnitChips();
       });
     });
+  }
+  // ── Beat-unit picker (popup flottant depuis canvas sym=) ──
+  {
+    const picker=document.getElementById('beat-unit-picker');
+    if(picker){
+      picker.querySelectorAll('.bup-opt').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const fbs=parseInt(btn.dataset.fbs)||2;
+          const batSel=document.getElementById('battue-sel');
+          if(batSel){batSel.value=fbs;batSel.dispatchEvent(new Event('change'));}
+          if(typeof _syncUnitChips==='function')_syncUnitChips();
+          // Mettre à jour l'état actif
+          picker.querySelectorAll('.bup-opt').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.fbs)===fbs));
+          picker.classList.remove('open');
+        });
+      });
+      // Fermer sur clic extérieur
+      document.addEventListener('pointerdown',e=>{
+        if(picker.classList.contains('open')&&!picker.contains(e.target)){
+          picker.classList.remove('open');
+        }
+      },{capture:true,passive:true});
+    }
   }
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
