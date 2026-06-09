@@ -1588,7 +1588,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
-.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start;padding-top:6px;padding-left:4px}
+.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-end;padding-bottom:4px;padding-left:4px}
 .metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
 .metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
@@ -1620,12 +1620,10 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-battue-toprow{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
 .metro-onoff-row{display:flex;justify-content:center}
 .metro-vol-subdiv-row{display:flex;align-items:center;gap:6px}
-.metro-sig-frac-big{display:flex;flex-direction:column;align-items:center;width:100%;padding:2px 0 0}
 .metro-frac-num-row{display:flex;align-items:center;justify-content:center;gap:2px;width:100%}
 .metro-frac-n{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;min-width:24px;text-align:center}
-.metro-frac-bar{width:90%;height:2px;background:#3A8C6E;margin:2px 0;border-radius:1px}
-.metro-frac-d{font-size:22px;font-weight:900;color:#3A8C6E;line-height:1;text-align:center}
-.metro-div-unit-lbl-row{display:flex;justify-content:space-around;width:100%;margin-top:3px}
+.metro-frac-bar{width:90%;height:2px;background:#3A8C6E;margin:3px 0 2px;border-radius:1px}
+.metro-frac-d{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;text-align:center}
 .metro-unit-chips{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%;margin-top:2px}
 .metro-battue-pattern{flex:2;min-height:0;display:flex;flex-direction:column}
 .metro-battue-pattern .metro-pat-viz{flex:1;min-height:50px}
@@ -1644,7 +1642,7 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-onoff-btn{background:#2e2e2b;border-color:#444;color:#888}
 body.dark-mode .metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
-body.dark-mode .metro-frac-n,.body.dark-mode .metro-frac-d{color:#4DB899}
+body.dark-mode .metro-frac-n,body.dark-mode .metro-frac-d{color:#4DB899}
 body.dark-mode .metro-frac-bar{background:#4DB899}
 .metro-tap-p2-row{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;flex-shrink:0;padding:2px 0}
 /* Landscape : chips sur 1 ligne, colonne métrique plus large */
@@ -1677,7 +1675,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.11</span>
+    <span class="app-version">v3.23.12</span>
   </div>
 </div>
 
@@ -1793,21 +1791,20 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
         <div class="metro-pane-layout">
           <!-- Col gauche : Signature (fraction verte) + Division + Unité -->
           <div class="metro-col-metric">
-            <!-- Grande fraction verte -->
-            <div class="metro-sig-frac-big">
-              <div class="metro-frac-num-row">
-                <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
-                <span class="mpv-beats-val metro-frac-n" id="mpv-beats-val">4</span>
-                <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
-              </div>
-              <div class="metro-frac-bar"></div>
-              <span class="metro-frac-d" id="metro-frac-den">4</span>
+            <!-- "Divisions" au-dessus du numérateur -->
+            <span class="metro-metric-lbl">Divisions</span>
+            <!-- Numérateur + flèches -->
+            <div class="metro-frac-num-row">
+              <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
+              <span class="mpv-beats-val metro-frac-n" id="mpv-beats-val">4</span>
+              <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
             </div>
-            <!-- Labels petits -->
-            <div class="metro-div-unit-lbl-row">
-              <span class="metro-metric-lbl">Divisions</span>
-              <span class="metro-metric-lbl">Unité</span>
-            </div>
+            <!-- Barre verte -->
+            <div class="metro-frac-bar"></div>
+            <!-- Dénominateur (même taille que numérateur) -->
+            <span class="metro-frac-d" id="metro-frac-den">4</span>
+            <!-- "Unité" entre dénominateur et chips -->
+            <span class="metro-metric-lbl" style="margin-top:4px">Unité</span>
             <!-- Chips Unité 2×2 (♩ ♪ / ♩♩ ♬) -->
             <div class="metro-unit-chips" id="metro-unit-chips">
               <button class="metro-unit-chip active" data-unit="4">♩</button>
