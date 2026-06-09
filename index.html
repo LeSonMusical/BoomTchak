@@ -1588,7 +1588,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
-.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-end;padding-bottom:4px;padding-left:4px}
+.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-end;padding-bottom:14px;padding-left:4px}
 .metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
 .metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
@@ -1616,16 +1616,22 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-tap-p1-btn:active{background:rgba(58,140,110,.12)}
 /* Panel 2 */
 .metro-pane-battue{display:flex;flex-direction:column;gap:5px;height:100%}
-.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-subdiv-row,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
-.metro-battue-toprow{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
-.metro-onoff-row{display:flex;justify-content:center}
-.metro-vol-subdiv-row{display:flex;align-items:center;gap:6px}
+.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-left,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
+.metro-battue-toprow{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.metro-vol-left{display:flex;flex-direction:column;align-items:stretch;gap:1px;flex:1;min-width:0}
+.metro-subdiv-right{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
+.metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px}
+.mpv-acc-drag{width:100%;flex:1;min-height:52px;font-size:22px;font-weight:900;border:1.5px solid var(--btn-c,#ccc);border-radius:6px;cursor:ns-resize;touch-action:none;color:#fff;background:linear-gradient(to top,var(--btn-c,#3A8C6E) var(--vol-fill,50%),#f5f4f0 var(--vol-fill,50%));-webkit-tap-highlight-color:transparent}
+.mpv-acc-drag:not(.on){background:#f5f4f0;color:var(--btn-c,#888);opacity:.55}
+.metro-acc-vol-val{font-size:9px;color:#888;font-weight:600;line-height:1}
+body.dark-mode .mpv-acc-drag{background:linear-gradient(to top,var(--btn-c,#3A8C6E) var(--vol-fill,50%),#2a2a27 var(--vol-fill,50%))}
+body.dark-mode .mpv-acc-drag:not(.on){background:#2a2a27}
 .metro-frac-num-row{display:flex;align-items:center;justify-content:center;gap:2px;width:100%}
 .metro-frac-n{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;min-width:24px;text-align:center}
 .metro-frac-bar{width:90%;height:2px;background:#3A8C6E;margin:3px 0 2px;border-radius:1px}
 .metro-frac-d{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;text-align:center}
 .metro-unit-chips{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%;margin-top:2px}
-.metro-battue-pattern{flex:2;min-height:0;display:flex;flex-direction:column}
+.metro-battue-pattern{flex:3;min-height:0;display:flex;flex-direction:column}
 .metro-battue-pattern .metro-pat-viz{flex:1;min-height:50px}
 .metro-accents-row{display:flex;gap:4px;flex-shrink:0}
 .metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
@@ -1675,7 +1681,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.12</span>
+    <span class="app-version">v3.23.13</span>
   </div>
 </div>
 
@@ -1801,8 +1807,12 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
             </div>
             <!-- Barre verte -->
             <div class="metro-frac-bar"></div>
-            <!-- Dénominateur (même taille que numérateur) -->
-            <span class="metro-frac-d" id="metro-frac-den">4</span>
+            <!-- Dénominateur avec flèches (cycle 2→4→8→16) -->
+            <div class="metro-frac-num-row">
+              <button class="mpv-beats-btn" id="mpv-den-down">&lt;</button>
+              <span class="metro-frac-d" id="metro-frac-den">4</span>
+              <button class="mpv-beats-btn" id="mpv-den-up">&gt;</button>
+            </div>
             <!-- "Unité" entre dénominateur et chips -->
             <span class="metro-metric-lbl" style="margin-top:4px">Unité</span>
             <!-- Chips Unité 2×2 (♩ ♪ / ♩♩ ♬) -->
@@ -1853,41 +1863,45 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : On/Off centré + Vol+Subdiv -->
+          <!-- Ligne haute : Vol (gauche) | On/Off (centre) | Subdiv (droite) -->
           <div class="metro-battue-toprow">
-            <div class="metro-onoff-row">
-              <button id="btn-metro-onoff-p2" class="metro-onoff-btn on" title="Métronome on/off">On</button>
+            <div class="metro-vol-left">
+              <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" title="Volume global">
+              <span id="metro-vol-val" style="font-size:9px;color:#aaa;text-align:center">80%</span>
             </div>
-            <div class="metro-vol-subdiv-row">
-              <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:1;min-width:0" title="Volume global">
-              <span id="metro-vol-val" style="font-size:9px;color:#aaa;white-space:nowrap;padding:0 4px;min-width:28px;text-align:right">80%</span>
-              <div style="display:flex;flex-direction:column;align-items:center;gap:1px;padding-left:6px;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0">
-                <span style="font-size:8px;color:#aaa">Subdiv</span>
-                <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
-                  <option value="1">×1</option><option value="2">×2</option>
-                  <option value="3">×3</option><option value="4">×4</option>
-                </select>
-              </div>
+            <button id="btn-metro-onoff-p2" class="metro-onoff-btn on" title="Métronome on/off">On</button>
+            <div class="metro-subdiv-right">
+              <span style="font-size:8px;color:#aaa">Subdiv</span>
+              <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
+                <option value="1">×1</option><option value="2">×2</option>
+                <option value="3">×3</option><option value="4">×4</option>
+              </select>
             </div>
           </div>
           <!-- metro.pattern central -->
           <div class="metro-battue-pattern">
             <div class="metro-pat-viz" id="metro-pattern-viz"></div>
           </div>
-          <!-- 3 cartes volume par niveau (toggle intégré, sans label ni %) -->
+          <!-- 3 cartes accent : bouton drag vertical (↑↓ = volume, tap = toggle) -->
           <div class="metro-accents-row">
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%;--gc:#2A4870">
-              <button class="mpv-word-btn on" id="mpv-tog-A" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#2A4870">^</button>
+              <button class="mpv-acc-drag on" id="mpv-tog-A" data-vol-key="A" style="--btn-c:#2A4870;--vol-fill:100%">^</button>
+              <span class="metro-acc-vol-val" id="metro-vol-A-val">100%</span>
             </div>
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%;--gc:#3A8C6E">
-              <button class="mpv-word-btn on" id="mpv-tog-P" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#3A8C6E">&gt;</button>
+              <button class="mpv-acc-drag on" id="mpv-tog-P" data-vol-key="P" style="--btn-c:#3A8C6E;--vol-fill:70%">&gt;</button>
+              <span class="metro-acc-vol-val" id="metro-vol-P-val">70%</span>
             </div>
             <div class="metro-acc-card">
-              <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%;--gc:#6FAF98">
-              <button class="mpv-word-btn" id="mpv-tog-p" style="align-self:stretch;font-size:16px;font-weight:700;padding:3px 4px;border-radius:4px;--btn-c:#6FAF98">-</button>
+              <button class="mpv-acc-drag" id="mpv-tog-p" data-vol-key="p" style="--btn-c:#6FAF98;--vol-fill:40%">-</button>
+              <span class="metro-acc-vol-val" id="metro-vol-p-val">40%</span>
             </div>
+          </div>
+          <!-- Sliders cachés conservés pour compatibilité JS (audio + presets) -->
+          <div style="display:none">
+            <input type="range" id="metro-vol-A" min="0" max="100" value="100" style="--pct:100%">
+            <input type="range" id="metro-vol-P" min="0" max="100" value="70" style="--pct:70%">
+            <input type="range" id="metro-vol-p" min="0" max="100" value="40" style="--pct:40%">
           </div>
           <!-- Tap tempo panel 2 : bouton seul -->
           <div class="metro-tap-p2-row">
@@ -3209,19 +3223,26 @@ function syncMetroControls(sig) {
   if (ss) ss.value = String(s.subdivision);
   updateSigDisplays();
   // Synchroniser les jauges de volume par accent
-  const _sv=[['A',metro.volA??100],['P',metro.volP??70],['p',metro.volp??40]];
-  _sv.forEach(([lv,val])=>{
-    const el=document.getElementById('metro-vol-'+lv);
-    if(el){el.value=val;el.style.setProperty('--pct',val+'%');}
-    const ve=document.getElementById('metro-vol-'+lv+'-val');if(ve)ve.textContent=val+'%';
-  });
+  _setAccVol('A',metro.volA??100);
+  _setAccVol('P',metro.volP??70);
+  _setAccVol('p',metro.volp??40);
   _syncMetroVolDisabled();
 }
 
 function _syncMetroVolDisabled(){
   [['A',metro.accentOn],['P',metro.tempsOn],['p',metro.subdivOn]].forEach(([lv,on])=>{
     const el=document.getElementById('metro-vol-'+lv);if(el)el.disabled=!on;
+    const btn=document.getElementById('mpv-tog-'+lv);
+    if(btn)btn.classList.toggle('on',on);
   });
+}
+function _setAccVol(lv,val){
+  val=Math.max(0,Math.min(100,Math.round(val)));
+  if(lv==='A')metro.volA=val; else if(lv==='P')metro.volP=val; else metro.volp=val;
+  const sl=document.getElementById('metro-vol-'+lv);
+  if(sl){sl.value=val;sl.style.setProperty('--pct',val+'%');}
+  const ve=document.getElementById('metro-vol-'+lv+'-val');if(ve)ve.textContent=val+'%';
+  const btn=document.getElementById('mpv-tog-'+lv);if(btn)btn.style.setProperty('--vol-fill',val+'%');
 }
 
 // Applique équivalence (battue) par défaut selon l'unité et le nombre de divisions
@@ -4494,9 +4515,9 @@ function _applyPendingGroove(){
     if(groove.metro){
       const m=groove.metro;
       if(m.swing!==undefined) updateSwingDisplay(); // swingVal déjà appliqué synchronement
-      if(m.volA!==undefined){metro.volA=m.volA;const el=document.getElementById('metro-vol-A');if(el){el.value=m.volA;el.style.setProperty('--pct',m.volA+'%');}const ve=document.getElementById('metro-vol-A-val');if(ve)ve.textContent=m.volA+'%';}
-      if(m.volP!==undefined){metro.volP=m.volP;const el=document.getElementById('metro-vol-P');if(el){el.value=m.volP;el.style.setProperty('--pct',m.volP+'%');}const ve=document.getElementById('metro-vol-P-val');if(ve)ve.textContent=m.volP+'%';}
-      if(m.volp!==undefined){metro.volp=m.volp;const el=document.getElementById('metro-vol-p');if(el){el.value=m.volp;el.style.setProperty('--pct',m.volp+'%');}const ve=document.getElementById('metro-vol-p-val');if(ve)ve.textContent=m.volp+'%';}
+      if(m.volA!==undefined)_setAccVol('A',m.volA);
+      if(m.volP!==undefined)_setAccVol('P',m.volP);
+      if(m.volp!==undefined)_setAccVol('p',m.volp);
       if(m.metroPattern&&m.metroPattern.length>0&&currentSig){
         currentSig=_normalizeSig({...currentSig,equivalence:m.equivalence||m.felBeatSteps||currentSig.equivalence,nbDivisions:m.nbDivisions||m.beatsPerMeasure||currentSig.nbDivisions,beatUnit:m.beatUnit||currentSig.beatUnit,subdivision:m.subdivision||currentSig.subdivision,metroPattern:[...m.metroPattern],_embedded:true,});
         syncMetroControls();renderMetroPatternViz();updateBeatDisplay();setMetroDirty(false);
@@ -4603,9 +4624,9 @@ function applyGroove(grooveId){
       updateSwingDisplay();
     }
     // Restaurer volumes par accent
-    if (m.volA !== undefined) { metro.volA=m.volA; const el=document.getElementById('metro-vol-A');if(el){el.value=m.volA;el.style.setProperty('--pct',m.volA+'%');}const ve=document.getElementById('metro-vol-A-val');if(ve)ve.textContent=m.volA+'%'; }
-    if (m.volP !== undefined) { metro.volP=m.volP; const el=document.getElementById('metro-vol-P');if(el){el.value=m.volP;el.style.setProperty('--pct',m.volP+'%');}const ve=document.getElementById('metro-vol-P-val');if(ve)ve.textContent=m.volP+'%'; }
-    if (m.volp !== undefined) { metro.volp=m.volp; const el=document.getElementById('metro-vol-p');if(el){el.value=m.volp;el.style.setProperty('--pct',m.volp+'%');}const ve=document.getElementById('metro-vol-p-val');if(ve)ve.textContent=m.volp+'%'; }
+    if(m.volA!==undefined)_setAccVol('A',m.volA);
+    if(m.volP!==undefined)_setAccVol('P',m.volP);
+    if(m.volp!==undefined)_setAccVol('p',m.volp);
     if (m.metroPattern && m.metroPattern.length > 0 && currentSig) {
       // Metro était dirty au save — restaurer le pattern embarqué + tous les params sig
       currentSig = _normalizeSig({
@@ -14936,29 +14957,60 @@ function attachEvents(){
       ['pointerup','pointercancel'].forEach(ev=>bpmValEl.addEventListener(ev,()=>{_bpmDragActive=false;}));
     }
   }
-  // ── Sliders volume par accent (^, >, -) ──
+  // ── Boutons drag accent (↑↓ = volume, tap = toggle) ──
   ['A','P','p'].forEach(lv=>{
-    const sl=document.getElementById('metro-vol-'+lv);
-    const ve=document.getElementById('metro-vol-'+lv+'-val');
-    if(!sl)return;
-    // Glisser sur un slider désactivé → activer le type de step correspondant
-    sl.addEventListener('pointerdown',e=>{
-      if(!sl.disabled)return;
+    const btn=document.getElementById('mpv-tog-'+lv);
+    if(!btn)return;
+    let _dy0=0,_y0=0,_v0=0,_dragging=false,_didDrag=false;
+    btn.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      const togId={A:'mpv-tog-A',P:'mpv-tog-P',p:'mpv-tog-p'}[lv];
-      if(lv==='A'){metro.accentOn=true;}else if(lv==='P'){metro.tempsOn=true;}else{metro.subdivOn=true;}
-      sl.disabled=false;
-      const tog=document.getElementById(togId);if(tog)tog.classList.add('on');
-      renderMetroPatternViz();setMetroDirty(true);updateMetroSaveBtn();
-    });
-    sl.addEventListener('input',e=>{
-      const v=parseInt(e.target.value);
-      if(lv==='A')metro.volA=v; else if(lv==='P')metro.volP=v; else metro.volp=v;
-      sl.style.setProperty('--pct',v+'%');
-      if(ve)ve.textContent=v+'%';
+      try{btn.setPointerCapture(e.pointerId);}catch(_){}
+      _y0=e.clientY; _dy0=0; _didDrag=false; _dragging=true;
+      _v0=lv==='A'?(metro.volA??100):lv==='P'?(metro.volP??70):(metro.volp??40);
+    },{passive:false});
+    btn.addEventListener('pointermove',e=>{
+      if(!_dragging)return;
+      const dy=_y0-e.clientY; // haut = positif = augmente volume
+      if(!_didDrag&&Math.abs(dy)<6)return;
+      _didDrag=true;
+      const newV=Math.max(0,Math.min(100,Math.round(_v0+dy*0.6)));
+      _setAccVol(lv,newV);
       setMetroDirty(true);updateMetroSaveBtn();
-    });
+    },{passive:false});
+    ['pointerup','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>{
+      if(!_dragging)return; _dragging=false;
+      if(!_didDrag){
+        // Tap → toggle on/off
+        if(lv==='A'){metro.accentOn=!metro.accentOn;btn.classList.toggle('on',metro.accentOn);}
+        else if(lv==='P'){metro.tempsOn=!metro.tempsOn;btn.classList.toggle('on',metro.tempsOn);}
+        else{metro.subdivOn=!metro.subdivOn;btn.classList.toggle('on',metro.subdivOn);}
+        renderMetroPatternViz();_syncMetroVolDisabled();
+        if(!metro.accentOn&&!metro.tempsOn&&!metro.subdivOn)setMetroGlobal(false);
+        if(circleView)drawCircles();
+        setMetroDirty(true);updateMetroSaveBtn();
+      }
+    }));
   });
+  // ── Flèches dénominateur (cycle 2→4→8→16) ──
+  {
+    const DEN_VALS=[2,4,8,16];
+    ['mpv-den-down','mpv-den-up'].forEach(btnId=>{
+      document.getElementById(btnId)?.addEventListener('click',()=>{
+        const bu=currentSig?.beatUnit||4;
+        const idx=DEN_VALS.indexOf(bu);
+        const newIdx=btnId==='mpv-den-down'?(idx<=0?DEN_VALS.length-1:idx-1):(idx>=DEN_VALS.length-1?0:idx+1);
+        const newBu=DEN_VALS[newIdx];
+        const mpvU=document.getElementById('mpv-unit-sel');
+        if(mpvU){mpvU.value=newBu;mpvU.dispatchEvent(new Event('change'));}
+        const nbDiv=currentSig?.nbDivisions||4;
+        const natFbs=typeof _naturalBeatTimeUnit==='function'?_naturalBeatTimeUnit(newBu,nbDiv):2;
+        const batSel=document.getElementById('battue-sel');
+        if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
+        if(typeof buildSigFromControls==='function')buildSigFromControls();
+        if(typeof _syncUnitChips==='function')_syncUnitChips();
+      });
+    });
+  }
   // ── Saisie manuelle BPM (double-clic sur la valeur) ──
   document.getElementById('metro-bpm-val')?.addEventListener('dblclick',()=>{
     const valEl=document.getElementById('metro-bpm-val');
@@ -15094,27 +15146,7 @@ function attachEvents(){
   });
   document.getElementById('mpv-subdiv-sel').addEventListener('change', buildSigFromControls);
   // ── L1 : Mots-boutons ON/OFF (mute accent, temps, subdiv) ──
-  document.getElementById('mpv-tog-A').addEventListener('click', function() {
-    metro.accentOn = !metro.accentOn;
-    this.classList.toggle('on', metro.accentOn);
-    renderMetroPatternViz(); _syncMetroVolDisabled();
-    if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
-    if(circleView) drawCircles();
-  });
-  document.getElementById('mpv-tog-P').addEventListener('click', function() {
-    metro.tempsOn = !metro.tempsOn;
-    this.classList.toggle('on', metro.tempsOn);
-    renderMetroPatternViz(); _syncMetroVolDisabled();
-    if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
-    if(circleView) drawCircles();
-  });
-  document.getElementById('mpv-tog-p').addEventListener('click', function() {
-    metro.subdivOn = !metro.subdivOn;
-    this.classList.toggle('on', metro.subdivOn);
-    renderMetroPatternViz(); _syncMetroVolDisabled();
-    if(!metro.accentOn && !metro.tempsOn && !metro.subdivOn) setMetroGlobal(false);
-    if(circleView) drawCircles();
-  });
+  // toggle ^ > - : géré dans les handlers drag (pointerup sans drag = tap = toggle)
   // ── L2 : Clic sur un step → cycle A→P→p→.→A ──
   document.getElementById('metro-pattern-viz').addEventListener('click', e => {
     const el = e.target.closest('.mpv-step[data-idx]');
