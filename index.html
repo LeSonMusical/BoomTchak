@@ -1652,18 +1652,11 @@ body.dark-mode .metro-tab{background:#2e2e2b;color:#777;border-color:#444}
 body.dark-mode .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
-.metro-unit-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;text-align:center;-webkit-appearance:none;appearance:none;text-align-last:center}
-body.dark-mode .metro-unit-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
-.metro-equiv-row{display:flex;align-items:center;gap:3px;width:100%;margin-top:2px}
-.metro-equiv-1t{font-size:9px;color:#aaa;white-space:nowrap;flex-shrink:0;line-height:1}
-.metro-equiv-chips{display:flex;gap:2px;flex:1}
-.metro-equiv-chip{flex:1;font-size:13px;font-weight:700;padding:3px 1px;border:1.5px solid #ddd;border-radius:4px;background:#f5f4f0;color:#888;cursor:pointer;text-align:center;line-height:1.4;transition:background .12s,border-color .12s,color .12s;-webkit-tap-highlight-color:transparent}
-.metro-equiv-chip.active{border-color:#aaa;background:#ddd;color:#333}
-.metro-equiv-chip.active.non-default{border-color:#3A8C6E;background:#3A8C6E;color:#fff}
+.metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
+.metro-equiv-menu.non-default{border-color:#3A8C6E;color:#3A8C6E}
+body.dark-mode .metro-equiv-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
+body.dark-mode .metro-equiv-menu.non-default{border-color:#4DB899;color:#4DB899}
 body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
-body.dark-mode .metro-equiv-chip{background:#1E2C28;border-color:#2A4A40;color:#6AB8A0}
-body.dark-mode .metro-equiv-chip.active{background:#3a3a38;border-color:#888;color:#e0e0dc}
-body.dark-mode .metro-equiv-chip.active.non-default{background:#3A8C6E;border-color:#3A8C6E;color:#fff}
 body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
 body.dark-mode .metro-sig-display{color:#4DB899 !important}
 </style>
@@ -1674,7 +1667,7 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.9</span>
+    <span class="app-version">v3.23.10</span>
   </div>
 </div>
 
@@ -1799,22 +1792,19 @@ body.dark-mode .metro-sig-display{color:#4DB899 !important}
               <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
             </div>
             <span class="metro-metric-lbl" style="margin-top:6px">Unité</span>
-            <select class="metro-unit-menu" id="metro-unit-menu">
-              <option value="2">♩♩ — /2</option>
-              <option value="4" selected>♩ — /4</option>
-              <option value="8">♪ — /8</option>
-            </select>
-            <!-- Équivalence battue (felBeatSteps) — vert si ≠ du défaut métrique -->
-            <span class="metro-metric-lbl" style="margin-top:6px">Équivalence</span>
-            <div class="metro-equiv-row">
-              <span class="metro-equiv-1t">1 tps&nbsp;=</span>
-              <div class="metro-equiv-chips" id="metro-equiv-chips">
-                <button class="metro-equiv-chip" data-fbs="1">♪</button>
-                <button class="metro-equiv-chip active" data-fbs="2">♩</button>
-                <button class="metro-equiv-chip" data-fbs="3">♩.</button>
-                <button class="metro-equiv-chip" data-fbs="4">♩♩</button>
-              </div>
+            <div class="metro-unit-chips" id="metro-unit-chips">
+              <button class="metro-unit-chip" data-unit="2">♩♩</button>
+              <button class="metro-unit-chip active" data-unit="4">♩</button>
+              <button class="metro-unit-chip" data-unit="8">♪</button>
             </div>
+            <!-- Équivalence battue (BeatTimeUnit) — vert si ≠ défaut naturel -->
+            <span class="metro-metric-lbl" style="margin-top:6px">Équivalence</span>
+            <select class="metro-equiv-menu" id="metro-equiv-menu">
+              <option value="1">♪ croche</option>
+              <option value="2" selected>♩ noire</option>
+              <option value="3">♩. noire pt.</option>
+              <option value="4">♩♩ blanche</option>
+            </select>
             <!-- Selects cachés conservés pour compatibilité JS -->
             <select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel" style="display:none">
               <option value="4">♩</option><option value="8">♪</option>
@@ -10733,12 +10723,12 @@ function _syncUnitChips(){
   const beatUnit=currentSig?.beatUnit||4;
   const nbDiv=currentSig?.nbDivisions||4;
 
-  // Sync menu MetricTimeUnit (dénominateur signature)
-  const unitMenu=document.getElementById('metro-unit-menu');
-  if(unitMenu&&unitMenu.value!==String(beatUnit)){
-    // N'émet pas d'event pour éviter de boucler
-    unitMenu.value=String(beatUnit);
-    // Si valeur absente du menu (ex. beatUnit=16), on ignore
+  // Sync chips MetricTimeUnit (dénominateur signature)
+  const chipsW=document.getElementById('metro-unit-chips');
+  if(chipsW){
+    chipsW.querySelectorAll('.metro-unit-chip').forEach(chip=>{
+      chip.classList.toggle('active',parseInt(chip.dataset.unit)===beatUnit);
+    });
   }
 
   // Sync sig-unit-display
@@ -10746,19 +10736,16 @@ function _syncUnitChips(){
   if(disp&&typeof _sigFracHtml==='function'){
     disp.innerHTML=_sigFracHtml(nbDiv+'/'+beatUnit);
   }
-  // Sync mpv-beats-val (nombre de divisions)
+  // Sync mpv-beats-val
   const bv=document.getElementById('mpv-beats-val');
   if(bv)bv.textContent=nbDiv;
 
-  // Sync chips Équivalence (BeatTimeUnit / felBeatSteps) — vert si ≠ défaut naturel
-  const equivWrap=document.getElementById('metro-equiv-chips');
-  if(equivWrap){
+  // Sync menu Équivalence (BeatTimeUnit) — vert si ≠ défaut naturel
+  const equivMenu=document.getElementById('metro-equiv-menu');
+  if(equivMenu){
+    equivMenu.value=String(equiv);
     const natEquiv=(beatUnit===8)?((nbDiv%3===0&&nbDiv>=6)?3:1):(beatUnit===2?4:2);
-    equivWrap.querySelectorAll('.metro-equiv-chip').forEach(chip=>{
-      const fbs=parseInt(chip.dataset.fbs);
-      chip.classList.toggle('active',fbs===equiv);
-      chip.classList.toggle('non-default',fbs===equiv&&equiv!==natEquiv);
-    });
+    equivMenu.classList.toggle('non-default',equiv!==natEquiv);
   }
 }
 
@@ -10814,39 +10801,40 @@ function _initMetroPanelDrag(){
   if(tabT)tabT.addEventListener('click',()=>_switchMetroPane('metro-pane-tempo'));
   if(tabB)tabB.addEventListener('click',()=>_switchMetroPane('metro-pane-battue'));
 
-  // Menu MetricTimeUnit (dénominateur signature) → beatUnit uniquement
-  // Changer MetricTimeUnit reset BeatTimeUnit au défaut naturel (sans changer l'inverse)
+  // Chips MetricTimeUnit (dénominateur signature : /2 /4 /8)
+  // Changer MetricTimeUnit → reset BeatTimeUnit au défaut naturel
   function _naturalBeatTimeUnit(beatUnit, nbDiv){
-    if(beatUnit===2) return 4;   // ♩♩
-    if(beatUnit===8) return (nbDiv%3===0&&nbDiv>=6)?3:1; // ♩. composé ou ♪ aksak
-    return 2; // ♩ pour /4 (defaut)
+    if(beatUnit===2) return 4;
+    if(beatUnit===8) return (nbDiv%3===0&&nbDiv>=6)?3:1;
+    return 2; // /4 → ♩
   }
-  const unitMenu=document.getElementById('metro-unit-menu');
-  if(unitMenu){
-    unitMenu.addEventListener('change',function(){
-      const bu=parseInt(this.value)||4;
-      // Sync hidden mpv-unit-sel
-      const mpvU=document.getElementById('mpv-unit-sel');
-      if(mpvU){mpvU.value=bu;mpvU.dispatchEvent(new Event('change'));}
-      // Reset BeatTimeUnit au défaut naturel
-      const nbDiv=currentSig?.nbDivisions||4;
-      const natFbs=_naturalBeatTimeUnit(bu,nbDiv);
-      const batSel=document.getElementById('battue-sel');
-      if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
-      if(typeof buildSigFromControls==='function')buildSigFromControls();
+  const U2M={2:2,4:4,8:8};
+  const chipsWrap=document.getElementById('metro-unit-chips');
+  if(chipsWrap){
+    chipsWrap.querySelectorAll('.metro-unit-chip').forEach(chip=>{
+      chip.addEventListener('click',()=>{
+        const du=parseInt(chip.dataset.unit);
+        chipsWrap.querySelectorAll('.metro-unit-chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        const mpvU=document.getElementById('mpv-unit-sel');
+        if(mpvU){mpvU.value=U2M[du]||4;mpvU.dispatchEvent(new Event('change'));}
+        const nbDiv=currentSig?.nbDivisions||4;
+        const natFbs=_naturalBeatTimeUnit(du,nbDiv);
+        const batSel=document.getElementById('battue-sel');
+        if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
+        if(typeof buildSigFromControls==='function')buildSigFromControls();
+      });
     });
   }
 
-  // Chips Équivalence → felBeatSteps via battue-sel (indépendant de l'unité)
-  const equivChipsWrap=document.getElementById('metro-equiv-chips');
-  if(equivChipsWrap){
-    equivChipsWrap.querySelectorAll('.metro-equiv-chip').forEach(chip=>{
-      chip.addEventListener('click',()=>{
-        const fbs=parseInt(chip.dataset.fbs);
-        const batSel=document.getElementById('battue-sel');
-        if(batSel){batSel.value=fbs;batSel.dispatchEvent(new Event('change'));}
-        if(typeof _syncUnitChips==='function')_syncUnitChips();
-      });
+  // Menu Équivalence (BeatTimeUnit / felBeatSteps) — indépendant de MetricTimeUnit
+  const equivMenu=document.getElementById('metro-equiv-menu');
+  if(equivMenu){
+    equivMenu.addEventListener('change',function(){
+      const fbs=parseInt(this.value)||2;
+      const batSel=document.getElementById('battue-sel');
+      if(batSel){batSel.value=fbs;batSel.dispatchEvent(new Event('change'));}
+      if(typeof _syncUnitChips==='function')_syncUnitChips();
     });
   }
 
