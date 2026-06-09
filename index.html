@@ -14740,21 +14740,22 @@ function attachEvents(){
     btn.classList.toggle('open', open);
     _ribSigMetroOpen = false; // quitter le mode sig-rapide si l'utilisateur navigue
   }
-  document.getElementById('btn-metro-volet-temps').addEventListener('click', () => {
+  // Boutons sous-volets ancienne UI (absents du nouveau metro-panel — guards null obligatoires)
+  document.getElementById('btn-metro-volet-temps')?.addEventListener('click', () => {
     _toggleMetroSub('metro-sub-temps', 'btn-metro-volet-temps');
   });
-  document.getElementById('btn-metro-volet-sign').addEventListener('click', () => {
+  document.getElementById('btn-metro-volet-sign')?.addEventListener('click', () => {
     _toggleMetroSub('metro-sub-sign', 'btn-metro-volet-sign');
   });
-  document.getElementById('btn-metro-volet-tap').addEventListener('click', () => {
+  document.getElementById('btn-metro-volet-tap')?.addEventListener('click', () => {
     _toggleMetroSub('metro-sub-tap', 'btn-metro-volet-tap');
   });
-  document.getElementById('btn-metro-volet-vol').addEventListener('click', () => {
+  document.getElementById('btn-metro-volet-vol')?.addEventListener('click', () => {
     _toggleMetroSub('metro-sub-vol', 'btn-metro-volet-vol');
   });
-  document.getElementById('btn-metro-volet-pat').addEventListener('click', () => {
+  document.getElementById('btn-metro-volet-pat')?.addEventListener('click', () => {
     _toggleMetroSub('metro-sub-pat', 'btn-metro-volet-pat');
-    if (document.getElementById('metro-sub-pat').style.display !== 'none') renderMetroPatternViz();
+    if (document.getElementById('metro-sub-pat')?.style.display !== 'none') renderMetroPatternViz();
   });
   // ── Boutons +/- tempo (1 BPM par clic, répétition sur appui long) ──
   function _adjustTempoBPM(delta){
