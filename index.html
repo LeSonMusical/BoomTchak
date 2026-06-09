@@ -1588,17 +1588,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
-.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding:2px 0}
-.metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
-.metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:3px;padding:4px 0}
+.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start;padding-top:6px}
+.metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:visible;position:relative;padding-bottom:24px}
+.metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
 #metro-wheel.dragging{cursor:grabbing}
 .metro-metric-lbl{font-size:8px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-align:center}
 .metro-sig-display{font-size:16px;font-weight:700;color:#3A8C6E;line-height:1.1;text-align:center}
 .metro-metric-divs{display:flex;align-items:center;gap:3px}
-.metro-metric-divs .mpv-beats-val{font-size:18px;font-weight:700;color:#1a1a18;min-width:20px;text-align:center;line-height:1}
-.metro-unit-chips{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
-.metro-unit-chip{font-size:11px;padding:2px 5px;border:1px solid #ccc;border-radius:3px;cursor:pointer;background:#f5f4f0;color:#555;user-select:none;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.metro-metric-divs .mpv-beats-val{font-size:18px;font-weight:700;color:#3A8C6E;min-width:20px;text-align:center;line-height:1}
+.metro-unit-chips{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%}
+.metro-unit-chip{font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #ccc;border-radius:3px;cursor:pointer;background:#f5f4f0;color:#555;user-select:none;line-height:1.3;text-align:center;-webkit-tap-highlight-color:transparent}
 .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 /* Swing column */
 .metro-swing-val{font-size:9px;color:#3A8C6E;font-weight:700;text-align:center;cursor:pointer}
@@ -1618,7 +1618,14 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-acc-card-name{font-size:8px;color:#aaa;line-height:1}
 .metro-acc-card input[type=range]{width:100%;accent-color:#3A8C6E}
 .metro-acc-card-val{font-size:8px;color:#888}
-.metro-tap-p2-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;padding:2px 0}
+.metro-tap-p2-row{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;padding:2px 0}
+.metro-tap-p2-phrase{display:flex;align-items:center;gap:5px;font-size:10px;color:#888;flex-wrap:wrap;justify-content:center}
+/* Landscape : chips sur 1 ligne, colonne métrique plus large */
+@media (orientation:landscape){
+  .metro-pane-layout{grid-template-columns:minmax(100px,120px) 1fr 52px}
+  .metro-unit-chips{grid-template-columns:repeat(4,1fr)}
+  .metro-unit-chip{font-size:14px}
+}
 /* Dark mode */
 body.dark-mode .metro-panel{background:#252522;border-top-color:#3A8C6E;box-shadow:0 -4px 20px rgba(0,0,0,.38)}
 body.dark-mode #metro-fixed-header{background:#252522}
@@ -1630,7 +1637,7 @@ body.dark-mode .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
-body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
+body.dark-mode .metro-metric-divs .mpv-beats-val{color:#4DB899}
 </style>
 </head>
 <body>
@@ -1639,7 +1646,7 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.3</span>
+    <span class="app-version">v3.23.4</span>
   </div>
 </div>
 
@@ -1780,19 +1787,19 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
               <option value="3">♩.</option><option value="4">♩♩</option>
             </select>
           </div>
-          <!-- Col centrale : Molette tempo -->
+          <!-- Col centrale : Molette tempo + TAP en bas -->
           <div class="metro-col-wheel">
             <canvas id="metro-wheel"></canvas>
+            <button class="metro-tap-p1-btn" id="btn-tap-p1" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);white-space:nowrap;z-index:1">TAP</button>
           </div>
-          <!-- Col droite : Swing + Tap -->
+          <!-- Col droite : Swing -->
           <div class="metro-col-swing">
             <span class="metro-metric-lbl">Swing</span>
             <span class="metro-swing-val" id="swing-display" title="Tap : réinitialiser (Straight)">50%</span>
+            <span class="metro-swing-name" id="swing-name">Straight</span>
             <div class="metro-swing-v-wrap">
               <input type="range" id="swing-slider" min="0" max="100" value="0" step="1">
             </div>
-            <span class="metro-swing-name" id="swing-name">Straight</span>
-            <button class="metro-tap-p1-btn" id="btn-tap-p1">TAP</button>
           </div>
         </div>
         <!-- Éléments cachés pour compatibilité JS -->
@@ -1807,7 +1814,7 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : Vol global + Subdiv + Accents on/off -->
+          <!-- Ligne haute : Vol global + Subdiv -->
           <div class="metro-battue-toprow">
             <span style="font-size:9px;color:#888;white-space:nowrap">Vol</span>
             <input type="range" class="metro-global-vol" id="metro-vol" min="0" max="100" value="80" style="flex:1" title="Volume global">
@@ -1819,35 +1826,27 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
                 <option value="3">×3</option><option value="4">×4</option>
               </select>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-left:6px;border-left:1px solid rgba(0,0,0,.08);flex-shrink:0">
-              <span style="font-size:8px;color:#aaa">Accents</span>
-              <div style="display:flex;gap:2px">
-                <button class="mpv-word-btn on" id="mpv-tog-A" style="padding:2px 5px;min-width:22px;font-size:11px">▼</button>
-                <button class="mpv-word-btn on" id="mpv-tog-P" style="padding:2px 5px;min-width:22px;font-size:11px">▶</button>
-                <button class="mpv-word-btn" id="mpv-tog-p" style="padding:2px 5px;min-width:22px;font-size:11px">─</button>
-              </div>
-            </div>
           </div>
           <!-- metro.pattern central -->
           <div class="metro-battue-pattern">
             <div class="metro-pat-viz" id="metro-pattern-viz"></div>
           </div>
-          <!-- 3 cartes volume par niveau -->
+          <!-- 3 cartes volume par niveau (toggle intégré) -->
           <div class="metro-accents-row">
             <div class="metro-acc-card">
-              <span class="metro-acc-card-lbl">▼</span>
+              <button class="mpv-word-btn on" id="mpv-tog-A" style="align-self:stretch;font-size:16px;font-weight:700;padding:2px 4px;border-radius:4px;min-height:24px">^</button>
               <span class="metro-acc-card-name">Mesure</span>
               <input type="range" class="metro-acc-gauge" id="metro-vol-A" min="0" max="100" value="100" style="--gc:#5577A8;--pct:100%">
               <span class="metro-acc-card-val" id="metro-vol-A-val">100%</span>
             </div>
             <div class="metro-acc-card">
-              <span class="metro-acc-card-lbl">▶</span>
+              <button class="mpv-word-btn on" id="mpv-tog-P" style="align-self:stretch;font-size:16px;font-weight:700;padding:2px 4px;border-radius:4px;min-height:24px">&gt;</button>
               <span class="metro-acc-card-name">Temps</span>
               <input type="range" class="metro-acc-gauge" id="metro-vol-P" min="0" max="100" value="70" style="--gc:#3A8C6E;--pct:70%">
               <span class="metro-acc-card-val" id="metro-vol-P-val">70%</span>
             </div>
             <div class="metro-acc-card">
-              <span class="metro-acc-card-lbl">─</span>
+              <button class="mpv-word-btn" id="mpv-tog-p" style="align-self:stretch;font-size:16px;font-weight:700;padding:2px 4px;border-radius:4px;min-height:24px">-</button>
               <span class="metro-acc-card-name">Subdiv</span>
               <input type="range" class="metro-acc-gauge" id="metro-vol-p" min="0" max="100" value="40" style="--gc:#6FAF98;--pct:40%">
               <span class="metro-acc-card-val" id="metro-vol-p-val">40%</span>
@@ -1855,13 +1854,17 @@ body.dark-mode .metro-metric-divs .mpv-beats-val{color:#ddd}
           </div>
           <!-- Tap tempo panel 2 -->
           <div class="metro-tap-p2-row">
-            <button class="btn-tap-tempo" id="btn-tap-tempo">Tap <span id="tap-n-display">4</span></button>
-            <span class="tap-count" id="tap-count" style="font-size:10px;color:#aaa;margin-left:6px"></span>
+            <div class="metro-tap-p2-phrase">
+              <span>Tempo défini après</span>
+              <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4">
+              <span>touchers</span>
+            </div>
+            <button class="btn-tap-tempo" id="btn-tap-tempo">TAP</button>
+            <span class="tap-count" id="tap-count"></span>
           </div>
         </div>
         <!-- Éléments cachés pour compatibilité JS -->
         <span id="mpv-sig-label" style="display:none"></span>
-        <input type="number" class="tap-n-input" id="tap-n-input" min="1" max="16" value="4" style="display:none">
       </div>
     </div>
   </div><!-- /metro-panel -->
@@ -3096,7 +3099,7 @@ function changeSig(id) {
   const ni = document.getElementById('tap-n-input');
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
-  if (tb) tb.textContent = 'Tap ' + _tapN;
+  if (tb) tb.textContent = 'TAP';
   _tapTimes = [];
   const tc = document.getElementById('tap-count');
   if (tc) tc.textContent = '';
@@ -3136,7 +3139,7 @@ function previewMetroPreset(id) {
   _tapN = _ftBeats;
   const ni = document.getElementById('tap-n-input'); if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
-  if (tb) tb.textContent = 'Tap ' + _tapN;
+  if (tb) tb.textContent = 'TAP';
   _tapTimes = [];
   const tc = document.getElementById('tap-count'); if (tc) tc.textContent = '';
   LAYERS.forEach((_, li) => buildStepsDOM(li, state[li].wrapped));
@@ -3243,7 +3246,7 @@ function buildSigFromControls() {
   const ni = document.getElementById('tap-n-input');
   if (ni) ni.value = _tapN;
   const tb = document.getElementById('btn-tap-tempo');
-  if (tb) tb.textContent = 'Tap ' + _tapN;
+  if (tb) tb.textContent = 'TAP';
   LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));
   renderMetroPatternViz();
   buildSigSelector();
@@ -9150,6 +9153,8 @@ function setMetroGlobal(on){
   if(btnMain) btnMain.classList.toggle('on',on);
   const metroBadge=document.querySelector('.temps-bar .sbar-off-badge');
   if(metroBadge){metroBadge.textContent=on?'on':'off';metroBadge.style.color=on?'#3A8C6E':'#d94040';}
+  const metroPanelBadge=document.getElementById('metro-onoff-badge');
+  if(metroPanelBadge){metroPanelBadge.textContent=on?'on':'off';metroPanelBadge.style.color=on?'#3A8C6E':'#d94040';}
   const btnTop=document.getElementById('btn-tempo');
   if(btnTop){
     btnTop.classList.toggle('metro-on',on);
@@ -10528,7 +10533,7 @@ function initMetroWheel(){
   if(!cv)return;
   const wrap=cv.parentElement;
   if(!wrap)return;
-  const sz=Math.min(wrap.clientWidth||180, wrap.clientHeight||240);
+  const sz=Math.min(wrap.clientWidth||180, (wrap.clientHeight||240)-24);
   if(sz<20)return;
   const dpr=window.devicePixelRatio||1;
   cv.width=sz*dpr; cv.height=sz*dpr;
@@ -15033,7 +15038,7 @@ function attachEvents(){
 
     _tapN=Math.max(2,Math.round((currentSig.nbDivisions||currentSig.beatsPerMeasure||4)*(8/(currentSig.beatUnit||4))/(currentSig.equivalence||2)));
     tapNInput.value=_tapN;
-    tapBtn.textContent='Tap '+_tapN;
+    tapBtn.textContent='TAP';
 
     function _tapReset(){
       clearTimeout(_tapSilenceTimer); _tapSilenceTimer=null;
@@ -15054,7 +15059,7 @@ function attachEvents(){
     tapNInput.addEventListener('change',function(){
       _tapN=Math.max(1,Math.min(16,parseInt(this.value)||4));
       this.value=_tapN;
-      tapBtn.textContent='Tap '+_tapN;
+      tapBtn.textContent='TAP';
       _tapReset();
     });
 
@@ -15121,7 +15126,7 @@ function attachEvents(){
         const newN=Math.max(2,Math.min(16,_tapDragStartN+delta));
         if(newN!==_tapN){
           _tapN=newN; tapNInput.value=_tapN;
-          tapBtn.textContent='Tap '+_tapN; tapCount.textContent='';
+          tapBtn.textContent='TAP'; tapCount.textContent='';
         }
       }
     });
@@ -15589,7 +15594,7 @@ _initEncycloPanel();
 _initMetroPanelDrag();
 _syncUnitChips();
 // Sync état initial métro (sans overlay)
-(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}})();
+(function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}})();
 // Sync état initial band mute
 (function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🔊';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
 _syncNavTabs(); // Sync onglets de nav
