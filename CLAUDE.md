@@ -1,7 +1,7 @@
 # BoomTchak — Instructions Claude Code
 
 ## Projet
-App web pédagogique rythme, single-file `index.html` (~15100 lignes), vanilla JS, Supabase.
+App web pédagogique rythme, single-file `index.html` (~15800 lignes), vanilla JS, Supabase.
 Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 
 ## Principe WYSIWYH (What You See Is What You Hear) — règle absolue
@@ -30,12 +30,14 @@ Les bordures `border-left: 2px solid #C8961A` et `margin-left: 4px` qui couraien
 > **Le seul signal coloré qui mérite de persister est celui des layers** (bleu/rouge/vert) — parce qu'il a une fonction de décodage direct : cette couleur = cette couche dans le canvas = ces boutons.
 > Tout le reste (couleurs de section : jaune Groove, teal Metro, bleu Band) est un repère secondaire, pas un délimiteur spatial.
 
-### Deux systèmes coexistent — à unifier progressivement
+### Deux systèmes coexistent — en cours d'unification
 L'appli mélange deux paradigmes :
-- **Volets empilés** (Groove, Metro, Band, Encyclo) — architecture originale, coexistence verticale
-- **Drawers pleine largeur** (Capture, Jeu) — paradigme plus récent, meilleur sur mobile
+- **Volets empilés** (Groove, Band) — architecture originale, coexistence verticale
+- **Drawers pleine largeur bottom-sheet** (Capture, Jeu, Métronome, Encyclo) — paradigme unifié, meilleur sur mobile
 
-**Prochaine étape identifiée (non commitée) :** évaluer si Metro et Band en tant que drawers full-width (activés par nav-tab → slide-up) est préférable à l'empilement actuel. Tester si la vision simultanée Groove + Metro a une vraie valeur pédagogique ou si elle complexifie l'interface.
+**Métronome (v3.23)** : migré en bottom-sheet avec deux onglets (♩= Tempo | ▣ Battue). Cadran rotatif pour le tempo, jauges horizontales pour les volumes, picker BeatUnit flottant, tap tempo avec décompte.
+
+**Prochaine étape (v3.24) :** migrer le volet Band en bottom-sheet sur le même modèle (Métronome/Encyclo) — activé par nav-tab → slide-up depuis le bas. Voir section "CHANTIER SUIVANT".
 
 ### Ce qui ne change PAS
 - Les couleurs de section (`#C8961A` jaune Groove, `#3A8C6E` teal Metro, `#2d5f80` bleu Band) restent comme codes d'identité dans les headers de section et les accents (boutons, badges)
@@ -103,13 +105,13 @@ Merger vers : `main` après chaque session
 - Déploiement : GitHub Pages (fichier statique `index.html`)
 
 ## Fichiers de référence
-- `index.html` — application complète (~10700 lignes)
+- `index.html` — application complète (~15800 lignes)
 - `BoomTchak_v3_bible.md` — référence technique v3 (DB, RLS, workflows TX/MX)
 - `supabase/schema.sql` — schéma Supabase (inclut toutes les migrations jusqu'à v3.14.15)
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.22.x** (session 2026-06-08)
+**v3.23.x** (session 2026-06-10)
 
 ---
 
@@ -135,43 +137,53 @@ Idem — fallback offline ok, mais la DB fait référence.
 
 ---
 
-## CHANTIER SUIVANT — Rédaction des articles encyclopédie
+## CHANTIER SUIVANT — v3.24 : Volet Band en bottom-sheet
 
-### Contexte
-La session suivante est dédiée à la rédaction des articles de l'encyclopédie BoomTchak.
-Lamberio fournira un document de référence au début de la session. Le cahier des charges ci-dessous est **indicatif** : il sera adapté article par article selon le contenu.
+### Objectif
+Migrer le volet Band de son paradigme "volet empilé" vers un **bottom-sheet** sur le modèle de Métronome et Encyclopédie :
+- Activé par le nav-tab Band → slide-up depuis le bas (même animation que metro-panel)
+- Hauteur réglable par drag de la poignée
+- Fermeture par bouton ✕ dans le bandeau ou drag vers le bas
 
-### Liste des articles à rédiger (18 articles)
+### Architecture cible
 
-| Clé DB | Titre affiché | Notes |
-|--------|--------------|-------|
-| `tempo` | Tempo | Inclut : placement rythmique et accents |
-| `mesure` | Mesure | Double sens : unité de durée (bar/measure) + métrique (time signature) |
-| `metrique` | Métrique | Signature et chiffrage |
-| `mesure-simple-composee` | Mesure simple / composée | Temps binaire ou ternaire |
-| `mesure-irreguliere` | Mesure irrégulière / asymétrique | — |
-| `temps-ecrit-ressenti` | Temps écrit / ressenti | Unité de division vs unité de temps ressentie |
-| `temps` | Temps | Time vs beat — double sens |
-| `temps-fort-faible` | Temps fort / faible | — |
-| `temps-court-long` | Temps court / long | — |
-| `temps-binaire-ternaire` | Temps binaire / ternaire | Structure interne des temps |
-| `polymetrie` | Polymétrie / polyrythmie | — |
-| `hemiole` | Hémiole | — |
-| `contretemps` | Contretemps / syncope | — |
-| `pulsation` | Pulsation / battement | — |
-| `division` | Division et subdivision | — |
-| `rythme` | Rythme | Durée et placement |
-| `pattern` | Pattern / motif | Phrase musicale |
-| `shuffle` | Shuffle | — |
+```
+band-panel (position:fixed, bottom:60px, z-index:103)
+├── band-panel-handle-wrap (drag pour resize)
+├── band-fixed-header
+│   ├── bandeau : ⚙ | [◀ preset-name ▶] | 💾 | ✕
+│   └── onglets éventuels (à définir — ex: "Sons" | "Ensemble")
+└── band-panel-content
+    ├── 3 lignes layer (son par layer — sélecteur + volume + paramètres)
+    └── contrôles globaux (volume groove, mute)
+```
 
-### Workflow de rédaction
-1. Lamberio partage le document de référence
-2. Pour chaque article : rédiger selon la structure ci-dessous, soumettre à Lamberio pour validation
-3. Une fois validé : insérer en DB via la section Encyclopédie (MX) ou migration SQL
+### Points à trancher avec Lamberio avant de coder
+1. **Onglets ou pas ?** — Un seul panneau Band avec tout, ou deux onglets (ex: "Sons" | "Bande") ?
+2. **Coexistence avec l'actuel `band-section`** — Supprimer complètement l'ancien volet ou garder temporairement en ghost pour compat JS ?
+3. **Bouton d'ouverture** — Le nav-tab Band suffit-il, ou faut-il aussi un bouton dans la RIB (PatternInfoLine) ?
+4. **Hauteur minimale** — Quelle hauteur utile ? (3 lignes layer + contrôles ≈ 40-50vh ?)
+
+### Éléments de l'actuel volet Band à conserver
+- `.band-instr-btn` / `buildBandSection` — logique d'affichage des presets son
+- Gestion mute par layer (`state[li].muted`)
+- Volume global (`bandVolume`)
+- Modal preset son (`openPresetModal({type:'sound'})`)
+- CRUD sons TX/MX déjà implémenté (sections Soumettre/Publier)
+
+### Rédaction articles encyclopédie (chantier parallèle — non bloquant)
+La rédaction des 18 articles encyclopédie peut se faire en parallèle sur une session dédiée.
+Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessous.
 
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.23.17 | Overlay Sons restauré sur `rib-son-btn` (700ms) ; durée overlay Métronome réduite 1300→700ms ; scroll page bloqué dans tous les volets fixes (`touch-action:none` + `overscroll-behavior:contain` + handler `touchmove:preventDefault`) ; clôture session 2026-06-10 |
+| v3.23.16 | Toprow Battue 3 colonnes égales (`flex:1`) centrées ; jauge vol 90% de colonne ; « Subdivision » en entier ; metro-off → vol+subdiv inactifs ; bouton ✕ déplacé du handle vers bandeau (même ligne preset) |
+| v3.23.15 | Tap overlay masqué au lancement (`_dragOverlay.hide()` dans `_tapLaunchTimer`) ; jauges accent verticales → horizontales fines (5px, sans valeur) ; phrase « Tempo établi après [select] taps » au-dessus du TAP |
+| v3.23.14 | Volet Battue : jauges horizontales accent + jauge vol global ; picker BeatUnit flottant (popup sur tap `♩= ▾` dans le cadran) ; toggle accent séparé de la jauge ; `_setAccVol` sync `--pct` sur jauges |
+| v3.23.13 | Volet Battue toprow : jauge vol horizontal + On/Off centré + Subdiv ; flèches dénominateur `/2/4/8/16` ; `_naturalBeatTimeUnit` conforme (♩→♩, blanche→♩♩, /16→♪, /8 composé→♩.) |
+| v3.23.8–12 | Refonte volet Métronome en bottom-sheet deux onglets (♩= Tempo | ▣ Battue) ; cadran rotatif `metro-wheel` ; colonne signature verte (numérateur/barre/dénominateur) + chips Unité ; tap tempo avec décompte overlay |
 | v3.22.0 | PatternInfoLine gauche : jauge tempo discrète (`.rib-tempo-gauge`) sous le BPM ; clôture session 2026-06-08 |
 | v3.21.32 | Fix SyntaxError accolade double dans `updateRhythmInfoBar` (JS entier inopérant) |
 | v3.21.31 | PatternInfoLine gauche : suppression slider, zone drag tempo (`#rib-tempo-zone`) — glissé=tempo, tap=volet métro ; tempo centré |
