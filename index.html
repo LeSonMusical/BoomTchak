@@ -1616,14 +1616,14 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-tap-p1-btn:active{background:rgba(58,140,110,.12)}
 /* Panel 2 */
 .metro-pane-battue{display:flex;flex-direction:column;gap:5px;height:100%}
-.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-gauge-h,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
-.metro-battue-toprow{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.metro-vol-wrap{display:flex;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto;width:80px}
+.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-wrap,.metro-pane-battue.metro-off .metro-subdiv-right,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
+.metro-battue-toprow{display:flex;align-items:flex-start;gap:4px;flex-shrink:0}
+.metro-vol-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-vol-lbl{font-size:8px;color:#aaa;text-align:center;line-height:1}
-.metro-vol-gauge-h{position:relative;height:8px;border-radius:4px;background:#ddd;cursor:pointer;overflow:hidden;touch-action:none;width:100%}
+.metro-vol-gauge-h{position:relative;height:8px;border-radius:4px;background:#ddd;cursor:pointer;overflow:hidden;touch-action:none;width:90%;align-self:center}
 .metro-vol-gauge-h-fill{position:absolute;left:0;top:0;bottom:0;background:#3A8C6E;border-radius:4px;pointer-events:none}
-.metro-onoff-wrap{flex:1;display:flex;align-items:center;justify-content:center}
-.metro-subdiv-right{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
+.metro-onoff-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.metro-subdiv-right{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 3px}
 .mpv-acc-toggle{width:100%;font-size:13px;font-weight:800;padding:4px 2px;border:1.5px solid var(--btn-c,#ccc);border-radius:5px;cursor:pointer;background:#f5f4f0;color:var(--btn-c,#888);-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .mpv-acc-toggle.on{background:var(--btn-c,#3A8C6E);color:#fff;border-color:var(--btn-c,#3A8C6E)}
@@ -1694,7 +1694,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.15</span>
+    <span class="app-version">v3.23.16</span>
   </div>
 </div>
 
@@ -1785,7 +1785,6 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="metro-panel" class="metro-panel">
     <div class="metro-panel-handle-wrap" id="metro-panel-handle">
       <div class="metro-panel-handle"></div>
-      <button id="metro-panel-close" style="position:absolute;right:10px;top:6px;background:none;border:1px solid #aaa;border-radius:4px;font-size:13px;color:#777;cursor:pointer;padding:1px 8px;line-height:1.5;z-index:1" title="Fermer">✕</button>
     </div>
     <div id="metro-fixed-header">
       <div class="metro-bandeau">
@@ -1796,8 +1795,9 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
           <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
         </div>
-        <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
+        <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset" style="margin-right:2px">💾</button>
         <button class="btn-metro-enc-info" id="btn-metro-enc-info" title="Article encyclopédie" style="display:none;font-size:11px;font-weight:700;padding:0 7px;border:1px solid var(--c-encyclo,#4a6d40);border-radius:4px;color:var(--c-encyclo,#4a6d40);background:transparent;cursor:pointer">i</button>
+        <button id="metro-panel-close" style="background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;margin-left:2px" title="Fermer">✕</button>
       </div>
       <div class="metro-panel-tabs">
         <button class="metro-tab active" id="metro-tab-tempo">♩= Tempo</button>
@@ -1876,7 +1876,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : Vol (gauche) | On/Off (centre) | Subdiv (droite) -->
+          <!-- Ligne haute : 3 colonnes égales centrées -->
           <div class="metro-battue-toprow">
             <div class="metro-vol-wrap">
               <span class="metro-vol-lbl">Volume</span>
@@ -1885,10 +1885,11 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
               </div>
             </div>
             <div class="metro-onoff-wrap">
+              <span class="metro-vol-lbl">&nbsp;</span>
               <button id="btn-metro-onoff-p2" class="metro-onoff-btn on" title="Métronome on/off">On</button>
             </div>
             <div class="metro-subdiv-right">
-              <span style="font-size:8px;color:#aaa">Subdiv</span>
+              <span class="metro-vol-lbl">Subdivision</span>
               <select class="mpv-sel mpv-sel-sm" id="mpv-subdiv-sel">
                 <option value="1">×1</option><option value="2">×2</option>
                 <option value="3">×3</option><option value="4">×4</option>
