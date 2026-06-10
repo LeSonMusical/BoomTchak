@@ -1670,6 +1670,23 @@ body.dark-mode .metro-onoff-tab-btn{background:#2e2e2b;border-color:#555;color:#
 body.dark-mode .metro-onoff-tab-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+/* ─── VOLET BAND/SONS — bottom sheet (v3.24) ─── */
+.band-panel{position:fixed;left:0;right:0;bottom:60px;z-index:103;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #2d5f80;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding:0;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height;overscroll-behavior:contain;touch-action:none}
+.band-panel-handle-wrap{flex-shrink:0;padding:8px 0 4px;display:flex;justify-content:center;position:relative;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
+.band-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
+.band-panel-handle-wrap:hover .band-panel-handle{background:#aaa}
+#band-fixed-header{flex-shrink:0;background:#fff;overflow:hidden}
+.band-bandeau{display:flex;align-items:center;padding:5px 8px;gap:4px;border-bottom:1px solid rgba(0,0,0,.08);background:#eef4f8}
+.band-bandeau-center{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;min-width:0;overflow:hidden}
+.band-bandeau .sbar-preset-name{color:#0A2A3A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.band-bandeau .sbar-nav-btn{color:#2d5f80}
+.band-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:0;padding:4px 6px 8px}
+body.dark-mode .band-panel{background:#252522;border-top-color:#2d5f80;box-shadow:0 -4px 20px rgba(0,0,0,.38)}
+body.dark-mode #band-fixed-header{background:#252522}
+body.dark-mode .band-panel-handle{background:#444}
+body.dark-mode .band-bandeau{background:#1e2830;border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .band-bandeau .sbar-preset-name{color:#8AB8D8}
+body.dark-mode .band-bandeau .sbar-nav-btn{color:#7ab0cc}
 .metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
 .metro-equiv-menu.non-default{border-color:#3A8C6E;color:#3A8C6E}
 body.dark-mode .metro-equiv-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
@@ -1695,7 +1712,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.21</span>
+    <span class="app-version">v3.24.0</span>
   </div>
 </div>
 
@@ -1943,6 +1960,16 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       </div>
     </div>
   </div><!-- /metro-panel -->
+  <!-- Volet Band/Sons (bottom sheet v3.24) -->
+  <div id="band-panel" class="band-panel">
+    <div class="band-panel-handle-wrap" id="band-panel-handle">
+      <div class="band-panel-handle"></div>
+    </div>
+    <div id="band-fixed-header"></div>
+    <div class="band-panel-content" id="band-panel-content">
+      <div id="sounds"></div>
+    </div>
+  </div><!-- /band-panel -->
   <!-- Beat-unit picker popup -->
   <div id="beat-unit-picker" role="listbox" aria-label="Unité de battue">
     <button class="bup-opt" data-fbs="1">♪</button>
@@ -2115,7 +2142,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <!-- Section Band (Sons) -->
   <div style="margin-top:4px" id="section-band"></div>
   <div class="band-content" id="band-content">
-    <div class="band-sounds-wrap"><div id="sounds"></div></div>
+    <div class="band-sounds-wrap"></div>
   </div>
   <!-- Section Groove -->
   <div id="section-groove"></div>
@@ -4475,6 +4502,7 @@ let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let metroPanelOuvert = false;
 const METRO_PANEL_H = 54; // hauteur fixe du volet métro en vh
+const BAND_PANEL_H  = 52; // hauteur fixe du volet band/sons en vh
 let currentEncycloId = 'poumtchak';
 
 // ── Indicateur UI groove en attente ───────────────────────────────────────
@@ -6118,48 +6146,37 @@ function openPresetModal(cfg){
 
 // ── Section Band ──────────────────────────────────────────────────────────
 function buildBandSection(){
-  const cont=document.getElementById('section-band');
+  // Remplit #band-fixed-header (nouveau bottom-sheet v3.24)
+  const cont=document.getElementById('band-fixed-header');
+  const oldCont=document.getElementById('section-band');
+  if(oldCont)oldCont.innerHTML='';
   if(!cont)return;
   cont.innerHTML='';
 
-  const bar=document.createElement('div');
-  bar.className='section-bar band-bar'+(sonsOuvert?' visible':'');
+  const bandeau=document.createElement('div');
+  bandeau.className='band-bandeau';
 
-  // ── Ligne 1 : 🔈 | ◀ [preset] ▶ 💾 | ▼ ──
-  const row1=document.createElement('div');row1.className='sbar-row1';
-
-  // Col gauche : 🔈
-  const leftCol=document.createElement('div');leftCol.className='sbar-left';leftCol.style.cursor='pointer';leftCol.title='Mute/Unmute sons';
-  const lblIco=document.createElement('span');lblIco.className='section-bar-lbl';lblIco.textContent=bandMuted?'🔇':'🔊';
-  leftCol.appendChild(lblIco);
-  const sonsOffBadge=document.createElement('span');sonsOffBadge.className='sbar-off-badge';sonsOffBadge.textContent=bandMuted?'off':'on';sonsOffBadge.style.color=bandMuted?'#d94040':'#2d5f80';
-  leftCol.appendChild(sonsOffBadge);
-  row1.appendChild(leftCol);
-
-  // Col centre : ◀ [preset] ▶ 💾
-  const centerCol=document.createElement('div');centerCol.className='sbar-center';
-  const bandNavPrev=document.createElement('button');bandNavPrev.className='sbar-nav-btn';bandNavPrev.textContent='◀';bandNavPrev.title='Band précédent';
+  // Centre : ◀ [preset Band] ▶
+  const center=document.createElement('div');center.className='band-bandeau-center';
+  const navPrev=document.createElement('button');navPrev.className='sbar-nav-btn';navPrev.textContent='◀';navPrev.title='Band précédent';
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
-  const bandPresetBtn=document.createElement('button');
-  bandPresetBtn.id='band-preset-btn';bandPresetBtn.className='sbar-preset-name';
-  bandPresetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' 👤':''):'—';
+  const presetBtn=document.createElement('button');
+  presetBtn.id='band-preset-btn';presetBtn.className='sbar-preset-name';
+  presetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' 👤':''):'—';
   const _bandOnSelect=(id)=>{
     applyBand(id);
     const groove=getGroove(currentGrooveId);
     if(groove&&id!==groove.band_defaut){groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
-    buildBandSection();
+    buildBandSection();buildSoundPanel();
   };
-  bandPresetBtn.addEventListener('click',()=>{
-    openPresetModal({
-      type:'band',currentId:currentBandId,label:'Band',accent:'#2d5f80',bg:'#eef4f8',
-      onSelect:_bandOnSelect
-    });
+  presetBtn.addEventListener('click',()=>{
+    openPresetModal({type:'band',currentId:currentBandId,label:'Band',accent:'#2d5f80',bg:'#eef4f8',onSelect:_bandOnSelect});
   });
-  attachSwipe(bandPresetBtn,
+  attachSwipe(presetBtn,
     ()=>(packCours.bands||[]).filter(b=>!b.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0)),
-    ()=>currentBandId, _bandOnSelect
+    ()=>currentBandId,_bandOnSelect
   );
-  const bandNavNext=document.createElement('button');bandNavNext.className='sbar-nav-btn';bandNavNext.textContent='▶';bandNavNext.title='Band suivant';
+  const navNext=document.createElement('button');navNext.className='sbar-nav-btn';navNext.textContent='▶';navNext.title='Band suivant';
   const _navBand=(dir)=>{
     const list=(packCours.bands||[]).filter(b=>!b.localDeletePending).sort((a,b)=>(a.ordre||0)-(b.ordre||0));
     if(!list.length)return;
@@ -6167,145 +6184,37 @@ function buildBandSection(){
     const ni=idx<0?0:(idx+dir+list.length)%list.length;
     _bandOnSelect(list[ni].id);
   };
-  bandNavPrev.addEventListener('click',()=>_navBand(-1));
-  bandNavNext.addEventListener('click',()=>_navBand(1));
+  navPrev.addEventListener('click',()=>_navBand(-1));
+  navNext.addEventListener('click',()=>_navBand(1));
+  center.appendChild(navPrev);center.appendChild(presetBtn);center.appendChild(navNext);
+  bandeau.appendChild(center);
+
+  // Droite : 💾 ⓘ ✕
   const saveBtn=document.createElement('button');
   saveBtn.id='save-btn-band';saveBtn.className='btn-sec-save';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
-  centerCol.appendChild(bandNavPrev);centerCol.appendChild(bandPresetBtn);centerCol.appendChild(bandNavNext);
-  row1.appendChild(centerCol);
+  bandeau.appendChild(saveBtn);
 
-  // Col droite : chevron global (agit sur la visibilité des 3 layers)
-  const rightCol=document.createElement('div');rightCol.className='sbar-right';
-  const btnVolet=document.createElement('button');
-  const _soundKeys=['low','high','noise'];
-  // instrOuvert = au moins un layer visible
-  instrOuvert=_soundKeys.some(k=>soundLayerVisible[k]);
-  btnVolet.className='band-collapse-btn'+(instrOuvert?' open':'');
-  btnVolet.textContent=instrOuvert?'▼':'▶';
-  btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
-
-  // ── Helpers inline ──
-  const _h2r=(h,a)=>{const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;};
-  const iBtnRefs=[];
-  const _setIBtnStyle=(btn,key,col)=>{
-    const isVis=soundLayerVisible[key];
-    const isOp=soundPanelOpen[key];
-    if(!isVis){
-      // Invisible : neutre, seule la ligne supérieure porte la couleur layer
-      btn.style.background='transparent';
-      btn.style.border='1px solid rgba(160,160,160,.22)';
-      btn.style.borderTopWidth='2px';
-      btn.style.borderTopColor=col;
-      btn.style.color='#aaa';
-    }else if(!isOp){
-      btn.style.background=_h2r(col,.42);
-      btn.style.border=`1px solid ${_h2r(col,.65)}`;
-      btn.style.color='#fff';
-    }else{
-      btn.style.background=col;
-      btn.style.border=`1px solid ${col}`;
-      btn.style.color='#fff';
-    }
-  };
-  const _syncChevron=()=>{
-    instrOuvert=_soundKeys.some(k=>soundLayerVisible[k]);
-    const bc2=document.getElementById('band-content');
-    if(bc2)bc2.classList.toggle('open',instrOuvert);
-    btnVolet.textContent=instrOuvert?'▼':'▶';
-    btnVolet.title=instrOuvert?'Masquer instruments':'Afficher instruments';
-    btnVolet.classList.toggle('open',instrOuvert);
-  };
-  const _applyLayerVis=(key)=>{
-    const slRow=document.querySelector(`.sound-layer[data-sound-key="${key}"]`);
-    if(!slRow)return;
-    if(soundLayerVisible[key]){
-      slRow.style.display='';
-      const ctrls=slRow.querySelector('.sound-ctrls');
-      if(ctrls)ctrls.classList.toggle('hidden',!soundPanelOpen[key]);
-      const arr=slRow.querySelector('.btn-sec-ico');
-      if(arr)arr.textContent=soundPanelOpen[key]?'⚙ ▼':'⚙ ▶';
-    }else{slRow.style.display='none';}
-  };
-
-  btnVolet.addEventListener('click',()=>{
-    const anyVis=_soundKeys.some(k=>soundLayerVisible[k]);
-    if(anyVis){
-      // FERMETURE : sauvegarder visible+plié/déplié de chaque layer, puis tout invisibiliser
-      _savedInstrState={};
-      _soundKeys.forEach(k=>{
-        _savedInstrState[k]={visible:soundLayerVisible[k],open:soundPanelOpen[k]};
-        soundLayerVisible[k]=false;
-        _applyLayerVis(k);
-      });
-    }else{
-      // OUVERTURE : restaurer l'état sauvegardé (visible/invisible + plié/déplié)
-      _soundKeys.forEach(k=>{
-        const saved=_savedInstrState?.[k];
-        soundLayerVisible[k]=saved?saved.visible:true;
-        if(saved)soundPanelOpen[k]=saved.open;
-        _applyLayerVis(k);
-      });
-      _savedInstrState=null;
-    }
-    iBtnRefs.forEach((btn,i)=>_setIBtnStyle(btn,_soundKeys[i],CIRCLE_COLORS[i]?.fill||'#888'));
-    _syncChevron();
-  });
-  rightCol.appendChild(saveBtn);rightCol.appendChild(btnVolet);
-  row1.appendChild(rightCol);
-  leftCol.addEventListener('click',()=>{ _applyBandMute(!bandMuted); });
-  bar.appendChild(row1);
-
-  // ── Ligne 2 : [vide] | [Grave] [Aigu] [Noise] | [vide] ──────────────────
-  const instrRow=document.createElement('div');instrRow.className='band-instr-row';
-  instrRow.appendChild(document.createElement('div'));
-  for(let li=0;li<3;li++){
-    const col=CIRCLE_COLORS[li]?.fill||'#888';
-    const sp=getSoundPreset(soundState[li].soundPresetId);
-    const instrName=sp?.nom||LAYERS[li].label;
-    const key=_soundKeys[li];
-    const iBtn=document.createElement('button');
-    iBtn.className='band-instr-btn';
-    iBtn.textContent=instrName;iBtn.title=instrName;
-    _setIBtnStyle(iBtn,key,col);
-    iBtnRefs.push(iBtn);
-    let _ibLt=null,_ibLong=false;
-    iBtn.addEventListener('pointerdown',()=>{
-      _ibLong=false;
-      _ibLt=setTimeout(()=>{
-        _ibLong=true;
-        soundLayerVisible[key]=!soundLayerVisible[key];
-        _applyLayerVis(key);_setIBtnStyle(iBtn,key,col);_syncChevron();
-      },200);
-    });
-    iBtn.addEventListener('pointerup',()=>{
-      clearTimeout(_ibLt);
-      if(_ibLong)return;
-      const ss2=soundState[li];
-      const _slyAc2={low:{accent:'#378ADD',bg:'#ddeefa'},high:{accent:'#D85A30',bg:'#faeae5'},noise:{accent:'#1D9E75',bg:'#e2f5ef'}};
-      const _sla2=_slyAc2[key]||{accent:'#4a7fa5',bg:'#eef4f8'};
-      openPresetModal({type:'sound',currentId:ss2.soundPresetId,label:'Son '+(['Grave','Aigu','Noise'][li]),accent:_sla2.accent,bg:_sla2.bg,
-        onSelect:(spId)=>{
-          const sp2=getSoundPreset(spId);if(!sp2)return;
-          const origId2=ss2.soundPresetId;const _pv2=ss2.vol;
-          ss2.soundPresetId=sp2.id;ss2.soundId=sp2.soundId;ss2.pitch=sp2.pitch;ss2.env=sp2.env??0.3;ss2.vol=_pv2;ss2.atk=sp2.atk??0.0;
-          soundDirty[key]=false;if(spId!==origId2)setBandDirty(true);
-          buildSoundPanel();setSoundDirtySlot(key,false);
-          iBtn.textContent=sp2.nom||'';iBtn.title=sp2.nom||'';_setIBtnStyle(iBtn,key,col);
-        }
-      });
-    });
-    iBtn.addEventListener('pointercancel',()=>clearTimeout(_ibLt));
-    instrRow.appendChild(iBtn);
+  const infoBtn=document.createElement('button');
+  infoBtn.className='btn-metro-enc-info';infoBtn.id='btn-band-enc-info';
+  infoBtn.textContent='i';infoBtn.title='Article encyclopédie';
+  infoBtn.style.display='none';
+  const _bandEncKey=curBand?.id;
+  if(_bandEncKey&&typeof hasEncycloContent==='function'&&hasEncycloContent(_bandEncKey)){
+    infoBtn.style.display='';
+    infoBtn.addEventListener('click',e=>{e.stopPropagation();showEncycloEntry(_bandEncKey);if(!encycloOuvert)toggleEncyclo(true);});
   }
-  instrRow.appendChild(document.createElement('div'));
-  bar.appendChild(instrRow);
+  bandeau.appendChild(infoBtn);
 
-  cont.appendChild(bar);
+  const closeBtn=document.createElement('button');
+  closeBtn.id='band-panel-close';
+  closeBtn.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;margin-left:2px';
+  closeBtn.title='Fermer';closeBtn.textContent='✕';
+  closeBtn.addEventListener('click',e=>{e.stopPropagation();toggleBandPanel(false);});
+  bandeau.appendChild(closeBtn);
 
-  const bc=document.getElementById('band-content');
-  if(bc)bc.classList.toggle('open', instrOuvert && sonsOuvert);
+  cont.appendChild(bandeau);
 }
 
 // ── Section Groove ─── v3.16.11 redesign 2 lignes ─────────────────────────
@@ -10945,6 +10854,46 @@ function _initMetroPanelDrag(){
   window._syncTapP1Btn();
 }
 
+function _initBandPanelDrag(){
+  const CLOSE_THRESH=15;
+  const panel=document.getElementById('band-panel');
+  const hw=document.getElementById('band-panel-handle');
+  if(!panel||!hw)return;
+  let _drag=false,_startY=0,_startH=0;
+  hw.addEventListener('pointerdown',e=>{
+    if(e.button&&e.button!==0)return;
+    e.preventDefault();
+    hw.setPointerCapture(e.pointerId);
+    _drag=true;_startY=e.clientY;
+    _startH=parseFloat(panel.style.height)||BAND_PANEL_H;
+    panel.style.transition='none';
+  },{passive:false});
+  hw.addEventListener('pointermove',e=>{
+    if(!_drag)return;
+    const dy=_startY-e.clientY;
+    const newH=Math.max(5,Math.min(92,_startH+dy/window.innerHeight*100));
+    panel.style.height=newH+'vh';
+  },{passive:false});
+  function _snapOrClose(){
+    if(!_drag)return;_drag=false;
+    const cur=parseFloat(panel.style.height)||BAND_PANEL_H;
+    if(cur<CLOSE_THRESH){
+      toggleBandPanel(false);
+    } else {
+      panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+      panel.style.height=BAND_PANEL_H+'vh';
+      setTimeout(()=>{panel.style.transition='';},280);
+    }
+  }
+  hw.addEventListener('pointerup',_snapOrClose);
+  hw.addEventListener('pointercancel',()=>{
+    if(!_drag)return;_drag=false;
+    panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    panel.style.height=sonsOuvert?BAND_PANEL_H+'vh':'0';
+    setTimeout(()=>{panel.style.transition='';},280);
+  });
+}
+
 // ── Navigation tabs ──────────────────────────────────────────────────────────
 function _syncNavTabs(){
   const tmM=document.getElementById('nav-tab-metro');
@@ -10962,19 +10911,30 @@ function _navSetMetro(open){
   if(btnSig){btnSig.classList.toggle('volet-open',open);btnSig.classList.toggle('active',false);}
   _ribSigMetroOpen=false;
 }
-function _navSetSons(open){
+function toggleBandPanel(open){
   sonsOuvert=open;
-  // Synchro DOM sans guard — évite tout désync state/DOM
-  const bar=document.querySelector('.band-bar');
-  if(bar){
-    bar.classList.toggle('visible',open);
-    const btnInstr=bar.querySelector('.band-collapse-btn');
-    if(btnInstr){btnInstr.textContent=instrOuvert?'▼':'▶';btnInstr.classList.toggle('open',instrOuvert);}
+  const panel=document.getElementById('band-panel');
+  if(!panel)return;
+  if(!open){
+    panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
+    panel.style.height='0';
+    setTimeout(()=>{panel.style.transition='';},300);
+  } else {
+    buildBandSection();buildSoundPanel();
+    panel.style.transition='none';
+    panel.style.height='0';
+    requestAnimationFrame(()=>{
+      panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
+      panel.style.height=BAND_PANEL_H+'vh';
+      setTimeout(()=>{panel.style.transition='';},300);
+    });
   }
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('active',open);
-  const bc=document.getElementById('band-content');
-  if(bc)bc.classList.toggle('open',open&&instrOuvert);
+  _syncNavTabs();
+}
+function _navSetSons(open){
+  toggleBandPanel(open);
 }
 function _navCloseJouer(){
   const pd=document.getElementById('play-drawer');
@@ -15868,19 +15828,20 @@ window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
 window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
 // Prévention scroll page derrière les panneaux fixes
 // iOS Safari propage les touchmove même sur des éléments position:fixed
-;['metro-panel','encyclo-panel','play-drawer'].forEach(id=>{
+;['metro-panel','band-panel','encyclo-panel','play-drawer'].forEach(id=>{
   const el=document.getElementById(id)||document.querySelector('.'+id);
   if(!el)return;
   el.addEventListener('touchmove',e=>{
     // Laisser défiler les zones qui ont explicitement touch-action:pan-y (contenu scrollable)
     const t=e.target;
-    if(t.closest('[data-scroll],[touch-action*="pan"],.pm-fam-col,.pm-items,.encyclo-panel-content,.lib-list,.enc-lp-list,.metro-panel-content'))return;
+    if(t.closest('[data-scroll],[touch-action*="pan"],.pm-fam-col,.pm-items,.encyclo-panel-content,.lib-list,.enc-lp-list,.metro-panel-content,.band-panel-content'))return;
     e.preventDefault();
   },{passive:false});
 });
 // États par défaut
 _initEncycloPanel();
 _initMetroPanelDrag();
+_initBandPanelDrag();
 _syncUnitChips();
 // Sync état initial métro (sans overlay)
 (function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}document.getElementById('btn-metro-onoff-p2')?.classList.toggle('on',on);})();
