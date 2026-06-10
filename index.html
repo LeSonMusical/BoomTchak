@@ -1581,9 +1581,11 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 #metro-fixed-header{flex-shrink:0;background:#fff;overflow:hidden}
 .metro-bandeau{display:flex;align-items:center;padding:4px 8px;gap:4px;border-bottom:1px solid rgba(0,0,0,.08)}
 .metro-bandeau-center{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;min-width:0}
-.metro-panel-tabs{display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.07)}
+.metro-panel-tabs{display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.07)}
 .metro-tab{flex:1;padding:5px 0;border:1px solid #ccc;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;background:#f5f4f0;color:#888;transition:background .15s,color .15s,border-color .15s}
 .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+.metro-onoff-tab-btn{padding:5px 14px;border:2px solid #bbb;border-radius:50px;font-size:11px;font-weight:800;cursor:pointer;background:#f5f4f0;color:#999;transition:all .15s;flex-shrink:0;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.metro-onoff-tab-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 .metro-panel-content{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
@@ -1616,13 +1618,12 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 .metro-tap-p1-btn:active{background:rgba(58,140,110,.12)}
 /* Panel 2 */
 .metro-pane-battue{display:flex;flex-direction:column;gap:5px;height:100%}
-.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-vol-wrap,.metro-pane-battue.metro-off .metro-subdiv-right,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
+.metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-battue-toprow,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
 .metro-battue-toprow{display:flex;align-items:flex-start;gap:4px;flex-shrink:0}
 .metro-vol-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-vol-lbl{font-size:8px;color:#aaa;text-align:center;line-height:1}
 .metro-vol-gauge-h{position:relative;height:8px;border-radius:4px;background:#ddd;cursor:pointer;overflow:hidden;touch-action:none;width:90%;align-self:center}
 .metro-vol-gauge-h-fill{position:absolute;left:0;top:0;bottom:0;background:#3A8C6E;border-radius:4px;pointer-events:none}
-.metro-onoff-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-subdiv-right{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 3px}
 .mpv-acc-toggle{width:100%;font-size:13px;font-weight:800;padding:4px 2px;border:1.5px solid var(--btn-c,#ccc);border-radius:5px;cursor:pointer;background:#f5f4f0;color:var(--btn-c,#888);-webkit-tap-highlight-color:transparent;flex-shrink:0}
@@ -1647,10 +1648,6 @@ body.dark-mode .tap-n-sel{background:#2e2e2b;border-color:#444;color:#aaa}
 .metro-accents-row{display:flex;gap:4px;flex-shrink:0}
 .metro-acc-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 3px;border:1px solid #eee;border-radius:5px;background:#fafaf9}
 body.dark-mode .metro-acc-card{background:#2a2a27;border-color:#333}
-.metro-onoff-btn{min-width:80px;height:30px;font-size:14px;font-weight:700;padding:0 18px;border:1.5px solid #ccc;border-radius:6px;background:#f5f4f0;color:#888;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
-body.dark-mode .metro-onoff-btn{background:#2e2e2b;border-color:#444;color:#888}
-body.dark-mode .metro-onoff-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-frac-n,body.dark-mode .metro-frac-d{color:#4DB899}
 body.dark-mode .metro-frac-bar{background:#4DB899}
 .metro-tap-p2-row{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;flex-shrink:0;padding:2px 0}
@@ -1667,6 +1664,8 @@ body.dark-mode .metro-bandeau{border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .metro-panel-tabs{border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .metro-tab{background:#2e2e2b;color:#777;border-color:#444}
 body.dark-mode .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
+body.dark-mode .metro-onoff-tab-btn{background:#2e2e2b;border-color:#555;color:#666}
+body.dark-mode .metro-onoff-tab-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 .metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
@@ -1694,7 +1693,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.17</span>
+    <span class="app-version">v3.23.18</span>
   </div>
 </div>
 
@@ -1801,6 +1800,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       </div>
       <div class="metro-panel-tabs">
         <button class="metro-tab active" id="metro-tab-tempo">♩= Tempo</button>
+        <button id="btn-metro-onoff-p2" class="metro-onoff-tab-btn on" title="Métronome on/off">On</button>
         <button class="metro-tab" id="metro-tab-battue">▣ Battue</button>
       </div>
     </div>
@@ -1876,17 +1876,13 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       <!-- Panel 2 : Battue & Volumes -->
       <div id="metro-pane-battue" class="metro-pane" style="display:none">
         <div class="metro-pane-battue">
-          <!-- Ligne haute : 3 colonnes égales centrées -->
+          <!-- Ligne haute : 2 colonnes (Volume | Subdivision) -->
           <div class="metro-battue-toprow">
             <div class="metro-vol-wrap">
               <span class="metro-vol-lbl">Volume</span>
               <div class="metro-vol-gauge-h" id="metro-vol-gauge" title="Volume global">
                 <div class="metro-vol-gauge-h-fill" id="metro-vol-gauge-fill" style="width:80%"></div>
               </div>
-            </div>
-            <div class="metro-onoff-wrap">
-              <span class="metro-vol-lbl">&nbsp;</span>
-              <button id="btn-metro-onoff-p2" class="metro-onoff-btn on" title="Métronome on/off">On</button>
             </div>
             <div class="metro-subdiv-right">
               <span class="metro-vol-lbl">Subdivision</span>
