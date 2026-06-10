@@ -571,7 +571,7 @@ body.dark-mode .encyclo-chapo[contenteditable]:empty::before{color:#555}
 #enc-floating-toolbar{position:sticky;top:0;z-index:2;display:none;align-items:center;gap:6px;padding:6px 10px;background:#f8f7f5;border-bottom:1px solid #d0ccc5;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 #enc-floating-toolbar.visible{display:flex;background:#4a6d40;border-bottom-color:#3a5c32}
 /* ─── VOLET ENCYCLOPÉDIE (bottom sheet redimensionnable) ─── */
-.encyclo-panel{position:fixed;left:0;right:0;bottom:60px;z-index:102;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #4a6d40;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height}
+.encyclo-panel{position:fixed;left:0;right:0;bottom:60px;z-index:102;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #4a6d40;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height;overscroll-behavior:contain}
 .encyclo-panel-handle-wrap{flex-shrink:0;padding:10px 0 6px;display:flex;justify-content:center;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
 .encyclo-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
 .encyclo-panel-handle-wrap:hover .encyclo-panel-handle{background:#aaa}
@@ -676,7 +676,7 @@ body.rec-active .btn-play-main:not(.active)::after{content:'';position:absolute;
 body.rec-active .btn-play-main.active{background:#c0392b;border-color:#c0392b;color:#fff;animation:rec-blink .65s step-end infinite}
 
 /* ─── VOLET JOUER ─── */
-.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 0;display:none}
+.play-drawer{position:fixed;bottom:60px;left:0;right:0;z-index:90;background:#1a1a18;border-radius:16px 16px 0 0;border-top:3px solid #1D9E75;padding:14px 12px 0;display:none;overscroll-behavior:contain;touch-action:none}
 .play-drawer.open{display:block}
 .play-drawer.rec-mode-rpl{border-top-color:#7B5EA7}
 .play-drawer.rec-mode-ovr{border-top-color:#C8961A}
@@ -1574,7 +1574,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 }
 
 /* ─── VOLET MÉTRONOME — bottom sheet ─── */
-.metro-panel{position:fixed;left:0;right:0;bottom:60px;z-index:103;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #3A8C6E;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding:0;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height}
+.metro-panel{position:fixed;left:0;right:0;bottom:60px;z-index:103;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #3A8C6E;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding:0;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height;overscroll-behavior:contain;touch-action:none}
 .metro-panel-handle-wrap{flex-shrink:0;padding:8px 0 4px;display:flex;justify-content:center;position:relative;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
 .metro-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
 .metro-panel-handle-wrap:hover .metro-panel-handle{background:#aaa}
@@ -1694,7 +1694,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.16</span>
+    <span class="app-version">v3.23.17</span>
   </div>
 </div>
 
@@ -9279,7 +9279,7 @@ function setMetroGlobal(on){
   }
   _dragOverlay.show('<span style="font-size:18px;font-weight:700">Métronome</span><br><span style="font-size:14px;font-weight:600;color:'+(on?'#4AC9A0':'#aaa')+'">'+(on?'on':'off')+'</span>');
   clearTimeout(_dragOverlay._metroTimer);
-  _dragOverlay._metroTimer=setTimeout(()=>_dragOverlay.hide(),1300);
+  _dragOverlay._metroTimer=setTimeout(()=>_dragOverlay.hide(),700);
 }
 function getMetroBeatSec(){
   const spm=posToSPM(parseInt(document.getElementById('bpm').value))*globalSpeedMult;
@@ -11174,7 +11174,11 @@ function updateRhythmInfoBar(){
     setMetroGlobal(metro.muted); // toggle : muted→on, on→muted
   });
   el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
-    _applyBandMute(!bandMuted);
+    const willMute=!bandMuted;
+    _applyBandMute(willMute);
+    _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(willMute?'#aaa':'#4AC9A0')+'">'+(willMute?'off':'on')+'</span>');
+    clearTimeout(_dragOverlay._sonTimer);
+    _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
   });
   {
     const zone=el.querySelector('#rib-tempo-zone');
@@ -15858,6 +15862,18 @@ function _resumeAfterBackground(){
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) _resumeAfterBackground(); });
 window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
 window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
+// Prévention scroll page derrière les panneaux fixes
+// iOS Safari propage les touchmove même sur des éléments position:fixed
+;['metro-panel','encyclo-panel','play-drawer'].forEach(id=>{
+  const el=document.getElementById(id)||document.querySelector('.'+id);
+  if(!el)return;
+  el.addEventListener('touchmove',e=>{
+    // Laisser défiler les zones qui ont explicitement touch-action:pan-y (contenu scrollable)
+    const t=e.target;
+    if(t.closest('[data-scroll],[touch-action*="pan"],.pm-fam-col,.pm-items,.encyclo-panel-content,.lib-list,.enc-lp-list,.metro-panel-content'))return;
+    e.preventDefault();
+  },{passive:false});
+});
 // États par défaut
 _initEncycloPanel();
 _initMetroPanelDrag();
