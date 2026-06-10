@@ -1619,6 +1619,8 @@ body.dark-mode .metro-swing-v-wrap input[type=range]::-moz-range-track{backgroun
 /* Panel 2 */
 .metro-pane-battue{display:flex;flex-direction:column;gap:5px;height:100%}
 .metro-pane-battue.metro-off .metro-accents-row,.metro-pane-battue.metro-off .metro-battue-toprow,.metro-pane-battue.metro-off .metro-battue-pattern{opacity:.3;pointer-events:none}
+.metro-pane-battue.metro-off .mpv-acc-toggle.on{background:#f5f4f0;color:var(--btn-c,#888);border-color:#ccc}
+body.dark-mode .metro-pane-battue.metro-off .mpv-acc-toggle.on{background:#2e2e2b;border-color:#444}
 .metro-battue-toprow{display:flex;align-items:flex-start;gap:4px;flex-shrink:0}
 .metro-vol-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .metro-vol-lbl{font-size:8px;color:#aaa;text-align:center;line-height:1}
@@ -1693,7 +1695,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.23.18</span>
+    <span class="app-version">v3.23.19</span>
   </div>
 </div>
 
@@ -15221,17 +15223,23 @@ function attachEvents(){
     const bv = document.getElementById('mpv-beats-val');
     const next = Math.min(33, (parseInt(bv.textContent) || 4) + 1);
     _setBeatsUI(next);
+    if(typeof _applyDefaultsFromUnit==='function')_applyDefaultsFromUnit();
     buildSigFromControls();
+    if(typeof _syncUnitChips==='function')_syncUnitChips();
   });
   document.getElementById('mpv-beats-down').addEventListener('click', () => {
     const bv = document.getElementById('mpv-beats-val');
     const next = Math.max(1, (parseInt(bv.textContent) || 4) - 1);
     _setBeatsUI(next);
+    if(typeof _applyDefaultsFromUnit==='function')_applyDefaultsFromUnit();
     buildSigFromControls();
+    if(typeof _syncUnitChips==='function')_syncUnitChips();
   });
   document.getElementById('mpv-beats-range')?.addEventListener('input', e => {
     _setBeatsUI(e.target.value);
+    if(typeof _applyDefaultsFromUnit==='function')_applyDefaultsFromUnit();
     buildSigFromControls();
+    if(typeof _syncUnitChips==='function')_syncUnitChips();
   });
   // ── L1 : Selects unité et subdivision ──
   (()=>{
