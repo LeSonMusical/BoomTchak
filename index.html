@@ -1708,6 +1708,16 @@ body.dark-mode .band-bandeau .sbar-nav-btn{color:#7ab0cc}
 .stp-audio-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--txt,#222)}
 .stp-audio-hint{font-size:9px;color:#999;line-height:1.4;margin-bottom:7px}
 body.dark-mode .stp-audio-hint{color:#777}
+.pref-gauge{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;cursor:pointer;flex-shrink:0;background:linear-gradient(to right,#6B5FA5 var(--pct,33%),rgba(107,95,165,.18) var(--pct,33%))}
+.pref-gauge::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);margin-top:-4px}
+.pref-gauge::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:transparent}
+.pref-gauge::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pref-gauge::-moz-range-track{height:6px;border-radius:3px;background:rgba(107,95,165,.18)}
+.pref-gauge::-moz-range-progress{background:#6B5FA5;border-radius:3px;height:6px}
+body.dark-mode .pref-gauge{background:linear-gradient(to right,#c084fc var(--pct,33%),rgba(192,132,252,.2) var(--pct,33%))}
+body.dark-mode .pref-gauge::-webkit-slider-thumb{background:#c084fc;border-color:#252522}
+body.dark-mode .pref-gauge::-moz-range-thumb{background:#c084fc;border-color:#252522}
+body.dark-mode .pref-gauge::-moz-range-progress{background:#c084fc}
 .stp-audio-ctrl-row{display:flex;align-items:center;gap:4px}
 .stp-theme-chips{display:flex;gap:4px;flex-shrink:0}
 .stp-chip{font-size:11px;padding:3px 11px;border-radius:10px;border:1px solid #ccc;background:transparent;cursor:pointer;color:#666;transition:background .15s,color .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
@@ -1756,7 +1766,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.8</span>
+    <span class="app-version">v3.25.9</span>
   </div>
 </div>
 
@@ -1959,7 +1969,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         <!-- 2. Décalage audio -->
         <div class="stp-audio-section">
           <div class="stp-audio-head"><span>🔊</span> Décalage audio</div>
-          <div class="stp-audio-hint">Augmentez si le son arrive en retard (ex : Bluetooth) · Diminuez si en avance</div>
+          <div class="stp-audio-hint">Augmentez si le son arrive en retard</div>
           <div class="stp-audio-ctrl-row">
             <select id="pref-ao-select" class="smenu-select">
               <option value="0">Synchro</option>
@@ -1976,8 +1986,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           </div>
         </div>
         <!-- 3. Charger avec le groove -->
-        <div class="stp-row" id="stp-load-row">
-          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove, changer :</span>
+        <div class="stp-row" id="stp-load-row" style="justify-content:center;gap:10px">
+          <span class="stp-row-lbl" style="font-size:11px">Avec le groove, changer :</span>
           <div class="stp-theme-chips" style="gap:5px">
             <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🥁 Sons</button>
             <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">⏱ Tempo</button>
@@ -1999,8 +2009,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <div class="smenu-pref-row">
             <div class="smenu-pref-lbl" style="gap:6px;flex-wrap:nowrap">
               <span style="flex:1;white-space:nowrap">Intensité des sons doux :</span>
-              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:70px;accent-color:#6B5FA5;flex-shrink:0">
-              <span id="pref-soft-vel-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:42px;text-align:right;flex-shrink:0" title="Tap : réinitialiser à 33%">33% · Moyen</span>
+              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" class="pref-gauge" style="width:80px">
+              <span id="pref-soft-vel-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:28px;text-align:right;flex-shrink:0" title="Tap : réinitialiser à 33%">33%</span>
             </div>
           </div>
         </div>
@@ -15667,7 +15677,7 @@ function attachEvents(){
       if(pAOPlus)  pAOPlus.addEventListener('click',()=>{pAO.value=Math.min(parseInt(pAO.max),parseInt(pAO.value)+parseInt(pAO.step));_updateAO();_saveAO();});
     }
     const pSV=document.getElementById('pref-soft-vel'),pSVv=document.getElementById('pref-soft-vel-val');
-    const _updateSV=()=>{const p=parseInt(pSV.value);pSVv.textContent=p+'% · '+getSoftVelName(p);};
+    const _updateSV=()=>{const p=parseInt(pSV.value);pSV.style.setProperty('--pct',((p-5)/(80-5)*100).toFixed(1)+'%');pSVv.textContent=p+'%';};
     if(pSV){
       pSV.value=Math.round((prefs.softVel||0.33)*100);
       _updateSV();
