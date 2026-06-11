@@ -1749,7 +1749,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.4</span>
+    <span class="app-version">v3.25.5</span>
   </div>
 </div>
 
@@ -1941,11 +1941,9 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       <div id="stp-root-view">
         <!-- 1. Thème (compact — chips uniquement) -->
         <div class="stp-row" id="smenu-theme-row" style="padding:6px 14px">
-          <span class="stp-row-lbl" id="smenu-theme-lbl" style="font-size:11px;color:#888">Thème</span>
-          <div class="stp-theme-chips">
-            <button id="stp-chip-light" class="stp-chip active">☀ Clair</button>
-            <button id="stp-chip-dark" class="stp-chip">🌙 Sombre</button>
-          </div>
+          <span style="font-size:15px">🖥</span>
+          <span class="stp-row-lbl" id="smenu-theme-lbl" style="font-size:11px;flex:1">Thème</span>
+          <button id="stp-btn-theme" class="stp-chip" style="margin-left:auto">🌙 Passer en sombre</button>
         </div>
         <!-- 2. Décalage audio -->
         <div class="stp-audio-section">
@@ -1967,10 +1965,11 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         </div>
         <!-- 3. Charger avec le groove -->
         <div class="stp-row" id="stp-load-row">
-          <span class="stp-row-lbl" style="font-size:11px">Avec le groove :</span>
+          <span style="font-size:15px">🥁</span>
+          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove, changer :</span>
           <div class="stp-theme-chips" style="gap:5px">
-            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">♪ Sons</button>
-            <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">♩ Tempo</button>
+            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🔊 Sons</button>
+            <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">⏱ Tempo</button>
           </div>
         </div>
         <!-- 4. Export MIDI -->
@@ -1992,7 +1991,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <span class="stp-row-lbl">Préférences</span>
           <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
-        <div id="smenu-prefs-body" style="display:none;padding:6px 14px 12px;background:rgba(107,95,165,.07);border-left:3px solid #6B5FA5;margin:0">
+        <div id="smenu-prefs-body" style="display:none;padding:8px 14px 12px 18px;background:rgba(107,95,165,.07);border-left:3px solid #6B5FA5;margin:0 12px 4px 12px;border-radius:0 0 6px 6px">
           <!-- pref-apply-sig / pref-apply-band / pref-sig-lock migrés en stp-load-row (v3.25.3) -->
           <!-- ghosts pour compat localStorage -->
           <input type="hidden" id="pref-apply-sig"><input type="hidden" id="pref-apply-band"><input type="hidden" id="pref-sig-lock">
@@ -4505,10 +4504,8 @@ function applyColorScheme(scheme){
 }
 function updateSmenuTheme(){
   const isDark = document.body.classList.contains('dark-mode');
-  const lbl = document.getElementById('smenu-theme-lbl');
-  if(lbl) lbl.textContent = 'Thème';
-  const cl=document.getElementById('stp-chip-light');const cd=document.getElementById('stp-chip-dark');
-  if(cl)cl.classList.toggle('active',!isDark);if(cd)cd.classList.toggle('active',isDark);
+  const btn=document.getElementById('stp-btn-theme');
+  if(btn) btn.textContent = isDark ? '☀ Passer en clair' : '🌙 Passer en sombre';
   document.getElementById('stp-chip-sons')?.classList.toggle('active',prefs.applyGrooveBand);
   document.getElementById('stp-chip-tempo')?.classList.toggle('active',prefs.applyGrooveTempo);
 }
@@ -10984,15 +10981,18 @@ function _switchSettingsView(view){
   if(wv)wv.style.display=view==='workflow'?'':'none';
   if(view==='workflow'){buildPublishSection();buildApprobationsSection();}
 }
-function _settingsPanelFitH(panel){
+function _settingsPanelFitH(){
   const maxH=Math.floor(window.innerHeight*0.9)-60;
-  return Math.min(panel.scrollHeight||300,maxH);
+  const hH=document.getElementById('settings-panel-handle')?.offsetHeight||20;
+  const hdH=document.getElementById('settings-fixed-header')?.offsetHeight||0;
+  const cH=document.getElementById('settings-panel-content')?.scrollHeight||200;
+  return Math.min(hH+hdH+cH,maxH);
 }
 let _settingsPanelRO=null;
 function _resizeSettingsPanel(){
   if(!settingsPanelOuvert)return;
   const panel=document.getElementById('settings-panel');if(!panel)return;
-  panel.style.height=_settingsPanelFitH(panel)+'px';
+  panel.style.height=_settingsPanelFitH()+'px';
 }
 function toggleSettingsPanel(open){
   settingsPanelOuvert=open;
@@ -11009,7 +11009,7 @@ function toggleSettingsPanel(open){
     updateSmenuTheme();buildPublishSection();sbFetchPendingApprovals();
     panel.style.transition='none';panel.style.height='0';
     requestAnimationFrame(()=>{
-      const targetH=_settingsPanelFitH(panel);
+      const targetH=_settingsPanelFitH();
       panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
       panel.style.height=targetH+'px';
       setTimeout(()=>{
@@ -11047,13 +11047,13 @@ function _initSettingsPanelDrag(){
     if(!_drag)return;_drag=false;
     const cur=parseFloat(panel.style.height)||0;
     if(cur<CLOSE_THRESH_PX){ toggleSettingsPanel(false); }
-    else{ panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';panel.style.height=_settingsPanelFitH(panel)+'px';setTimeout(()=>{panel.style.transition='';},280); }
+    else{ panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';panel.style.height=_settingsPanelFitH()+'px';setTimeout(()=>{panel.style.transition='';},280); }
   }
   hw.addEventListener('pointerup',_snapOrClose);
   hw.addEventListener('pointercancel',()=>{
     if(!_drag)return;_drag=false;
     panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
-    panel.style.height=settingsPanelOuvert?_settingsPanelFitH(panel)+'px':'0';
+    panel.style.height=settingsPanelOuvert?_settingsPanelFitH()+'px':'0';
     setTimeout(()=>{panel.style.transition='';},280);
   });
 }
@@ -15561,14 +15561,11 @@ function attachEvents(){
     toggleSettingsPanel(!settingsPanelOuvert);
   });
 
-  // Thème : seulement via les chips individuels (pas de click sur toute la row)
-  document.getElementById('stp-chip-light')?.addEventListener('click', e => {
+  // Thème : bouton toggle (affiche la destination, pas l'état courant)
+  document.getElementById('stp-btn-theme')?.addEventListener('click', e => {
     e.stopPropagation();
-    applyColorScheme('light'); updateSmenuTheme();
-  });
-  document.getElementById('stp-chip-dark')?.addEventListener('click', e => {
-    e.stopPropagation();
-    applyColorScheme('dark'); updateSmenuTheme();
+    const isDark=document.body.classList.contains('dark-mode');
+    applyColorScheme(isDark?'light':'dark'); updateSmenuTheme();
   });
   document.getElementById('stp-workflow-btn')?.addEventListener('click', () => {
     _switchSettingsView('workflow');
