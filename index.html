@@ -1749,7 +1749,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.3</span>
+    <span class="app-version">v3.25.4</span>
   </div>
 </div>
 
@@ -1939,7 +1939,15 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
     <div class="settings-panel-content" id="settings-panel-content">
       <!-- Vue racine -->
       <div id="stp-root-view">
-        <!-- 1. Décalage audio — le réglage le plus important -->
+        <!-- 1. Thème (compact — chips uniquement) -->
+        <div class="stp-row" id="smenu-theme-row" style="padding:6px 14px">
+          <span class="stp-row-lbl" id="smenu-theme-lbl" style="font-size:11px;color:#888">Thème</span>
+          <div class="stp-theme-chips">
+            <button id="stp-chip-light" class="stp-chip active">☀ Clair</button>
+            <button id="stp-chip-dark" class="stp-chip">🌙 Sombre</button>
+          </div>
+        </div>
+        <!-- 2. Décalage audio -->
         <div class="stp-audio-section">
           <div class="stp-audio-head"><span>🔊</span> Décalage audio</div>
           <div class="stp-audio-ctrl-row">
@@ -1957,29 +1965,19 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
             <span id="pref-audio-offset-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:36px;text-align:right" title="Tap : réinitialiser à 0">0 ms</span>
           </div>
         </div>
-        <!-- 2. Charger avec le groove -->
+        <!-- 3. Charger avec le groove -->
         <div class="stp-row" id="stp-load-row">
-          <span class="stp-row-ico">🎵</span>
-          <span class="stp-row-lbl" style="font-size:11px">Charger avec le groove</span>
-          <div class="stp-theme-chips">
-            <button id="stp-chip-sons" class="stp-chip active">Sons</button>
-            <button id="stp-chip-tempo" class="stp-chip active">Tempo</button>
+          <span class="stp-row-lbl" style="font-size:11px">Avec le groove :</span>
+          <div class="stp-theme-chips" style="gap:5px">
+            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">♪ Sons</button>
+            <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">♩ Tempo</button>
           </div>
         </div>
-        <!-- 3. Thème -->
-        <div class="stp-row" id="smenu-theme-row">
-          <span class="stp-row-ico" id="smenu-theme-ico">🌙</span>
-          <span class="stp-row-lbl" id="smenu-theme-lbl">Thème</span>
-          <div class="stp-theme-chips">
-            <button id="stp-chip-light" class="stp-chip active">Clair</button>
-            <button id="stp-chip-dark" class="stp-chip">Sombre</button>
-          </div>
-        </div>
-        <!-- 3. Export MIDI -->
+        <!-- 4. Export MIDI -->
         <div class="stp-row stp-row-btn" id="smenu-midi-export">
-          <span class="stp-row-ico">🎵</span>
-          <span class="stp-row-lbl">Export MIDI…</span>
-          <span class="stp-row-arr">→</span>
+          <span class="stp-row-ico">📤</span>
+          <span class="stp-row-lbl">Export MIDI</span>
+          <span class="stp-row-arr">⬇</span>
         </div>
         <!-- 4. Workflow (masqué si 0 items) -->
         <div class="stp-row stp-row-btn" id="stp-workflow-btn" style="display:none">
@@ -4507,14 +4505,10 @@ function applyColorScheme(scheme){
 }
 function updateSmenuTheme(){
   const isDark = document.body.classList.contains('dark-mode');
-  const ico = document.getElementById('smenu-theme-ico');
   const lbl = document.getElementById('smenu-theme-lbl');
-  if(ico) ico.textContent = isDark ? '☀️' : '🌙';
-  if(lbl) lbl.textContent = isDark ? 'Passer en clair' : 'Passer en sombre';
-  // Sync chips du nouveau volet
+  if(lbl) lbl.textContent = 'Thème';
   const cl=document.getElementById('stp-chip-light');const cd=document.getElementById('stp-chip-dark');
   if(cl)cl.classList.toggle('active',!isDark);if(cd)cd.classList.toggle('active',isDark);
-  // Sync chips chargement groove
   document.getElementById('stp-chip-sons')?.classList.toggle('active',prefs.applyGrooveBand);
   document.getElementById('stp-chip-tempo')?.classList.toggle('active',prefs.applyGrooveTempo);
 }
@@ -8577,6 +8571,7 @@ function buildEncycloSection(){
 
 function toggleEncyclo(open){
   encycloOuvert=open;
+  if(open)_closeOtherPanels('encyclo');
   const panel=document.getElementById('encyclo-panel');
   if(panel){
     panel.classList.toggle('open',open);
@@ -10568,6 +10563,7 @@ function _toggleMetroPanel(){
 // ── Volet Métronome — panel fixe bas ─────────────────────────────────────────
 function toggleMetroPanel(open){
   metroPanelOuvert=open;
+  if(open)_closeOtherPanels('metro');
   const panel=document.getElementById('metro-panel');
   if(!panel)return;
   if(!open){
@@ -10988,29 +10984,49 @@ function _switchSettingsView(view){
   if(wv)wv.style.display=view==='workflow'?'':'none';
   if(view==='workflow'){buildPublishSection();buildApprobationsSection();}
 }
+function _settingsPanelFitH(panel){
+  const maxH=Math.floor(window.innerHeight*0.9)-60;
+  return Math.min(panel.scrollHeight||300,maxH);
+}
+let _settingsPanelRO=null;
+function _resizeSettingsPanel(){
+  if(!settingsPanelOuvert)return;
+  const panel=document.getElementById('settings-panel');if(!panel)return;
+  panel.style.height=_settingsPanelFitH(panel)+'px';
+}
 function toggleSettingsPanel(open){
   settingsPanelOuvert=open;
   const panel=document.getElementById('settings-panel');if(!panel)return;
   if(!open){
+    if(_settingsPanelRO){_settingsPanelRO.disconnect();_settingsPanelRO=null;}
     panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
     panel.style.height='0';
     setTimeout(()=>{panel.style.transition='';_settingsPanelView='root';},300);
   } else {
+    _closeOtherPanels('settings');
     _settingsPanelView='root';
     buildSettingsPanel();_switchSettingsView('root');
     updateSmenuTheme();buildPublishSection();sbFetchPendingApprovals();
     panel.style.transition='none';panel.style.height='0';
     requestAnimationFrame(()=>{
+      const targetH=_settingsPanelFitH(panel);
       panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
-      panel.style.height=SETTINGS_PANEL_H+'vh';
-      setTimeout(()=>{panel.style.transition='';},300);
+      panel.style.height=targetH+'px';
+      setTimeout(()=>{
+        panel.style.transition='';
+        const content=document.getElementById('settings-panel-content');
+        if(content&&window.ResizeObserver){
+          _settingsPanelRO=new ResizeObserver(()=>_resizeSettingsPanel());
+          _settingsPanelRO.observe(content);
+        }
+      },300);
     });
   }
   document.getElementById('btn-settings')?.classList.toggle('active',open);
   _syncNavTabs();
 }
 function _initSettingsPanelDrag(){
-  const CLOSE_THRESH=15;
+  const CLOSE_THRESH_PX=80;
   const panel=document.getElementById('settings-panel');
   const hw=document.getElementById('settings-panel-handle');
   if(!panel||!hw)return;
@@ -11018,30 +11034,38 @@ function _initSettingsPanelDrag(){
   hw.addEventListener('pointerdown',e=>{
     if(e.button&&e.button!==0)return;e.preventDefault();
     hw.setPointerCapture(e.pointerId);_drag=true;_startY=e.clientY;
-    _startH=parseFloat(panel.style.height)||SETTINGS_PANEL_H;panel.style.transition='none';
+    _startH=parseFloat(panel.style.height)||300;panel.style.transition='none';
   },{passive:false});
   hw.addEventListener('pointermove',e=>{
     if(!_drag)return;
     const dy=_startY-e.clientY;
-    const newH=Math.max(5,Math.min(92,_startH+dy/window.innerHeight*100));
-    panel.style.height=newH+'vh';
+    const maxH=Math.floor(window.innerHeight*0.92)-60;
+    const newH=Math.max(40,Math.min(maxH,_startH+dy));
+    panel.style.height=newH+'px';
   },{passive:false});
   function _snapOrClose(){
     if(!_drag)return;_drag=false;
-    const cur=parseFloat(panel.style.height)||SETTINGS_PANEL_H;
-    if(cur<CLOSE_THRESH){ toggleSettingsPanel(false); }
-    else{ panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';panel.style.height=SETTINGS_PANEL_H+'vh';setTimeout(()=>{panel.style.transition='';},280); }
+    const cur=parseFloat(panel.style.height)||0;
+    if(cur<CLOSE_THRESH_PX){ toggleSettingsPanel(false); }
+    else{ panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';panel.style.height=_settingsPanelFitH(panel)+'px';setTimeout(()=>{panel.style.transition='';},280); }
   }
   hw.addEventListener('pointerup',_snapOrClose);
   hw.addEventListener('pointercancel',()=>{
     if(!_drag)return;_drag=false;
     panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
-    panel.style.height=settingsPanelOuvert?SETTINGS_PANEL_H+'vh':'0';
+    panel.style.height=settingsPanelOuvert?_settingsPanelFitH(panel)+'px':'0';
     setTimeout(()=>{panel.style.transition='';},280);
   });
 }
 
 // ── Navigation tabs ──────────────────────────────────────────────────────────
+// Un seul volet ouvert à la fois
+function _closeOtherPanels(except){
+  if(except!=='metro'&&metroPanelOuvert)toggleMetroPanel(false);
+  if(except!=='band'&&sonsOuvert)toggleBandPanel(false);
+  if(except!=='settings'&&settingsPanelOuvert)toggleSettingsPanel(false);
+  if(except!=='encyclo'&&encycloOuvert)toggleEncyclo(false);
+}
 function _syncNavTabs(){
   const tmM=document.getElementById('nav-tab-metro');
   const tmS=document.getElementById('nav-tab-sons');
@@ -11062,6 +11086,7 @@ function _navSetMetro(open){
 }
 function toggleBandPanel(open){
   sonsOuvert=open;
+  if(open)_closeOtherPanels('band');
   const panel=document.getElementById('band-panel');
   if(!panel)return;
   if(!open){
@@ -15536,11 +15561,7 @@ function attachEvents(){
     toggleSettingsPanel(!settingsPanelOuvert);
   });
 
-  // Ligne 1 : toggle thème clair/sombre
-  document.getElementById('smenu-theme-row').addEventListener('click', () => {
-    applyColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
-    updateSmenuTheme();
-  });
+  // Thème : seulement via les chips individuels (pas de click sur toute la row)
   document.getElementById('stp-chip-light')?.addEventListener('click', e => {
     e.stopPropagation();
     applyColorScheme('light'); updateSmenuTheme();
@@ -15560,7 +15581,7 @@ function attachEvents(){
     const open = body.style.display === 'none';
     body.style.display = open ? '' : 'none';
     arrow.textContent = open ? '▼' : '▶';
-    if(open){ setTimeout(()=>{ const sc=document.querySelector('.settings-panel-content');if(sc)sc.scrollTop=sc.scrollHeight; },60); }
+    setTimeout(()=>_resizeSettingsPanel(),30);
   });
 
   // Ligne 4 : accordéon Publier
