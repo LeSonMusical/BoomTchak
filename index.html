@@ -1687,6 +1687,39 @@ body.dark-mode .band-panel-handle{background:#444}
 body.dark-mode .band-bandeau{background:#1e2830;border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .band-bandeau .sbar-preset-name{color:#8AB8D8}
 body.dark-mode .band-bandeau .sbar-nav-btn{color:#7ab0cc}
+/* ─── VOLET RÉGLAGES — bottom sheet (v3.25) ─── */
+.settings-panel{position:fixed;left:0;right:0;bottom:60px;z-index:103;background:#fff;border-radius:16px 16px 0 0;border-top:2px solid #6B5FA5;box-shadow:0 -4px 20px rgba(0,0,0,.18);display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:0;padding:0;height:0;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);will-change:height;overscroll-behavior:contain;touch-action:none}
+.settings-panel-handle-wrap{flex-shrink:0;padding:8px 0 4px;display:flex;justify-content:center;position:relative;cursor:ns-resize;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
+.settings-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
+.settings-panel-handle-wrap:hover .settings-panel-handle{background:#aaa}
+#settings-fixed-header{flex-shrink:0;background:#fff;overflow:hidden}
+.stp-bandeau{display:flex;align-items:center;padding:5px 8px;gap:6px;border-bottom:1px solid rgba(0,0,0,.08);background:#f3f2f8}
+.stp-bandeau-info{flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt,#222)}
+.stp-back-btn{background:none;border:none;cursor:pointer;font-size:13px;color:#6B5FA5;font-weight:600;padding:2px 6px;flex-shrink:0}
+.settings-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:0;padding:0}
+.stp-row{padding:10px 14px;font-size:12px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;gap:8px;color:var(--txt,#222)}
+.stp-row-btn{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stp-row-btn:active{background:rgba(0,0,0,.06)}
+.stp-row-ico{font-size:15px;flex-shrink:0;width:22px;text-align:center}
+.stp-row-lbl{flex:1}
+.stp-row-arr{color:#aaa;font-size:12px;flex-shrink:0}
+.stp-audio-section{padding:10px 14px 12px;border-bottom:1px solid rgba(0,0,0,.06)}
+.stp-audio-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--txt,#222)}
+.stp-audio-ctrl-row{display:flex;align-items:center;gap:4px}
+.stp-theme-chips{display:flex;gap:4px;flex-shrink:0}
+.stp-chip{font-size:11px;padding:3px 11px;border-radius:10px;border:1px solid #ccc;background:transparent;cursor:pointer;color:#666;transition:background .15s,color .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.stp-chip.active{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
+#stp-workflow-count{font-size:10px;font-weight:700;color:#0F6E56;background:#d4f5e6;border-radius:10px;padding:1px 7px}
+.stp-auth-section{border-top:1px solid rgba(0,0,0,.06);margin-top:2px}
+#smenu-pub-toggle,#smenu-appro-toggle{display:none!important}
+body.dark-mode .settings-panel{background:#252522;border-top-color:#6B5FA5;box-shadow:0 -4px 20px rgba(0,0,0,.38)}
+body.dark-mode #settings-fixed-header{background:#252522}
+body.dark-mode .settings-panel-handle{background:#444}
+body.dark-mode .stp-bandeau{background:#2a2830;border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .stp-row{border-bottom-color:rgba(255,255,255,.06);color:#e0ddd8}
+body.dark-mode .stp-row-btn:active{background:rgba(255,255,255,.06)}
+body.dark-mode .stp-chip{border-color:#555;color:#aaa}
+body.dark-mode .stp-audio-section{border-bottom-color:rgba(255,255,255,.06)}
 .metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
 .metro-equiv-menu.non-default{border-color:#3A8C6E;color:#3A8C6E}
 body.dark-mode .metro-equiv-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
@@ -1712,89 +1745,12 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.24.0</span>
+    <span class="app-version">v3.25.0</span>
   </div>
 </div>
 
 <!-- Settings menu : position:fixed au-dessus de la bottom bar -->
-<div id="settings-menu-anchor">
-    <div class="settings-menu" id="panel-settings">
-        <!-- Ligne 1 : Thème -->
-        <div class="smenu-row smenu-row-btn" id="smenu-theme-row">
-          <span id="smenu-theme-ico">🌙</span>
-          <span id="smenu-theme-lbl" style="flex:1;margin-left:6px">Passer en sombre</span>
-        </div>
-        <!-- Ligne 2 : Connexion -->
-        <div class="smenu-row" style="display:block">
-          <div id="auth-section"></div>
-        </div>
-        <!-- Ligne 3 : Préférences -->
-        <div class="smenu-row smenu-row-btn" id="smenu-prefs-toggle">
-          <span>⚙ Préférences</span>
-          <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
-        </div>
-        <div id="smenu-prefs-body" class="smenu-sub" style="display:none">
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
-          </div>
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
-          </div>
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl" style="gap:6px">Chgt de métrique :
-              <select id="pref-sig-lock" class="smenu-select">
-                <option value="spm">SPM constant (croche)</option>
-                <option value="bpm">BPM constant (pulsation)</option>
-              </select>
-            </label>
-          </div>
-          <div class="smenu-pref-row">
-            <div class="smenu-pref-lbl" style="gap:6px">
-              <span style="flex:1">Décalage audio/image :</span>
-              <select id="pref-ao-select" class="smenu-select">
-                <option value="0">Synchro</option>
-                <option value="130">Bluetooth</option>
-                <option value="40">Léger retard</option>
-                <option value="250">Grand retard</option>
-                <option value="-30">Avance légère</option>
-                <option value="-80">Avance forte</option>
-              </select>
-            </div>
-            <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
-              <button id="pref-ao-minus" class="pref-ao-btn">−</button>
-              <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="flex:1;accent-color:#6B5FA5">
-              <button id="pref-ao-plus" class="pref-ao-btn">+</button>
-              <span id="pref-audio-offset-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:36px;text-align:right" title="Tap : réinitialiser à 0">0 ms</span>
-            </div>
-          </div>
-          <div class="smenu-pref-row">
-            <div class="smenu-pref-lbl" style="gap:6px">
-              <span style="flex:1">Volume step doux (x) :</span>
-              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
-            </div>
-            <span id="pref-soft-vel-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 33%">33% · Moyen</span>
-          </div>
-        </div>
-        <!-- Ligne 4 : Soumettre/Publier (visible si items en attente) -->
-        <div class="smenu-row smenu-row-btn" id="smenu-pub-toggle" style="display:none">
-          <span id="smenu-pub-label">📤 Proposer à l'école</span>
-          <span id="smenu-pub-count" style="font-size:10px;font-weight:700;color:#0F6E56;background:#d4f5e6;border-radius:10px;padding:1px 6px;display:none">0</span>
-          <span id="smenu-pub-arrow" style="font-size:10px;color:#888">▶</span>
-        </div>
-        <div id="publish-section" class="smenu-sub" style="display:none"></div>
-        <!-- Ligne 5 : Propositions (MX uniquement) -->
-        <div class="smenu-row smenu-row-btn" id="smenu-appro-toggle" style="display:none">
-          <span>📋 Propositions en attente</span>
-          <span id="smenu-appro-count" style="font-size:10px;font-weight:700;color:#c07000;background:#fff5e0;border-radius:10px;padding:1px 6px;display:none">0</span>
-          <span id="smenu-appro-arrow" style="font-size:10px;color:#888">▶</span>
-        </div>
-        <div id="appro-section" class="smenu-sub" style="display:none"></div>
-        <!-- Ligne 6 : Export MIDI -->
-        <div class="smenu-row smenu-row-btn" id="smenu-midi-export">
-          <span>🎵 Export MIDI…</span>
-        </div>
-      </div>
-</div><!-- /settings-menu-anchor -->
+<div id="settings-menu-anchor" style="display:none"><div class="settings-menu" id="panel-settings"></div></div><!-- /settings-menu-anchor -->
 
 <!-- ZONE CENTRALE -->
 <div class="frame">
@@ -1970,6 +1926,97 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       <div id="sounds"></div>
     </div>
   </div><!-- /band-panel -->
+  <!-- Volet Réglages (bottom sheet v3.25) -->
+  <div id="settings-panel" class="settings-panel">
+    <div class="settings-panel-handle-wrap" id="settings-panel-handle">
+      <div class="settings-panel-handle"></div>
+    </div>
+    <div id="settings-fixed-header"></div>
+    <div class="settings-panel-content" id="settings-panel-content">
+      <!-- Vue racine -->
+      <div id="stp-root-view">
+        <!-- 1. Décalage audio — le réglage le plus important -->
+        <div class="stp-audio-section">
+          <div class="stp-audio-head"><span>🔊</span> Décalage audio</div>
+          <div class="stp-audio-ctrl-row">
+            <select id="pref-ao-select" class="smenu-select">
+              <option value="0">Synchro</option>
+              <option value="130">Bluetooth</option>
+              <option value="40">Léger retard</option>
+              <option value="250">Grand retard</option>
+              <option value="-30">Avance légère</option>
+              <option value="-80">Avance forte</option>
+            </select>
+            <button id="pref-ao-minus" class="pref-ao-btn">−</button>
+            <input type="range" id="pref-audio-offset" min="-100" max="300" value="0" step="5" style="flex:1;accent-color:#6B5FA5">
+            <button id="pref-ao-plus" class="pref-ao-btn">+</button>
+            <span id="pref-audio-offset-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:36px;text-align:right" title="Tap : réinitialiser à 0">0 ms</span>
+          </div>
+        </div>
+        <!-- 2. Thème -->
+        <div class="stp-row">
+          <span class="stp-row-ico" id="smenu-theme-ico">🌙</span>
+          <span class="stp-row-lbl" id="smenu-theme-lbl">Thème</span>
+          <div class="stp-theme-chips">
+            <button id="stp-chip-light" class="stp-chip active">Clair</button>
+            <button id="stp-chip-dark" class="stp-chip">Sombre</button>
+          </div>
+        </div>
+        <!-- 3. Export MIDI -->
+        <div class="stp-row stp-row-btn" id="smenu-midi-export">
+          <span class="stp-row-ico">🎵</span>
+          <span class="stp-row-lbl">Export MIDI…</span>
+          <span class="stp-row-arr">→</span>
+        </div>
+        <!-- 4. Workflow (masqué si 0 items) -->
+        <div class="stp-row stp-row-btn" id="stp-workflow-btn" style="display:none">
+          <span class="stp-row-ico">↑</span>
+          <span class="stp-row-lbl" id="stp-workflow-lbl">Items à traiter</span>
+          <span id="stp-workflow-count"></span>
+          <span class="stp-row-arr">→</span>
+        </div>
+        <!-- 5. Préférences accordion -->
+        <div class="stp-row stp-row-btn" id="smenu-prefs-toggle">
+          <span class="stp-row-ico">⚙</span>
+          <span class="stp-row-lbl">Préférences</span>
+          <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
+        </div>
+        <div id="smenu-prefs-body" style="display:none;padding:4px 14px 10px;background:rgba(0,0,0,.025)">
+          <div class="smenu-pref-row">
+            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
+          </div>
+          <div class="smenu-pref-row">
+            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
+          </div>
+          <div class="smenu-pref-row">
+            <label class="smenu-pref-lbl" style="gap:6px">Chgt de métrique :
+              <select id="pref-sig-lock" class="smenu-select">
+                <option value="spm">SPM constant (croche)</option>
+                <option value="bpm">BPM constant (pulsation)</option>
+              </select>
+            </label>
+          </div>
+          <div class="smenu-pref-row">
+            <div class="smenu-pref-lbl" style="gap:6px">
+              <span style="flex:1">Volume step doux (x) :</span>
+              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
+            </div>
+            <span id="pref-soft-vel-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 33%">33% · Moyen</span>
+          </div>
+        </div>
+        <!-- 6. Section auth -->
+        <div class="stp-auth-section"><div id="auth-section"></div></div>
+      </div>
+      <!-- Vue workflow -->
+      <div id="stp-workflow-view" style="display:none">
+        <!-- ghosts pour compat JS (display:none!important via CSS) -->
+        <div id="smenu-pub-toggle"><span id="smenu-pub-label"></span><span id="smenu-pub-count"></span></div>
+        <div id="smenu-appro-toggle"><span id="smenu-appro-count"></span></div>
+        <div id="publish-section" class="smenu-sub"></div>
+        <div id="appro-section" class="smenu-sub"></div>
+      </div>
+    </div>
+  </div><!-- /settings-panel -->
   <!-- Beat-unit picker popup -->
   <div id="beat-unit-picker" role="listbox" aria-label="Unité de battue">
     <button class="bup-opt" data-fbs="1">♪</button>
@@ -4471,6 +4518,9 @@ function updateSmenuTheme(){
   const lbl = document.getElementById('smenu-theme-lbl');
   if(ico) ico.textContent = isDark ? '☀️' : '🌙';
   if(lbl) lbl.textContent = isDark ? 'Passer en clair' : 'Passer en sombre';
+  // Sync chips du nouveau volet
+  const cl=document.getElementById('stp-chip-light');const cd=document.getElementById('stp-chip-dark');
+  if(cl)cl.classList.toggle('active',!isDark);if(cd)cd.classList.toggle('active',isDark);
 }
 
 let _localPendingCount = 0;
@@ -4487,6 +4537,14 @@ function updateSettingsBadge(){
     else if(role === 'sx')  { roleBadge.textContent='🎵'; roleBadge.style.display=''; }
     else                    { roleBadge.style.display='none'; }
   }
+  // Sync bouton workflow dans le volet réglages
+  const wfBtn=document.getElementById('stp-workflow-btn');
+  if(wfBtn){
+    const wfTotal=_localPendingCount+_remotePendingCount;
+    wfBtn.style.display=wfTotal>0?'':'none';
+    const wfCnt=document.getElementById('stp-workflow-count');
+    if(wfCnt)wfCnt.textContent=wfTotal>0?String(wfTotal):'';
+  }
 }
 let layersOuverts = true;
 let layerPanelsOuverts = false;
@@ -4501,8 +4559,11 @@ function _doToggleLayerPanels(){
 let encycloOuvert = false;
 let _encPanelH = 60; // hauteur courante du volet encyclo en vh (snap 28/60/88)
 let metroPanelOuvert = false;
+let settingsPanelOuvert = false;
+let _settingsPanelView = 'root'; // 'root' | 'workflow'
 const METRO_PANEL_H = 54; // hauteur fixe du volet métro en vh
 const BAND_PANEL_H  = 52; // hauteur fixe du volet band/sons en vh
+const SETTINGS_PANEL_H = 48; // hauteur fixe du volet réglages en vh
 let currentEncycloId = 'poumtchak';
 
 // ── Indicateur UI groove en attente ───────────────────────────────────────
@@ -10894,14 +10955,100 @@ function _initBandPanelDrag(){
   });
 }
 
+function buildSettingsPanel(){
+  const hdr=document.getElementById('settings-fixed-header');if(!hdr)return;
+  hdr.innerHTML='';
+  const bandeau=document.createElement('div');bandeau.className='stp-bandeau';
+  if(_settingsPanelView==='workflow'){
+    const back=document.createElement('button');back.className='stp-back-btn';
+    back.textContent='← Workflow';
+    back.addEventListener('click',()=>_switchSettingsView('root'));
+    bandeau.appendChild(back);
+    const sp=document.createElement('div');sp.style.flex='1';bandeau.appendChild(sp);
+  } else {
+    const info=document.createElement('div');info.className='stp-bandeau-info';
+    if(authProfile){
+      const rl={mx:'👑 Admin',tx:'✏️ Enseignant',sx:'🎵 Élève'};
+      info.textContent=(authProfile.display_name||authProfile.email||'')+(rl[authProfile.role]?' · '+rl[authProfile.role]:'');
+    } else { info.textContent='👤 Utilisation locale'; }
+    bandeau.appendChild(info);
+  }
+  const cl=document.createElement('button');
+  cl.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0';
+  cl.title='Fermer';cl.textContent='✕';
+  cl.addEventListener('click',e=>{e.stopPropagation();toggleSettingsPanel(false);});
+  bandeau.appendChild(cl);hdr.appendChild(bandeau);
+}
+function _switchSettingsView(view){
+  _settingsPanelView=view;buildSettingsPanel();
+  const rv=document.getElementById('stp-root-view');const wv=document.getElementById('stp-workflow-view');
+  if(rv)rv.style.display=view==='root'?'':'none';
+  if(wv)wv.style.display=view==='workflow'?'':'none';
+  if(view==='workflow'){buildPublishSection();buildApprobationsSection();}
+}
+function toggleSettingsPanel(open){
+  settingsPanelOuvert=open;
+  const panel=document.getElementById('settings-panel');if(!panel)return;
+  if(!open){
+    panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
+    panel.style.height='0';
+    setTimeout(()=>{panel.style.transition='';_settingsPanelView='root';},300);
+  } else {
+    _settingsPanelView='root';
+    buildSettingsPanel();_switchSettingsView('root');
+    updateSmenuTheme();buildPublishSection();sbFetchPendingApprovals();
+    panel.style.transition='none';panel.style.height='0';
+    requestAnimationFrame(()=>{
+      panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
+      panel.style.height=SETTINGS_PANEL_H+'vh';
+      setTimeout(()=>{panel.style.transition='';},300);
+    });
+  }
+  document.getElementById('btn-settings')?.classList.toggle('active',open);
+  _syncNavTabs();
+}
+function _initSettingsPanelDrag(){
+  const CLOSE_THRESH=15;
+  const panel=document.getElementById('settings-panel');
+  const hw=document.getElementById('settings-panel-handle');
+  if(!panel||!hw)return;
+  let _drag=false,_startY=0,_startH=0;
+  hw.addEventListener('pointerdown',e=>{
+    if(e.button&&e.button!==0)return;e.preventDefault();
+    hw.setPointerCapture(e.pointerId);_drag=true;_startY=e.clientY;
+    _startH=parseFloat(panel.style.height)||SETTINGS_PANEL_H;panel.style.transition='none';
+  },{passive:false});
+  hw.addEventListener('pointermove',e=>{
+    if(!_drag)return;
+    const dy=_startY-e.clientY;
+    const newH=Math.max(5,Math.min(92,_startH+dy/window.innerHeight*100));
+    panel.style.height=newH+'vh';
+  },{passive:false});
+  function _snapOrClose(){
+    if(!_drag)return;_drag=false;
+    const cur=parseFloat(panel.style.height)||SETTINGS_PANEL_H;
+    if(cur<CLOSE_THRESH){ toggleSettingsPanel(false); }
+    else{ panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';panel.style.height=SETTINGS_PANEL_H+'vh';setTimeout(()=>{panel.style.transition='';},280); }
+  }
+  hw.addEventListener('pointerup',_snapOrClose);
+  hw.addEventListener('pointercancel',()=>{
+    if(!_drag)return;_drag=false;
+    panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
+    panel.style.height=settingsPanelOuvert?SETTINGS_PANEL_H+'vh':'0';
+    setTimeout(()=>{panel.style.transition='';},280);
+  });
+}
+
 // ── Navigation tabs ──────────────────────────────────────────────────────────
 function _syncNavTabs(){
   const tmM=document.getElementById('nav-tab-metro');
   const tmS=document.getElementById('nav-tab-sons');
   const tmE=document.getElementById('nav-tab-encyclo');
+  const tmSt=document.getElementById('btn-settings');
   if(tmM)tmM.classList.toggle('active',metroPanelOuvert);
   if(tmS)tmS.classList.toggle('active',sonsOuvert);
   if(tmE)tmE.classList.toggle('active',encycloOuvert);
+  if(tmSt)tmSt.classList.toggle('active',settingsPanelOuvert);
 }
 function _navSetMetro(open){
   toggleMetroPanel(open);
@@ -15381,28 +15528,27 @@ function attachEvents(){
     document.getElementById('metro-vol-val').textContent = metro.volume + '%';
   });
 
-  // ── Settings menu dropdown ──
+  // ── Settings panel bottom-sheet ──
   document.getElementById('btn-settings').addEventListener('click', e => {
     e.stopPropagation();
-    const menu = document.getElementById('panel-settings');
-    const open = menu.classList.toggle('open');
-    document.getElementById('btn-settings').classList.toggle('active', open);
-    if (open) { buildPublishSection(); sbFetchPendingApprovals(); updateSmenuTheme(); }
+    toggleSettingsPanel(!settingsPanelOuvert);
   });
-  const _closeSettingsMenu = e => {
-    const menu = document.getElementById('panel-settings');
-    if (menu.classList.contains('open') && !e.target.closest('.settings-menu-wrap') && !e.target.closest('.settings-menu')) {
-      menu.classList.remove('open');
-      document.getElementById('btn-settings').classList.remove('active');
-    }
-  };
-  document.addEventListener('click', _closeSettingsMenu);
-  document.addEventListener('touchstart', _closeSettingsMenu, {passive:true});
 
   // Ligne 1 : toggle thème clair/sombre
   document.getElementById('smenu-theme-row').addEventListener('click', () => {
     applyColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
     updateSmenuTheme();
+  });
+  document.getElementById('stp-chip-light')?.addEventListener('click', e => {
+    e.stopPropagation();
+    applyColorScheme('light'); updateSmenuTheme();
+  });
+  document.getElementById('stp-chip-dark')?.addEventListener('click', e => {
+    e.stopPropagation();
+    applyColorScheme('dark'); updateSmenuTheme();
+  });
+  document.getElementById('stp-workflow-btn')?.addEventListener('click', () => {
+    _switchSettingsView('workflow');
   });
 
   // Ligne 3 : accordéon Préférences
@@ -15436,8 +15582,7 @@ function attachEvents(){
 
   // Export MIDI
   document.getElementById('smenu-midi-export').addEventListener('click',()=>{
-    document.getElementById('panel-settings').classList.remove('open');
-    document.getElementById('btn-settings').classList.remove('active');
+    toggleSettingsPanel(false);
     openMidiExportModal();
   });
   document.getElementById('midi-modal-close').addEventListener('click',closeMidiExportModal);
@@ -15828,13 +15973,13 @@ window.addEventListener('focus',_resumeAfterBackground); // fallback Firefox iOS
 window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground(); }); // bfcache
 // Prévention scroll page derrière les panneaux fixes
 // iOS Safari propage les touchmove même sur des éléments position:fixed
-;['metro-panel','band-panel','encyclo-panel','play-drawer'].forEach(id=>{
+;['metro-panel','band-panel','settings-panel','encyclo-panel','play-drawer'].forEach(id=>{
   const el=document.getElementById(id)||document.querySelector('.'+id);
   if(!el)return;
   el.addEventListener('touchmove',e=>{
     // Laisser défiler les zones qui ont explicitement touch-action:pan-y (contenu scrollable)
     const t=e.target;
-    if(t.closest('[data-scroll],[touch-action*="pan"],.pm-fam-col,.pm-items,.encyclo-panel-content,.lib-list,.enc-lp-list,.metro-panel-content,.band-panel-content'))return;
+    if(t.closest('[data-scroll],[touch-action*="pan"],.pm-fam-col,.pm-items,.encyclo-panel-content,.lib-list,.enc-lp-list,.metro-panel-content,.band-panel-content,.settings-panel-content'))return;
     e.preventDefault();
   },{passive:false});
 });
@@ -15842,6 +15987,7 @@ window.addEventListener('pageshow',e=>{ if(e.persisted) _resumeAfterBackground()
 _initEncycloPanel();
 _initMetroPanelDrag();
 _initBandPanelDrag();
+_initSettingsPanelDrag();
 _syncUnitChips();
 // Sync état initial métro (sans overlay)
 (function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}document.getElementById('btn-metro-onoff-p2')?.classList.toggle('on',on);})();
