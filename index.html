@@ -1268,7 +1268,7 @@ body.step-seq #step-rows-wrap{display:flex;padding-left:2px}
 .btn-theme.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
 
 /* ─── MODE SOMBRE ─── */
-body.dark-mode{background:#18181a;color:#e0ddd8}
+body.dark-mode{background:#18181a;color:#e0ddd8;--txt:#e0ddd8}
 body.dark-mode .frame{background:#222220}
 body.dark-mode{background:#222220}
 body.dark-mode .top-bar{background:#1c1c1a;border-bottom-color:#333330}
@@ -1710,8 +1710,10 @@ body.dark-mode .band-bandeau .sbar-nav-btn{color:#7ab0cc}
 .stp-chip{font-size:11px;padding:3px 11px;border-radius:10px;border:1px solid #ccc;background:transparent;cursor:pointer;color:#666;transition:background .15s,color .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
 .stp-chip.active{background:#6B5FA5;border-color:#6B5FA5;color:#fff}
 #stp-workflow-count{font-size:10px;font-weight:700;color:#0F6E56;background:#d4f5e6;border-radius:10px;padding:1px 7px}
-.stp-auth-section{border-top:1px solid rgba(0,0,0,.06);margin-top:2px}
+.stp-auth-section{border-top:1px solid rgba(0,0,0,.06);margin-top:2px;padding:8px 14px 12px}
 #smenu-pub-toggle,#smenu-appro-toggle{display:none!important}
+body.dark-mode .stp-auth-section{border-top-color:rgba(255,255,255,.08)}
+body.dark-mode #smenu-prefs-body{background:rgba(107,95,165,.12);border-left-color:#9980d4}
 body.dark-mode .settings-panel{background:#252522;border-top-color:#6B5FA5;box-shadow:0 -4px 20px rgba(0,0,0,.38)}
 body.dark-mode #settings-fixed-header{background:#252522}
 body.dark-mode .settings-panel-handle{background:#444}
@@ -1719,7 +1721,9 @@ body.dark-mode .stp-bandeau{background:#2a2830;border-bottom-color:rgba(255,255,
 body.dark-mode .stp-row{border-bottom-color:rgba(255,255,255,.06);color:#e0ddd8}
 body.dark-mode .stp-row-btn:active{background:rgba(255,255,255,.06)}
 body.dark-mode .stp-chip{border-color:#555;color:#aaa}
-body.dark-mode .stp-audio-section{border-bottom-color:rgba(255,255,255,.06)}
+body.dark-mode .stp-audio-section{background:#1e1c2c;border-bottom-color:rgba(255,255,255,.06)}
+body.dark-mode .stp-audio-head{color:#c8c4e8}
+body.dark-mode #stp-workflow-count{background:#1a3a30;color:#4DB899}
 .metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
 .metro-equiv-menu.non-default{border-color:#3A8C6E;color:#3A8C6E}
 body.dark-mode .metro-equiv-menu{background:#1E2C28;border-color:#2A4A40;color:#b0d8c8}
@@ -1745,7 +1749,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.1</span>
+    <span class="app-version">v3.25.2</span>
   </div>
 </div>
 
@@ -1981,7 +1985,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <span class="stp-row-lbl">Préférences</span>
           <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
-        <div id="smenu-prefs-body" style="display:none;padding:4px 14px 10px;background:rgba(0,0,0,.025)">
+        <div id="smenu-prefs-body" style="display:none;padding:6px 14px 12px;background:rgba(107,95,165,.07);border-left:3px solid #6B5FA5;margin:0">
           <div class="smenu-pref-row">
             <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
           </div>
@@ -15558,6 +15562,7 @@ function attachEvents(){
     const open = body.style.display === 'none';
     body.style.display = open ? '' : 'none';
     arrow.textContent = open ? '▼' : '▶';
+    if(open){ setTimeout(()=>{ const sc=document.querySelector('.settings-panel-content');if(sc)sc.scrollTop=sc.scrollHeight; },60); }
   });
 
   // Ligne 4 : accordéon Publier
@@ -15582,8 +15587,7 @@ function attachEvents(){
 
   // Export MIDI
   document.getElementById('smenu-midi-export').addEventListener('click',()=>{
-    toggleSettingsPanel(false);
-    openMidiExportModal();
+    openMidiExportModal(); // modal z-index:301 > panel z-index:103, panel reste ouvert derrière
   });
   document.getElementById('midi-modal-close').addEventListener('click',closeMidiExportModal);
   document.getElementById('midi-overlay').addEventListener('click',closeMidiExportModal);
