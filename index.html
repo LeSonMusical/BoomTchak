@@ -1749,7 +1749,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.2</span>
+    <span class="app-version">v3.25.3</span>
   </div>
 </div>
 
@@ -1957,7 +1957,16 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
             <span id="pref-audio-offset-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:36px;text-align:right" title="Tap : réinitialiser à 0">0 ms</span>
           </div>
         </div>
-        <!-- 2. Thème -->
+        <!-- 2. Charger avec le groove -->
+        <div class="stp-row" id="stp-load-row">
+          <span class="stp-row-ico">🎵</span>
+          <span class="stp-row-lbl" style="font-size:11px">Charger avec le groove</span>
+          <div class="stp-theme-chips">
+            <button id="stp-chip-sons" class="stp-chip active">Sons</button>
+            <button id="stp-chip-tempo" class="stp-chip active">Tempo</button>
+          </div>
+        </div>
+        <!-- 3. Thème -->
         <div class="stp-row" id="smenu-theme-row">
           <span class="stp-row-ico" id="smenu-theme-ico">🌙</span>
           <span class="stp-row-lbl" id="smenu-theme-lbl">Thème</span>
@@ -1986,20 +1995,9 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
         </div>
         <div id="smenu-prefs-body" style="display:none;padding:6px 14px 12px;background:rgba(107,95,165,.07);border-left:3px solid #6B5FA5;margin:0">
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-sig"> Appliquer la signature du groove</label>
-          </div>
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl"><input type="checkbox" id="pref-apply-band"> Appliquer le band du groove</label>
-          </div>
-          <div class="smenu-pref-row">
-            <label class="smenu-pref-lbl" style="gap:6px">Chgt de métrique :
-              <select id="pref-sig-lock" class="smenu-select">
-                <option value="spm">SPM constant (croche)</option>
-                <option value="bpm">BPM constant (pulsation)</option>
-              </select>
-            </label>
-          </div>
+          <!-- pref-apply-sig / pref-apply-band / pref-sig-lock migrés en stp-load-row (v3.25.3) -->
+          <!-- ghosts pour compat localStorage -->
+          <input type="hidden" id="pref-apply-sig"><input type="hidden" id="pref-apply-band"><input type="hidden" id="pref-sig-lock">
           <div class="smenu-pref-row">
             <div class="smenu-pref-lbl" style="gap:6px">
               <span style="flex:1">Volume step doux (x) :</span>
@@ -3243,16 +3241,7 @@ function changeSig(id) {
   metroStepPos = 0; metroBeatPos = 0;
   if (playing && ac) { _syncMetroToGroove(); }
   setMetroDirty(false); _editingMetroPresetId = null;
-  if (prefs.sigChangeLock === 'bpm' && oldSig && oldSig.id !== currentSig.id) {
-    const slider = document.getElementById('bpm');
-    const oldPos = parseInt(slider.value);
-    const oldEq = oldSig.equivalence || 2;
-    const newEq = currentSig.equivalence || 2;
-    const oldBPM = Math.max(1, Math.round(posToBPM(oldPos) * oldEq)) / oldEq;
-    const newPos = spmToPos(Math.round(oldBPM * newEq));
-    slider.value = newPos;
-    _lastBpmPos = newPos;
-  }
+  // BPM ressenti constant par architecture (posToBPM indépendant de l'équivalence)
   updateBeatDisplay();
   const feltBeats = Math.max(2, Math.round(currentSig.nbDivisions * (8/(currentSig.beatUnit||4)) / (currentSig.equivalence||2)));
   _tapN = feltBeats;
@@ -3643,7 +3632,7 @@ let _pendingGrooveId=null; // groove en attente de démarrage au prochain cycle 
 let globalSpeedMult=1, pendingGlobalMult=1;
 let swingVal=0; // 0.0–1.0 : à 1.0 = shuffle ternaire parfait (décalage = 1/3 du step)
 let linearCycleStartTime=0; // référence temps absolue pour l'aiguille vue Cycle (jamais recalibrée)
-let prefs={applyGrooveSig:true,applyGrooveBand:true,sigChangeLock:'bpm',noWarnLastStep:false,audioOffset:0,softVel:0.33};
+let prefs={applyGrooveBand:true,applyGrooveTempo:true,noWarnLastStep:false,audioOffset:0,softVel:0.33};
 let schedTimerID=null, visualRafID=null;
 // Mini-VU (collapsed groove-view-bar)
 let _miniVuRafId=null;
@@ -4525,6 +4514,9 @@ function updateSmenuTheme(){
   // Sync chips du nouveau volet
   const cl=document.getElementById('stp-chip-light');const cd=document.getElementById('stp-chip-dark');
   if(cl)cl.classList.toggle('active',!isDark);if(cd)cd.classList.toggle('active',isDark);
+  // Sync chips chargement groove
+  document.getElementById('stp-chip-sons')?.classList.toggle('active',prefs.applyGrooveBand);
+  document.getElementById('stp-chip-tempo')?.classList.toggle('active',prefs.applyGrooveTempo);
 }
 
 let _localPendingCount = 0;
@@ -4637,7 +4629,7 @@ function _applyPendingGroove(){
     } else if(prefs.applyGrooveBand&&groove.band_defaut&&getBand(groove.band_defaut)){
       applyBand(groove.band_defaut);
     }
-    if(prefs.applyGrooveSig&&groove.signature){
+    if(groove.signature){ // signature toujours chargée (non-configurable)
       const sig=getSigFallback(groove.signature);
       if(sig){_suppressGrooveDirty=true;currentSig=sig;buildSigSelector();LAYERS.forEach((_,li)=>buildStepsDOM(li,state[li].wrapped));syncMetroControls();renderMetroPatternViz();updateBeatDisplay();_suppressGrooveDirty=false;}
     }
@@ -4731,7 +4723,7 @@ function applyGroove(grooveId){
   }
 
   // Appliquer la signature (si préférence activée) — avec fallback si preset supprimé
-  if(prefs.applyGrooveSig&&groove.signature){
+  if(groove.signature){
     const sig=getSigFallback(groove.signature);
     if(sig){
       _suppressGrooveDirty=true;
@@ -4775,6 +4767,12 @@ function applyGroove(grooveId){
       currentSig = { ...currentSig, equivalence: m.equivalence || m.felBeatSteps || currentSig.equivalence };
       updateBeatDisplay();
     }
+  }
+
+  // Appliquer le tempo sauvegardé (après sig+metro pour que spmToPos utilise la bonne équivalence)
+  if(prefs.applyGrooveTempo&&groove.tempo?.defaut){
+    const _bsl=document.getElementById('bpm');
+    if(_bsl){const _p=spmToPos(groove.tempo.defaut);_bsl.value=_p;_lastBpmPos=_p;updateBeatDisplay();}
   }
 
   globalSpeedMult=1;
@@ -15597,12 +15595,18 @@ function attachEvents(){
 
   // Préférences groove (checkboxes)
   {
-    const pSig = document.getElementById('pref-apply-sig');
-    const pBand = document.getElementById('pref-apply-band');
-    if(pSig){pSig.checked=prefs.applyGrooveSig;pSig.addEventListener('change',()=>{prefs.applyGrooveSig=pSig.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
-    if(pBand){pBand.checked=prefs.applyGrooveBand;pBand.addEventListener('change',()=>{prefs.applyGrooveBand=pBand.checked;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
-    const pSigLock=document.getElementById('pref-sig-lock');
-    if(pSigLock){pSigLock.value=prefs.sigChangeLock||'spm';pSigLock.addEventListener('change',()=>{prefs.sigChangeLock=pSigLock.value;localStorage.setItem('btk_prefs',JSON.stringify(prefs));});}
+    // stp-chip-sons et stp-chip-tempo remplacent pref-apply-band et ajoutent applyGrooveTempo
+    const _syncLoadChips=()=>{
+      document.getElementById('stp-chip-sons')?.classList.toggle('active',prefs.applyGrooveBand);
+      document.getElementById('stp-chip-tempo')?.classList.toggle('active',prefs.applyGrooveTempo);
+    };
+    _syncLoadChips();
+    document.getElementById('stp-chip-sons')?.addEventListener('click',e=>{
+      e.stopPropagation();prefs.applyGrooveBand=!prefs.applyGrooveBand;localStorage.setItem('btk_prefs',JSON.stringify(prefs));_syncLoadChips();
+    });
+    document.getElementById('stp-chip-tempo')?.addEventListener('click',e=>{
+      e.stopPropagation();prefs.applyGrooveTempo=!prefs.applyGrooveTempo;localStorage.setItem('btk_prefs',JSON.stringify(prefs));_syncLoadChips();
+    });
     const pAO=document.getElementById('pref-audio-offset'),pAOv=document.getElementById('pref-audio-offset-val'),pAOSel=document.getElementById('pref-ao-select');
     const _updateAO=()=>{
       const ms=parseInt(pAO.value);
@@ -15914,10 +15918,13 @@ function start(){
     state[li].doubleOn=gl.doubleOn||false;
   });
   if(prefs.applyGrooveBand&&randomGroove.band_defaut&&getBand(randomGroove.band_defaut)){applyBand(randomGroove.band_defaut);}
-  if(prefs.applyGrooveSig&&randomGroove.signature){
+  if(randomGroove.signature){
     _suppressGrooveDirty=true;
     changeSig(randomGroove.signature);
     _suppressGrooveDirty=false;
+  }
+  if(prefs.applyGrooveTempo&&randomGroove.tempo?.defaut){
+    const _rs=document.getElementById('bpm');if(_rs){const _rp=spmToPos(randomGroove.tempo.defaut);_rs.value=_rp;_lastBpmPos=_rp;updateBeatDisplay();}
   }
   globalSpeedMult=1;
   pendingGlobalMult=globalSpeedMult;
