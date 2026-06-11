@@ -582,6 +582,7 @@ body.dark-mode #encyclo-fixed-header{background:#252522;border-bottom-color:rgba
 #encyclo-panel .encyclo-content{max-height:none!important;overflow:visible!important}
 #encyclo-panel .btn-volet-encyclo{display:none!important}
 #encyclo-panel .encyclo-collapse-btn{display:none!important}
+#encyclo-panel .enc-close-btn{display:inline-block!important}
 /* Prevent accidental bar-background tap closing panel */
 #encyclo-panel .encyclo-bar{pointer-events:none}
 #encyclo-panel .encyclo-bar *{pointer-events:auto}
@@ -1749,7 +1750,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.5</span>
+    <span class="app-version">v3.25.6</span>
   </div>
 </div>
 
@@ -1939,11 +1940,15 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
     <div class="settings-panel-content" id="settings-panel-content">
       <!-- Vue racine -->
       <div id="stp-root-view">
-        <!-- 1. Thème (compact — chips uniquement) -->
-        <div class="stp-row" id="smenu-theme-row" style="padding:6px 14px">
-          <span style="font-size:15px">🖥</span>
-          <span class="stp-row-lbl" id="smenu-theme-lbl" style="font-size:11px;flex:1">Thème</span>
-          <button id="stp-btn-theme" class="stp-chip" style="margin-left:auto">🌙 Passer en sombre</button>
+        <!-- 0. Workflow — EN HAUT, visible si items en attente -->
+        <div class="stp-row stp-row-btn" id="stp-workflow-btn" style="display:none;border-bottom:2px solid rgba(107,95,165,.18)">
+          <span class="stp-row-lbl" id="stp-workflow-lbl" style="flex:1">Items à traiter</span>
+          <span id="stp-workflow-count" style="background:#6B5FA5;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px"></span>
+          <span class="stp-row-arr" style="margin-left:6px">→</span>
+        </div>
+        <!-- 1. Thème toggle (bouton centré, sans label) -->
+        <div class="stp-row" id="smenu-theme-row" style="padding:6px 14px;justify-content:center">
+          <button id="stp-btn-theme" class="stp-chip" style="font-size:12px;padding:5px 20px">🌙 Passer en mode sombre</button>
         </div>
         <!-- 2. Décalage audio -->
         <div class="stp-audio-section">
@@ -1965,10 +1970,9 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         </div>
         <!-- 3. Charger avec le groove -->
         <div class="stp-row" id="stp-load-row">
-          <span style="font-size:15px">🥁</span>
-          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove, changer :</span>
+          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove :</span>
           <div class="stp-theme-chips" style="gap:5px">
-            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🔊 Sons</button>
+            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🎵 Sons</button>
             <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">⏱ Tempo</button>
           </div>
         </div>
@@ -1976,23 +1980,13 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         <div class="stp-row stp-row-btn" id="smenu-midi-export">
           <span class="stp-row-ico">📤</span>
           <span class="stp-row-lbl">Export MIDI</span>
-          <span class="stp-row-arr">⬇</span>
         </div>
-        <!-- 4. Workflow (masqué si 0 items) -->
-        <div class="stp-row stp-row-btn" id="stp-workflow-btn" style="display:none">
-          <span class="stp-row-ico">↑</span>
-          <span class="stp-row-lbl" id="stp-workflow-lbl">Items à traiter</span>
-          <span id="stp-workflow-count"></span>
-          <span class="stp-row-arr">→</span>
-        </div>
-        <!-- 5. Préférences accordion -->
+        <!-- 5. Préférences accordion (sans icône) -->
         <div class="stp-row stp-row-btn" id="smenu-prefs-toggle">
-          <span class="stp-row-ico">⚙</span>
           <span class="stp-row-lbl">Préférences</span>
-          <span id="smenu-prefs-arrow" style="font-size:10px;color:#888">▶</span>
+          <span id="smenu-prefs-arrow" style="font-size:10px;color:#888;margin-left:auto">▶</span>
         </div>
         <div id="smenu-prefs-body" style="display:none;padding:8px 14px 12px 18px;background:rgba(107,95,165,.07);border-left:3px solid #6B5FA5;margin:0 12px 4px 12px;border-radius:0 0 6px 6px">
-          <!-- pref-apply-sig / pref-apply-band / pref-sig-lock migrés en stp-load-row (v3.25.3) -->
           <!-- ghosts pour compat localStorage -->
           <input type="hidden" id="pref-apply-sig"><input type="hidden" id="pref-apply-band"><input type="hidden" id="pref-sig-lock">
           <div class="smenu-pref-row">
@@ -2212,7 +2206,6 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div id="encyclo-panel" class="encyclo-panel">
   <div class="encyclo-panel-handle-wrap" id="encyclo-panel-handle">
     <div class="encyclo-panel-handle"></div>
-    <button id="encyclo-panel-close" style="position:absolute;right:10px;top:6px;background:none;border:1px solid #aaa;border-radius:4px;font-size:13px;color:#777;cursor:pointer;padding:1px 8px;line-height:1.5;z-index:1" title="Fermer">✕</button>
   </div>
   <div id="encyclo-fixed-header"></div>
   <div class="encyclo-panel-content" id="encyclo-panel-content">
@@ -4505,7 +4498,7 @@ function applyColorScheme(scheme){
 function updateSmenuTheme(){
   const isDark = document.body.classList.contains('dark-mode');
   const btn=document.getElementById('stp-btn-theme');
-  if(btn) btn.textContent = isDark ? '☀ Passer en clair' : '🌙 Passer en sombre';
+  if(btn) btn.textContent = isDark ? '☀ Passer en mode clair' : '🌙 Passer en mode sombre';
   document.getElementById('stp-chip-sons')?.classList.toggle('active',prefs.applyGrooveBand);
   document.getElementById('stp-chip-tempo')?.classList.toggle('active',prefs.applyGrooveTempo);
 }
@@ -8532,6 +8525,12 @@ function buildEncycloSection(){
     });
     lRight.appendChild(editBtn);
   }
+  const btnEncClose=document.createElement('button');
+  btnEncClose.className='enc-close-btn';
+  btnEncClose.title='Fermer';btnEncClose.textContent='✕';
+  btnEncClose.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:13px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;display:none';
+  btnEncClose.addEventListener('click',e=>{e.stopPropagation();toggleEncyclo(false);});
+  lRight.appendChild(btnEncClose);
   const btnCollapse=document.createElement('button');
   btnCollapse.className='encyclo-collapse-btn';
   btnCollapse.textContent=encycloOuvert?'˅':'˄';
@@ -10910,8 +10909,15 @@ function _initMetroPanelDrag(){
   window._syncTapP1Btn();
 }
 
+function _bandPanelFitH(){
+  const maxH=Math.floor(window.innerHeight*0.9)-60;
+  const hH=document.getElementById('band-panel-handle')?.offsetHeight||20;
+  const hdH=document.getElementById('band-fixed-header')?.offsetHeight||0;
+  const cH=document.getElementById('band-panel-content')?.scrollHeight||0;
+  return Math.min(hH+hdH+cH,maxH);
+}
 function _initBandPanelDrag(){
-  const CLOSE_THRESH=15;
+  const CLOSE_THRESH_PX=60;
   const panel=document.getElementById('band-panel');
   const hw=document.getElementById('band-panel-handle');
   if(!panel||!hw)return;
@@ -10921,23 +10927,24 @@ function _initBandPanelDrag(){
     e.preventDefault();
     hw.setPointerCapture(e.pointerId);
     _drag=true;_startY=e.clientY;
-    _startH=parseFloat(panel.style.height)||BAND_PANEL_H;
+    _startH=parseFloat(panel.style.height)||_bandPanelFitH();
     panel.style.transition='none';
   },{passive:false});
   hw.addEventListener('pointermove',e=>{
     if(!_drag)return;
     const dy=_startY-e.clientY;
-    const newH=Math.max(5,Math.min(92,_startH+dy/window.innerHeight*100));
-    panel.style.height=newH+'vh';
+    const maxH=Math.floor(window.innerHeight*0.92)-60;
+    const newH=Math.max(40,Math.min(maxH,_startH+dy));
+    panel.style.height=newH+'px';
   },{passive:false});
   function _snapOrClose(){
     if(!_drag)return;_drag=false;
-    const cur=parseFloat(panel.style.height)||BAND_PANEL_H;
-    if(cur<CLOSE_THRESH){
+    const cur=parseFloat(panel.style.height)||0;
+    if(cur<CLOSE_THRESH_PX){
       toggleBandPanel(false);
     } else {
       panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
-      panel.style.height=BAND_PANEL_H+'vh';
+      panel.style.height=_bandPanelFitH()+'px';
       setTimeout(()=>{panel.style.transition='';},280);
     }
   }
@@ -10945,7 +10952,7 @@ function _initBandPanelDrag(){
   hw.addEventListener('pointercancel',()=>{
     if(!_drag)return;_drag=false;
     panel.style.transition='height .25s cubic-bezier(.4,0,.2,1)';
-    panel.style.height=sonsOuvert?BAND_PANEL_H+'vh':'0';
+    panel.style.height=sonsOuvert?_bandPanelFitH()+'px':'0';
     setTimeout(()=>{panel.style.transition='';},280);
   });
 }
@@ -10992,7 +10999,9 @@ let _settingsPanelRO=null;
 function _resizeSettingsPanel(){
   if(!settingsPanelOuvert)return;
   const panel=document.getElementById('settings-panel');if(!panel)return;
+  panel.style.transition='none';
   panel.style.height=_settingsPanelFitH()+'px';
+  requestAnimationFrame(()=>{panel.style.transition='';});
 }
 function toggleSettingsPanel(open){
   settingsPanelOuvert=open;
@@ -11098,8 +11107,9 @@ function toggleBandPanel(open){
     panel.style.transition='none';
     panel.style.height='0';
     requestAnimationFrame(()=>{
+      const targetH=_bandPanelFitH();
       panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
-      panel.style.height=BAND_PANEL_H+'vh';
+      panel.style.height=targetH+'px';
       setTimeout(()=>{panel.style.transition='';},300);
     });
   }
@@ -11195,8 +11205,7 @@ function _initEncycloPanel(){
     panel.style.height=_encPanelH+'vh';
     setTimeout(()=>{panel.style.transition='';},300);
   });
-  const closeBtn=document.getElementById('encyclo-panel-close');
-  if(closeBtn)closeBtn.addEventListener('click',e=>{e.stopPropagation();toggleEncyclo(false);});
+  // bouton ✕ encyclo injecté dynamiquement dans buildEncycloSection() → lRight
 }
 
 // Ouverture rapide du volet Métro sur le sous-volet Unit uniquement (depuis barre info sig)
