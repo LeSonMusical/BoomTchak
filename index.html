@@ -420,7 +420,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .encyclo-collapse-btn:hover{opacity:.7}
 .encyclo-cat-lbl{font-size:10px;font-style:italic;color:#777;padding:1px 3px;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
 .encyclo-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
-#encyclo-panel .encyclo-l1-right{padding-right:44px}
+#encyclo-panel .encyclo-l1-right{padding-right:0}
 
 /* ─── LAYERS ─── */
 #layers-wrap{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0}
@@ -1723,6 +1723,9 @@ body.dark-mode .stp-row{border-bottom-color:rgba(255,255,255,.06);color:#e0ddd8}
 body.dark-mode .stp-row-btn:active{background:rgba(255,255,255,.06)}
 body.dark-mode .stp-chip{border-color:#555;color:#aaa}
 body.dark-mode .stp-audio-section{background:#1e1c2c;border-bottom-color:rgba(255,255,255,.06)}
+body.dark-mode input[type=range]::-webkit-slider-runnable-track{background:#3a3845;border-radius:2px}
+body.dark-mode input[type=range]::-moz-range-track{background:#3a3845;border-radius:2px}
+body.dark-mode input[type=range]{accent-color:#9980d4}
 body.dark-mode .stp-audio-head{color:#c8c4e8}
 body.dark-mode #stp-workflow-count{background:#1a3a30;color:#4DB899}
 .metro-equiv-menu{width:100%;font-size:12px;font-weight:700;padding:3px 4px;border:1.5px solid #ddd;border-radius:5px;background:#f5f4f0;color:#444;cursor:pointer;-webkit-appearance:none;appearance:none;text-align-last:center}
@@ -1750,7 +1753,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.6</span>
+    <span class="app-version">v3.25.7</span>
   </div>
 </div>
 
@@ -1970,9 +1973,9 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         </div>
         <!-- 3. Charger avec le groove -->
         <div class="stp-row" id="stp-load-row">
-          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove :</span>
+          <span class="stp-row-lbl" style="font-size:11px;flex:1">Avec le groove, changer :</span>
           <div class="stp-theme-chips" style="gap:5px">
-            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🎵 Sons</button>
+            <button id="stp-chip-sons" class="stp-chip active" title="Charger les sons/instruments avec le groove">🥁 Sons</button>
             <button id="stp-chip-tempo" class="stp-chip active" title="Charger le tempo avec le groove">⏱ Tempo</button>
           </div>
         </div>
@@ -1990,11 +1993,11 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <!-- ghosts pour compat localStorage -->
           <input type="hidden" id="pref-apply-sig"><input type="hidden" id="pref-apply-band"><input type="hidden" id="pref-sig-lock">
           <div class="smenu-pref-row">
-            <div class="smenu-pref-lbl" style="gap:6px">
-              <span style="flex:1">Volume step doux (x) :</span>
-              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:80px;accent-color:#6B5FA5">
+            <div class="smenu-pref-lbl" style="gap:6px;flex-wrap:nowrap">
+              <span style="flex:1;white-space:nowrap">Intensité des sons doux :</span>
+              <input type="range" id="pref-soft-vel" min="5" max="80" value="33" step="1" style="width:70px;accent-color:#6B5FA5;flex-shrink:0">
+              <span id="pref-soft-vel-val" style="cursor:pointer;font-size:10px;color:#6B5FA5;min-width:42px;text-align:right;flex-shrink:0" title="Tap : réinitialiser à 33%">33% · Moyen</span>
             </div>
-            <span id="pref-soft-vel-val" style="display:block;text-align:center;cursor:pointer;font-size:10px;color:#6B5FA5" title="Tap : réinitialiser à 33%">33% · Moyen</span>
           </div>
         </div>
         <!-- 6. Section auth -->
@@ -10995,6 +10998,7 @@ function _settingsPanelFitH(){
   const cH=document.getElementById('settings-panel-content')?.scrollHeight||200;
   return Math.min(hH+hdH+cH,maxH);
 }
+let _bandPanelRO=null;
 let _settingsPanelRO=null;
 function _resizeSettingsPanel(){
   if(!settingsPanelOuvert)return;
@@ -11099,6 +11103,7 @@ function toggleBandPanel(open){
   const panel=document.getElementById('band-panel');
   if(!panel)return;
   if(!open){
+    if(_bandPanelRO){_bandPanelRO.disconnect();_bandPanelRO=null;}
     panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
     panel.style.height='0';
     setTimeout(()=>{panel.style.transition='';},300);
@@ -11110,7 +11115,20 @@ function toggleBandPanel(open){
       const targetH=_bandPanelFitH();
       panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
       panel.style.height=targetH+'px';
-      setTimeout(()=>{panel.style.transition='';},300);
+      setTimeout(()=>{
+        panel.style.transition='';
+        const content=document.getElementById('band-panel-content');
+        if(content&&window.ResizeObserver){
+          _bandPanelRO=new ResizeObserver(()=>{
+            if(!sonsOuvert)return;
+            const p=document.getElementById('band-panel');if(!p)return;
+            p.style.transition='none';
+            p.style.height=_bandPanelFitH()+'px';
+            requestAnimationFrame(()=>{p.style.transition='';});
+          });
+          _bandPanelRO.observe(content);
+        }
+      },300);
     });
   }
   const btnV=document.getElementById('btn-vol');
