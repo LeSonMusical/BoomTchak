@@ -54,6 +54,18 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - **Mini-anneaux par layer** : inutiles quand Groove.view est visible au-dessus ; **affichés seulement en état C** (Layers max).
 - **Vue "mesure iso-métrique" découverte par accident** (cellules de step à largeur proportionnelle à la durée, flex) : intermédiaire entre la vue Cycle (linéaire, 1 tête de lecture) et la vue Step.seq (pas égaux, 3 têtes). **À garder de côté comme candidate 5e vue.**
 
+### Retours Lamberio sur maquette it.2 → décisions it.3 (2026-06-12 nuit)
+- **⚠️ Design maquette ≠ design final** : les partis pris visuels de la maquette (plus rond, plus gros, couleurs différentes) ne sont a priori PAS à conserver. Les choix validés devront être appliqués **au design de la version actuelle** de l'app. La GlobalBar de la maquette est jugée moche.
+- **Toggle ☰ édition / ▥ totems déplacé sur la LayerControlBar** (extrémité droite).
+- **Vue classic (édition), boutons par layer** : presets ◀▶ + 💾 save + ↺ retour + i + 🎲 random + ⏺ rec.
+- **Mute layer → état désactivé visible partout** : segment LCB grisé + couche grisée dans les vues layer.
+- **Overlays drag : sur les barres (Global/Layer) uniquement, PAS sur les éléments des totems** (le feedback des pads = le pattern lui-même).
+- **Cohérence gestuelle : densité toujours en X** (comme le drag ↔ de la LCB) → pads : A = densité↔ · géométrie↕ ; B = liant↔ · calage↕.
+- **Labels d'axes des pads** : noms en texte au milieu des axes vertical/horizontal, sans icônes.
+- **Totems adaptatifs** : layer plié (tap LCB) = totem masqué, les autres s'élargissent (pads plus grands à 2 ou 1 layer).
+- **Placement GlobalBar = vrai sujet ouvert** : idéal = correspondance 1:1 entre les 3 pastilles et les 3 segments LCB + proximité tempo/métronome. **Proposition it.3 à valider : pastilles VU/mute déplacées DANS les segments LCB** (à gauche de chaque segment) ; la GCB devient ▶ ⏱ tempo 🔊.
+- **Question ouverte (redondance double vue)** : quel sens d'avoir une step view en haut (Groove.view) ET les lignes en bas ? Piste de reclassification : Motif/Mesure/Cycle = vues de **contexte** (vivent en état Split au-dessus des lignes) ; Step.seq = une **présentation de Layers.view** (pas une Groove.view — c'est déjà le cas techniquement : `_moveRow2ToStepView`). À trancher.
+
 ### Chantiers suivants (après les barres v3.26)
 - **Vue verticale type console de mixage + redesign du sous-volet mod** (sliders, pad 2D plus graphique et gestuel) — chantier suivant
 - **Gestes sur le canvas — à creuser ultérieurement** : appui court/long sur step (édition directe), drag radial (rotation/shift), pinch (length ?), zoom… Conflits gestuels (scroll, tap accidentel pendant l'écoute) à prototyper avant tout engagement. Le hit-test circulaire existe déjà (`circleHitTest`).
@@ -180,7 +192,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.16** (session 2026-06-12)
+**v3.25.17** (session 2026-06-12)
 
 ---
 
@@ -247,6 +259,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.25.17 | Maquette it.3 (retours Lamberio) : toggle ☰/▥ sur la LCB ; pastilles VU/mute dans les segments LCB (proposition correspondance 1:1) — GCB = ▶ ⏱ tempo 🔊 ; mute = état désactivé (segment+couches) ; pads densité↔/géo↕ et liant↔/calage↕ (densité en X partout) ; labels d'axes texte sans icônes ; pas d'overlay sur les totems ; totem plié masqué (les autres s'élargissent) ; boutons vue classic = presets+💾+🎲+i+⏺+↺ |
 | v3.25.16 | Maquette it.2 (retours Lamberio) : Play dans GCB ; LCB sans calage (↔ densité à l'essai) ; vue lignes avec presets ◀▶ + 🎲 + i + ↺ + tête de lecture ; totems 2 pads (squelette densité↕·géo↔ / chair liant↕·calage↔) + 🎲pos/🎲acc ; mini-anneaux seulement en état C ; vue "mesure iso-métrique" notée candidate 5e vue |
 | v3.25.15 | Maquette jetable `maquette_v326.html` (GlobalControlBar séparatrice + splitter 3 états, LayerControlBar grain/rotation, totems 4 axes, audio synthèse) ; décisions UX v3.26 actées dans CLAUDE.md |
 | v3.23.17 | Overlay Sons restauré sur `rib-son-btn` (700ms) ; durée overlay Métronome réduite 1300→700ms ; scroll page bloqué dans tous les volets fixes (`touch-action:none` + `overscroll-behavior:contain` + handler `touchmove:preventDefault`) ; clôture session 2026-06-10 |
