@@ -369,6 +369,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .groove-fam-btn{background:transparent;border:none;cursor:pointer;font-size:10px;font-style:italic;color:#9A7020;padding:1px 3px;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
 .groove-fam-btn:hover{opacity:1}
 .groove-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
+.groove-l1-center .btn-dice-rng{display:inline-flex;opacity:.65}
 /* Barre de vue — top du canvas (circle) ou top des step rows (linear) */
 #canvas-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:3px 6px;flex-shrink:0}
 #linear-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:2px 0 4px;width:100%}
@@ -420,6 +421,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .encyclo-collapse-btn:hover{opacity:.7}
 .encyclo-cat-lbl{font-size:10px;font-style:italic;color:#777;padding:1px 3px;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.75}
 .encyclo-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
+.encyclo-l1-center .btn-dice-rng{display:inline-flex;opacity:.65}
 #encyclo-panel .encyclo-l1-right{padding-right:0}
 
 /* ─── LAYERS ─── */
@@ -1677,15 +1679,20 @@ body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-colo
 .band-panel-handle{width:44px;height:4px;background:#ccc;border-radius:2px;transition:background .15s}
 .band-panel-handle-wrap:hover .band-panel-handle{background:#aaa}
 #band-fixed-header{flex-shrink:0;background:#fff;overflow:hidden}
-.band-bandeau{display:flex;align-items:center;padding:5px 8px;gap:4px;border-bottom:1px solid rgba(0,0,0,.08);background:#eef4f8}
-.band-bandeau-center{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;min-width:0;overflow:hidden}
-.band-bandeau .sbar-preset-name{color:#0A2A3A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.band-bandeau{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.08);background:#eef4f8}
+.band-bandeau-left{display:flex;align-items:center;gap:3px;justify-content:flex-start}
+.band-bandeau-center{display:flex;align-items:center;justify-content:center;gap:2px;min-width:0;overflow:hidden}
+.band-bandeau-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+.band-bandeau-lbl{font-size:9px;font-weight:600;color:#6a8fa5;white-space:nowrap;opacity:.75;flex-shrink:0;line-height:1.2}
+.band-bandeau-center .btn-dice-rng{display:inline-flex;opacity:.65}
+.band-bandeau .sbar-preset-name{color:#0A2A3A;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .band-bandeau .sbar-nav-btn{color:#2d5f80}
 .band-panel-content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:0;padding:4px 6px 8px}
 body.dark-mode .band-panel{background:#252522;border-top-color:#2d5f80;box-shadow:0 -4px 20px rgba(0,0,0,.38)}
 body.dark-mode #band-fixed-header{background:#252522}
 body.dark-mode .band-panel-handle{background:#444}
 body.dark-mode .band-bandeau{background:#1e2830;border-bottom-color:rgba(255,255,255,.07)}
+body.dark-mode .band-bandeau-lbl{color:#7aabcc}
 body.dark-mode .band-bandeau .sbar-preset-name{color:#8AB8D8}
 body.dark-mode .band-bandeau .sbar-nav-btn{color:#7ab0cc}
 /* ─── VOLET RÉGLAGES — bottom sheet (v3.25) ─── */
@@ -1766,7 +1773,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.10</span>
+    <span class="app-version">v3.25.11</span>
   </div>
 </div>
 
@@ -1789,8 +1796,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
           <button class="sbar-nav-btn" id="metro-sig-prev">◀</button>
           <button class="sbar-preset-name" id="sig-sel-btn">4/4</button>
           <button class="sbar-nav-btn" id="metro-sig-next">▶</button>
+          <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset">💾</button>
         </div>
-        <button class="btn-sec-save" id="btn-metro-save" title="Sauvegarder comme preset" style="margin-right:2px">💾</button>
         <button class="btn-metro-enc-info" id="btn-metro-enc-info" title="Article encyclopédie" style="display:none;font-size:11px;font-weight:700;padding:0 7px;border:1px solid var(--c-encyclo,#4a6d40);border-radius:4px;color:var(--c-encyclo,#4a6d40);background:transparent;cursor:pointer">i</button>
         <button id="metro-panel-close" style="background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;margin-left:2px" title="Fermer">✕</button>
       </div>
@@ -6220,10 +6227,16 @@ function buildBandSection(){
   const bandeau=document.createElement('div');
   bandeau.className='band-bandeau';
 
-  // Centre : ◀ [preset Band] ▶
+  // Gauche : 🥁 Kit
+  const bLeft=document.createElement('div');bLeft.className='band-bandeau-left';
+  const bLbl=document.createElement('span');bLbl.className='band-bandeau-lbl';bLbl.textContent='🥁 Kit';
+  bLeft.appendChild(bLbl);
+  bandeau.appendChild(bLeft);
+
+  // Centre : 🎲 ◀ [preset Band] ▶ 💾
   const center=document.createElement('div');center.className='band-bandeau-center';
-  const navPrev=document.createElement('button');navPrev.className='sbar-nav-btn';navPrev.textContent='◀';navPrev.title='Band précédent';
   const curBand=(packCours.bands||[]).find(b=>b.id===currentBandId);
+  const navPrev=document.createElement('button');navPrev.className='sbar-nav-btn';navPrev.textContent='◀';navPrev.title='Band précédent';
   const presetBtn=document.createElement('button');
   presetBtn.id='band-preset-btn';presetBtn.className='sbar-preset-name';
   presetBtn.textContent=curBand?curBand.nom+(curBand.source==='teacher'?' 👤':''):'—';
@@ -6250,16 +6263,27 @@ function buildBandSection(){
   };
   navPrev.addEventListener('click',()=>_navBand(-1));
   navNext.addEventListener('click',()=>_navBand(1));
-  center.appendChild(navPrev);center.appendChild(presetBtn);center.appendChild(navNext);
-  bandeau.appendChild(center);
-
-  // Droite : 💾 ⓘ ✕
   const saveBtn=document.createElement('button');
   saveBtn.id='save-btn-band';saveBtn.className='btn-sec-save';
   saveBtn.textContent='💾';saveBtn.title='Sauvegarder le band';
   saveBtn.addEventListener('click',()=>openBandSavePop(saveBtn));
-  bandeau.appendChild(saveBtn);
+  const btnDiceBand=document.createElement('button');
+  btnDiceBand.className='btn-dice-rng';btnDiceBand.title='Band aléatoire';btnDiceBand.textContent='🎲';
+  btnDiceBand.addEventListener('click',e=>{
+    e.stopPropagation();
+    const list=(packCours.bands||[]).filter(b=>!b.localDeletePending);
+    if(list.length<2)return;
+    const famId=(packCours.bands||[]).find(b=>b.id===currentBandId)?.familles?.[0];
+    const inFam=famId?list.filter(b=>b.familles?.includes(famId)):list;
+    const pool=(inFam.length>1?inFam:list).filter(b=>b.id!==currentBandId);
+    if(!pool.length)return;
+    _bandOnSelect(pool[Math.floor(Math.random()*pool.length)].id);
+  });
+  center.appendChild(btnDiceBand);center.appendChild(navPrev);center.appendChild(presetBtn);center.appendChild(navNext);center.appendChild(saveBtn);
+  bandeau.appendChild(center);
 
+  // Droite : ⓘ ✕
+  const bRight=document.createElement('div');bRight.className='band-bandeau-right';
   const infoBtn=document.createElement('button');
   infoBtn.className='btn-metro-enc-info';infoBtn.id='btn-band-enc-info';
   infoBtn.textContent='i';infoBtn.title='Article encyclopédie';
@@ -6269,14 +6293,14 @@ function buildBandSection(){
     infoBtn.style.display='';
     infoBtn.addEventListener('click',e=>{e.stopPropagation();showEncycloEntry(_bandEncKey);if(!encycloOuvert)toggleEncyclo(true);});
   }
-  bandeau.appendChild(infoBtn);
-
+  bRight.appendChild(infoBtn);
   const closeBtn=document.createElement('button');
   closeBtn.id='band-panel-close';
-  closeBtn.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;margin-left:2px';
+  closeBtn.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:12px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0';
   closeBtn.title='Fermer';closeBtn.textContent='✕';
   closeBtn.addEventListener('click',e=>{e.stopPropagation();toggleBandPanel(false);});
-  bandeau.appendChild(closeBtn);
+  bRight.appendChild(closeBtn);
+  bandeau.appendChild(bRight);
 
   cont.appendChild(bandeau);
 }
@@ -6300,7 +6324,7 @@ function buildGrooveSection(){
   const l1=document.createElement('div');
   l1.className='groove-l1';
 
-  // Groupe gauche : + nouveau + dé
+  // Groupe gauche : + nouveau seulement
   const gLeft=document.createElement('div');gLeft.className='groove-l1-left';
   const btnNewGroove=document.createElement('button');
   btnNewGroove.className='btn-new-groove';btnNewGroove.title='Nouveau groove';btnNewGroove.textContent='＋';
@@ -6308,27 +6332,27 @@ function buildGrooveSection(){
     const nouvFam=(packCours.familles||[]).find(f=>f.nom&&f.nom.includes('Nouveau'));
     openPresetModal({type:'groove',currentId:currentGrooveId,label:'Groove',accent:'#8B6914',bg:'#faf3e0',onSelect:_grooveOnSelect,famFilter:nouvFam?.id??'all'});
   });
+  gLeft.appendChild(btnNewGroove);
+
+  // Groupe centre : 🎲 ◀ nom ▶ 💾
+  const gCenter=document.createElement('div');gCenter.className='groove-l1-center';
   const btnDiceGroove=document.createElement('button');
   btnDiceGroove.className='btn-dice-rng';btnDiceGroove.title='Groove aléatoire';btnDiceGroove.textContent='🎲';
-  gLeft.appendChild(btnNewGroove);gLeft.appendChild(btnDiceGroove);
-
-  // Groupe centre : ◀ nom ▶
-  const gCenter=document.createElement('div');gCenter.className='groove-l1-center';
   const btnPrev=document.createElement('button');
   btnPrev.className='groove-nav-btn';btnPrev.id='groove-nav-prev';btnPrev.textContent='◀';btnPrev.title='Groove précédent';
   const groovePresetBtn=document.createElement('button');
   groovePresetBtn.id='groove-preset-btn';groovePresetBtn.className='groove-name-btn';
   const btnNext=document.createElement('button');
   btnNext.className='groove-nav-btn';btnNext.id='groove-nav-next';btnNext.textContent='▶';btnNext.title='Groove suivant';
-  gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);
-
-  // Groupe droit : 💾 i
-  const gRight=document.createElement('div');gRight.className='groove-l1-right';
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
+  gCenter.appendChild(btnDiceGroove);gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);gCenter.appendChild(saveBtnGroove);
+
+  // Groupe droit : i seulement
+  const gRight=document.createElement('div');gRight.className='groove-l1-right';
   const btnI=document.createElement('button');
   btnI.className='btn-info-ico';btnI.id='groove-info-btn';btnI.textContent='i';
-  gRight.appendChild(saveBtnGroove);gRight.appendChild(btnI);
+  gRight.appendChild(btnI);
   // Chevron Groove.view (déplacé à droite, position absolue) — affichage canvas/vue
   const btnCollapse=document.createElement('button');
   btnCollapse.className='gvb-collapse-btn'+(layersOuverts?' open':'');
@@ -8457,8 +8481,20 @@ function buildEncycloSection(){
   // L1 : grid 1fr auto 1fr
   const l1=document.createElement('div');l1.className='encyclo-l1';
 
-  // Gauche : 🎲
+  // Gauche : spacer (grid 1fr auto 1fr nécessite 3 enfants)
   const lLeft=document.createElement('div');lLeft.className='encyclo-l1-left';
+  l1.appendChild(lLeft);
+
+  // Centre : 🎲 ◀ NOM ▶ 💾
+  const lCenter=document.createElement('div');lCenter.className='encyclo-l1-center';
+  const _getEncList=()=>{
+    const list=[];
+    ENCYCLO_MISC.forEach(m=>{if(currentMode==='tx'||hasEncycloContent(m.id))list.push({id:m.id});});
+    (packCours.encycloIndex||[]).forEach(ei=>{list.push({id:ei.id});});
+    packCours.grooves.forEach(g=>{if(currentMode==='tx'||hasEncycloContent(g.id))list.push({id:g.id});});
+    packCours.patterns.forEach(p=>{const k=p.encyclo_ref||p.id;if(currentMode==='tx'||hasEncycloContent(k))list.push({id:k});});
+    return list;
+  };
   const btnDiceEnc=document.createElement('button');
   btnDiceEnc.className='btn-dice-rng';btnDiceEnc.title='Article aléatoire';btnDiceEnc.textContent='🎲';
   btnDiceEnc.addEventListener('click',e=>{
@@ -8470,19 +8506,6 @@ function buildEncycloSection(){
     const key=list[Math.floor(Math.random()*list.length)];
     showEncycloEntry(key);if(!encycloOuvert)toggleEncyclo(true);
   });
-  lLeft.appendChild(btnDiceEnc);
-  l1.appendChild(lLeft);
-
-  // Centre : ◀ NOM ▶
-  const lCenter=document.createElement('div');lCenter.className='encyclo-l1-center';
-  const _getEncList=()=>{
-    const list=[];
-    ENCYCLO_MISC.forEach(m=>{if(currentMode==='tx'||hasEncycloContent(m.id))list.push({id:m.id});});
-    (packCours.encycloIndex||[]).forEach(ei=>{list.push({id:ei.id});});
-    packCours.grooves.forEach(g=>{if(currentMode==='tx'||hasEncycloContent(g.id))list.push({id:g.id});});
-    packCours.patterns.forEach(p=>{const k=p.encyclo_ref||p.id;if(currentMode==='tx'||hasEncycloContent(k))list.push({id:k});});
-    return list;
-  };
   const btnPrev=document.createElement('button');btnPrev.id='enc-btn-prev';btnPrev.className='btn-enc-nav';btnPrev.textContent='◄';btnPrev.title='Article précédent (historique)';
   btnPrev.disabled=_encHistoryIdx<=0;
   btnPrev.addEventListener('click',e=>{
@@ -8507,11 +8530,6 @@ function buildEncycloSection(){
     e.stopPropagation();
     if(_encHistoryIdx<_encHistory.length-1){_encHistoryIdx++;showEncycloEntry(_encHistory[_encHistoryIdx],true);if(!encycloOuvert)toggleEncyclo(true);}
   });
-  lCenter.appendChild(btnPrev);lCenter.appendChild(nameBtn);lCenter.appendChild(btnNext);
-  l1.appendChild(lCenter);
-
-  // Droite : 💾 ✏️ ˅
-  const lRight=document.createElement('div');lRight.className='encyclo-l1-right';
   let editBtn=null;
   const saveBtnEnc=document.createElement('button');
   saveBtnEnc.id='save-btn-encyclo';saveBtnEnc.className='btn-sec-save';saveBtnEnc.textContent='💾';
@@ -8528,7 +8546,11 @@ function buildEncycloSection(){
     if(authProfile?.role==='mx')showToast('Modifications locales enregistrées — publiez via ···','info');
     else showToast('Encyclopédie sauvegardée localement — soumettez via ···','info');
   });
-  lRight.appendChild(saveBtnEnc);
+  lCenter.appendChild(btnDiceEnc);lCenter.appendChild(btnPrev);lCenter.appendChild(nameBtn);lCenter.appendChild(btnNext);lCenter.appendChild(saveBtnEnc);
+  l1.appendChild(lCenter);
+
+  // Droite : ✏️ ✕
+  const lRight=document.createElement('div');lRight.className='encyclo-l1-right';
   if(currentMode==='tx'||authProfile?.role==='mx'){
     editBtn=document.createElement('button');
     editBtn.className='btn-enc-edit'+(encEditMode?' active':'');
@@ -8549,14 +8571,6 @@ function buildEncycloSection(){
   btnEncClose.style.cssText='background:none;border:1px solid #bbb;border-radius:4px;font-size:13px;color:#777;cursor:pointer;padding:1px 7px;line-height:1.5;flex-shrink:0;display:none';
   btnEncClose.addEventListener('click',e=>{e.stopPropagation();toggleEncyclo(false);});
   lRight.appendChild(btnEncClose);
-  const btnCollapse=document.createElement('button');
-  btnCollapse.className='encyclo-collapse-btn';
-  btnCollapse.textContent=encycloOuvert?'˅':'˄';
-  btnCollapse.addEventListener('click',e=>{
-    e.stopPropagation();
-    toggleEncyclo(!encycloOuvert);
-  });
-  lRight.appendChild(btnCollapse);
   l1.appendChild(lRight);
   header.appendChild(l1);
 
