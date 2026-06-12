@@ -37,6 +37,14 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Le **play reste dans la bottom-bar** (qui garde son rôle de NavBar)
 - Question ouverte en cours : où et comment disposer les barres, notamment la LayerControlBar
 
+### Décisions actées — Audit UX session 2026-06-12 (soir, validé par Lamberio)
+- **GlobalControlBar = barre séparatrice "vivante"** entre Groove.view (haut) et Layers.view (bas) : métro on/off + tempo (drag) + 3 pastilles mini-VU fusionnées avec le mute par layer + son global on/off + poignée splitter. Ne se replie jamais.
+- **Modèle 3 états du splitter** (le splitter règle l'**espace**, pas le mode) : `A Groove max` (canvas plein, pas de volets layer) / `B Split` (défaut — canvas + lignes steps, accordéon exclusif des volets) / `C Layers max` (canvas replié, pastilles VU = résumé vivant). Drag de la GlobalControlBar avec snap sur 3 positions.
+- **LayerControlBar** : mini-barre 3 segments colorés, placée sous la GlobalControlBar, toujours visible. Par segment : tap = plier/déplier le volet layer ; **drag vertical = échelle de grain iso-durée** (4♩ ↔ 8♪ ↔ 12♪T ↔ 16♬ ↔ 24♬T ↔ 32 — change nb pas + unité ensemble à durée de cycle constante ; le ternaire est un barreau de l'échelle) ; **drag horizontal = rotation/décalage du motif**. Affiche `NbPas·unité`. Le length pur (polymétrie) reste dans le volet déplié. Variante "segments sur les flancs du cercle" (vue circulaire) = raffinement responsive à prototyper plus tard.
+- **Modèle 4 axes "squelette & chair"** pour le mod gestuel (validé) : 1. **Densité** du squelette (nb de X) · 2. **Géométrie** (groupé ↔ équilibré/euclidien, interne a-métrique) · 3. **Calage** (rotation → perçu comme sur-le-temps ↔ contretemps, externe métrique) · 4. **Remplissage/liant** (densité des ghosts x dans les trous). L'accent n'est plus un paramètre : c'est la frontière squelette/chair. Chaque axe = un phénomène audible nommable + un article encyclo. Axes = lentilles déterministes et réversibles (ancre ↺ vers motif d'origine).
+- **Totems verticaux** (mod gestuel, 1 colonne par layer : mini-anneau + pad 2D densité↕/calage↔ + jauges géométrie/liant + ↺) : **découplés du splitter** — toggle explicite `☰ lignes / ▥ totems` dans Layers.view. **La vue mod actuelle est conservée de côté** (les totems viennent en plus, pas en remplacement).
+- **Maquette jetable** : `maquette_v326.html` (fichier autonome à la racine, audio synthèse incluse) pour tester les gestes au pouce sur smartphone via GitHub Pages. Ne fait pas partie de l'app.
+
 ### Chantiers suivants (après les barres v3.26)
 - **Vue verticale type console de mixage + redesign du sous-volet mod** (sliders, pad 2D plus graphique et gestuel) — chantier suivant
 - **Gestes sur le canvas — à creuser ultérieurement** : appui court/long sur step (édition directe), drag radial (rotation/shift), pinch (length ?), zoom… Conflits gestuels (scroll, tap accidentel pendant l'écoute) à prototyper avant tout engagement. Le hit-test circulaire existe déjà (`circleHitTest`).
@@ -163,7 +171,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.14** (session 2026-06-12)
+**v3.25.15** (session 2026-06-12)
 
 ---
 
@@ -230,6 +238,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.25.15 | Maquette jetable `maquette_v326.html` (GlobalControlBar séparatrice + splitter 3 états, LayerControlBar grain/rotation, totems 4 axes, audio synthèse) ; décisions UX v3.26 actées dans CLAUDE.md |
 | v3.23.17 | Overlay Sons restauré sur `rib-son-btn` (700ms) ; durée overlay Métronome réduite 1300→700ms ; scroll page bloqué dans tous les volets fixes (`touch-action:none` + `overscroll-behavior:contain` + handler `touchmove:preventDefault`) ; clôture session 2026-06-10 |
 | v3.23.16 | Toprow Battue 3 colonnes égales (`flex:1`) centrées ; jauge vol 90% de colonne ; « Subdivision » en entier ; metro-off → vol+subdiv inactifs ; bouton ✕ déplacé du handle vers bandeau (même ligne preset) |
 | v3.23.15 | Tap overlay masqué au lancement (`_dragOverlay.hide()` dans `_tapLaunchTimer`) ; jauges accent verticales → horizontales fines (5px, sans valeur) ; phrase « Tempo établi après [select] taps » au-dessus du TAP |
