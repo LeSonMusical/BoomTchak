@@ -1773,7 +1773,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.12</span>
+    <span class="app-version">v3.25.13</span>
   </div>
 </div>
 
@@ -6279,7 +6279,36 @@ function buildBandSection(){
     if(!pool.length)return;
     _bandOnSelect(pool[Math.floor(Math.random()*pool.length)].id);
   });
-  center.appendChild(btnDiceBand);center.appendChild(navPrev);center.appendChild(presetBtn);center.appendChild(navNext);center.appendChild(saveBtn);
+  // ✨ Kit au hasard : nouveau preset + params aléatoires sur les 3 layers
+  const globalMagicBtn=document.createElement('button');
+  globalMagicBtn.className='btn-sec-magic';
+  globalMagicBtn.style.cssText='font-size:15px;padding:2px 5px;opacity:.75;flex-shrink:0;visibility:visible;pointer-events:auto';
+  globalMagicBtn.textContent='✨';
+  globalMagicBtn.title='Kit au hasard — nouveau preset + params aléatoires pour chaque layer';
+  globalMagicBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const _keys=['low','high','noise'];
+    _keys.forEach((k,li)=>{
+      const ss=soundState[li];
+      const _curFamIds=getSoundPreset(ss.soundPresetId)?.familles_ids||[];
+      const _pool=(packCours.soundPresets||[]).filter(sp=>
+        !sp.localDeletePending&&sp.id!==ss.soundPresetId&&
+        (_curFamIds.length===0||sp.familles_ids?.some(f=>_curFamIds.includes(f)))
+      );
+      if(_pool.length){
+        const sp=_pool[Math.floor(Math.random()*_pool.length)];
+        const prevVol=ss.vol;
+        ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=prevVol;ss.atk=sp.atk??0.0;
+        soundDirty[k]=false;
+      }
+      ss.pitch=normToPitch(Math.random(),ss.soundId);
+      ss.atk=Math.random()*0.3;
+      ss.env=0.05+Math.random()*0.75;
+      setSoundDirtySlot(k,true);
+    });
+    setBandDirty(true);buildSoundPanel();
+  });
+  center.appendChild(btnDiceBand);center.appendChild(navPrev);center.appendChild(presetBtn);center.appendChild(navNext);center.appendChild(saveBtn);center.appendChild(globalMagicBtn);
   bandeau.appendChild(center);
 
   // Droite : ⓘ ✕
@@ -6294,39 +6323,6 @@ function buildBandSection(){
     infoBtn.addEventListener('click',e=>{e.stopPropagation();showEncycloEntry(_bandEncKey);if(!encycloOuvert)toggleEncyclo(true);});
   }
   bRight.appendChild(infoBtn);
-
-  // ✨ Kit au hasard : nouveaux presets + params aléatoires sur les 3 layers
-  const globalMagicBtn=document.createElement('button');
-  globalMagicBtn.className='btn-sec-magic';
-  globalMagicBtn.style.cssText='font-size:15px;padding:2px 5px;opacity:.75;flex-shrink:0';
-  globalMagicBtn.textContent='✨';
-  globalMagicBtn.title='Kit au hasard — nouveau preset + params aléatoires pour chaque layer';
-  globalMagicBtn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const _keys=['low','high','noise'];
-    _keys.forEach((k,li)=>{
-      const ss=soundState[li];
-      // 🎲 Nouveau preset aléatoire dans la même famille (si disponible)
-      const _curFamIds=getSoundPreset(ss.soundPresetId)?.familles_ids||[];
-      const _pool=(packCours.soundPresets||[]).filter(sp=>
-        !sp.localDeletePending&&sp.id!==ss.soundPresetId&&
-        (_curFamIds.length===0||sp.familles_ids?.some(f=>_curFamIds.includes(f)))
-      );
-      if(_pool.length){
-        const sp=_pool[Math.floor(Math.random()*_pool.length)];
-        const prevVol=ss.vol;
-        ss.soundPresetId=sp.id;ss.soundId=sp.soundId;ss.pitch=sp.pitch;ss.env=sp.env??0.3;ss.vol=prevVol;ss.atk=sp.atk??0.0;
-        soundDirty[k]=false;
-      }
-      // ✨ Params aléatoires par-dessus
-      ss.pitch=normToPitch(Math.random(),ss.soundId);
-      ss.atk=Math.random()*0.3;
-      ss.env=0.05+Math.random()*0.75;
-      setSoundDirtySlot(k,true);
-    });
-    setBandDirty(true);buildSoundPanel();
-  });
-  bRight.appendChild(globalMagicBtn);
 
   const closeBtn=document.createElement('button');
   closeBtn.id='band-panel-close';
