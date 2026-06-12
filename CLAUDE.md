@@ -19,6 +19,36 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Version `MAJEUR.MINEUR.PATCH` bumpée à chaque commit (dans `<span class="app-version">`).
 - **SQL migrations** : tout script SQL à exécuter par Lamberio (migration, seed, correctif DB) doit être écrit **directement dans l'interface de chat Claude**, pas uniquement dans la description de la PR ou dans les fichiers.
 
+## Direction design UI — Session 2026-06-12
+
+### Structure bandeau validée pour tous les volets (v3.25.11)
+Tous les volets bottom-sheet adoptent la même grille `1fr auto 1fr` avec :
+- **Gauche** : action principale du volet (`＋` Groove, `🥁 Kit` Sons) ou rien
+- **Centre** : `[🎲] ◀ [preset name] ▶ [💾] [✨]` — tout l'interactif proche du nom
+- **Droite** : `[i]` (si article encyclo) + `[✕]` fermeture
+
+Détail par volet :
+
+| Volet | Gauche | Centre | Droite |
+|-------|--------|--------|--------|
+| **Groove** | `＋` | `🎲 ◀ Groove ▶ 💾` | `i` |
+| **Sons** | `🥁 Kit` | `🎲 ◀ Band ▶ 💾 ✨` | `i ✕` |
+| **Encyclo** | *(spacer)* | `🎲 ◀ Article ▶ 💾` | `✏️ ✕` |
+| **Métro** | `⏱ ON/OFF` | `◀ 4/4 ▶ 💾` | `i ✕` |
+| **Settings** | `👤 rôle` / `← retour` | *(spacer)* | `✕` |
+
+**Règle clé :** `💾` utilise `visibility:hidden` (jamais `display:none`) → le preset reste toujours visuellement centré, même quand propre.
+
+**Bouton ✨ global Sons** : new preset aléatoire dans la même famille + randomisation pitch/atk/env, pour les 3 layers simultanément.
+
+### Panels bottom-sheet — auto-height (v3.25.x)
+- **Settings** : `_settingsPanelFitH()` = `handle + header + content.scrollHeight` (jamais `panel.scrollHeight` qui rate les enfants flex `min-height:0`)
+- **Sons** : `_bandPanelFitH()` idem ; `_resizeBandPanel()` appelé directement depuis le handler ⚙▼/▶ de chaque layer (ResizeObserver ne fonctionne pas sur `overflow-y:auto`)
+- **Prefs Settings** : `_resizeSettingsPanel()` avec `transition='none'` avant le resize pour éviter l'animation lente
+
+### Bug corrigé — volet Workflow MX (v3.25.10)
+`buildPublishSection()` posait `container.style.display='none'` quand aucun item, mais ne le réinitialisait jamais à `''` lors des appels suivants avec items. Fix : `container.style.display=''` ajouté après le bloc early-return. `buildApprobationsSection()` : hide silencieux quand vide (plus de "Aucun contenu en attente" trompeur).
+
 ## Direction design UI — Session 2026-06-07
 
 ### Décision acte : suppression des bordures latérales jaunes (v3.20.32)
@@ -30,14 +60,14 @@ Les bordures `border-left: 2px solid #C8961A` et `margin-left: 4px` qui couraien
 > **Le seul signal coloré qui mérite de persister est celui des layers** (bleu/rouge/vert) — parce qu'il a une fonction de décodage direct : cette couleur = cette couche dans le canvas = ces boutons.
 > Tout le reste (couleurs de section : jaune Groove, teal Metro, bleu Band) est un repère secondaire, pas un délimiteur spatial.
 
-### Deux systèmes coexistent — en cours d'unification
+### Deux systèmes coexistent — unification quasi-complète
 L'appli mélange deux paradigmes :
-- **Volets empilés** (Groove, Band) — architecture originale, coexistence verticale
-- **Drawers pleine largeur bottom-sheet** (Capture, Jeu, Métronome, Encyclo) — paradigme unifié, meilleur sur mobile
+- **Volet empilé** (Groove uniquement) — architecture originale, toujours verticale
+- **Drawers pleine largeur bottom-sheet** (Sons/Band, Capture, Jeu, Métronome, Encyclo, Settings) — paradigme unifié, meilleur sur mobile ✅
 
-**Métronome (v3.23)** : migré en bottom-sheet avec deux onglets (♩= Tempo | ▣ Battue). Cadran rotatif pour le tempo, jauges horizontales pour les volumes, picker BeatUnit flottant, tap tempo avec décompte.
+**Métronome (v3.23)** : bottom-sheet deux onglets (♩= Tempo | ▣ Battue). Cadran rotatif pour le tempo, jauges horizontales pour les volumes, picker BeatUnit flottant, tap tempo avec décompte.
 
-**Prochaine étape (v3.24) :** migrer le volet Band en bottom-sheet sur le même modèle (Métronome/Encyclo) — activé par nav-tab → slide-up depuis le bas. Voir section "CHANTIER SUIVANT".
+**Sons/Band (v3.24)** : bottom-sheet activé par nav-tab → slide-up depuis le bas, hauteur drag-réglable. ✅
 
 ### Ce qui ne change PAS
 - Les couleurs de section (`#C8961A` jaune Groove, `#3A8C6E` teal Metro, `#2d5f80` bleu Band) restent comme codes d'identité dans les headers de section et les accents (boutons, badges)
@@ -111,7 +141,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.23.x** (session 2026-06-10)
+**v3.25.13** (session 2026-06-12)
 
 ---
 
