@@ -45,6 +45,15 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - **Totems verticaux** (mod gestuel, 1 colonne par layer : mini-anneau + pad 2D densité↕/calage↔ + jauges géométrie/liant + ↺) : **découplés du splitter** — toggle explicite `☰ lignes / ▥ totems` dans Layers.view. **La vue mod actuelle est conservée de côté** (les totems viennent en plus, pas en remplacement).
 - **Maquette jetable** : `maquette_v326.html` (fichier autonome à la racine, audio synthèse incluse) pour tester les gestes au pouce sur smartphone via GitHub Pages. Ne fait pas partie de l'app.
 
+### Retours Lamberio sur maquette it.1 → décisions it.2 (2026-06-12 soir)
+- **Play aussi dans la GlobalControlBar** (en plus de la bottom-bar) : les testeurs font souvent play/stop et sont agacés par la boucle qui tourne sans arrêt — le play/stop doit être très accessible. À l'essai dans la maquette.
+- **LayerControlBar** : drag ↕ grain iso-durée ✅ conservé ; **drag ↔ calage supprimé** ; tap = montrer détail du layer (contenu du détail à définir). Si un second glissé est ajouté, ce sera pour la **densité** (à l'essai en ↔ dans la maquette it.2).
+- **Bouton ↺ (retour au motif d'origine)** : validé, emplacement à revoir.
+- **Vue lignes (édition)** : les **presets sont l'essentiel** (+ i + 🎲) — toujours visibles par layer. Tête de lecture obligatoire (WYSIWYH).
+- **Totems = mode création** : l'essentiel = les gestes-interface de création. **2 pads par layer** : pad A squelette = densité↕ · géométrie↔ ; pad B chair = liant↕ · calage↔ ; + boutons 🎲 placement aléatoire et 🎲 accents aléatoires. Garder les paramètres génératifs de l'ancienne version mod.
+- **Mini-anneaux par layer** : inutiles quand Groove.view est visible au-dessus ; **affichés seulement en état C** (Layers max).
+- **Vue "mesure iso-métrique" découverte par accident** (cellules de step à largeur proportionnelle à la durée, flex) : intermédiaire entre la vue Cycle (linéaire, 1 tête de lecture) et la vue Step.seq (pas égaux, 3 têtes). **À garder de côté comme candidate 5e vue.**
+
 ### Chantiers suivants (après les barres v3.26)
 - **Vue verticale type console de mixage + redesign du sous-volet mod** (sliders, pad 2D plus graphique et gestuel) — chantier suivant
 - **Gestes sur le canvas — à creuser ultérieurement** : appui court/long sur step (édition directe), drag radial (rotation/shift), pinch (length ?), zoom… Conflits gestuels (scroll, tap accidentel pendant l'écoute) à prototyper avant tout engagement. Le hit-test circulaire existe déjà (`circleHitTest`).
@@ -171,7 +180,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.15** (session 2026-06-12)
+**v3.25.16** (session 2026-06-12)
 
 ---
 
@@ -238,6 +247,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.25.16 | Maquette it.2 (retours Lamberio) : Play dans GCB ; LCB sans calage (↔ densité à l'essai) ; vue lignes avec presets ◀▶ + 🎲 + i + ↺ + tête de lecture ; totems 2 pads (squelette densité↕·géo↔ / chair liant↕·calage↔) + 🎲pos/🎲acc ; mini-anneaux seulement en état C ; vue "mesure iso-métrique" notée candidate 5e vue |
 | v3.25.15 | Maquette jetable `maquette_v326.html` (GlobalControlBar séparatrice + splitter 3 états, LayerControlBar grain/rotation, totems 4 axes, audio synthèse) ; décisions UX v3.26 actées dans CLAUDE.md |
 | v3.23.17 | Overlay Sons restauré sur `rib-son-btn` (700ms) ; durée overlay Métronome réduite 1300→700ms ; scroll page bloqué dans tous les volets fixes (`touch-action:none` + `overscroll-behavior:contain` + handler `touchmove:preventDefault`) ; clôture session 2026-06-10 |
 | v3.23.16 | Toprow Battue 3 colonnes égales (`flex:1`) centrées ; jauge vol 90% de colonne ; « Subdivision » en entier ; metro-off → vol+subdiv inactifs ; bouton ✕ déplacé du handle vers bandeau (même ligne preset) |

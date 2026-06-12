@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BoomTchak — Maquette v3.26 (jetable)</title>
+<title>BoomTchak — Maquette v3.26 · it.2 (jetable)</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
@@ -21,17 +21,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 #gcb{flex:none;background:#262218;border-top:2px solid #C8961A;border-bottom:2px solid #C8961A;
   touch-action:none;cursor:grab}
 #gcb-handle{width:44px;height:4px;border-radius:2px;background:#C8961A;opacity:.55;margin:3px auto 1px}
-#gcb-row{display:flex;align-items:center;gap:8px;padding:2px 8px 6px}
+#gcb-row{display:flex;align-items:center;gap:7px;padding:2px 8px 6px}
 #gcb button{background:#1d1a12;border:1px solid #6e5a1e;color:#bba;border-radius:8px;
-  font-size:16px;min-width:40px;height:36px;padding:0 8px}
+  font-size:16px;min-width:38px;height:36px;padding:0 7px}
+#gcb-play{font-size:15px;color:#e8cc60}
+#gcb-play.on{background:#C8961A;color:#1b1b20}
 #metro-btn.on{color:#7fd8b0;border-color:#3A8C6E;background:#16241e}
 #snd-btn.off{color:#777}
-#tempo-zone{flex:1;min-width:70px;display:flex;flex-direction:column;justify-content:center;
+#tempo-zone{flex:1;min-width:64px;display:flex;flex-direction:column;justify-content:center;
   gap:3px;padding:2px 4px;border-radius:8px}
 #bpm-lbl{font-size:14px;font-weight:600;color:#e8cc60;text-align:center;line-height:1}
 #tempo-gauge{height:3px;background:#3a3424;border-radius:2px;overflow:hidden}
 #tempo-gauge-fill{height:100%;background:#C8961A;width:40%}
-#vus{display:flex;gap:10px;align-items:center;padding:0 4px}
+#vus{display:flex;gap:9px;align-items:center;padding:0 2px}
 .vu{width:18px;height:18px;border-radius:50%;border:none;padding:0;position:relative}
 .vu .vu-core{position:absolute;inset:0;border-radius:50%;background:var(--c);transition:opacity .15s}
 .vu.muted .vu-core{opacity:.18}
@@ -49,9 +51,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 
 /* ---- Layers zone ---- */
 #layers-zone{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-#lz-head{flex:none;display:flex;align-items:center;justify-content:space-between;
-  padding:4px 8px;font-size:11px;color:#888}
-#lz-head .vtog{display:flex;gap:4px}
+#lz-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:4px 8px;font-size:10px;color:#888}
+#lz-head .vtog{display:flex;gap:4px;flex:none}
 #lz-head .vtog button{background:#23232a;border:1px solid #444;color:#999;border-radius:6px;
   width:34px;height:26px;font-size:14px}
 #lz-head .vtog button.on{color:#e8cc60;border-color:#C8961A}
@@ -60,8 +62,15 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 /* rows view */
 .lrow{margin-bottom:8px;border:1px solid #2c2c33;border-radius:8px;padding:5px 6px;
   border-left:3px solid var(--c)}
-.lrow-h{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:5px;color:#bbb}
-.ldot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.lrow-h{display:flex;align-items:center;gap:5px;font-size:12px;margin-bottom:5px;color:#bbb;flex-wrap:wrap}
+.ldot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.lrow-h .lname{font-weight:600;color:var(--c)}
+.lrow-h button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:6px;
+  height:24px;min-width:24px;padding:0 5px;font-size:12px}
+.pset-name{color:#ddd;font-style:italic;max-width:86px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;text-align:center}
+.lrow-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
+.lrow.axed .lrow-undo{visibility:visible}
 .lrow-meta{margin-left:auto;color:#777;font-size:11px}
 .lrow-steps{display:flex;gap:2px}
 .cell{flex:1;height:30px;max-width:34px;border-radius:5px;background:#26262d;border:1px solid #36363e}
@@ -75,22 +84,22 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 .totem{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
   border:1px solid #2c2c33;border-top:3px solid var(--c);border-radius:10px;padding:6px 4px;min-width:0}
 .totem.folded{opacity:.35;pointer-events:none}
-.t-ring{width:84px;height:84px}
-.t-pad{flex:1;align-self:stretch;min-height:90px;position:relative;border-radius:10px;touch-action:none;
+.t-ring{width:76px;height:76px;display:none}
+body[data-state="C"] .t-ring{display:block}
+.t-pad{align-self:stretch;position:relative;border-radius:10px;touch-action:none;
   background:repeating-linear-gradient(90deg,#23232b 0 24.5%,#2a2a33 24.5% 25%),#23232b;
   border:1px solid #3a3a44;overflow:hidden}
-.t-pad::after{content:'densité ↕ · calage ↔';position:absolute;bottom:3px;left:0;right:0;
-  text-align:center;font-size:9px;color:#666;pointer-events:none}
+.t-padA{flex:1.2;min-height:84px}
+.t-padB{flex:1;min-height:70px;background:repeating-linear-gradient(90deg,#262430 0 24.5%,#2d2b38 24.5% 25%),#262430}
+.t-pad::after{content:attr(data-lbl);position:absolute;bottom:3px;left:0;right:0;
+  text-align:center;font-size:9px;color:#777;pointer-events:none}
 .t-cross{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--c);
   box-shadow:0 0 10px var(--c);transform:translate(-50%,-50%);left:50%;top:50%;display:none;pointer-events:none}
 .totem.axed .t-cross{display:block}
-.t-gauges{display:flex;gap:8px;align-self:stretch;justify-content:center}
-.t-g{width:26px;height:54px;background:#23232b;border:1px solid #3a3a44;border-radius:6px;
-  position:relative;touch-action:none;display:flex;align-items:flex-end;overflow:hidden}
-.t-gf{width:100%;background:color-mix(in srgb,var(--c) 55%,#23232b);height:30%}
-.t-g span{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:8px;color:#aaa;pointer-events:none}
-.t-undo{background:none;border:1px solid #884;color:#d90;border-radius:8px;height:28px;
-  padding:0 12px;font-size:14px;visibility:hidden}
+.t-btns{display:flex;gap:5px;align-self:stretch;justify-content:center}
+.t-btns button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:8px;
+  height:28px;padding:0 8px;font-size:11px}
+.t-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
 .totem.axed .t-undo{visibility:visible}
 
 /* ---- bottom bar ---- */
@@ -106,8 +115,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
   font-size:26px;font-weight:700;display:none;z-index:99;pointer-events:none;white-space:nowrap}
 </style>
 </head>
-<body>
-<div id="banner">MAQUETTE JETABLE v3.26 — gestes &amp; 3 états · ne fait pas partie de l'app</div>
+<body data-state="B">
+<div id="banner">MAQUETTE JETABLE v3.26 · itération 2 — ne fait pas partie de l'app</div>
 <div id="app">
   <div id="groove-zone">
     <canvas id="cv"></canvas>
@@ -116,6 +125,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
   <div id="gcb">
     <div id="gcb-handle"></div>
     <div id="gcb-row">
+      <button id="gcb-play" title="Play/Stop">▶</button>
       <button id="metro-btn" title="Métronome">⏱</button>
       <div id="tempo-zone">
         <span id="bpm-lbl">♩= 120</span>
@@ -128,10 +138,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
   <div id="lcb"></div>
   <div id="layers-zone">
     <div id="lz-head">
-      <span id="lz-hint">tap step = édite · LCB : tap=plier · ↕=grain · ↔=décaler</span>
+      <span id="lz-hint"></span>
       <div class="vtog">
-        <button id="v-rows" class="on" title="Lignes">☰</button>
-        <button id="v-totems" title="Totems">▥</button>
+        <button id="v-rows" class="on" title="Édition">☰</button>
+        <button id="v-totems" title="Création">▥</button>
       </div>
     </div>
     <div id="lz-body">
@@ -155,12 +165,24 @@ const LAYERS=[
   {name:'Haute',col:'#E05252'},
   {name:'Bruit',col:'#3FAE6A'}
 ];
-const st=[
-  {grain:1,pat:'X..X..X.'.split('')},
-  {grain:3,pat:'....X..x.x..X.x.'.split('')},
-  {grain:1,pat:'XxxxXxxx'.split('')}
+const PRESETS=[
+  [ {n:'Tresillo',g:1,p:'X..X..X.'},
+    {n:'Carré',g:1,p:'X.X.X.X.'},
+    {n:'Clave 3-2',g:3,p:'X..X..X...X.X...'},
+    {n:'Tumbao',g:3,p:'...X..X....X..X.'} ],
+  [ {n:'Backbeat',g:3,p:'....X.......X...'},
+    {n:'Ghost funk',g:3,p:'....X..x.x..X.x.'},
+    {n:'Contretemps',g:1,p:'..X...X.'} ],
+  [ {n:'Croches',g:1,p:'XxxxXxxx'},
+    {n:'Tchak',g:1,p:'x.X.x.X.'},
+    {n:'Doubles',g:3,p:'X.x.x.x.X.x.x.x.'} ]
 ];
-st.forEach(s=>{s.muted=false;s.folded=false;s.orig=null;s.axes=null;});
+const st=PRESETS.map((pl,li)=>({
+  preset:li===1?1:0,
+  grain:pl[li===1?1:0].g,
+  pat:pl[li===1?1:0].p.split(''),
+  muted:false,folded:false,orig:null,axes:null
+}));
 let bpm=120, metroOn=false, sndOn=true, playing=false;
 let AC=null, startT=0, lastSched=0, schedTimer=null;
 const vuHit=[0,0,0];
@@ -223,8 +245,9 @@ function togglePlay(){
   if(!playing){playing=true;startT=AC.currentTime+0.08;lastSched=0;
     schedTimer=setInterval(schedTick,30);}
   else{playing=false;clearInterval(schedTimer);}
-  $('play').textContent=playing?'■':'▶';
-  $('play').classList.toggle('on',playing);
+  ['play','gcb-play'].forEach(id=>{
+    $(id).textContent=playing?'■':'▶';
+    $(id).classList.toggle('on',playing);});
 }
 function setBpm(v){
   const old=cycleSec();bpm=Math.round(clamp(40,240,v));
@@ -235,12 +258,16 @@ function setBpm(v){
   $('tempo-gauge-fill').style.width=((bpm-40)/200*100)+'%';
 }
 
-/* ============ moteur 4 axes ============ */
+/* ============ moteur 4 axes + helpers ============ */
+function snapshotOrig(li){
+  const s=st[li];
+  if(!s.orig)s.orig={pat:s.pat.slice(),grain:s.grain};
+}
 function ensureAxes(li){
   const s=st[li];if(s.axes)return;
   const n=s.pat.length;let k=0,gh=0;
   s.pat.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
-  s.orig={pat:s.pat.slice(),grain:s.grain};
+  snapshotOrig(li);
   s.axes={dens:k/n,geom:1,cal:0,fill:(n-k)?gh/(n-k):0};
 }
 function placeGhosts(pat,m){
@@ -289,11 +316,6 @@ function calageLabel(li){
   const r=on/k;
   return r>0.65?'sur le temps':r<0.2?'contretemps':'mixte';
 }
-function rotPat(arr,off){
-  const n=arr.length,out=Array(n);
-  for(let i=0;i<n;i++)out[i]=arr[(((i-off)%n)+n)%n];
-  return out;
-}
 function setGrain(li,gi){
   const s=st[li];gi=clamp(0,LADDER.length-1,gi);
   if(gi===s.grain)return;
@@ -307,6 +329,49 @@ function setGrain(li,gi){
   }
   s.pat=pat;s.grain=gi;s.axes=null;refresh();
 }
+function applyPreset(li,idx){
+  const s=st[li],pl=PRESETS[li];
+  s.preset=((idx%pl.length)+pl.length)%pl.length;
+  const pr=pl[s.preset];
+  s.pat=pr.p.split('');s.grain=pr.g;
+  s.axes=null;s.orig=null;refresh();
+}
+function restoreOrig(li){
+  const s=st[li];
+  if(s.orig){s.pat=s.orig.pat.slice();s.grain=s.orig.grain;}
+  s.axes=null;s.orig=null;refresh();
+}
+function randPattern(li){
+  const s=st[li];snapshotOrig(li);
+  const n=s.pat.length;
+  const k=Math.max(1,Math.round(n*(0.25+Math.random()*0.35)));
+  const m=Math.round((n-k)*Math.random()*0.4);
+  const pat=Array(n).fill('.');
+  const idx=[...Array(n).keys()];
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  idx.slice(0,k).forEach(p=>pat[p]='X');
+  placeGhosts(pat,m);
+  s.pat=pat;s.axes=null;refresh();
+}
+function randPlacement(li){
+  const s=st[li];snapshotOrig(li);
+  const n=s.pat.length;
+  let k=0,m=0;s.pat.forEach(c=>{if(c==='X')k++;else if(c==='x')m++;});
+  const pat=Array(n).fill('.');
+  const idx=[...Array(n).keys()];
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  idx.slice(0,k).forEach(p=>pat[p]='X');
+  placeGhosts(pat,m);
+  s.pat=pat;s.axes=null;refresh();
+}
+function randAccents(li){
+  const s=st[li];snapshotOrig(li);
+  const pos=[];const vals=[];
+  s.pat.forEach((c,i)=>{if(c!=='.'){pos.push(i);vals.push(c);}});
+  for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vals[i],vals[j]]=[vals[j],vals[i]];}
+  pos.forEach((p,i)=>{s.pat[p]=vals[i];});
+  s.axes=null;refresh();
+}
 
 /* ============ overlay ============ */
 const ov=$('overlay');
@@ -314,6 +379,7 @@ function showOv(txt,col){ov.textContent=txt;ov.style.setProperty('--oc',col||'#C
 function hideOv(){ov.style.display='none';}
 
 /* ============ GlobalControlBar ============ */
+$('gcb-play').onclick=togglePlay;
 $('metro-btn').onclick=()=>{metroOn=!metroOn;$('metro-btn').classList.toggle('on',metroOn);};
 $('snd-btn').onclick=()=>{sndOn=!sndOn;$('snd-btn').classList.toggle('off',!sndOn);
   $('snd-btn').textContent=sndOn?'🔊':'🔇';};
@@ -334,6 +400,7 @@ function setState(stt,animate){
   const h={A:M,B:Math.round(M*0.45),C:0}[stt];
   if(animate!==false){gz.style.transition='height .18s';setTimeout(()=>gz.style.transition='',220);}
   gz.style.height=h+'px';
+  document.body.dataset.state=stt;
   $('view-info').textContent='Groove.view — état '+
     (stt==='A'?'GROOVE (max)':stt==='B'?'SPLIT':'LAYERS (replié)');
 }
@@ -367,7 +434,7 @@ gcb.addEventListener('pointerdown',e=>{
   gcb.addEventListener('pointercancel',up);
 });
 
-/* ============ LayerControlBar ============ */
+/* ============ LayerControlBar : tap=détail · ↕ grain · ↔ densité (essai) ============ */
 LAYERS.forEach((L,li)=>{
   const seg=document.createElement('div');
   seg.className='seg';seg.style.setProperty('--c',L.col);seg.dataset.li=li;
@@ -376,21 +443,24 @@ LAYERS.forEach((L,li)=>{
   seg.addEventListener('pointerdown',e=>{
     ensureAC();
     const y0=e.clientY,x0=e.clientX,t0=performance.now();
-    const g0=st[li].grain,base=st[li].pat.slice();
-    let mode=null;
+    const g0=st[li].grain;
+    let mode=null,dens0=0;
     seg.setPointerCapture(e.pointerId);
     const mv=ev=>{
       const dx=ev.clientX-x0,dy=ev.clientY-y0;
-      if(!mode&&Math.hypot(dx,dy)>10)mode=Math.abs(dy)>Math.abs(dx)?'grain':'rot';
+      if(!mode&&Math.hypot(dx,dy)>10){
+        mode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
+        if(mode==='dens'){ensureAxes(li);dens0=st[li].axes.dens;}
+      }
       if(mode==='grain'){
         const gi=clamp(0,LADDER.length-1,g0+Math.round(-dy/34));
         if(gi!==st[li].grain)setGrain(li,gi);
         showOv(st[li].pat.length+'·'+LADDER[st[li].grain][1],L.col);
-      }else if(mode==='rot'){
-        const off=Math.round(dx/26);
-        st[li].pat=rotPat(base,off);refresh();
-        const cl=calageLabel(li);
-        showOv('⟲ '+(off>0?'+':'')+off+(cl?' · '+cl:''),L.col);
+      }else if(mode==='dens'){
+        const s=st[li],n=s.pat.length;
+        s.axes.dens=clamp(0,1,dens0+dx/220);
+        genFromAxes(li);
+        showOv('● '+clamp(0,n,Math.round(s.axes.dens*n)),L.col);
       }
     };
     const up=()=>{
@@ -407,17 +477,30 @@ LAYERS.forEach((L,li)=>{
   });
 });
 
-/* ============ vue lignes ============ */
+/* ============ vue lignes (édition) ============ */
 LAYERS.forEach((L,li)=>{
   const row=document.createElement('div');
   row.className='lrow';row.style.setProperty('--c',L.col);row.dataset.li=li;
-  row.innerHTML='<div class="lrow-h"><span class="ldot"></span><span>'+L.name+
-    '</span><span class="lrow-meta"></span></div><div class="lrow-steps"></div>';
+  row.innerHTML='<div class="lrow-h">'+
+    '<span class="ldot"></span><span class="lname">'+L.name+'</span>'+
+    '<button class="ps-prev">◀</button><span class="pset-name"></span><button class="ps-next">▶</button>'+
+    '<button class="ps-dice" title="Pattern aléatoire">🎲</button>'+
+    '<button class="ps-info" title="Article encyclo">i</button>'+
+    '<button class="lrow-undo" title="Revenir au motif">↺</button>'+
+    '<span class="lrow-meta"></span></div>'+
+    '<div class="lrow-steps"></div>';
   $('rows-view').appendChild(row);
+  row.querySelector('.ps-prev').onclick=()=>applyPreset(li,st[li].preset-1);
+  row.querySelector('.ps-next').onclick=()=>applyPreset(li,st[li].preset+1);
+  row.querySelector('.ps-dice').onclick=()=>randPattern(li);
+  row.querySelector('.ps-info').onclick=()=>{showOv('📖 article (simulé)',L.col);setTimeout(hideOv,700);};
+  row.querySelector('.lrow-undo').onclick=()=>restoreOrig(li);
 });
+const lastCur=[-1,-1,-1];
 function buildRowCells(li){
   const row=$('rows-view').children[li],s=st[li];
   const wrap=row.querySelector('.lrow-steps');wrap.innerHTML='';
+  lastCur[li]=-1;
   const n=s.pat.length,bs=(n%4===0)?n/4:0;
   for(let i=0;i<n;i++){
     const c=document.createElement('div');
@@ -431,77 +514,66 @@ function buildRowCells(li){
     };
     wrap.appendChild(c);
   }
-  row.querySelector('.lrow-meta').textContent=n+'·'+LADDER[s.grain][1]+' · 1 mes';
+  const dirty=!!s.orig||!!s.axes;
+  row.querySelector('.pset-name').textContent=PRESETS[li][s.preset].n+(dirty?' *':'');
+  row.querySelector('.lrow-meta').textContent=n+'·'+LADDER[s.grain][1];
+  row.classList.toggle('axed',!!s.orig);
   row.style.display=s.folded?'none':'';
 }
 
-/* ============ vue totems ============ */
+/* ============ vue totems (création) — 2 pads ============ */
 LAYERS.forEach((L,li)=>{
   const t=document.createElement('div');
   t.className='totem';t.style.setProperty('--c',L.col);t.dataset.li=li;
-  t.innerHTML='<canvas class="t-ring" width="168" height="168"></canvas>'+
-    '<div class="t-pad"><div class="t-cross"></div></div>'+
-    '<div class="t-gauges">'+
-      '<div class="t-g" data-ax="geom"><div class="t-gf"></div><span>géo</span></div>'+
-      '<div class="t-g" data-ax="fill"><div class="t-gf"></div><span>liant</span></div>'+
-    '</div>'+
-    '<button class="t-undo">↺ motif</button>';
+  t.innerHTML='<canvas class="t-ring" width="152" height="152"></canvas>'+
+    '<div class="t-pad t-padA" data-lbl="● densité ↕ · géo ↔"><div class="t-cross"></div></div>'+
+    '<div class="t-pad t-padB" data-lbl="liant ↕ · calage ↔"><div class="t-cross"></div></div>'+
+    '<div class="t-btns">'+
+      '<button class="t-rndpos" title="Placement aléatoire">🎲pos</button>'+
+      '<button class="t-rndacc" title="Accents aléatoires">🎲acc</button>'+
+      '<button class="t-undo" title="Revenir au motif">↺</button>'+
+    '</div>';
   $('totems-view').appendChild(t);
 
-  const pad=t.querySelector('.t-pad');
-  pad.addEventListener('pointerdown',e=>{
-    ensureAC();ensureAxes(li);t.classList.add('axed');
-    pad.setPointerCapture(e.pointerId);
-    const r=pad.getBoundingClientRect();
-    const apply=ev=>{
-      const x=clamp(0,1,(ev.clientX-r.left)/r.width);
-      const y=clamp(0,1,(ev.clientY-r.top)/r.height);
-      const s=st[li],n=s.pat.length;
-      s.axes.dens=1-y;
-      s.axes.cal=Math.round((x-0.5)*n);
-      genFromAxes(li);
-      const k=clamp(0,n,Math.round(s.axes.dens*n));
-      const cl=calageLabel(li);
-      showOv('●'+k+(cl?' · '+cl:''),L.col);
-    };
-    apply(e);
-    const mv=ev=>apply(ev);
-    const up=()=>{pad.removeEventListener('pointermove',mv);
-      pad.removeEventListener('pointerup',up);pad.removeEventListener('pointercancel',up);hideOv();};
-    pad.addEventListener('pointermove',mv);
-    pad.addEventListener('pointerup',up);
-    pad.addEventListener('pointercancel',up);
-  });
-
-  t.querySelectorAll('.t-g').forEach(g=>{
-    const ax=g.dataset.ax;
-    g.addEventListener('pointerdown',e=>{
-      ensureAC();ensureAxes(li);t.classList.add('axed');
-      g.setPointerCapture(e.pointerId);
-      const r=g.getBoundingClientRect();
-      const apply=ev=>{
-        const v=clamp(0,1,1-(ev.clientY-r.top)/r.height);
-        st[li].axes[ax]=v;genFromAxes(li);
-        showOv((ax==='geom'?'géométrie ':'liant ')+Math.round(v*100)+'%',L.col);
+  function padHandler(pad,apply){
+    pad.addEventListener('pointerdown',e=>{
+      ensureAC();ensureAxes(li);
+      pad.setPointerCapture(e.pointerId);
+      const r=pad.getBoundingClientRect();
+      const go=ev=>{
+        const x=clamp(0,1,(ev.clientX-r.left)/r.width);
+        const y=clamp(0,1,(ev.clientY-r.top)/r.height);
+        apply(x,y);genFromAxes(li);
       };
-      apply(e);
-      const mv=ev=>apply(ev);
-      const up=()=>{g.removeEventListener('pointermove',mv);
-        g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);hideOv();};
-      g.addEventListener('pointermove',mv);
-      g.addEventListener('pointerup',up);
-      g.addEventListener('pointercancel',up);
+      go(e);
+      const mv=ev=>go(ev);
+      const up=()=>{pad.removeEventListener('pointermove',mv);
+        pad.removeEventListener('pointerup',up);pad.removeEventListener('pointercancel',up);hideOv();};
+      pad.addEventListener('pointermove',mv);
+      pad.addEventListener('pointerup',up);
+      pad.addEventListener('pointercancel',up);
     });
+  }
+  /* pad A : squelette — densité ↕ / géométrie ↔ */
+  padHandler(t.querySelector('.t-padA'),(x,y)=>{
+    const s=st[li],n=s.pat.length;
+    s.axes.dens=1-y;s.axes.geom=x;
+    const k=clamp(0,n,Math.round(s.axes.dens*n));
+    showOv('●'+k+' · géo '+Math.round(x*100)+'%',L.col);
   });
-
-  t.querySelector('.t-undo').onclick=()=>{
-    const s=st[li];
-    if(s.orig){s.pat=s.orig.pat.slice();s.grain=s.orig.grain;}
-    s.axes=null;s.orig=null;t.classList.remove('axed');refresh();
-  };
+  /* pad B : chair — liant ↕ / calage ↔ */
+  padHandler(t.querySelector('.t-padB'),(x,y)=>{
+    const s=st[li],n=s.pat.length;
+    s.axes.fill=1-y;s.axes.cal=Math.round((x-0.5)*n);
+    const cl=calageLabel(li);
+    showOv('liant '+Math.round((1-y)*100)+'%'+(cl?' · '+cl:''),L.col);
+  });
+  t.querySelector('.t-rndpos').onclick=()=>randPlacement(li);
+  t.querySelector('.t-rndacc').onclick=()=>randAccents(li);
+  t.querySelector('.t-undo').onclick=()=>restoreOrig(li);
 });
 
-/* ============ toggle lignes/totems ============ */
+/* ============ toggle édition/création ============ */
 let lview='rows';
 function setLview(v){
   lview=v;
@@ -510,8 +582,8 @@ function setLview(v){
   $('v-rows').classList.toggle('on',v==='rows');
   $('v-totems').classList.toggle('on',v==='totems');
   $('lz-hint').textContent=v==='rows'
-    ?'tap step = édite · LCB : tap=plier · ↕=grain · ↔=décaler'
-    :'pad : ↕ densité · ↔ calage — jauges : géométrie / liant';
+    ?'tap step=édite · LCB : tap=détail · ↕ grain · ↔ densité (essai)'
+    :'pads : squelette (●↕·géo↔) / chair (liant↕·calage↔)';
 }
 $('v-rows').onclick=()=>setLview('rows');
 $('v-totems').onclick=()=>setLview('totems');
@@ -525,14 +597,15 @@ function refresh(){
     buildRowCells(li);
     const t=$('totems-view').children[li];
     t.classList.toggle('folded',s.folded);
-    t.classList.toggle('axed',!!s.axes);
+    t.classList.toggle('axed',!!s.orig);
     if(s.axes){
       const n=s.pat.length;
-      const cr=t.querySelector('.t-cross');
-      cr.style.left=(clamp(0,1,0.5+s.axes.cal/n)*100)+'%';
-      cr.style.top=((1-s.axes.dens)*100)+'%';
-      t.querySelector('[data-ax="geom"] .t-gf').style.height=(s.axes.geom*100)+'%';
-      t.querySelector('[data-ax="fill"] .t-gf').style.height=(s.axes.fill*100)+'%';
+      const ca=t.querySelector('.t-padA .t-cross');
+      ca.style.left=(s.axes.geom*100)+'%';
+      ca.style.top=((1-s.axes.dens)*100)+'%';
+      const cb=t.querySelector('.t-padB .t-cross');
+      cb.style.left=(clamp(0,1,0.5+s.axes.cal/n)*100)+'%';
+      cb.style.top=((1-s.axes.fill)*100)+'%';
     }
   });
 }
@@ -562,7 +635,6 @@ function drawRing(c,cx,cy,r,li,phase){
 }
 function raf(){
   const now=performance.now();
-  /* pastilles VU */
   document.querySelectorAll('#vus .vu .vu-core').forEach((core,li)=>{
     const dt=now-vuHit[li];
     const sc=(playing&&dt<200&&!st[li].muted)?1+0.55*(1-dt/200):1;
@@ -586,18 +658,31 @@ function raf(){
       ctx.lineTo(cx+Math.cos(a)*(R+6),cy+Math.sin(a)*(R+6));ctx.stroke();
     }
   }
-  /* mini-anneaux totems */
-  if(lview==='totems'){
+  /* tête de lecture vue lignes */
+  if(lview==='rows'){
+    st.forEach((s,li)=>{
+      const n=s.pat.length;
+      const cur=(playing&&!s.folded)?Math.floor(phase*n)%n:-1;
+      if(cur!==lastCur[li]){
+        const cells=$('rows-view').children[li].querySelectorAll('.cell');
+        if(lastCur[li]>=0&&cells[lastCur[li]])cells[lastCur[li]].classList.remove('cur');
+        if(cur>=0&&cells[cur])cells[cur].classList.add('cur');
+        lastCur[li]=cur;
+      }
+    });
+  }
+  /* mini-anneaux totems (état C uniquement) */
+  if(lview==='totems'&&curState==='C'){
     document.querySelectorAll('.t-ring').forEach((tc,li)=>{
       const c2=tc.getContext('2d');
       c2.setTransform(2,0,0,2,0,0);
-      c2.clearRect(0,0,84,84);
-      drawRing(c2,42,42,33,li,phase);
+      c2.clearRect(0,0,76,76);
+      drawRing(c2,38,38,30,li,phase);
       if(playing){
         const a=-Math.PI/2+phase*Math.PI*2;
         c2.strokeStyle='#C8961A';c2.lineWidth=1;
-        c2.beginPath();c2.moveTo(42,42);
-        c2.lineTo(42+Math.cos(a)*37,42+Math.sin(a)*37);c2.stroke();
+        c2.beginPath();c2.moveTo(38,38);
+        c2.lineTo(38+Math.cos(a)*33,38+Math.sin(a)*33);c2.stroke();
       }
     });
   }
