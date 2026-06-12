@@ -19,6 +19,28 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - Version `MAJEUR.MINEUR.PATCH` bumpée à chaque commit (dans `<span class="app-version">`).
 - **SQL migrations** : tout script SQL à exécuter par Lamberio (migration, seed, correctif DB) doit être écrit **directement dans l'interface de chat Claude**, pas uniquement dans la description de la PR ou dans les fichiers.
 
+## Cadrage v3.26 — Session 2026-06-12 (validé par Lamberio)
+
+### Trois modes d'usage (grille de lecture UX validée)
+1. **Écouter / jouer** — play, mute, tempo : toujours accessible, ne se replie jamais
+2. **Regarder / comprendre** — choix de vue, infos cycle/mesure/temps : contextuel au canvas
+3. **Éditer / créer** — steps, length, rate, transformations, presets : sur demande, profond
+
+> Principe directeur : un contrôle est placé selon son **mode d'usage**, jamais selon la zone qu'il pilote. Les contrôles du mode « écouter » ne se replient jamais.
+
+### Architecture validée : 3 barres
+- **GlobalControlBar** : métro on/off + son on/off + tempo + signature + switch d'affichage Groove.view / Layer.view (+ éventuellement play)
+- **LayerControlBar** : pour chaque layer, dans l'ordre de priorité/accessibilité directe : on/off (mute), afficher/masquer le layer (pliage individuel), contrôles principaux (nb de pas + unité de pas via un geste simple de glissé), infos contextuelles layer
+- **GrooveControlBar** : liée à l'affichage Groove.view — les 4 vues, infos et accès contextuels (dépendants de la vue), infos globales « où suis-je dans le temps »
+
+**Décisions actées :**
+- Le **play reste dans la bottom-bar** (qui garde son rôle de NavBar)
+- Question ouverte en cours : où et comment disposer les barres, notamment la LayerControlBar
+
+### Chantiers suivants (après les barres v3.26)
+- **Vue verticale type console de mixage + redesign du sous-volet mod** (sliders, pad 2D plus graphique et gestuel) — chantier suivant
+- **Gestes sur le canvas — à creuser ultérieurement** : appui court/long sur step (édition directe), drag radial (rotation/shift), pinch (length ?), zoom… Conflits gestuels (scroll, tap accidentel pendant l'écoute) à prototyper avant tout engagement. Le hit-test circulaire existe déjà (`circleHitTest`).
+
 ## Direction design UI — Session 2026-06-12
 
 ### Structure bandeau validée pour tous les volets (v3.25.11)
@@ -141,7 +163,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.13** (session 2026-06-12)
+**v3.25.14** (session 2026-06-12)
 
 ---
 
