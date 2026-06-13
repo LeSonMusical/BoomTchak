@@ -1156,7 +1156,7 @@ body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
 body.view-circle #section-groove{order:2;padding-top:2px}
 body.view-circle #view-mode-bar{order:3;width:100%}
-body.view-circle #layers-wrap{order:5;display:block;width:100%}
+body.view-circle #layers-wrap{order:5;display:block;width:100%;background:rgba(0,0,0,.02)}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
 @media(min-width:600px){
@@ -1181,8 +1181,8 @@ body.view-circle #section-encyclo{order:5}
 #rhythm-info-wrap{display:none}
 body.show-rib #rhythm-info-wrap{display:block;width:100%}
 body.show-rib.view-circle #rhythm-info-wrap{order:4}
-body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:4px}
-body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:4px;margin-bottom:2px}
+body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:0}
+body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:0;margin-bottom:0}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 /* CycleInfo bar (entre section-groove et canvas) — même design que les indicateurs de page */
 #cycle-info-bar{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
@@ -1201,9 +1201,9 @@ body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer — bloc stylisé 2 lignes */
-#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 6px;font-size:9px;color:#aaa;box-sizing:border-box;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);border-radius:8px;margin:2px 4px;width:calc(100% - 8px);touch-action:none;cursor:grab;position:relative}
+#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 5px;font-size:9px;color:#aaa;box-sizing:border-box;background:#f0efec;border:none;border-top:2px solid rgba(200,150,26,.5);border-radius:0;margin:0;width:100%;touch-action:none;cursor:grab;position:relative}
 #rhythm-info-bar::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:rgba(200,150,26,.45);pointer-events:none}
-body.dark-mode #rhythm-info-bar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)}
+body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150,26,.35)}
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
@@ -1412,10 +1412,9 @@ body[data-split="A"] #layers-wrap{display:none!important}
 body[data-split="A"] #layers-mod-bar{display:none!important}
 body[data-split="A"] #totems-view-wrap{display:none!important}
 body[data-split="A"] #layer-control-bar{pointer-events:none;opacity:.5}
-/* State C: canvas hidden via height:0 + overflow:hidden (set by _splCvMaxH=0 in JS) */
-body.view-circle #circle-view{overflow:hidden}
+/* State C: canvas zoomed to 0 via _splCvMaxH=0 in JS (scale approach, no display:none) */
 /* LCB (LayerControlBar) */
-#layer-control-bar{display:none;background:#f0efec;border-top:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.10);touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0;margin-bottom:3px}
+#layer-control-bar{display:none;background:#f0efec;border-top:none;border-bottom:2px solid rgba(0,0,0,.12);touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0;margin-bottom:0}
 body.show-rib #layer-control-bar{display:flex}
 body.show-rib.view-circle #layer-control-bar{order:4}
 @media(min-width:600px){body.show-rib.view-circle #layer-control-bar{flex:0 0 100%;flex-shrink:0}}
@@ -1438,7 +1437,7 @@ body.show-rib.view-circle #layer-control-bar{order:4}
 .lcb-seg.muted .lcb-npas,.lcb-seg.muted .lcb-unit,.lcb-seg.muted .lcb-chev{opacity:.3}
 .lcb-mute-zone{height:100%;display:flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer;border-right:1px solid rgba(0,0,0,.10);flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .lcb-fold-zone{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
-body.dark-mode #layer-control-bar{background:#13131a;border-top-color:#2a2a33;border-bottom-color:#2a2a33}
+body.dark-mode #layer-control-bar{background:#13131a;border-top:none;border-bottom-color:rgba(255,255,255,.1)}
 body.dark-mode .lcb-left-btns button,body.dark-mode .lcb-right-btns button{background:#18181f;color:#aaa;border-color:#2a2a33}
 body.dark-mode .lcb-left-btns button.on,body.dark-mode .lcb-right-btns button.on{color:#e8cc60;background:#2a2618}
 body.dark-mode .lcb-seg{background:color-mix(in srgb,var(--cs) 10%,#13131a)}
@@ -1846,7 +1845,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.6</span>
+    <span class="app-version">v3.26.7</span>
   </div>
 </div>
 
@@ -9752,6 +9751,7 @@ function playMetroClick(atTime,type){
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
 let _splCvMaxH = null; // splitter max-height constraint on #circle-view (null = no constraint)
+let _splNaturalH = 0; // natural canvas container height (updated by resizeCanvas when unconstrained)
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
 let _lciMaxPageSize = 24;       // nb max de pas par page en vue Cycle (16/24/48, défaut 24)
@@ -9821,13 +9821,14 @@ function resizeCanvas(){
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    if(_splCvMaxH!==null){
-      wrap.style.height=Math.min(canvH,_splCvMaxH)+'px';
-      wrap.style.overflow='hidden';
-    }else{
-      wrap.style.height=''; // hauteur auto
-      wrap.style.overflow='';
-    }
+    // Splitter scale for linear mode
+    const linScale = (_splCvMaxH !== null) ? Math.min(1, _splCvMaxH / canvH) : 1;
+    const linH = Math.round(canvH * linScale);
+    cv.style.height = linH + 'px';
+    cv.height = Math.round(canvH * linScale) || canvH; // keep resolution reasonable
+    wrap.style.height = linH + 'px';
+    wrap.style.overflow = '';
+    if(_splCvMaxH === null) _splNaturalH = linH;
     drawCircles(); return;
   }
   const dotR = 10;
@@ -9840,7 +9841,10 @@ function resizeCanvas(){
   const frameW = frame ? frame.clientWidth : window.innerWidth;
   const isDesktop = window.innerWidth >= 600;
   const maxW = isDesktop ? Math.min(szW, Math.floor(frameW*0.46)) : frameW - 16;
-  const scale = Math.min(1, maxW / szW);
+  // Scale canvas both by available width AND by splitter constraint (zoom effect)
+  const scaleW = Math.min(1, maxW / szW);
+  const scaleH = (_splCvMaxH !== null) ? Math.min(1, _splCvMaxH / szNatural) : 1;
+  const scale = Math.min(scaleW, scaleH);
 
   cv.width = szW; cv.height = szNatural;
   const physW = Math.round(szW * scale);
@@ -9856,10 +9860,11 @@ function resizeCanvas(){
   }
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
-  const naturalH = physH + toggleH;
-  const constrainedH = (_splCvMaxH !== null) ? Math.min(naturalH, _splCvMaxH) : naturalH;
-  wrap.style.height = constrainedH + 'px';
-  wrap.style.overflow = (_splCvMaxH !== null && _splCvMaxH < naturalH) ? 'hidden' : '';
+  const wrapH = physH + toggleH;
+  wrap.style.height = wrapH + 'px';
+  wrap.style.overflow = '';
+  // Track natural height (no constraint) for splitter snap calculations
+  if(_splCvMaxH === null) _splNaturalH = wrapH;
   drawCircles();
 }
 
@@ -11835,39 +11840,83 @@ function updateRhythmInfoBar(){
     const playBtn=document.getElementById('btn-play');
     if(playBtn)playBtn.click(); else togglePlay?.();
   });
-  // Splitter drag sur la barre GCB — resize canvas uniquement (approche maquette)
+  // Splitter drag sur la barre GCB — zoom canvas (UP) + slide layers (DOWN)
   {
     let _spl_y0=0,_spl_moved=false,_spl_h0=0,_spl_rafId=null;
+    const _splLayerIds=['layer-control-bar','totems-view-wrap','layers-wrap'];
+    const _splLayers=()=>_splLayerIds.map(id=>document.getElementById(id)).filter(Boolean);
 
     function _spl_layoutMax(){
       const gcb=document.getElementById('rhythm-info-bar');
       const lcb=document.getElementById('layer-control-bar');
       const nb=document.querySelector('.bottom-bar');
-      const gcbH=gcb?gcb.offsetHeight:48;
-      const lcbH=(lcb&&lcb.offsetParent)?lcb.offsetHeight:38;
-      const nbH=nb?nb.offsetHeight:60;
-      return Math.max(60,window.innerHeight-gcbH-lcbH-nbH-8);
+      return Math.max(60,window.innerHeight-(gcb?gcb.offsetHeight:48)
+        -((lcb&&lcb.offsetParent)?lcb.offsetHeight:38)-(nb?nb.offsetHeight:60)-8);
+    }
+
+    function _spl_clearLayers(animate){
+      _splLayers().forEach(e=>{
+        if(animate){e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
+          setTimeout(()=>{e.style.transition='';},220);}
+        else e.style.transition='none';
+        e.style.transform='';
+      });
     }
 
     function _spl_setState(s,animate){
-      const M=_spl_layoutMax();
-      // A and B use null (no constraint = natural canvas height); C uses 0
-      const targetH={A:null,B:null,C:0}[s];
-      document.body.dataset.split=s;
       const wrap=document.getElementById('circle-view');
       if(!wrap)return;
-      _splCvMaxH=targetH;
-      if(targetH===0){
-        // Animate to height 0 then keep hidden
+
+      if(s==='C'){
+        // Canvas zooms to 0, layers stay in place
+        document.body.dataset.split='C';
+        _spl_clearLayers(false);
+        _splCvMaxH=0;
         if(animate){
           wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
           setTimeout(()=>{wrap.style.transition='';},220);
         }
-        wrap.style.height='0px';
-        wrap.style.overflow='hidden';
+        if(typeof resizeCanvas==='function')resizeCanvas();
+
+      }else if(s==='A'){
+        // Layers slide down off screen, canvas at natural size
+        _splCvMaxH=null;
+        if(animate){
+          const offH=window.innerHeight;
+          _splLayers().forEach(e=>{
+            e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
+            e.style.transform=`translateY(${offH}px)`;
+          });
+          setTimeout(()=>{
+            document.body.dataset.split='A';
+            _spl_clearLayers(false);
+          },200);
+        }else{
+          document.body.dataset.split='A';
+          _spl_clearLayers(false);
+        }
+        if(typeof resizeCanvas==='function')resizeCanvas();
+
       }else{
-        // Remove constraint, let resizeCanvas restore natural height (with animation)
-        wrap.style.overflow='';
+        // State B — restore canvas and layers
+        const prevState=document.body.dataset.split||'B';
+        document.body.dataset.split='B';
+        _splCvMaxH=null;
+        if(animate&&prevState==='A'){
+          // Layers slide in from below
+          _splLayers().forEach(e=>{
+            e.style.transition='none';
+            e.style.transform=`translateY(${window.innerHeight}px)`;
+          });
+          void document.body.offsetHeight; // force reflow
+          _splLayers().forEach(e=>{
+            e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
+            e.style.transform='';
+          });
+          setTimeout(()=>_splLayers().forEach(e=>e.style.transition=''),220);
+        }else{
+          _spl_clearLayers(animate);
+        }
         if(animate){
           wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
           setTimeout(()=>{wrap.style.transition='';},220);
@@ -11881,7 +11930,7 @@ function updateRhythmInfoBar(){
       const wrap=document.getElementById('circle-view');
       if(!wrap)return;
       _spl_y0=e.clientY;_spl_moved=false;
-      _spl_h0=wrap.getBoundingClientRect().height;
+      _spl_h0=_splNaturalH||wrap.getBoundingClientRect().height||200;
       wrap.style.transition='none';
       el.setPointerCapture(e.pointerId);
     });
@@ -11892,9 +11941,18 @@ function updateRhythmInfoBar(){
       if(Math.abs(dy)>4){
         _spl_moved=true;
         const M=_spl_layoutMax();
-        const newH=Math.max(0,Math.min(M,_spl_h0+dy));
-        // Only constrain when shrinking: growing past natural height has no visible effect
-        _splCvMaxH=(newH<_spl_h0)?newH:null;
+        const naturalH=_splNaturalH||_spl_h0;
+        const virtualH=Math.max(0,Math.min(M,_spl_h0+dy));
+        if(virtualH<=naturalH){
+          // Canvas shrinks (zoom out toward C)
+          _splCvMaxH=virtualH;
+          _spl_clearLayers(false);
+        }else{
+          // Canvas at natural, translate layers down (toward A)
+          _splCvMaxH=null;
+          const slide=Math.min((virtualH-naturalH)*0.8,M*0.5);
+          _splLayers().forEach(lel=>lel.style.transform=`translateY(${slide}px)`);
+        }
         if(!_spl_rafId)_spl_rafId=requestAnimationFrame(()=>{
           if(typeof resizeCanvas==='function')resizeCanvas();
           _spl_rafId=null;
@@ -11905,9 +11963,10 @@ function updateRhythmInfoBar(){
     el.addEventListener('pointerup',e=>{
       if(!_spl_moved){_spl_moved=false;return;}
       const M=_spl_layoutMax();
-      // Use virtual height (h0 + dy) so state A is reachable even though canvas can't grow
+      const naturalH=_splNaturalH||_spl_h0;
+      // Virtual height maps both directions into a single axis for snap
       const virtualH=Math.max(0,Math.min(M,_spl_h0+(e.clientY-_spl_y0)));
-      const states=[['A',M],['B',M*0.45],['C',0]];
+      const states=[['A',M],['B',naturalH],['C',0]];
       states.sort((a,b)=>Math.abs(virtualH-a[1])-Math.abs(virtualH-b[1]));
       _spl_setState(states[0][0],true);
       _spl_moved=false;
