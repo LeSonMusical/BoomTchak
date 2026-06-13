@@ -1452,7 +1452,6 @@ body.show-rib.view-circle #totems-view-wrap{order:6}
 .v326-totem.muted{opacity:.4}
 .v326-totem.folded{display:none}
 .v326-pad{position:relative;border-radius:7px;touch-action:none;border:1px solid rgba(0,0,0,.12);overflow:hidden;flex:1;min-height:40px}
-.v326-pad-bg{position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:7px}
 .v326-padA{background:linear-gradient(to top,rgba(255,175,45,.08) 0%,transparent 50%,rgba(70,120,210,.08) 100%),#f0eeea}
 .v326-padB{background:#edeaf4}
 .v326-pad .v326-axx{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:10px;color:#999;pointer-events:none;z-index:1}
@@ -1468,6 +1467,20 @@ body.dark-mode .v326-pad{border-color:#2a2a33}
 body.dark-mode .v326-padA{background:linear-gradient(to top,rgba(255,175,45,.05) 0%,transparent 50%,rgba(70,120,210,.05) 100%),#1e1e26}
 body.dark-mode .v326-padB{background:#201e2e}
 body.dark-mode .v326-totem-btns button{background:#23232a;border-color:#3a3a44;color:#aaa}
+/* LCB vu-core animation */
+.lcb-vu-core{display:block;width:100%;height:100%;border-radius:50%;background:var(--cs);transform-origin:center;will-change:transform;transition:transform .15s ease-out}
+/* Mini-rings (état C) */
+.v326-ring{width:76px;height:76px;display:none;border-radius:50%;align-self:center;flex-shrink:0;margin:2px auto}
+body[data-split="C"] .v326-totem:not(.folded) .v326-ring{display:block}
+/* Iso-métrique step cells (ligne 2 volet layer) */
+.lrow-steps-326{display:flex;flex-wrap:nowrap;gap:2px;padding:4px 4px 2px;margin:2px 0}
+.lrow-steps-326 .lsCell{flex:1;height:18px;border-radius:3px;background:#d4d2cc;border:none;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent}
+.lrow-steps-326 .lsCell.on{background:var(--cs)}
+.lrow-steps-326 .lsCell.soft{background:color-mix(in srgb,var(--cs) 40%,#d4d2cc)}
+.lrow-steps-326 .lsCell.cur{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
+.lrow-steps-326 .lsCell.beat{margin-left:4px}
+body.dark-mode .lrow-steps-326 .lsCell{background:#303038}
+body.dark-mode .lrow-steps-326 .lsCell.soft{background:color-mix(in srgb,var(--cs) 38%,#303038)}
 /* Row1 v3.26 — mute caché, ↺ undo */
 .btn-mute-lbl.v326-hidden{display:none!important}
 .btn-layer-undo-v326{background:none;border:1.5px solid #884;border-radius:4px;padding:1px 5px;cursor:pointer;font-size:13px;color:#d90;visibility:hidden;flex-shrink:0;-webkit-tap-highlight-color:transparent}
@@ -1846,7 +1859,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.8</span>
+    <span class="app-version">v3.26.9</span>
   </div>
 </div>
 
@@ -3910,7 +3923,7 @@ function scheduler(){
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
       if(stepVal!=='.'&&!state[li].muted){
         scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
-        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
+        if(li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
       }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
@@ -3946,6 +3959,15 @@ function scheduler(){
 function visualLoop(){
   if(!playing)return;
   if(_recDomUpdateLi>=0){const rli=_recDomUpdateLi;_recDomUpdateLi=-1;buildStepsDOM(rli,state[rli].wrapped);}
+  // Animation pastilles LCB (toujours, même en vue cercle)
+  const _lcbNow=performance.now();
+  LAYERS.forEach((_,li)=>{
+    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
+    if(!core)return;
+    const dt=_lcbNow-(_miniVuHit[li]||0);
+    if(dt>=0&&dt<220){core.style.transform='scale('+(1+0.55*(1-dt/220)).toFixed(3)+')';}
+    else{core.style.transform='scale(1)';}
+  });
   if(circleView){ visualLoopCircle(); return; }
   const now=getAC().currentTime-prefs.audioOffset;
   LAYERS.forEach((layer,li)=>{
@@ -3961,6 +3983,9 @@ function visualLoop(){
       else s.classList.remove('rec-past');
     });
   });
+  // Mini-rings (état C) + tête de lecture iso-métrique
+  if(document.body.dataset.split==='C')_drawMiniRings326();
+  _updateLrowSteps326(now);
   highlightMetroStep();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -4301,6 +4326,14 @@ function stopPlay(){
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
+  // Reset LCB dot scales et tête de lecture iso-métrique
+  LAYERS.forEach((_,li)=>{
+    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
+    if(core)core.style.transform='scale(1)';
+    _lrowLast[li]=-1;
+    const lw=document.getElementById('lrow-steps-'+li);
+    if(lw)lw.querySelectorAll('.lsCell.cur').forEach(c=>c.classList.remove('cur'));
+  });
   _measureViewPage = 0; _linearCyclePage = 0; // retour page 0 à l'arrêt
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
@@ -6991,6 +7024,7 @@ function buildLCB326(){
     const seg=document.createElement('div');seg.className='lcb-seg'+(state[li].muted?' muted':'');
     seg.style.setProperty('--cs',_LAYER_COLS[li]);seg.dataset.li=li;
     const vu=document.createElement('span');vu.className='lcb-vu';vu.title='Mute '+layer.label;
+    const vuCore=document.createElement('span');vuCore.className='lcb-vu-core';vu.appendChild(vuCore);
     const npas=document.createElement('span');npas.className='lcb-npas';npas.textContent=String(state[li].pattern.length);
     const unitLbl=document.createElement('span');unitLbl.className='lcb-unit';
     const gi=_grainIdxOf326(li);unitLbl.textContent=LADDER_V326[gi][1];
@@ -7114,15 +7148,14 @@ function buildTotemsView326(){
     const t=document.createElement('div');
     t.className='v326-totem'+(state[li].muted?' muted':'')+(state[li].pattern.length===0?' folded':'')+(_v326[li].orig?' axed':'');
     t.id='v326-totem-'+li;t.style.setProperty('--cs',col);t.dataset.li=li;
+    // Mini-ring (visible seulement en état C)
+    const ringCv=document.createElement('canvas');ringCv.className='v326-ring';ringCv.width=152;ringCv.height=152;
+    t.appendChild(ringCv);
     // Pad A : densité ↔ / liant ↕
     const padA=document.createElement('div');padA.className='v326-pad v326-padA';
-    const bgA=document.createElement('canvas');bgA.className='v326-pad-bg v326-pad-bgA';
-    padA.appendChild(bgA);
     padA.insertAdjacentHTML('beforeend','<span class="v326-axx">densité</span><span class="v326-axy">liant</span><div class="v326-cross" id="v326-crossA-'+li+'"></div>');
     // Pad B : décalage (fort·faible) ↔ / géométrie ↕
     const padB=document.createElement('div');padB.className='v326-pad v326-padB';
-    const bgB=document.createElement('canvas');bgB.className='v326-pad-bg v326-pad-bgB';
-    padB.appendChild(bgB);
     padB.insertAdjacentHTML('beforeend','<span class="v326-axx">décalage (fort · faible)</span><span class="v326-axy">géométrie</span><div class="v326-cross" id="v326-crossB-'+li+'"></div>');
     // Buttons
     const btns=document.createElement('div');btns.className='v326-totem-btns';
@@ -7132,8 +7165,6 @@ function buildTotemsView326(){
     btns.appendChild(bRndPos);btns.appendChild(bRndAcc);btns.appendChild(bUndo);
     t.appendChild(padA);t.appendChild(padB);t.appendChild(btns);
     wrap.appendChild(t);
-    // Draw pad backgrounds after layout (requestAnimationFrame for dimensions)
-    requestAnimationFrame(()=>_drawTotemPadBgs326(li));
     // Pad handlers
     function v326PadHandler(pad,applyFn){
       pad.addEventListener('pointerdown',e=>{
@@ -7199,10 +7230,91 @@ function updateTotemsCross326(li){
   if(t)t.classList.toggle('axed',!!_v326[li].orig);
 }
 
-function _drawTotemPadBgs326(li){
+// ── Nouvelles fonctions v3.26.9 ──────────────────────────────────────────────
+
+// Mini-rings dans les totems (état C)
+function _drawMiniRings326(){
+  const acNow=getAC().currentTime;
+  LAYERS.forEach((_,li)=>{
+    const totem=document.getElementById('v326-totem-'+li);if(!totem)return;
+    const cv=totem.querySelector('.v326-ring');
+    if(!cv||cv.offsetWidth===0)return;
+    const ctx=cv.getContext('2d');
+    const DPR=2,W=76,H=76,cx=W/2,cy=H/2,r=26;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+    const col=CIRCLE_COLORS[li];
+    const pat=state[li].pattern;const n=pat.length;if(!n)return;
+    // Track
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+    ctx.strokeStyle=col.track;ctx.lineWidth=2;ctx.stroke();
+    // Steps
+    for(let i=0;i<n;i++){
+      const a=-Math.PI/2+2*Math.PI*i/n;
+      const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;
+      const isOn=pat[i]==='X',isSoft=pat[i]==='x';
+      if(isOn||isSoft){
+        ctx.beginPath();ctx.arc(px,py,isSoft?2.2:3.2,0,2*Math.PI);
+        ctx.fillStyle=isSoft?col.fill+'88':col.fill;ctx.fill();
+      }
+    }
+    // Tête de lecture
+    if(playing){
+      const bs=getBeatSec(li);
+      const elapsed=acNow-state[li].startTime;
+      const ph=((elapsed/(n*bs))%1+1)%1;
+      const pa=-Math.PI/2+ph*2*Math.PI;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(pa)*(r+4),cy+Math.sin(pa)*(r+4));
+      ctx.strokeStyle='#C8961A';ctx.lineWidth=1.5;ctx.stroke();
+    }
+  });
+}
+
+// Tête de lecture iso-métrique (lrow-steps-326)
+const _lrowLast=[-1,-1,-1];
+function _updateLrowSteps326(now){
+  LAYERS.forEach((_,li)=>{
+    const wrap=document.getElementById('lrow-steps-'+li);
+    if(!wrap||!wrap.children.length)return;
+    const n=state[li].pattern.length;if(!n)return;
+    const bs=getBeatSec(li);
+    const elapsed=(now||0)-state[li].startTime;
+    const cur=playing?((Math.floor(elapsed/bs)%n)+n)%n:-1;
+    if(cur===_lrowLast[li])return;
+    if(_lrowLast[li]>=0&&wrap.children[_lrowLast[li]])wrap.children[_lrowLast[li]].classList.remove('cur');
+    if(cur>=0&&wrap.children[cur])wrap.children[cur].classList.add('cur');
+    _lrowLast[li]=cur;
+  });
+}
+
+// Construire les cellules iso-métriques pour un layer
+function _buildLrowSteps326(li){
+  const wrap=document.getElementById('lrow-steps-'+li);if(!wrap)return;
+  const pat=state[li].pattern;const n=pat.length;
+  wrap.innerHTML='';wrap.style.setProperty('--cs',_LAYER_COLS[li]);
+  _lrowLast[li]=-1;
+  const bs=(n%4===0)?n/4:(n%3===0?n/3:0);
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='lsCell'+(pat[i]==='X'?' on':pat[i]==='x'?' soft':'')+(bs&&i>0&&i%bs===0?' beat':'');
+    c.addEventListener('click',()=>{
+      const CYCLE={'.':'X','X':'x','x':'.'};
+      state[li].pattern[i]=CYCLE[state[li].pattern[i]]??'.';
+      c.className='lsCell'+(state[li].pattern[i]==='X'?' on':state[li].pattern[i]==='x'?' soft':'')+(c.classList.contains('beat')?' beat':'');
+      // Sync step button existant
+      const stepsDiv=document.getElementById('steps-'+LAYERS[li].id);
+      if(stepsDiv){const s=stepsDiv.querySelectorAll('.step')[i];if(s){s.className='step'+(state[li].pattern[i]==='X'?' on':state[li].pattern[i]==='x'?' soft':'');}}
+      if(circleView)drawCircles();
+      inferAxesFromPat326(li);updateLCB326();
+    });
+    wrap.appendChild(c);
+  }
+}
+
+function _UNUSED_drawTotemPadBgs326(li){
   const t=document.getElementById('v326-totem-'+li);if(!t)return;
   const col=_LAYER_COLS[li];
-  // Parse hex color → rgb components
   function _hexRgb(h){const v=parseInt(h.replace('#',''),16);return[(v>>16)&255,(v>>8)&255,v&255];}
   const [cr,cg,cb]=_hexRgb(col);
 
@@ -7447,6 +7559,10 @@ function buildLayers(){
     btnMod.textContent='✎';
     row1.appendChild(btnMod);
     layerDiv.appendChild(row1);
+
+    // ── Ligne 1.5 : Steps iso-métriques v3.26 ────────────────────────────────
+    const lrowDiv=document.createElement('div');lrowDiv.className='lrow-steps-326';lrowDiv.id='lrow-steps-'+li;
+    layerDiv.appendChild(lrowDiv);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
@@ -7877,6 +7993,7 @@ function buildStepsDOM(li,wrap){
   if(_r2) _r2.classList.toggle('muted',!!state[li].muted);
   if(circleView) drawCircles();
   updateStepSeqInfo(li);
+  _buildLrowSteps326(li);
 }
 
 function onStepClick(li,si,el){
@@ -7887,6 +8004,12 @@ function onStepClick(li,si,el){
   state[li].pattern[si]=newVal;
   el.className='step'+(newVal==='X'?' on':newVal==='x'?' soft':'');
   if(state[li].stepPos===si)el.classList.add('cur');
+  // Sync cellule iso-métrique
+  const lsWrap=document.getElementById('lrow-steps-'+li);
+  if(lsWrap&&lsWrap.children[si]){
+    const lc=lsWrap.children[si];
+    lc.className='lsCell'+(newVal==='X'?' on':newVal==='x'?' soft':'')+(lc.classList.contains('beat')?' beat':'');
+  }
   if(circleView)drawCircles();
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
@@ -12148,8 +12271,19 @@ function updateRhythmInfoBar(){
 
 function visualLoopCircle(){
   if(!playing) return;
+  // Animation pastilles LCB (même en vue cercle)
+  const _lcbNowC=performance.now();
+  LAYERS.forEach((_,li)=>{
+    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
+    if(!core)return;
+    const dt=_lcbNowC-(_miniVuHit[li]||0);
+    if(dt>=0&&dt<220){core.style.transform='scale('+(1+0.55*(1-dt/220)).toFixed(3)+')';}
+    else{core.style.transform='scale(1)';}
+  });
   drawCircles();
   highlightMetroStep();
+  if(document.body.dataset.split==='C')_drawMiniRings326();
+  _updateLrowSteps326(getAC().currentTime-prefs.audioOffset);
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
