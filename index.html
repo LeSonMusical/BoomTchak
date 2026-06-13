@@ -432,6 +432,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
 .layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
+.lyr-name-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;flex-shrink:0;color:var(--cs);border-left:3px solid var(--cs);padding-left:5px;margin-right:2px;align-self:stretch;display:flex;align-items:center;line-height:1}
 .layer-select{font-size:9px;flex:1;min-width:0;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
 .btn-mute-lbl{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;padding:0 5px;height:24px;min-width:42px;background:var(--cc);color:#fff;transition:background .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .btn-mute-lbl:hover{filter:brightness(.9)}
@@ -1404,6 +1405,7 @@ body.dark-mode .mod-pad-dot{background:rgba(255,255,255,.18)}
 #rib-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:34px;height:34px;color:#C8961A;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
 #rib-play-btn.playing{background:#C8961A;color:#1b1b20}
 body.dark-mode #rib-play-btn{border-color:#C8961A;color:#C8961A}
+body.dark-mode #rib-play-btn.playing{color:#1b1b20}
 /* Splitter states — body[data-split] */
 body[data-split="A"] #layers-wrap{display:none!important}
 body[data-split="A"] #layers-mod-bar{display:none!important}
@@ -1834,7 +1836,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.2</span>
+    <span class="app-version">v3.26.3</span>
   </div>
 </div>
 
@@ -4619,7 +4621,7 @@ function updateSettingsBadge(){
   }
 }
 let layersOuverts = true;
-let layerPanelsOuverts = false;
+let layerPanelsOuverts = true;
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
@@ -6826,7 +6828,7 @@ const layerObservers=[];
 const LADDER_V326=[[4,'♩'],[8,'♪'],[12,'♪T'],[16,'♫'],[24,'♫T'],[32,'♬']];
 const BEATS_V326=4;
 // État axes par layer : axes = {dens,geom,fill,calS,calB} | orig = {pat[],n}
-const _v326=LAYERS.map(()=>({axes:null,orig:null}));
+const _v326=LAYERS.map(()=>({axes:null,orig:null,folded:false}));
 let _v326view='rows'; // 'rows' | 'totems'
 let _v326detail=true; // ✎ — afficher le mod panel au tap LCB
 
@@ -7011,13 +7013,20 @@ function buildLCB326(){
     seg.addEventListener('pointerup',()=>{
       _dragOverlay.hide();
       if(!_lcbDragMode&&performance.now()-_lcbT0<300){
-        // Tap : plier/déplier le layer div
-        if(!layerPanelsOuverts){layerPanelsOuverts=true;const lw=document.getElementById('layers-wrap');if(lw)lw.style.display='';}
-        const ld2=document.getElementById('layer-div-'+li);if(!ld2)return;
-        const isVisible=ld2.style.display!=='none';
-        ld2.style.display=isVisible?'none':'';
         const ch=seg.querySelector('.lcb-chev');
-        if(ch)ch.textContent=isVisible?'▶':'▾';
+        if(_v326view==='totems'){
+          // Vue totems : plier/déplier le totem
+          _v326[li].folded=!_v326[li].folded;
+          if(ch)ch.textContent=_v326[li].folded?'▶':'▾';
+          updateTotemsView326();
+        } else {
+          // Vue rows : plier/déplier le layer div
+          if(!layerPanelsOuverts){layerPanelsOuverts=true;const lw=document.getElementById('layers-wrap');if(lw)lw.style.display='';}
+          const ld2=document.getElementById('layer-div-'+li);if(!ld2)return;
+          const isVisible=ld2.style.display!=='none';
+          ld2.style.display=isVisible?'none':'';
+          if(ch)ch.textContent=isVisible?'▶':'▾';
+        }
       }
       _lcbDragMode=null;
     });
@@ -7110,9 +7119,7 @@ function updateTotemsView326(){
   LAYERS.forEach((layer,li)=>{
     const t=document.getElementById('v326-totem-'+li);if(!t)return;
     t.classList.toggle('muted',!!state[li].muted);
-    const mp=document.getElementById('mod-panel-'+li);
-    const folded=mp?mp.classList.contains('hidden'):false;
-    t.classList.toggle('folded',folded&&_v326view==='totems');
+    t.classList.toggle('folded',!!_v326[li].folded);
     t.classList.toggle('axed',!!_v326[li].orig);
     updateTotemsCross326(li);
     // Fond padB : zones colorées par cran s
@@ -7160,6 +7167,7 @@ function buildLayers(){
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
     layerDiv.id='layer-div-'+li;
+    layerDiv.style.display='none'; // masqué au démarrage, ouvert via LCB
     try{
     const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
     // Marquer section-teacher si le pattern courant est source:'teacher'
@@ -7169,8 +7177,12 @@ function buildLayers(){
     }
     refreshLayerClass();
 
-    // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][⏺][mod▶] ──────────
+    // ── Ligne 1 : [label coloré][●/○][select][≡ TX][💾][i][⏺][✎] ──────
     const row1=document.createElement('div');row1.className='layer-row1';
+    // Label coloré (identifiant visuel du layer)
+    const lyrNameLbl=document.createElement('span');lyrNameLbl.className='lyr-name-lbl';
+    lyrNameLbl.textContent=layer.label;lyrNameLbl.style.setProperty('--cs',_LAYER_COLS[li]);
+    row1.appendChild(lyrNameLbl);
 
     // ●/○ mute
     const btnMute=document.createElement('button');
