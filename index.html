@@ -432,7 +432,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
 .layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
-.lyr-name-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;flex-shrink:0;color:var(--cs);border-left:3px solid var(--cs);padding-left:5px;margin-right:2px;align-self:stretch;display:flex;align-items:center;line-height:1}
+.lyr-name-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;flex-shrink:0;color:var(--cs);border-left:3px solid var(--cs);padding-left:5px;margin-right:2px;align-self:stretch;display:flex;align-items:center;line-height:1;width:38px;overflow:hidden}
 .layer-select{font-size:9px;flex:1;min-width:0;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
 .btn-mute-lbl{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;padding:0 5px;height:24px;min-width:42px;background:var(--cc);color:#fff;transition:background .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .btn-mute-lbl:hover{filter:brightness(.9)}
@@ -1201,7 +1201,8 @@ body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer — bloc stylisé 2 lignes */
-#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 4px;font-size:9px;color:#aaa;box-sizing:border-box;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);border-radius:8px;margin:2px 4px;width:calc(100% - 8px);touch-action:none;cursor:grab}
+#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 6px;font-size:9px;color:#aaa;box-sizing:border-box;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);border-radius:8px;margin:2px 4px;width:calc(100% - 8px);touch-action:none;cursor:grab;position:relative}
+#rhythm-info-bar::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:rgba(200,150,26,.45);pointer-events:none}
 body.dark-mode #rhythm-info-bar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)}
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
@@ -1432,6 +1433,8 @@ body.show-rib.view-circle #layer-control-bar{order:4}
 .lcb-seg .lcb-unit{color:var(--cs);font-size:11px;opacity:.85;pointer-events:none}
 .lcb-seg .lcb-chev{color:var(--cs);font-size:17px;font-weight:700;line-height:1;width:18px;text-align:center;pointer-events:none}
 .lcb-seg.muted .lcb-npas,.lcb-seg.muted .lcb-unit,.lcb-seg.muted .lcb-chev{opacity:.3}
+.lcb-mute-zone{height:100%;display:flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer;border-right:1px solid rgba(255,255,255,.1);flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.lcb-fold-zone{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
 body.dark-mode #layer-control-bar{background:#13131a;border-bottom-color:#2a2a33}
 body.dark-mode .lcb-left-btns button,body.dark-mode .lcb-right-btns button{background:#18181f;border-color:#2a2a33}
 body.dark-mode .lcb-seg{background:color-mix(in srgb,var(--cs) 10%,#13131a)}
@@ -1440,7 +1443,7 @@ body.dark-mode .lcb-seg{background:color-mix(in srgb,var(--cs) 10%,#13131a)}
 #totems-view-wrap.v326-active{display:flex}
 body.show-rib.view-circle #totems-view-wrap{order:6}
 @media(min-width:600px){body.show-rib.view-circle #totems-view-wrap{flex:0 0 100%;flex-shrink:0}}
-.v326-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;border:1px solid #2c2c33;border-top:3px solid var(--cs);border-radius:8px;padding:5px 4px;min-width:0;min-height:160px}
+.v326-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;border-top:3px solid var(--cs);padding:5px 4px;min-width:0;min-height:160px}
 .v326-totem.muted{opacity:.4}
 .v326-totem.folded{display:none}
 .v326-pad{position:relative;border-radius:7px;touch-action:none;border:1px solid #3a3a44;overflow:hidden;flex:1;min-height:60px}
@@ -1454,7 +1457,7 @@ body.show-rib.view-circle #totems-view-wrap{order:6}
 .v326-totem-btns button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:6px;height:24px;padding:0 6px;font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .v326-totem-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
 .v326-totem.axed .v326-totem-undo{visibility:visible}
-body.dark-mode .v326-totem{border-color:#2a2a33}
+/* body.dark-mode .v326-totem — no border to override */
 body.dark-mode .v326-pad{border-color:#2a2a33}
 body.dark-mode .v326-padA{background:linear-gradient(to top,rgba(255,175,45,.05) 0%,transparent 50%,rgba(70,120,210,.05) 100%),#1e1e26}
 body.dark-mode .v326-padB{background:#201e2e}
@@ -1836,7 +1839,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.3</span>
+    <span class="app-version">v3.26.4</span>
   </div>
 </div>
 
@@ -6965,10 +6968,15 @@ function buildLCB326(){
     const gi=_grainIdxOf326(li);unitLbl.textContent=LADDER_V326[gi][1];
     const chev=document.createElement('span');chev.className='lcb-chev';
     {const ld0=document.getElementById('layer-div-'+li);chev.textContent=(ld0&&ld0.style.display==='none')?'▶':'▾';}
-    seg.appendChild(vu);seg.appendChild(npas);seg.appendChild(unitLbl);seg.appendChild(chev);
+    // Zone mute (gauche — grande zone) + zone fold (droite)
+    const muteZone=document.createElement('div');muteZone.className='lcb-mute-zone';
+    muteZone.appendChild(vu);
+    const foldZone=document.createElement('div');foldZone.className='lcb-fold-zone';
+    foldZone.appendChild(npas);foldZone.appendChild(unitLbl);foldZone.appendChild(chev);
+    seg.appendChild(muteZone);seg.appendChild(foldZone);
     el.appendChild(seg);
-    // Tap vu → mute
-    vu.addEventListener('click',e=>{
+    // Zone mute → mute toggle
+    muteZone.addEventListener('click',e=>{
       e.stopPropagation();
       state[li].muted=!state[li].muted;
       seg.classList.toggle('muted',state[li].muted);vu.classList.toggle('muted',state[li].muted);
@@ -6987,7 +6995,7 @@ function buildLCB326(){
     // Drag ↕ grain / Tap → toggle mod panel layer
     let _lcbDragMode=null,_lcbY0=0,_lcbX0=0,_lcbGi0=0,_lcbDens0=0,_lcbT0=0;
     seg.addEventListener('pointerdown',e=>{
-      if(e.target===vu)return;
+      if(e.target.closest('.lcb-mute-zone'))return;
       _lcbDragMode=null;_lcbY0=e.clientY;_lcbX0=e.clientX;
       _lcbGi0=_grainIdxOf326(li);_lcbT0=performance.now();
       seg.setPointerCapture(e.pointerId);
@@ -11805,20 +11813,34 @@ function updateRhythmInfoBar(){
     const playBtn=document.getElementById('btn-play');
     if(playBtn)playBtn.click(); else togglePlay?.();
   });
-  // Splitter drag sur la barre GCB (pas sur les boutons)
+  // Splitter drag sur la barre GCB — resize live du canvas
   {
-    const STATES=['A','B','C'];
-    let _spl_y0=0,_spl_moved=false;
+    let _spl_y0=0,_spl_moved=false,_spl_cvH0=0,_spl_rafId=null;
     el.addEventListener('pointerdown',e=>{
       if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
       _spl_y0=e.clientY;_spl_moved=false;
+      const cv=document.getElementById('circle-view');
+      _spl_cvH0=cv?cv.getBoundingClientRect().height:300;
       el.setPointerCapture(e.pointerId);
     });
     el.addEventListener('pointermove',e=>{
       if(!el.hasPointerCapture(e.pointerId))return;
-      if(Math.abs(e.clientY-_spl_y0)>8)_spl_moved=true;
+      const dy=e.clientY-_spl_y0;
+      if(Math.abs(dy)>8){
+        _spl_moved=true;
+        if(circleView){
+          const cv=document.getElementById('circle-view');
+          if(cv){
+            const newH=Math.max(80,Math.min(window.innerHeight*0.82,_spl_cvH0+dy));
+            cv.style.height=newH+'px';
+            if(!_spl_rafId)_spl_rafId=requestAnimationFrame(()=>{if(typeof resizeCanvas==='function')resizeCanvas();_spl_rafId=null;});
+          }
+        }
+      }
     });
     el.addEventListener('pointerup',e=>{
+      const cv=document.getElementById('circle-view');
+      if(cv){cv.style.height='';cv.style.minHeight='';}
       if(!_spl_moved)return;
       const dy=e.clientY-_spl_y0;
       const cur=document.body.dataset.split||'B';
@@ -11827,13 +11849,17 @@ function updateRhythmInfoBar(){
       else if(dy>30)next=(cur==='A'?'B':cur==='B'?'C':'C');
       if(next!==cur){
         document.body.dataset.split=next;
-        // En état B : restaurer layers-wrap si vue rows
         const lw=document.getElementById('layers-wrap');
         if(lw&&next!=='A')lw.style.display=(_v326view==='totems')?'none':(layerPanelsOuverts?'':'none');
       }
+      setTimeout(()=>{if(typeof resizeCanvas==='function')resizeCanvas();},50);
       _spl_moved=false;
     });
-    el.addEventListener('pointercancel',()=>{_spl_moved=false;});
+    el.addEventListener('pointercancel',()=>{
+      const cv=document.getElementById('circle-view');
+      if(cv){cv.style.height='';cv.style.minHeight='';}
+      _spl_moved=false;
+    });
   }
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
     _doToggleLayerPanels();
