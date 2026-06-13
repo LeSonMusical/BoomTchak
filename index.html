@@ -1399,6 +1399,67 @@ body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .mod-pad{background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820}
 body.dark-mode .mod-pad-dot{background:rgba(255,255,255,.18)}
+/* ═══════════════ v3.26 — GCB play btn + splitter + LCB + Totems ═══════════════ */
+/* GCB play button */
+#rib-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:34px;height:34px;color:#C8961A;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
+#rib-play-btn.playing{background:#C8961A;color:#1b1b20}
+body.dark-mode #rib-play-btn{border-color:#C8961A;color:#C8961A}
+/* Splitter states — body[data-split] */
+body[data-split="A"] #layers-wrap{display:none!important}
+body[data-split="A"] #layers-mod-bar{display:none!important}
+body[data-split="A"] #totems-view-wrap{display:none!important}
+body[data-split="A"] #layer-control-bar{pointer-events:none;opacity:.5}
+body[data-split="C"] #circle-view{display:none!important}
+/* LCB (LayerControlBar) */
+#layer-control-bar{display:none;background:#1a1a1f;border-bottom:1px solid #333;touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0}
+body.show-rib #layer-control-bar{display:flex}
+body.show-rib.view-circle #layer-control-bar{order:4}
+@media(min-width:600px){body.show-rib.view-circle #layer-control-bar{flex:0 0 100%;flex-shrink:0}}
+.lcb-left-btns,.lcb-right-btns{flex:none;display:flex}
+.lcb-left-btns{border-right:1px solid #444}
+.lcb-right-btns{border-left:1px solid #444}
+.lcb-left-btns button,.lcb-right-btns button{background:#1f1f26;border:none;border-right:1px solid #333;color:#888;width:34px;height:38px;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lcb-left-btns button:last-child,.lcb-right-btns button:last-child{border-right:none}
+.lcb-left-btns button.on,.lcb-right-btns button.on{color:#e8cc60;background:#2a2618}
+.lcb-seg{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;height:38px;background:color-mix(in srgb,var(--cs) 14%,#1b1b20);border-right:1px solid #333;position:relative;min-width:0;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.lcb-seg::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--cs);opacity:.7}
+.lcb-vu{width:13px;height:13px;border-radius:50%;background:var(--cs);flex:none;transition:opacity .15s;position:relative;cursor:pointer}
+.lcb-seg.muted .lcb-vu{opacity:.2}
+.lcb-seg.muted .lcb-vu::after{content:'';position:absolute;left:-2px;right:-2px;top:50%;height:1.5px;background:#999;transform:rotate(-35deg)}
+.lcb-seg .lcb-npas{color:var(--cs);font-weight:700;font-size:13px;pointer-events:none}
+.lcb-seg .lcb-unit{color:var(--cs);font-size:11px;opacity:.85;pointer-events:none}
+.lcb-seg .lcb-chev{color:var(--cs);font-size:17px;font-weight:700;line-height:1;width:18px;text-align:center;pointer-events:none}
+.lcb-seg.muted .lcb-npas,.lcb-seg.muted .lcb-unit,.lcb-seg.muted .lcb-chev{opacity:.3}
+body.dark-mode #layer-control-bar{background:#13131a;border-bottom-color:#2a2a33}
+body.dark-mode .lcb-left-btns button,body.dark-mode .lcb-right-btns button{background:#18181f;border-color:#2a2a33}
+body.dark-mode .lcb-seg{background:color-mix(in srgb,var(--cs) 10%,#13131a)}
+/* Totems (vue création v3.26) */
+#totems-view-wrap{display:none;gap:6px;padding:6px;flex-shrink:0}
+#totems-view-wrap.v326-active{display:flex}
+body.show-rib.view-circle #totems-view-wrap{order:6}
+@media(min-width:600px){body.show-rib.view-circle #totems-view-wrap{flex:0 0 100%;flex-shrink:0}}
+.v326-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;border:1px solid #2c2c33;border-top:3px solid var(--cs);border-radius:8px;padding:5px 4px;min-width:0;min-height:160px}
+.v326-totem.muted{opacity:.4}
+.v326-totem.folded{display:none}
+.v326-pad{position:relative;border-radius:7px;touch-action:none;border:1px solid #3a3a44;overflow:hidden;flex:1;min-height:60px}
+.v326-padA{background:linear-gradient(to top,rgba(255,175,45,.06) 0%,transparent 50%,rgba(70,120,210,.06) 100%),#23232b}
+.v326-padB{background:#262430}
+.v326-pad .v326-axx{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:10px;color:#888;pointer-events:none;z-index:1}
+.v326-pad .v326-axy{position:absolute;left:2px;top:0;bottom:0;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;font-size:10px;color:#888;pointer-events:none;z-index:1}
+.v326-cross{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--cs);box-shadow:0 0 7px var(--cs);transform:translate(-50%,-50%);left:50%;top:50%;display:none;pointer-events:none}
+.v326-totem.axed .v326-cross{display:block}
+.v326-totem-btns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.v326-totem-btns button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:6px;height:24px;padding:0 6px;font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.v326-totem-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
+.v326-totem.axed .v326-totem-undo{visibility:visible}
+body.dark-mode .v326-totem{border-color:#2a2a33}
+body.dark-mode .v326-pad{border-color:#2a2a33}
+body.dark-mode .v326-padA{background:linear-gradient(to top,rgba(255,175,45,.05) 0%,transparent 50%,rgba(70,120,210,.05) 100%),#1e1e26}
+body.dark-mode .v326-padB{background:#201e2e}
+/* Row1 v3.26 — mute caché, ↺ undo */
+.btn-mute-lbl.v326-hidden{display:none!important}
+.btn-layer-undo-v326{background:none;border:1.5px solid #884;border-radius:4px;padding:1px 5px;cursor:pointer;font-size:13px;color:#d90;visibility:hidden;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.layer-div.has-orig326 .btn-layer-undo-v326{visibility:visible}
 body.dark-mode .mod-mul-popup{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
 body.dark-mode .mod-mul-item{color:#d0cec8}
 body.dark-mode .mod-mul-item:hover{background:rgba(107,95,165,.15)}
@@ -1773,7 +1834,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.25.20</span>
+    <span class="app-version">v3.26.0</span>
   </div>
 </div>
 
@@ -2216,6 +2277,10 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="step-rows-wrap"><div id="linear-view-bar"></div></div>
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
+  <!-- v3.26 LayerControlBar — remplie par buildLCB() -->
+  <div id="layer-control-bar"></div>
+  <!-- v3.26 Totems view — remplie par buildTotemsView() -->
+  <div id="totems-view-wrap"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layer-edit-bar"></div><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
@@ -4243,6 +4308,9 @@ function refreshTransportBtn(){
   const btn=document.getElementById('btn-play');if(!btn)return;
   btn.textContent=playing?'■':'▶';
   btn.classList.toggle('active',playing);
+  // Sync GCB play button (v3.26)
+  const ribPlay=document.getElementById('rib-play-btn');
+  if(ribPlay){ribPlay.textContent=playing?'■':'▶';ribPlay.classList.toggle('playing',playing);}
 }
 function togglePlay(){
   if(!playing){
@@ -6754,6 +6822,345 @@ function updateLayerEditBar(){
 }
 // ── Couches rythmiques ────────────────────────────────────────────────────
 const layerObservers=[];
+// ════════════════════════════════════════════════════════════════════════════
+// v3.26 — Moteur axes + LCB + Totems
+// ════════════════════════════════════════════════════════════════════════════
+const LADDER_V326=[[4,'♩'],[8,'♪'],[12,'♪T'],[16,'♫'],[24,'♫T'],[32,'♬']];
+const BEATS_V326=4;
+// État axes par layer : axes = {dens,geom,fill,calS,calB} | orig = {pat[],n}
+const _v326=LAYERS.map(()=>({axes:null,orig:null}));
+let _v326view='rows'; // 'rows' | 'totems'
+let _v326detail=true; // ✎ — afficher le mod panel au tap LCB
+
+function _spbOf326(n){return(n%BEATS_V326===0)?Math.floor(n/BEATS_V326):1;}
+function _grainIdxOf326(li){
+  const n=state[li].pattern.length;
+  let best=0;
+  for(let i=1;i<LADDER_V326.length;i++){if(Math.abs(LADDER_V326[i][0]-n)<Math.abs(LADDER_V326[best][0]-n))best=i;}
+  return best;
+}
+function _snapshotOrig326(li){
+  if(!_v326[li].orig)_v326[li].orig={pat:state[li].pattern.slice()};
+}
+function _ensureAxes326(li){
+  if(_v326[li].axes)return;
+  const n=state[li].pattern.length;let k=0,gh=0;
+  state[li].pattern.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
+  _snapshotOrig326(li);
+  _v326[li].axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
+}
+function inferAxesFromPat326(li){
+  const n=state[li].pattern.length;let k=0,gh=0;
+  state[li].pattern.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
+  _snapshotOrig326(li);
+  if(_v326[li].axes){_v326[li].axes.dens=k/n;_v326[li].axes.fill=(n-k)?gh/(n-k):0;}
+  else _v326[li].axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
+  updateTotemsCross326(li);
+  _syncLayerDivHasOrig326(li);
+}
+function _placeGhosts326(pat,m){
+  const n=pat.length;
+  if(!pat.some(c=>c!=='.')){if(m<=0)return;
+    for(let j=0;j<m;j++){const p=Math.round(j*n/m)%n;if(pat[p]==='.')pat[p]='x';}return;}
+  while(m>0){
+    let best=-1,bl=0;
+    for(let s0=0;s0<n;s0++){
+      if(pat[s0]==='.'&&pat[(s0-1+n)%n]!=='.'){
+        let l=0;while(l<n&&pat[(s0+l)%n]==='.')l++;
+        if(l>bl){bl=l;best=s0;}
+      }
+    }
+    if(bl<=0)return;
+    pat[(best+Math.floor((bl-1)/2))%n]='x';m--;
+  }
+}
+function _genFromAxes326(li){
+  const n=state[li].pattern.length,ax=_v326[li].axes;
+  const spb=_spbOf326(n);
+  const cal=ax.calB*spb+Math.max(0,Math.min(spb-1,ax.calS));
+  const k=Math.max(0,Math.min(n,Math.round(ax.dens*n)));
+  const pat=Array(n).fill('.');
+  if(k>0){const used=new Set();
+    for(let i=0;i<k;i++){
+      const eu=i*n/k,cl=i;
+      let p=Math.round(ax.geom*eu+(1-ax.geom)*cl);
+      p=(((p+cal)%n)+n)%n;
+      let guard=0;while(used.has(p)&&guard++<n)p=(p+1)%n;
+      used.add(p);pat[p]='X';
+    }
+  }
+  _placeGhosts326(pat,Math.round(ax.fill*(n-k)));
+  state[li].pattern=pat;
+  buildStepsDOM(li,state[li].wrapped);
+  if(circleView)drawCircles();
+  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
+}
+function _setGrain326(li,gi){
+  gi=Math.max(0,Math.min(LADDER_V326.length-1,gi));
+  const n2=LADDER_V326[gi][0],old=state[li].pattern,n=old.length;
+  if(n2===n)return;
+  const pat=Array(n2).fill('.');
+  for(let i=0;i<n;i++){
+    if(old[i]!=='.'){const j=Math.round(i*n2/n)%n2;if(pat[j]==='.'||old[i]==='X')pat[j]=old[i];}
+  }
+  state[li].pattern=pat;
+  if(_v326[li].axes){const ns=_spbOf326(n2);_v326[li].axes.calS=Math.max(0,Math.min(Math.max(0,ns-1),_v326[li].axes.calS));}
+  buildStepsDOM(li,state[li].wrapped);
+  if(circleView)drawCircles();
+  const nPas=document.getElementById('pas-num-'+li);if(nPas)nPas.textContent=String(n2);
+  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+  updateLCB326();
+}
+function _restoreOrig326(li){
+  if(_v326[li].orig)state[li].pattern=_v326[li].orig.pat.slice();
+  _v326[li].axes=null;_v326[li].orig=null;
+  buildStepsDOM(li,state[li].wrapped);
+  if(circleView)drawCircles();
+  const t=document.getElementById('v326-totem-'+li);
+  if(t){t.classList.remove('axed');}
+  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+  _syncLayerDivHasOrig326(li);updateLCB326();
+}
+function _randPlacement326(li){
+  _snapshotOrig326(li);
+  const n=state[li].pattern.length;let k=0,m=0;
+  state[li].pattern.forEach(c=>{if(c==='X')k++;else if(c==='x')m++;});
+  const idx=[...Array(n).keys()];
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  const pat=Array(n).fill('.');idx.slice(0,k).forEach(p=>pat[p]='X');
+  _placeGhosts326(pat,m);
+  state[li].pattern=pat;_v326[li].axes=null;
+  buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
+  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
+}
+function _randAccents326(li){
+  _snapshotOrig326(li);
+  const pos=[],vals=[];
+  state[li].pattern.forEach((c,i)=>{if(c!=='.'){pos.push(i);vals.push(c);}});
+  for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vals[i],vals[j]]=[vals[j],vals[i]];}
+  pos.forEach((p,i)=>{state[li].pattern[p]=vals[i];});_v326[li].axes=null;
+  buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
+  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
+}
+function _syncLayerDivHasOrig326(li){
+  const ld=document.getElementById('layer-div-'+li);
+  if(ld)ld.classList.toggle('has-orig326',!!_v326[li].orig);
+}
+
+// ── LCB (LayerControlBar) ─────────────────────────────────────────────────
+const _LAYER_COLS=['#378ADD','#D85A30','#1D9E75'];
+function buildLCB326(){
+  const el=document.getElementById('layer-control-bar');if(!el)return;
+  el.innerHTML='';
+  // Bouton ✎ gauche (toggle mod panel global)
+  const leftWrap=document.createElement('div');leftWrap.className='lcb-left-btns';
+  const bEdit=document.createElement('button');bEdit.id='lcb-b-edit';bEdit.title='Édition détail on/off';bEdit.textContent='✎';
+  if(_v326detail)bEdit.classList.add('on');
+  bEdit.addEventListener('click',()=>{
+    _v326detail=!_v326detail;bEdit.classList.toggle('on',_v326detail);
+    _doToggleLayerPanels();
+  });
+  leftWrap.appendChild(bEdit);el.appendChild(leftWrap);
+  // 3 segments colorés
+  LAYERS.forEach((layer,li)=>{
+    const seg=document.createElement('div');seg.className='lcb-seg'+(state[li].muted?' muted':'');
+    seg.style.setProperty('--cs',_LAYER_COLS[li]);seg.dataset.li=li;
+    const vu=document.createElement('span');vu.className='lcb-vu';vu.title='Mute '+layer.label;
+    const npas=document.createElement('span');npas.className='lcb-npas';npas.textContent=String(state[li].pattern.length);
+    const unitLbl=document.createElement('span');unitLbl.className='lcb-unit';
+    const gi=_grainIdxOf326(li);unitLbl.textContent=LADDER_V326[gi][1];
+    const chev=document.createElement('span');chev.className='lcb-chev';chev.textContent='▾';
+    seg.appendChild(vu);seg.appendChild(npas);seg.appendChild(unitLbl);seg.appendChild(chev);
+    el.appendChild(seg);
+    // Tap vu → mute
+    vu.addEventListener('click',e=>{
+      e.stopPropagation();
+      state[li].muted=!state[li].muted;
+      seg.classList.toggle('muted',state[li].muted);vu.classList.toggle('muted',state[li].muted);
+      const bml=document.getElementById('btn-mute-lbl-'+li);
+      if(bml){bml.classList.toggle('muted',state[li].muted);bml.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;}
+      const ld=document.querySelector('.layer.'+LAYERS[li].cls);
+      if(ld)ld.classList.toggle('muted-layer',state[li].muted);
+      const _sd=document.getElementById('steps-'+LAYERS[li].id);
+      const _r2=_sd?.closest('.layer-row2');if(_r2)_r2.classList.toggle('muted',state[li].muted);
+      const _sk=['low','high','noise'][li];
+      const _smb=document.querySelector(`.sound-layer[data-sound-key="${_sk}"] .btn-mute-lbl`);
+      if(_smb){_smb.classList.toggle('muted',state[li].muted);}
+      _syncBtnVolAllMuted();grooveDirty=true;updateGrooveSaveBtn();
+      if(circleView)drawCircles();
+    });
+    // Drag ↕ grain / Tap → toggle mod panel layer
+    let _lcbDragMode=null,_lcbY0=0,_lcbX0=0,_lcbGi0=0,_lcbDens0=0,_lcbT0=0;
+    seg.addEventListener('pointerdown',e=>{
+      if(e.target===vu)return;
+      _lcbDragMode=null;_lcbY0=e.clientY;_lcbX0=e.clientX;
+      _lcbGi0=_grainIdxOf326(li);_lcbT0=performance.now();
+      seg.setPointerCapture(e.pointerId);
+    });
+    seg.addEventListener('pointermove',e=>{
+      if(!seg.hasPointerCapture(e.pointerId))return;
+      const dy=e.clientY-_lcbY0,dx=e.clientX-_lcbX0;
+      if(!_lcbDragMode&&Math.hypot(dx,dy)>10){
+        _lcbDragMode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
+        if(_lcbDragMode==='dens'){_ensureAxes326(li);_lcbDens0=_v326[li].axes.dens;}
+      }
+      if(_lcbDragMode==='grain'){
+        const gi=Math.max(0,Math.min(LADDER_V326.length-1,_lcbGi0+Math.round(-dy/36)));
+        _setGrain326(li,gi);
+        _dragOverlay.show('<span style="font-size:18px;font-weight:700;color:'+_LAYER_COLS[li]+'">'+state[li].pattern.length+'·'+LADDER_V326[_grainIdxOf326(li)][1]+'</span>');
+      }else if(_lcbDragMode==='dens'){
+        const n=state[li].pattern.length;
+        _v326[li].axes.dens=Math.max(0,Math.min(1,_lcbDens0+dx/200));
+        _genFromAxes326(li);
+        _dragOverlay.show('<span style="font-size:18px;font-weight:700;color:'+_LAYER_COLS[li]+'">densité '+Math.round(_v326[li].axes.dens*n)+'</span>');
+      }
+    });
+    seg.addEventListener('pointerup',()=>{
+      _dragOverlay.hide();
+      if(!_lcbDragMode&&performance.now()-_lcbT0<300){
+        // Tap : toggle mod panel de ce layer
+        if(_v326detail&&_v326view==='rows'){
+          // S'assurer que layers-wrap est visible
+          if(!layerPanelsOuverts){layerPanelsOuverts=true;const lw=document.getElementById('layers-wrap');if(lw)lw.style.display='';}
+          const mp=document.getElementById('mod-panel-'+li);if(!mp)return;
+          const isHidden=mp.classList.contains('hidden');
+          mp.classList.toggle('hidden');
+          const ld2=document.getElementById('layer-div-'+li);
+          const tb=ld2?.querySelector('.btn-layer-toggle');
+          if(tb){tb.textContent=isHidden?'▾▼':'▾';tb.classList.toggle('open',isHidden);}
+          if(isHidden)updateLayerEditBar();
+          updateLCB326();
+        }
+      }
+      _lcbDragMode=null;
+    });
+    seg.addEventListener('pointercancel',()=>{_dragOverlay.hide();_lcbDragMode=null;});
+  });
+  // Toggle ☰/▥ droite
+  const rightWrap=document.createElement('div');rightWrap.className='lcb-right-btns';
+  const bRows=document.createElement('button');bRows.id='lcb-b-rows';bRows.textContent='☰';bRows.title='Vue édition';
+  const bTotems=document.createElement('button');bTotems.id='lcb-b-totems';bTotems.textContent='▥';bTotems.title='Vue création (totems)';
+  if(_v326view==='rows')bRows.classList.add('on'); else bTotems.classList.add('on');
+  bRows.addEventListener('click',()=>{_setV326View('rows');});
+  bTotems.addEventListener('click',()=>{_setV326View('totems');});
+  rightWrap.appendChild(bRows);rightWrap.appendChild(bTotems);el.appendChild(rightWrap);
+}
+function updateLCB326(){
+  LAYERS.forEach((layer,li)=>{
+    const seg=document.querySelector(`#layer-control-bar .lcb-seg[data-li="${li}"]`);if(!seg)return;
+    seg.classList.toggle('muted',!!state[li].muted);
+    const vu=seg.querySelector('.lcb-vu');if(vu)vu.classList.toggle('muted',!!state[li].muted);
+    const np=seg.querySelector('.lcb-npas');if(np)np.textContent=String(state[li].pattern.length);
+    const ul=seg.querySelector('.lcb-unit');if(ul){const gi=_grainIdxOf326(li);ul.textContent=LADDER_V326[gi][1];}
+    const ch=seg.querySelector('.lcb-chev');
+    if(ch){const mp=document.getElementById('mod-panel-'+li);ch.textContent=mp&&!mp.classList.contains('hidden')?'▾▼':'▾';}
+  });
+}
+function _setV326View(v){
+  _v326view=v;
+  const wrap=document.getElementById('totems-view-wrap');
+  const lw=document.getElementById('layers-wrap');
+  if(wrap)wrap.classList.toggle('v326-active',v==='totems');
+  if(lw)lw.style.display=v==='totems'?'none':(layerPanelsOuverts?'':'none');
+  const bR=document.getElementById('lcb-b-rows'),bT=document.getElementById('lcb-b-totems');
+  if(bR)bR.classList.toggle('on',v==='rows');
+  if(bT)bT.classList.toggle('on',v==='totems');
+  updateTotemsView326();
+}
+
+// ── Totems view ──────────────────────────────────────────────────────────
+function buildTotemsView326(){
+  const wrap=document.getElementById('totems-view-wrap');if(!wrap)return;
+  wrap.innerHTML='';
+  LAYERS.forEach((layer,li)=>{
+    const col=_LAYER_COLS[li];
+    const t=document.createElement('div');
+    t.className='v326-totem'+(state[li].muted?' muted':'')+(state[li].pattern.length===0?' folded':'')+(_v326[li].orig?' axed':'');
+    t.id='v326-totem-'+li;t.style.setProperty('--cs',col);t.dataset.li=li;
+    // Pad A : densité ↔ / liant ↕
+    const padA=document.createElement('div');padA.className='v326-pad v326-padA';
+    padA.innerHTML='<span class="v326-axx">densité</span><span class="v326-axy">liant</span><div class="v326-cross" id="v326-crossA-'+li+'"></div>';
+    // Pad B : décalage (fort·faible) ↔ / géométrie ↕
+    const padB=document.createElement('div');padB.className='v326-pad v326-padB';
+    padB.innerHTML='<span class="v326-axx">décalage (fort · faible)</span><span class="v326-axy">géométrie</span><div class="v326-cross" id="v326-crossB-'+li+'"></div>';
+    // Buttons
+    const btns=document.createElement('div');btns.className='v326-totem-btns';
+    const bRndPos=document.createElement('button');bRndPos.textContent='🎲pos';bRndPos.title='Placement aléatoire';bRndPos.addEventListener('click',()=>_randPlacement326(li));
+    const bRndAcc=document.createElement('button');bRndAcc.textContent='🎲acc';bRndAcc.title='Accents aléatoires';bRndAcc.addEventListener('click',()=>_randAccents326(li));
+    const bUndo=document.createElement('button');bUndo.className='v326-totem-undo';bUndo.textContent='↺';bUndo.title='Revenir au motif original';bUndo.addEventListener('click',()=>_restoreOrig326(li));
+    btns.appendChild(bRndPos);btns.appendChild(bRndAcc);btns.appendChild(bUndo);
+    t.appendChild(padA);t.appendChild(padB);t.appendChild(btns);
+    wrap.appendChild(t);
+    // Pad handlers
+    function v326PadHandler(pad,applyFn){
+      pad.addEventListener('pointerdown',e=>{
+        _ensureAxes326(li);pad.setPointerCapture(e.pointerId);
+        const r=pad.getBoundingClientRect();
+        const go=ev=>{
+          const x=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
+          const y=Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height));
+          applyFn(x,y);_genFromAxes326(li);
+        };
+        go(e);
+        const mv=ev=>go(ev);
+        const up=()=>{pad.removeEventListener('pointermove',mv);pad.removeEventListener('pointerup',up);pad.removeEventListener('pointercancel',up);};
+        pad.addEventListener('pointermove',mv);pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
+      },{passive:false});
+    }
+    v326PadHandler(padA,(x,y)=>{_v326[li].axes.dens=x;_v326[li].axes.fill=1-y;});
+    v326PadHandler(padB,(x,y)=>{
+      const n=state[li].pattern.length,spb=_spbOf326(n);
+      const totalPos=spb*BEATS_V326;
+      const idx=Math.round(x*(totalPos-1));
+      _v326[li].axes.calS=Math.floor(idx/BEATS_V326);
+      _v326[li].axes.calB=idx%BEATS_V326;
+      _v326[li].axes.geom=y;
+    });
+  });
+  updateTotemsView326();
+}
+function updateTotemsView326(){
+  LAYERS.forEach((layer,li)=>{
+    const t=document.getElementById('v326-totem-'+li);if(!t)return;
+    t.classList.toggle('muted',!!state[li].muted);
+    const mp=document.getElementById('mod-panel-'+li);
+    const folded=mp?mp.classList.contains('hidden'):false;
+    t.classList.toggle('folded',folded&&_v326view==='totems');
+    t.classList.toggle('axed',!!_v326[li].orig);
+    updateTotemsCross326(li);
+    // Fond padB : zones colorées par cran s
+    const padB=t.querySelector('.v326-padB');
+    if(padB){
+      const n=state[li].pattern.length,pspb=_spbOf326(n);
+      const bgs=[];
+      for(let k=0;k<pspb;k++){
+        const lp=(k/pspb*100).toFixed(1)+'%',rp=((k+1)/pspb*100).toFixed(1)+'%';
+        bgs.push((k%2===0?'#262430':'#252436')+' '+lp+' '+rp);
+      }
+      padB.style.backgroundImage='linear-gradient(90deg,'+bgs.join(',')+')';
+    }
+  });
+}
+function updateTotemsCross326(li){
+  const ax=_v326[li].axes;
+  const cA=document.getElementById('v326-crossA-'+li);
+  const cB=document.getElementById('v326-crossB-'+li);
+  if(!ax){if(cA)cA.style.display='none';if(cB)cB.style.display='none';return;}
+  if(cA){cA.style.display='';cA.style.left=(ax.dens*100)+'%';cA.style.top=((1-ax.fill)*100)+'%';}
+  if(cB){
+    const n=state[li].pattern.length,spb=_spbOf326(n);
+    const totalPos=spb*BEATS_V326;
+    const idx=ax.calS*BEATS_V326+ax.calB;
+    const xPct=totalPos>1?idx/(totalPos-1):0;
+    cB.style.display='';cB.style.left=(xPct*100)+'%';cB.style.top=(ax.geom*100)+'%';
+  }
+  const t=document.getElementById('v326-totem-'+li);
+  if(t)t.classList.toggle('axed',!!_v326[li].orig);
+}
+
 function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
   const cont=document.getElementById('layers');if(!cont)return;
@@ -6811,6 +7218,7 @@ function buildLayers(){
       const _smb=document.querySelector(`.sound-layer[data-sound-key="${['low','high','noise'][li]}"] .btn-mute-lbl`);
       if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;}
     });
+    btnMute.classList.add('v326-hidden'); // mute déplacé dans LCB
     row1.appendChild(btnMute);
 
     // Bouton rec ⏺ (dans row1, à droite du i)
@@ -6862,6 +7270,8 @@ function buildLayers(){
       if(pasNum)pasNum.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,false);
       _syncPadToPattern(li);
+      _v326[li].axes=null;_v326[li].orig=null;_syncLayerDivHasOrig326(li);
+      updateLCB326();updateTotemsView326();
       if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
     };
@@ -6895,16 +7305,20 @@ function buildLayers(){
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
     });
-    // i info + rec
+    // i info + rec + ↺ undo (v3.26)
     row1.appendChild(btnI);
     row1.appendChild(btnDicePat);
     row1.appendChild(bRec);
-    // Bouton mod dans row1 (unique, visible dans toutes les vues)
+    // ↺ retour au motif original (visible seulement quand axes actifs)
+    const btnUndoV326=document.createElement('button');btnUndoV326.className='btn-layer-undo-v326';
+    btnUndoV326.textContent='↺';btnUndoV326.title='Retour au motif original';
+    btnUndoV326.addEventListener('click',e=>{e.stopPropagation();_restoreOrig326(li);});
+    row1.appendChild(btnUndoV326);
+    // Bouton ▾ mod dans row1 (unique, visible dans toutes les vues)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
     btnMod.style.cssText='margin-left:auto;flex-shrink:0;align-self:flex-start';
-    btnMod.textContent='mod ▶';
+    btnMod.textContent='▾';
     row1.appendChild(btnMod);
-    {const ro=new ResizeObserver(([e])=>{btnDicePat.classList.toggle('visible',e.contentRect.width>=260);});ro.observe(row1);}
     layerDiv.appendChild(row1);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
@@ -7276,10 +7690,12 @@ function buildLayers(){
   buildLayerEditBar();
   // Appliquer l'état initial des layers-wrap et layers-mod-bar
   const _lwInit=document.getElementById('layers-wrap');
-  if(_lwInit) _lwInit.style.display=layerPanelsOuverts?'':'none';
+  if(_lwInit) _lwInit.style.display=(_v326view==='totems')?'none':(layerPanelsOuverts?'':'none');
   const _lmbInit=document.getElementById('layers-mod-bar');
   if(_lmbInit) _lmbInit.style.display=layerPanelsOuverts?'flex':'none';
   updateRhythmInfoBar();
+  buildLCB326();
+  buildTotemsView326();
 }
 
 function findPatternBySeq(arr){
@@ -7351,6 +7767,7 @@ function onStepClick(li,si,el){
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
   _syncPadToPattern(li);
+  inferAxesFromPat326(li);updateLCB326();
 }
 
 // ── Sauvegarde pattern couche — popover ──────────────────────────────────
@@ -11370,10 +11787,10 @@ function updateRhythmInfoBar(){
   const _metroOn=!metro.muted;
   const _sonMuted=bandMuted;
   const leftHtml=`<div class="rib-left"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div></div>`;
-  // Col 2 : 3 layers centré absolu (span 2 lignes) — chaque col layer empile bouton+info
-  const centerHtml=`<div class="rib-center">${layerCols}</div>`;
-  // Col 3 : son + hamburger (span 2 lignes via .rib-right)
-  const rightHtml=`<div class="rib-right">${modBtnHtml}<button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button></div>`;
+  // Col 2 : bouton ▶ play centré (v3.26 — remplace les 3 colonnes layer)
+  const centerHtml=`<div class="rib-center"><button id="rib-play-btn"${playing?' class="playing"':''}>${playing?'■':'▶'}</button></div>`;
+  // Col 3 : signature + son (hamburger déplacé dans LCB)
+  const rightHtml=`<div class="rib-right"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button></div>`;
   el.style.display='flex';
   el.innerHTML=`<div class="rib-grid">${leftHtml}${centerHtml}${rightHtml}</div>`;
   // ── Handlers ──
@@ -11419,6 +11836,41 @@ function updateRhythmInfoBar(){
     });
     zone?.addEventListener('pointercancel',()=>{_dragOverlay.hide();_ribDrag=false;});
   }
+  // ▶ play button (v3.26 GCB)
+  el.querySelector('#rib-play-btn')?.addEventListener('click',()=>{
+    const playBtn=document.getElementById('btn-play');
+    if(playBtn)playBtn.click(); else togglePlay?.();
+  });
+  // Splitter drag sur la barre GCB (pas sur les boutons)
+  {
+    const STATES=['A','B','C'];
+    let _spl_y0=0,_spl_moved=false;
+    el.addEventListener('pointerdown',e=>{
+      if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
+      _spl_y0=e.clientY;_spl_moved=false;
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove',e=>{
+      if(!el.hasPointerCapture(e.pointerId))return;
+      if(Math.abs(e.clientY-_spl_y0)>8)_spl_moved=true;
+    });
+    el.addEventListener('pointerup',e=>{
+      if(!_spl_moved)return;
+      const dy=e.clientY-_spl_y0;
+      const cur=document.body.dataset.split||'B';
+      let next=cur;
+      if(dy<-30)next=(cur==='C'?'B':cur==='B'?'A':'A');
+      else if(dy>30)next=(cur==='A'?'B':cur==='B'?'C':'C');
+      if(next!==cur){
+        document.body.dataset.split=next;
+        // En état B : restaurer layers-wrap si vue rows
+        const lw=document.getElementById('layers-wrap');
+        if(lw&&next!=='A')lw.style.display=(_v326view==='totems')?'none':(layerPanelsOuverts?'':'none');
+      }
+      _spl_moved=false;
+    });
+    el.addEventListener('pointercancel',()=>{_spl_moved=false;});
+  }
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
     _doToggleLayerPanels();
   });
@@ -11460,9 +11912,11 @@ function updateRhythmInfoBar(){
       if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
       _syncBtnVolAllMuted();
       updateRhythmInfoBar(); drawCircles();
+      updateLCB326();
     });
   });
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
+  updateLCB326();
 }
 
 function visualLoopCircle(){
