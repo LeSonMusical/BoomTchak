@@ -1202,7 +1202,7 @@ body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer — bloc stylisé 2 lignes */
 #rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 6px;font-size:9px;color:#aaa;box-sizing:border-box;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.08);border-radius:8px;margin:2px 4px;width:calc(100% - 8px);touch-action:none;cursor:grab;position:relative}
-#rhythm-info-bar::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:rgba(200,150,26,.45);pointer-events:none}
+#rhythm-info-bar::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:rgba(200,150,26,.45);pointer-events:none}
 body.dark-mode #rhythm-info-bar{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)}
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
@@ -1412,7 +1412,8 @@ body[data-split="A"] #layers-wrap{display:none!important}
 body[data-split="A"] #layers-mod-bar{display:none!important}
 body[data-split="A"] #totems-view-wrap{display:none!important}
 body[data-split="A"] #layer-control-bar{pointer-events:none;opacity:.5}
-body[data-split="C"] #circle-view{display:none!important}
+/* State C: canvas hidden via height:0 + overflow:hidden (set by _splCvMaxH=0 in JS) */
+body.view-circle #circle-view{overflow:hidden}
 /* LCB (LayerControlBar) */
 #layer-control-bar{display:none;background:#f0efec;border-top:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.10);touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0;margin-bottom:3px}
 body.show-rib #layer-control-bar{display:flex}
@@ -1845,7 +1846,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.5</span>
+    <span class="app-version">v3.26.6</span>
   </div>
 </div>
 
@@ -7416,13 +7417,14 @@ function buildLayers(){
       state[li].pendingDouble=dbl;state[li].pendingHalf=hlf;state[li].pendingClear=(!dbl&&!hlf);
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
-      _syncPadToPattern(li);
+      _syncPadToPattern(li);updateLCB326();
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{
       if(!playing){state[li].ternOn=!state[li].ternOn;state[li].pendingTern=null;}
       else{state[li].pendingTern=state[li].pendingTern!=null?!state[li].pendingTern:!state[li].ternOn;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
+      updateLCB326();
     });
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
@@ -9749,6 +9751,7 @@ function playMetroClick(atTime,type){
 
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
+let _splCvMaxH = null; // splitter max-height constraint on #circle-view (null = no constraint)
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
 let _lciMaxPageSize = 24;       // nb max de pas par page en vue Cycle (16/24/48, défaut 24)
@@ -9818,7 +9821,13 @@ function resizeCanvas(){
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    wrap.style.height=''; // hauteur auto : circle-view s'adapte à ses enfants (canvas + lci bar)
+    if(_splCvMaxH!==null){
+      wrap.style.height=Math.min(canvH,_splCvMaxH)+'px';
+      wrap.style.overflow='hidden';
+    }else{
+      wrap.style.height=''; // hauteur auto
+      wrap.style.overflow='';
+    }
     drawCircles(); return;
   }
   const dotR = 10;
@@ -9847,7 +9856,10 @@ function resizeCanvas(){
   }
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
-  wrap.style.height = (physH + toggleH) + 'px';
+  const naturalH = physH + toggleH;
+  const constrainedH = (_splCvMaxH !== null) ? Math.min(naturalH, _splCvMaxH) : naturalH;
+  wrap.style.height = constrainedH + 'px';
+  wrap.style.overflow = (_splCvMaxH !== null && _splCvMaxH < naturalH) ? 'hidden' : '';
   drawCircles();
 }
 
@@ -11823,70 +11835,87 @@ function updateRhythmInfoBar(){
     const playBtn=document.getElementById('btn-play');
     if(playBtn)playBtn.click(); else togglePlay?.();
   });
-  // Splitter drag sur la barre GCB — slide visuel + resize canvas
+  // Splitter drag sur la barre GCB — resize canvas uniquement (approche maquette)
   {
-    let _spl_y0=0,_spl_moved=false,_spl_cvH0=0,_spl_rafId=null;
-    const _splSlideEls=()=>[
-      document.getElementById('layer-control-bar'),
-      document.getElementById('totems-view-wrap'),
-      document.getElementById('layers-wrap')
-    ].filter(Boolean);
-    const _splResetSlide=(animate)=>{
-      _splSlideEls().forEach(e=>{
-        if(animate){e.style.transition='transform .22s cubic-bezier(.4,0,.2,1)';setTimeout(()=>e.style.transition='',240);}
-        else e.style.transition='';
-        e.style.transform='';
-      });
-    };
+    let _spl_y0=0,_spl_moved=false,_spl_h0=0,_spl_rafId=null;
+
+    function _spl_layoutMax(){
+      const gcb=document.getElementById('rhythm-info-bar');
+      const lcb=document.getElementById('layer-control-bar');
+      const nb=document.querySelector('.bottom-bar');
+      const gcbH=gcb?gcb.offsetHeight:48;
+      const lcbH=(lcb&&lcb.offsetParent)?lcb.offsetHeight:38;
+      const nbH=nb?nb.offsetHeight:60;
+      return Math.max(60,window.innerHeight-gcbH-lcbH-nbH-8);
+    }
+
+    function _spl_setState(s,animate){
+      const M=_spl_layoutMax();
+      // A and B use null (no constraint = natural canvas height); C uses 0
+      const targetH={A:null,B:null,C:0}[s];
+      document.body.dataset.split=s;
+      const wrap=document.getElementById('circle-view');
+      if(!wrap)return;
+      _splCvMaxH=targetH;
+      if(targetH===0){
+        // Animate to height 0 then keep hidden
+        if(animate){
+          wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
+          setTimeout(()=>{wrap.style.transition='';},220);
+        }
+        wrap.style.height='0px';
+        wrap.style.overflow='hidden';
+      }else{
+        // Remove constraint, let resizeCanvas restore natural height (with animation)
+        wrap.style.overflow='';
+        if(animate){
+          wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
+          setTimeout(()=>{wrap.style.transition='';},220);
+        }
+        if(typeof resizeCanvas==='function')resizeCanvas();
+      }
+    }
+
     el.addEventListener('pointerdown',e=>{
       if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
+      const wrap=document.getElementById('circle-view');
+      if(!wrap)return;
       _spl_y0=e.clientY;_spl_moved=false;
-      const cv=document.getElementById('circle-view');
-      _spl_cvH0=cv?cv.getBoundingClientRect().height:300;
-      _splSlideEls().forEach(e=>e.style.transition='none');
+      _spl_h0=wrap.getBoundingClientRect().height;
+      wrap.style.transition='none';
       el.setPointerCapture(e.pointerId);
     });
+
     el.addEventListener('pointermove',e=>{
       if(!el.hasPointerCapture(e.pointerId))return;
       const dy=e.clientY-_spl_y0;
-      if(Math.abs(dy)>6){
+      if(Math.abs(dy)>4){
         _spl_moved=true;
-        // Effet glissé visuel : translate les sections sous la GCB
-        const clamped=Math.max(-120,Math.min(120,dy));
-        _splSlideEls().forEach(el2=>el2.style.transform=`translateY(${clamped*0.55}px)`);
-        // Resize canvas si vue circulaire
-        if(circleView){
-          const cv=document.getElementById('circle-view');
-          if(cv){
-            const newH=Math.max(80,Math.min(window.innerHeight*0.82,_spl_cvH0+dy));
-            cv.style.height=newH+'px';
-            if(!_spl_rafId)_spl_rafId=requestAnimationFrame(()=>{if(typeof resizeCanvas==='function')resizeCanvas();_spl_rafId=null;});
-          }
-        }
+        const M=_spl_layoutMax();
+        const newH=Math.max(0,Math.min(M,_spl_h0+dy));
+        // Only constrain when shrinking: growing past natural height has no visible effect
+        _splCvMaxH=(newH<_spl_h0)?newH:null;
+        if(!_spl_rafId)_spl_rafId=requestAnimationFrame(()=>{
+          if(typeof resizeCanvas==='function')resizeCanvas();
+          _spl_rafId=null;
+        });
       }
     });
+
     el.addEventListener('pointerup',e=>{
-      const cv=document.getElementById('circle-view');
-      if(cv){cv.style.height='';cv.style.minHeight='';}
-      _splResetSlide(true);
-      if(!_spl_moved)return;
-      const dy=e.clientY-_spl_y0;
-      const cur=document.body.dataset.split||'B';
-      let next=cur;
-      if(dy<-30)next=(cur==='C'?'B':cur==='B'?'A':'A');
-      else if(dy>30)next=(cur==='A'?'B':cur==='B'?'C':'C');
-      if(next!==cur){
-        document.body.dataset.split=next;
-        const lw=document.getElementById('layers-wrap');
-        if(lw&&next!=='A')lw.style.display=(_v326view==='totems')?'none':(layerPanelsOuverts?'':'none');
-      }
-      setTimeout(()=>{if(typeof resizeCanvas==='function')resizeCanvas();},50);
+      if(!_spl_moved){_spl_moved=false;return;}
+      const M=_spl_layoutMax();
+      // Use virtual height (h0 + dy) so state A is reachable even though canvas can't grow
+      const virtualH=Math.max(0,Math.min(M,_spl_h0+(e.clientY-_spl_y0)));
+      const states=[['A',M],['B',M*0.45],['C',0]];
+      states.sort((a,b)=>Math.abs(virtualH-a[1])-Math.abs(virtualH-b[1]));
+      _spl_setState(states[0][0],true);
       _spl_moved=false;
     });
+
     el.addEventListener('pointercancel',()=>{
-      const cv=document.getElementById('circle-view');
-      if(cv){cv.style.height='';cv.style.minHeight='';}
-      _splResetSlide(true);_spl_moved=false;
+      _spl_moved=false;
+      _spl_setState(document.body.dataset.split||'B',false);
     });
   }
   el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
