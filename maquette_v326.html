@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BoomTchak — Maquette v3.26 · it.3 (jetable)</title>
+<title>BoomTchak — Maquette v3.26 · it.4 (jetable)</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
@@ -17,27 +17,35 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 #cv{position:absolute;inset:0;width:100%;height:100%}
 #view-info{position:absolute;bottom:4px;left:8px;font-size:10px;color:#888}
 
-/* ---- GlobalControlBar (séparatrice / splitter) ---- */
+/* ---- GlobalControlBar : ⏱ | tempo | ▶ | sig | 🔊 ---- */
 #gcb{flex:none;background:#211e15;border-top:2px solid #C8961A;border-bottom:2px solid #C8961A;
   touch-action:none;cursor:grab}
 #gcb-handle{width:44px;height:4px;border-radius:2px;background:#C8961A;opacity:.5;margin:3px auto 1px}
-#gcb-row{display:flex;align-items:center;gap:8px;padding:1px 8px 5px}
+#gcb-row{display:grid;grid-template-columns:auto 1fr auto 1fr auto;align-items:center;
+  gap:8px;padding:1px 8px 5px}
 #gcb button{background:transparent;border:1px solid #5a4c20;color:#bba;border-radius:6px;
   font-size:15px;min-width:38px;height:32px;padding:0 8px}
-#gcb-play{color:#e8cc60}
+#gcb-play{color:#e8cc60;font-size:17px;min-width:46px}
 #gcb-play.on{background:#C8961A;color:#1b1b20;border-color:#C8961A}
 #metro-btn.on{color:#7fd8b0;border-color:#3A8C6E}
 #snd-btn.off{color:#666}
-#tempo-zone{flex:1;min-width:64px;display:flex;flex-direction:column;justify-content:center;
-  gap:3px;padding:2px 4px}
+#sig-btn{justify-self:end;color:#9bc4a8;font-size:13px}
+#tempo-zone{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:2px 4px;min-width:60px}
 #bpm-lbl{font-size:14px;font-weight:600;color:#e8cc60;text-align:center;line-height:1}
 #tempo-gauge{height:3px;background:#3a3424;border-radius:2px;overflow:hidden}
 #tempo-gauge-fill{height:100%;background:#C8961A;width:40%}
 
-/* ---- LayerControlBar (avec pastilles VU/mute + toggle vue) ---- */
+/* ---- LayerControlBar : [👁|v26] + 3 segments + [☰|▥] ---- */
 #lcb{flex:none;display:flex;border-bottom:1px solid #333;touch-action:none}
-.seg{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:40px;
-  background:color-mix(in srgb,var(--c) 14%,#1b1b20);border-right:1px solid #333;position:relative}
+#lcb-left,#lcb-tog{flex:none;display:flex}
+#lcb-left{border-right:1px solid #444}
+#lcb-tog{border-left:1px solid #444}
+#lcb-left button,#lcb-tog button{background:#1f1f26;border:none;border-right:1px solid #333;
+  color:#888;width:38px;font-size:14px}
+#lcb-left button:last-child,#lcb-tog button:last-child{border-right:none}
+#lcb-left button.on,#lcb-tog button.on{color:#e8cc60;background:#2a2618}
+.seg{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;height:40px;
+  background:color-mix(in srgb,var(--c) 14%,#1b1b20);border-right:1px solid #333;position:relative;min-width:0}
 .seg::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--c);opacity:.7}
 .seg .vu{width:16px;height:16px;border-radius:50%;border:none;padding:0;position:relative;
   background:transparent;flex:none}
@@ -45,36 +53,33 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 .seg .vu.muted .vu-core{opacity:.18}
 .seg .vu.muted::after{content:'';position:absolute;left:-2px;right:-2px;top:50%;height:2px;
   background:#999;transform:rotate(-35deg)}
-.seg .chev{color:var(--c);font-size:12px;width:12px}
-.seg .seglbl{color:var(--c);font-weight:700;font-size:14px;letter-spacing:.5px}
-.seg.muted .chev,.seg.muted .seglbl{opacity:.3}
-#lcb-tog{flex:none;display:flex;border-left:1px solid #444}
-#lcb-tog button{background:#1f1f26;border:none;border-right:1px solid #333;color:#888;
-  width:38px;font-size:15px}
-#lcb-tog button:last-child{border-right:none}
-#lcb-tog button.on{color:#e8cc60;background:#2a2618}
+.seg .npas{color:var(--c);font-weight:700;font-size:15px}
+.seg .unit{color:var(--c);font-size:13px;opacity:.85}
+.seg .chev{color:var(--c);font-size:19px;font-weight:700;line-height:1;width:20px;text-align:center}
+.seg.muted .npas,.seg.muted .unit,.seg.muted .chev{opacity:.3}
 
 /* ---- Layers zone ---- */
 #layers-zone{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #lz-hint{flex:none;padding:3px 8px;font-size:10px;color:#777;text-align:center}
 #lz-body{flex:1;min-height:0;overflow-y:auto;padding:0 6px 6px}
 
-/* vue classic (édition) */
+/* vue édition */
 .lrow{margin-bottom:8px;border:1px solid #2c2c33;border-radius:8px;padding:5px 6px;
   border-left:3px solid var(--c)}
 .lrow.muted{opacity:.4}
-.lrow-h{display:flex;align-items:center;gap:5px;font-size:12px;margin-bottom:5px;color:#bbb;flex-wrap:wrap}
+.lrow-h{display:flex;align-items:center;gap:5px;font-size:12px;color:#bbb;flex-wrap:wrap}
 .ldot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
 .lrow-h .lname{font-weight:600;color:var(--c)}
 .lrow-h button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:6px;
   height:24px;min-width:24px;padding:0 5px;font-size:12px}
-.pset-name{color:#ddd;font-style:italic;max-width:80px;overflow:hidden;text-overflow:ellipsis;
+.pset-name{color:#ddd;font-style:italic;max-width:86px;overflow:hidden;text-overflow:ellipsis;
   white-space:nowrap;text-align:center}
 .lrow-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
 .lrow.axed .lrow-undo{visibility:visible}
-.lrow-meta{margin-left:auto;color:#777;font-size:11px}
-.lrow-steps{display:flex;gap:2px}
+.lrow-steps{display:flex;gap:2px;margin-top:5px}
+body.nodetail .lrow-steps{display:none}
 .cell{flex:1;height:30px;max-width:34px;border-radius:5px;background:#26262d;border:1px solid #36363e}
+.style25 .cell{height:26px;border-radius:4px;max-width:none}
 .cell.on{background:var(--c);border-color:var(--c)}
 .cell.soft{background:color-mix(in srgb,var(--c) 42%,#26262d);border-color:var(--c)}
 .cell.beat{margin-left:6px}
@@ -91,19 +96,18 @@ body[data-state="C"] .t-ring{display:block}
 .t-pad{align-self:stretch;position:relative;border-radius:10px;touch-action:none;
   background:repeating-linear-gradient(90deg,#23232b 0 24.5%,#2a2a33 24.5% 25%),#23232b;
   border:1px solid #3a3a44;overflow:hidden}
-.t-padA{flex:1.2;min-height:84px}
-.t-padB{flex:1;min-height:70px;background:repeating-linear-gradient(90deg,#262430 0 24.5%,#2d2b38 24.5% 25%),#262430}
-.t-pad .axx{position:absolute;left:0;right:0;top:50%;transform:translateY(-130%);
-  text-align:center;font-size:10px;color:#999;pointer-events:none}
-.t-pad .axy{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);
-  writing-mode:vertical-rl;display:flex;align-items:center;font-size:10px;color:#999;
-  pointer-events:none;padding-top:8px}
+.t-padA{flex:1.1;min-height:80px}
+.t-padB{flex:1.1;min-height:80px;background:repeating-linear-gradient(90deg,#262430 0 24.5%,#2d2b38 24.5% 25%),#262430}
+.t-pad .axx{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:10px;
+  color:#999;pointer-events:none}
+.t-pad .axy{position:absolute;left:2px;top:0;bottom:0;writing-mode:vertical-rl;
+  transform:rotate(180deg);display:flex;align-items:center;font-size:10px;color:#999;pointer-events:none}
 .t-cross{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--c);
   box-shadow:0 0 10px var(--c);transform:translate(-50%,-50%);left:50%;top:50%;display:none;pointer-events:none}
 .totem.axed .t-cross{display:block}
-.t-btns{display:flex;gap:5px;align-self:stretch;justify-content:center}
+.t-btns{display:flex;gap:4px;align-self:stretch;justify-content:center;flex-wrap:wrap}
 .t-btns button{background:#23232a;border:1px solid #3a3a44;color:#aaa;border-radius:8px;
-  height:28px;padding:0 8px;font-size:11px}
+  height:26px;padding:0 6px;font-size:10px}
 .t-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
 .totem.axed .t-undo{visibility:visible}
 
@@ -121,7 +125,7 @@ body[data-state="C"] .t-ring{display:block}
 </style>
 </head>
 <body data-state="B">
-<div id="banner">MAQUETTE JETABLE v3.26 · it.3 — design non contractuel, gestes seulement</div>
+<div id="banner">MAQUETTE JETABLE v3.26 · it.4 — design non contractuel, gestes seulement</div>
 <div id="app">
   <div id="groove-zone">
     <canvas id="cv"></canvas>
@@ -130,12 +134,13 @@ body[data-state="C"] .t-ring{display:block}
   <div id="gcb">
     <div id="gcb-handle"></div>
     <div id="gcb-row">
-      <button id="gcb-play" title="Play/Stop">▶</button>
       <button id="metro-btn" title="Métronome">⏱</button>
       <div id="tempo-zone">
         <span id="bpm-lbl">♩= 120</span>
         <div id="tempo-gauge"><div id="tempo-gauge-fill"></div></div>
       </div>
+      <button id="gcb-play" title="Play/Stop">▶</button>
+      <button id="sig-btn" title="Signature">4/4</button>
       <button id="snd-btn" title="Sons">🔊</button>
     </div>
   </div>
@@ -185,6 +190,7 @@ let bpm=120, metroOn=false, sndOn=true, playing=false;
 let AC=null, startT=0, lastSched=0, schedTimer=null;
 const vuHit=[0,0,0];
 const cycleSec=()=>4*60/bpm;
+const BEATS=4;
 
 /* ============ audio ============ */
 let noiseBuf=null;
@@ -233,9 +239,9 @@ function schedTick(){
         if(c!=='.'&&!s.muted&&sndOn)trigger(li,t,c==='x');}
       k++;}
   });
-  if(metroOn){const bd=cyc/4;let k=Math.ceil((from-startT)/bd);
+  if(metroOn){const bd=cyc/BEATS;let k=Math.ceil((from-startT)/bd);
     for(;;){const t=startT+k*bd;if(t>=to)break;
-      if(t>=from)clickMetro(t,((k%4)+4)%4===0);k++;}}
+      if(t>=from)clickMetro(t,((k%BEATS)+BEATS)%BEATS===0);k++;}}
   lastSched=to;
 }
 function togglePlay(){
@@ -256,7 +262,11 @@ function setBpm(v){
   $('tempo-gauge-fill').style.width=((bpm-40)/200*100)+'%';
 }
 
-/* ============ moteur 4 axes + helpers ============ */
+/* ============ moteur axes — pads Densité / Placement ============
+   axes = { dens (accents X), fill (liant x), geom (1=euclidien,0=groupé),
+            calS (décalage FORT intra-temps 0..spb-1), calB (décalage FAIBLE par temps 0..3) }
+   rotation totale = calB*spb + calS                                          */
+function spbOf(n){return (n%BEATS===0)?n/BEATS:1;}
 function snapshotOrig(li){
   const s=st[li];
   if(!s.orig)s.orig={pat:s.pat.slice(),grain:s.grain};
@@ -266,7 +276,7 @@ function ensureAxes(li){
   const n=s.pat.length;let k=0,gh=0;
   s.pat.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
   snapshotOrig(li);
-  s.axes={dens:k/n,geom:1,cal:0,fill:(n-k)?gh/(n-k):0};
+  s.axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
 }
 function placeGhosts(pat,m){
   const n=pat.length;
@@ -290,6 +300,8 @@ function placeGhosts(pat,m){
 }
 function genFromAxes(li){
   const s=st[li],n=s.pat.length,ax=s.axes;
+  const spb=spbOf(n);
+  const cal=ax.calB*spb+clamp(0,spb-1,ax.calS);
   const k=clamp(0,n,Math.round(ax.dens*n));
   const pat=Array(n).fill('.');
   if(k>0){
@@ -297,7 +309,7 @@ function genFromAxes(li){
     for(let i=0;i<k;i++){
       const eu=i*n/k, cl=i;
       let p=Math.round(ax.geom*eu+(1-ax.geom)*cl);
-      p=(((p+ax.cal)%n)+n)%n;
+      p=(((p+cal)%n)+n)%n;
       let guard=0;while(used.has(p)&&guard++<n)p=(p+1)%n;
       used.add(p);pat[p]='X';
     }
@@ -325,6 +337,13 @@ function applyPreset(li,idx){
   s.pat=pr.p.split('');s.grain=pr.g;
   s.axes=null;s.orig=null;refresh();
 }
+function randPreset(li){
+  const pl=PRESETS[li];
+  if(pl.length<2){applyPreset(li,st[li].preset);return;}
+  let idx;
+  do{idx=Math.floor(Math.random()*pl.length);}while(idx===st[li].preset);
+  applyPreset(li,idx);
+}
 function restoreOrig(li){
   const s=st[li];
   if(s.orig){s.pat=s.orig.pat.slice();s.grain=s.orig.grain;}
@@ -334,16 +353,6 @@ function shuffled(n){
   const idx=[...Array(n).keys()];
   for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
   return idx;
-}
-function randPattern(li){
-  const s=st[li];snapshotOrig(li);
-  const n=s.pat.length;
-  const k=Math.max(1,Math.round(n*(0.25+Math.random()*0.35)));
-  const m=Math.round((n-k)*Math.random()*0.4);
-  const pat=Array(n).fill('.');
-  shuffled(n).slice(0,k).forEach(p=>pat[p]='X');
-  placeGhosts(pat,m);
-  s.pat=pat;s.axes=null;refresh();
 }
 function randPlacement(li){
   const s=st[li];snapshotOrig(li);
@@ -373,6 +382,7 @@ $('gcb-play').onclick=togglePlay;
 $('metro-btn').onclick=()=>{metroOn=!metroOn;$('metro-btn').classList.toggle('on',metroOn);};
 $('snd-btn').onclick=()=>{sndOn=!sndOn;$('snd-btn').classList.toggle('off',!sndOn);
   $('snd-btn').textContent=sndOn?'🔊':'🔇';};
+$('sig-btn').onclick=()=>{showOv('4/4 (simulé)','#9bc4a8');setTimeout(hideOv,600);};
 
 /* splitter + tempo drag sur la GCB */
 const gz=$('groove-zone'),appEl=$('app'),gcb=$('gcb'),lcbEl=$('lcb');
@@ -417,12 +427,19 @@ gcb.addEventListener('pointerdown',e=>{
   gcb.addEventListener('pointercancel',up);
 });
 
-/* ============ LayerControlBar : pastille=mute · tap=détail · ↕ grain · ↔ densité ============ */
+/* ============ LayerControlBar ============ */
+/* boutons gauche : 👁 vue détaillée on/off + switch style v25/v26 */
+const left=document.createElement('div');
+left.id='lcb-left';
+left.innerHTML='<button id="b-detail" class="on" title="Vue détaillée du layer">👁</button>'+
+  '<button id="b-style" title="Style édition v3.25 / v3.26">v26</button>';
+$('lcb').appendChild(left);
+/* 3 segments : [pastille][nb pas][unité][chevron] */
 LAYERS.forEach((L,li)=>{
   const seg=document.createElement('div');
   seg.className='seg';seg.style.setProperty('--c',L.col);seg.dataset.li=li;
   seg.innerHTML='<button class="vu" title="Mute"><span class="vu-core"></span></button>'+
-    '<span class="chev">▾</span><span class="seglbl"></span>';
+    '<span class="npas"></span><span class="unit"></span><span class="chev">▾</span>';
   $('lcb').appendChild(seg);
   seg.querySelector('.vu').onclick=()=>{st[li].muted=!st[li].muted;refresh();};
   seg.addEventListener('pointerdown',e=>{
@@ -462,14 +479,27 @@ LAYERS.forEach((L,li)=>{
     seg.addEventListener('pointercancel',up);
   });
 });
-/* toggle vue classic/totems à droite de la LCB */
+/* toggle vue édition/totems à droite */
 const tog=document.createElement('div');
 tog.id='lcb-tog';
 tog.innerHTML='<button id="v-rows" class="on" title="Édition">☰</button>'+
   '<button id="v-totems" title="Création">▥</button>';
 $('lcb').appendChild(tog);
 
-/* ============ vue classic (édition) ============ */
+let detailOn=true, styleV='26';
+$('b-detail').onclick=()=>{
+  detailOn=!detailOn;
+  $('b-detail').classList.toggle('on',detailOn);
+  document.body.classList.toggle('nodetail',!detailOn);
+};
+$('b-style').onclick=()=>{
+  styleV=styleV==='26'?'25':'26';
+  $('b-style').textContent='v'+styleV;
+  $('rows-view').classList.toggle('style25',styleV==='25');
+  refresh();
+};
+
+/* ============ vue édition ============ */
 LAYERS.forEach((L,li)=>{
   const row=document.createElement('div');
   row.className='lrow';row.style.setProperty('--c',L.col);row.dataset.li=li;
@@ -477,17 +507,17 @@ LAYERS.forEach((L,li)=>{
     '<span class="ldot"></span><span class="lname">'+L.name+'</span>'+
     '<button class="ps-prev">◀</button><span class="pset-name"></span><button class="ps-next">▶</button>'+
     '<button class="ps-save" title="Sauvegarder">💾</button>'+
-    '<button class="ps-dice" title="Pattern aléatoire">🎲</button>'+
+    '<button class="ps-dice" title="Preset aléatoire">🎲</button>'+
     '<button class="ps-info" title="Article encyclo">i</button>'+
     '<button class="ps-rec" title="Capture">⏺</button>'+
     '<button class="lrow-undo" title="Revenir au motif">↺</button>'+
-    '<span class="lrow-meta"></span></div>'+
+    '</div>'+
     '<div class="lrow-steps"></div>';
   $('rows-view').appendChild(row);
   row.querySelector('.ps-prev').onclick=()=>applyPreset(li,st[li].preset-1);
   row.querySelector('.ps-next').onclick=()=>applyPreset(li,st[li].preset+1);
   row.querySelector('.ps-save').onclick=()=>{showOv('💾 (simulé)',L.col);setTimeout(hideOv,600);};
-  row.querySelector('.ps-dice').onclick=()=>randPattern(li);
+  row.querySelector('.ps-dice').onclick=()=>randPreset(li);
   row.querySelector('.ps-info').onclick=()=>{showOv('📖 (simulé)',L.col);setTimeout(hideOv,600);};
   row.querySelector('.ps-rec').onclick=()=>{showOv('⏺ (simulé)',L.col);setTimeout(hideOv,600);};
   row.querySelector('.lrow-undo').onclick=()=>restoreOrig(li);
@@ -498,10 +528,13 @@ function buildRowCells(li){
   const wrap=row.querySelector('.lrow-steps');wrap.innerHTML='';
   lastCur[li]=-1;
   const n=s.pat.length,bs=(n%4===0)?n/4:0;
+  /* style v25 : pas tous de même taille (alignés sur le layer le plus fin) */
+  const maxN=Math.max(...st.map(x=>x.pat.length));
   for(let i=0;i<n;i++){
     const c=document.createElement('div');
     c.className='cell'+(s.pat[i]==='X'?' on':s.pat[i]==='x'?' soft':'')+
       ((bs&&i>0&&i%bs===0)?' beat':'');
+    if(styleV==='25')c.style.flex='0 0 calc('+(100/maxN)+'% - 2px)';
     c.dataset.i=i;
     c.onclick=()=>{
       const v=s.pat[i];
@@ -512,20 +545,21 @@ function buildRowCells(li){
   }
   const dirty=!!s.orig||!!s.axes;
   row.querySelector('.pset-name').textContent=PRESETS[li][s.preset].n+(dirty?' *':'');
-  row.querySelector('.lrow-meta').textContent=n+'·'+LADDER[s.grain][1];
   row.classList.toggle('axed',!!s.orig);
   row.classList.toggle('muted',s.muted);
   row.style.display=s.folded?'none':'';
 }
 
-/* ============ vue totems (création) — 2 pads, densité/liant en X ============ */
+/* ============ vue totems — pad Densité + pad Placement ============ */
 LAYERS.forEach((L,li)=>{
   const t=document.createElement('div');
   t.className='totem';t.style.setProperty('--c',L.col);t.dataset.li=li;
   t.innerHTML='<canvas class="t-ring" width="152" height="152"></canvas>'+
-    '<div class="t-pad t-padA"><span class="axx">densité</span><span class="axy">géométrie</span><div class="t-cross"></div></div>'+
-    '<div class="t-pad t-padB"><span class="axx">liant</span><span class="axy">calage</span><div class="t-cross"></div></div>'+
+    '<div class="t-pad t-padA"><span class="axx">densité</span><span class="axy">liant</span><div class="t-cross"></div></div>'+
+    '<div class="t-pad t-padB"><span class="axx">décalage</span><span class="axy">géométrie</span><div class="t-cross"></div></div>'+
     '<div class="t-btns">'+
+      '<button class="t-rotl" title="Rotation de 1 temps (faible)">◀t</button>'+
+      '<button class="t-rotr" title="Rotation de 1 temps (faible)">t▶</button>'+
       '<button class="t-rndpos" title="Placement aléatoire">🎲pos</button>'+
       '<button class="t-rndacc" title="Accents aléatoires">🎲acc</button>'+
       '<button class="t-undo" title="Revenir au motif">↺</button>'+
@@ -551,16 +585,22 @@ LAYERS.forEach((L,li)=>{
       pad.addEventListener('pointercancel',up);
     });
   }
-  /* pad A squelette : densité ↔ / géométrie ↕ */
+  /* pad Densité : accents ↔ / liant ↕ (haut = plus de liant) */
   padHandler(t.querySelector('.t-padA'),(x,y)=>{
     const s=st[li];
-    s.axes.dens=x;s.axes.geom=1-y;
+    s.axes.dens=x;s.axes.fill=1-y;
   });
-  /* pad B chair : liant ↔ / calage ↕ */
+  /* pad Placement : décalage FORT intra-temps ↔ (crans) / géométrie ↕ (bas = euclidien) */
   padHandler(t.querySelector('.t-padB'),(x,y)=>{
-    const s=st[li],n=s.pat.length;
-    s.axes.fill=x;s.axes.cal=Math.round((y-0.5)*n);
+    const s=st[li],n=s.pat.length,spb=spbOf(n);
+    s.axes.calS=(spb>1)?Math.round(x*(spb-1)):0;
+    s.axes.geom=y;
   });
+  /* rotation FAIBLE : par temps entier, le poids métrique ne bouge pas */
+  t.querySelector('.t-rotl').onclick=()=>{ensureAxes(li);
+    st[li].axes.calB=((st[li].axes.calB-1)%BEATS+BEATS)%BEATS;genFromAxes(li);};
+  t.querySelector('.t-rotr').onclick=()=>{ensureAxes(li);
+    st[li].axes.calB=(st[li].axes.calB+1)%BEATS;genFromAxes(li);};
   t.querySelector('.t-rndpos').onclick=()=>randPlacement(li);
   t.querySelector('.t-rndacc').onclick=()=>randAccents(li);
   t.querySelector('.t-undo').onclick=()=>restoreOrig(li);
@@ -575,8 +615,8 @@ function setLview(v){
   $('v-rows').classList.toggle('on',v==='rows');
   $('v-totems').classList.toggle('on',v==='totems');
   $('lz-hint').textContent=v==='rows'
-    ?'LCB : pastille=mute · tap=détail · ↕ grain · ↔ densité — tap step = édite'
-    :'pads : densité↔ géométrie↕ / liant↔ calage↕ — plier un layer (tap LCB) élargit les autres';
+    ?'LCB : pastille=mute · tap=plier · ↕ grain · ↔ densité — 👁 détail · v25/v26 style'
+    :'pad Densité : accents↔ liant↕ · pad Placement : décalage↔(intra-temps, fort) géo↕ · ◀t t▶ = rotation par temps (faible)';
 }
 $('v-rows').onclick=()=>setLview('rows');
 $('v-totems').onclick=()=>setLview('totems');
@@ -584,8 +624,9 @@ $('v-totems').onclick=()=>setLview('totems');
 /* ============ refresh UI ============ */
 function refresh(){
   st.forEach((s,li)=>{
-    const seg=$('lcb').children[li];
-    seg.querySelector('.seglbl').textContent=s.pat.length+'·'+LADDER[s.grain][1];
+    const seg=document.querySelectorAll('#lcb .seg')[li];
+    seg.querySelector('.npas').textContent=s.pat.length;
+    seg.querySelector('.unit').textContent=LADDER[s.grain][1];
     seg.querySelector('.chev').textContent=s.folded?'▸':'▾';
     seg.classList.toggle('muted',s.muted);
     seg.querySelector('.vu').classList.toggle('muted',s.muted);
@@ -595,13 +636,13 @@ function refresh(){
     t.classList.toggle('muted',s.muted);
     t.classList.toggle('axed',!!s.orig);
     if(s.axes){
-      const n=s.pat.length;
+      const n=s.pat.length,spb=spbOf(n);
       const ca=t.querySelector('.t-padA .t-cross');
       ca.style.left=(s.axes.dens*100)+'%';
-      ca.style.top=((1-s.axes.geom)*100)+'%';
+      ca.style.top=((1-s.axes.fill)*100)+'%';
       const cb=t.querySelector('.t-padB .t-cross');
-      cb.style.left=(s.axes.fill*100)+'%';
-      cb.style.top=(clamp(0,1,0.5+s.axes.cal/n)*100)+'%';
+      cb.style.left=((spb>1?s.axes.calS/(spb-1):0.5)*100)+'%';
+      cb.style.top=(s.axes.geom*100)+'%';
     }
   });
 }
@@ -654,8 +695,8 @@ function raf(){
       ctx.lineTo(cx+Math.cos(a)*(R+6),cy+Math.sin(a)*(R+6));ctx.stroke();
     }
   }
-  /* tête de lecture vue classic */
-  if(lview==='rows'){
+  /* tête de lecture vue édition */
+  if(lview==='rows'&&detailOn){
     st.forEach((s,li)=>{
       const n=s.pat.length;
       const cur=(playing&&!s.folded)?Math.floor(phase*n)%n:-1;

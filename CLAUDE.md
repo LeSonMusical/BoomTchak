@@ -66,6 +66,17 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - **Placement GlobalBar = vrai sujet ouvert** : idéal = correspondance 1:1 entre les 3 pastilles et les 3 segments LCB + proximité tempo/métronome. **Proposition it.3 à valider : pastilles VU/mute déplacées DANS les segments LCB** (à gauche de chaque segment) ; la GCB devient ▶ ⏱ tempo 🔊.
 - **Question ouverte (redondance double vue)** : quel sens d'avoir une step view en haut (Groove.view) ET les lignes en bas ? Piste de reclassification : Motif/Mesure/Cycle = vues de **contexte** (vivent en état Split au-dessus des lignes) ; Step.seq = une **présentation de Layers.view** (pas une Groove.view — c'est déjà le cas techniquement : `_moveRow2ToStepView`). À trancher.
 
+### Retours Lamberio sur maquette it.3 → décisions it.4 (2026-06-13)
+- **Placement GCB/LCB validé** (pastilles dans les segments LCB).
+- **Segments LCB, ordre : [pastille][nb pas][unité][chevron]**, chevron nettement plus gros.
+- **GCB : ⏱ métro (extrême gauche) | tempo | ▶ Play (centre) | signature | 🔊 band (extrême droite)**.
+- **🎲 de la barre layer = random PRESET** (tirage dans la liste des presets), pas random pattern.
+- **[nb pas][unité] retirés de la barre layer** (déjà affichés dans la LCB).
+- **Pads : nom de l'axe vertical à gauche (texte tourné), nom de l'axe horizontal en bas.**
+- **Non-choix assumé (vue détaillée layer)** : 2 boutons à gauche de la LCB — `👁` afficher/masquer la vue détaillée du layer ; `v25/v26` switcher entre style édition classique v3.25 (pas tous de même taille) et style v3.26 test (iso-métrique, largeur ∝ durée). À trancher à l'usage. Reste aussi ouvert : la ligne sous la barre preset = vue steps ou sous-volet mod v3.25 ?
+- **Réorganisation des pads (hypothèse Lamberio, implémentée it.4)** : pad **Densité** = densité des accents ↔ · liant/remplissage ↕ ; pad **Placement** = décalage ↔ · géométrie ↕ (bas = euclidien → haut = regroupé).
+- **Décalage fort/faible — formalisation** : rotation totale `r = b·spb + s` (spb = pas par temps). `s` (intra-temps, 0..spb-1) = **offset FORT** : change le poids métrique, les sons sur temps fort passent à contretemps → axe X du pad Placement (crans). `b` (temps entiers) = **offset FAIBLE** : rotation réelle mais chaque son garde sa position dans le temps (le poids ne bouge pas) → boutons `◀t / t▶` du totem. Méthode de calcul et geste à valider à l'oreille.
+
 ### Chantiers suivants (après les barres v3.26)
 - **Vue verticale type console de mixage + redesign du sous-volet mod** (sliders, pad 2D plus graphique et gestuel) — chantier suivant
 - **Gestes sur le canvas — à creuser ultérieurement** : appui court/long sur step (édition directe), drag radial (rotation/shift), pinch (length ?), zoom… Conflits gestuels (scroll, tap accidentel pendant l'écoute) à prototyper avant tout engagement. Le hit-test circulaire existe déjà (`circleHitTest`).
@@ -192,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.17** (session 2026-06-12)
+**v3.25.18** (session 2026-06-13)
 
 ---
 
@@ -259,6 +270,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.25.18 | Maquette it.4 (retours Lamberio) : GCB = ⏱·tempo·▶·sig·🔊 (play centré) ; segments LCB [pastille][nb pas][unité][gros chevron] ; 🎲 = random preset ; nb pas·unité retirés de la barre layer ; boutons 👁 détail + v25/v26 à gauche de la LCB ; pads réorganisés Densité (accents↔·liant↕) / Placement (décalage↔·géo↕) ; décalage fort (intra-temps, pad X) vs faible (par temps, ◀t t▶) — formalisation r=b·spb+s |
 | v3.25.17 | Maquette it.3 (retours Lamberio) : toggle ☰/▥ sur la LCB ; pastilles VU/mute dans les segments LCB (proposition correspondance 1:1) — GCB = ▶ ⏱ tempo 🔊 ; mute = état désactivé (segment+couches) ; pads densité↔/géo↕ et liant↔/calage↕ (densité en X partout) ; labels d'axes texte sans icônes ; pas d'overlay sur les totems ; totem plié masqué (les autres s'élargissent) ; boutons vue classic = presets+💾+🎲+i+⏺+↺ |
 | v3.25.16 | Maquette it.2 (retours Lamberio) : Play dans GCB ; LCB sans calage (↔ densité à l'essai) ; vue lignes avec presets ◀▶ + 🎲 + i + ↺ + tête de lecture ; totems 2 pads (squelette densité↕·géo↔ / chair liant↕·calage↔) + 🎲pos/🎲acc ; mini-anneaux seulement en état C ; vue "mesure iso-métrique" notée candidate 5e vue |
 | v3.25.15 | Maquette jetable `maquette_v326.html` (GlobalControlBar séparatrice + splitter 3 états, LayerControlBar grain/rotation, totems 4 axes, audio synthèse) ; décisions UX v3.26 actées dans CLAUDE.md |
