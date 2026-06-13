@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BoomTchak — Maquette v3.26 · it.5 (jetable)</title>
+<title>BoomTchak — Maquette v3.26 · it.6 (jetable)</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
@@ -35,7 +35,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 #tempo-gauge{height:3px;background:#3a3424;border-radius:2px;overflow:hidden}
 #tempo-gauge-fill{height:100%;background:#C8961A;width:40%}
 
-/* ---- LayerControlBar : [👁|v26] + 3 segments + [☰|▥] ---- */
+/* ---- LayerControlBar : [✎] + 3 segments + [☰|▥] ---- */
 #lcb{flex:none;display:flex;border-bottom:1px solid #333;touch-action:none}
 #lcb-left,#lcb-tog{flex:none;display:flex}
 #lcb-left{border-right:1px solid #444}
@@ -78,7 +78,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#1b1b20;color:#dd
 .lrow-steps{display:flex;gap:2px;margin-top:5px}
 body.nodetail .lrow-steps{display:none}
 .cell{flex:1;height:30px;max-width:34px;border-radius:5px;background:#26262d;border:1px solid #36363e}
-.style25 .cell{height:26px;border-radius:4px;max-width:none}
 .cell.on{background:var(--c);border-color:var(--c)}
 .cell.soft{background:color-mix(in srgb,var(--c) 42%,#26262d);border-color:var(--c)}
 .cell.beat{margin-left:6px}
@@ -124,7 +123,7 @@ body[data-state="C"] .t-ring{display:block}
 </style>
 </head>
 <body data-state="B">
-<div id="banner">MAQUETTE JETABLE v3.26 · it.5 — design non contractuel, gestes seulement</div>
+<div id="banner">MAQUETTE JETABLE v3.26 · it.6 — design non contractuel, gestes seulement</div>
 <div id="app">
   <div id="groove-zone">
     <canvas id="cv"></canvas>
@@ -275,6 +274,16 @@ function ensureAxes(li){
   s.pat.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
   snapshotOrig(li);
   s.axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
+}
+/* WYSIWYH : recalcule dens/fill depuis le pattern courant
+   préserve calS/calB/geom si axes déjà actifs */
+function inferAxesFromPat(li){
+  const s=st[li],n=s.pat.length;
+  let k=0,gh=0;
+  s.pat.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
+  snapshotOrig(li);
+  if(s.axes){s.axes.dens=k/n;s.axes.fill=(n-k)?gh/(n-k):0;}
+  else s.axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
 }
 function placeGhosts(pat,m){
   const n=pat.length;
@@ -429,11 +438,10 @@ gcb.addEventListener('pointerdown',e=>{
 });
 
 /* ============ LayerControlBar ============ */
-/* boutons gauche : 👁 vue détaillée on/off + switch style v25/v26 */
+/* bouton gauche : ✎ édition détail on/off */
 const left=document.createElement('div');
 left.id='lcb-left';
-left.innerHTML='<button id="b-detail" class="on" title="Vue détaillée du layer">👁</button>'+
-  '<button id="b-style" title="Style édition v3.25 / v3.26">v26</button>';
+left.innerHTML='<button id="b-detail" class="on" title="Édition détail (on/off)">✎</button>';
 $('lcb').appendChild(left);
 /* 3 segments : [pastille][nb pas][unité][chevron] */
 LAYERS.forEach((L,li)=>{
@@ -487,17 +495,11 @@ tog.innerHTML='<button id="v-rows" class="on" title="Édition">☰</button>'+
   '<button id="v-totems" title="Création">▥</button>';
 $('lcb').appendChild(tog);
 
-let detailOn=true, styleV='26';
+let detailOn=true;
 $('b-detail').onclick=()=>{
   detailOn=!detailOn;
   $('b-detail').classList.toggle('on',detailOn);
   document.body.classList.toggle('nodetail',!detailOn);
-};
-$('b-style').onclick=()=>{
-  styleV=styleV==='26'?'25':'26';
-  $('b-style').textContent='v'+styleV;
-  $('rows-view').classList.toggle('style25',styleV==='25');
-  refresh();
 };
 
 /* ============ vue édition ============ */
@@ -529,18 +531,15 @@ function buildRowCells(li){
   const wrap=row.querySelector('.lrow-steps');wrap.innerHTML='';
   lastCur[li]=-1;
   const n=s.pat.length,bs=(n%4===0)?n/4:0;
-  /* style v25 : pas tous de même taille (alignés sur le layer le plus fin) */
-  const maxN=Math.max(...st.map(x=>x.pat.length));
   for(let i=0;i<n;i++){
     const c=document.createElement('div');
     c.className='cell'+(s.pat[i]==='X'?' on':s.pat[i]==='x'?' soft':'')+
       ((bs&&i>0&&i%bs===0)?' beat':'');
-    if(styleV==='25')c.style.flex='0 0 calc('+(100/maxN)+'% - 2px)';
     c.dataset.i=i;
     c.onclick=()=>{
       const v=s.pat[i];
       s.pat[i]=v==='.'?'X':v==='X'?'x':'.';
-      s.axes=null;refresh();
+      inferAxesFromPat(li);refresh();
     };
     wrap.appendChild(c);
   }
@@ -559,8 +558,6 @@ LAYERS.forEach((L,li)=>{
     '<div class="t-pad t-padA"><span class="axx">densité</span><span class="axy">liant</span><div class="t-cross"></div></div>'+
     '<div class="t-pad t-padB"><span class="axx">décalage (fort · faible)</span><span class="axy">géométrie</span><div class="t-cross"></div></div>'+
     '<div class="t-btns">'+
-      '<button class="t-rotl" title="Rotation de 1 temps (faible)">◀t</button>'+
-      '<button class="t-rotr" title="Rotation de 1 temps (faible)">t▶</button>'+
       '<button class="t-rndpos" title="Placement aléatoire">🎲pos</button>'+
       '<button class="t-rndacc" title="Accents aléatoires">🎲acc</button>'+
       '<button class="t-undo" title="Revenir au motif">↺</button>'+
@@ -607,11 +604,6 @@ LAYERS.forEach((L,li)=>{
     s.axes.geom=y;
   },()=>{const s=st[li],n=s.pat.length,spb=spbOf(n);
     return 's='+s.axes.calS+' b='+s.axes.calB+' → r='+(s.axes.calB*spb+s.axes.calS);});
-  /* rotation FAIBLE : par temps entier, le poids métrique ne bouge pas */
-  t.querySelector('.t-rotl').onclick=()=>{ensureAxes(li);
-    st[li].axes.calB=((st[li].axes.calB-1)%BEATS+BEATS)%BEATS;genFromAxes(li);};
-  t.querySelector('.t-rotr').onclick=()=>{ensureAxes(li);
-    st[li].axes.calB=(st[li].axes.calB+1)%BEATS;genFromAxes(li);};
   t.querySelector('.t-rndpos').onclick=()=>randPlacement(li);
   t.querySelector('.t-rndacc').onclick=()=>randAccents(li);
   t.querySelector('.t-undo').onclick=()=>restoreOrig(li);
