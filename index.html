@@ -1834,7 +1834,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.1</span>
+    <span class="app-version">v3.26.2</span>
   </div>
 </div>
 
@@ -11713,7 +11713,7 @@ function updateRhythmInfoBar(){
   const layerCols=[0,1,2].map(li=>{
     const n=state[li].pattern.length;
     if(!n) return `<div class="rib-layer-col"></div>`;
-    const col=LCOLS[li],muted=!!state[li].muted;
+    const col=_LAYER_COLS[li],muted=!!state[li].muted;
     const btnHtml=`<button class="rib-layer-btn${muted?' muted':''}" data-li="${li}" style="color:${col};border-color:${col}" title="${muted?'Activer':'Muter'} layer ${li+1}"><span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span></button>`;
     let txt;
     if(isMesureCycle){
