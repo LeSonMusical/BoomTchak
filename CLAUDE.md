@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.18** (session 2026-06-13)
+**v3.25.19** (session 2026-06-13)
 
 ---
 
@@ -270,6 +270,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.25.19 | Maquette it.5 (retours Lamberio) : axe X pad Placement = s et b imbriqués (idx=calS·BEATS+calB, entre 2 crans s → BEATS valeurs b) ; fond padB zones alternées par cran s ; overlay pad affiche s/b/r ; axes préservés au changement de grain (calS recalé) ; suppression texte explicatif sous LCB |
 | v3.25.18 | Maquette it.4 (retours Lamberio) : GCB = ⏱·tempo·▶·sig·🔊 (play centré) ; segments LCB [pastille][nb pas][unité][gros chevron] ; 🎲 = random preset ; nb pas·unité retirés de la barre layer ; boutons 👁 détail + v25/v26 à gauche de la LCB ; pads réorganisés Densité (accents↔·liant↕) / Placement (décalage↔·géo↕) ; décalage fort (intra-temps, pad X) vs faible (par temps, ◀t t▶) — formalisation r=b·spb+s |
 | v3.25.17 | Maquette it.3 (retours Lamberio) : toggle ☰/▥ sur la LCB ; pastilles VU/mute dans les segments LCB (proposition correspondance 1:1) — GCB = ▶ ⏱ tempo 🔊 ; mute = état désactivé (segment+couches) ; pads densité↔/géo↕ et liant↔/calage↕ (densité en X partout) ; labels d'axes texte sans icônes ; pas d'overlay sur les totems ; totem plié masqué (les autres s'élargissent) ; boutons vue classic = presets+💾+🎲+i+⏺+↺ |
 | v3.25.16 | Maquette it.2 (retours Lamberio) : Play dans GCB ; LCB sans calage (↔ densité à l'essai) ; vue lignes avec presets ◀▶ + 🎲 + i + ↺ + tête de lecture ; totems 2 pads (squelette densité↕·géo↔ / chair liant↕·calage↔) + 🎲pos/🎲acc ; mini-anneaux seulement en état C ; vue "mesure iso-métrique" notée candidate 5e vue |
