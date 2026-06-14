@@ -1859,7 +1859,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.9</span>
+    <span class="app-version">v3.26.10</span>
   </div>
 </div>
 
@@ -6550,7 +6550,9 @@ function buildGrooveSection(){
     modPanel.classList.toggle('hidden');
     const layerDiv=document.getElementById('layer-div-'+li);
     const btn=layerDiv?.querySelector('.btn-layer-toggle');
-    if(btn){btn.textContent=isHidden?'mod ▼':'mod ▶';btn.classList.toggle('open',isHidden);}
+    const row2leb=layerDiv?.querySelector('.layer-row2');
+    if(row2leb)row2leb.style.display=isHidden?'':'none';
+    if(btn){btn.classList.toggle('open',isHidden);}
     if(isHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
   });
   header.appendChild(l3);
@@ -7094,7 +7096,18 @@ function buildLCB326(){
           if(!layerPanelsOuverts){layerPanelsOuverts=true;const lw=document.getElementById('layers-wrap');if(lw)lw.style.display='';}
           _v326[li].folded=!_v326[li].folded;
           const ld2=document.getElementById('layer-div-'+li);
-          if(ld2)ld2.style.display=_v326[li].folded?'none':'';
+          if(ld2){
+            ld2.style.display=_v326[li].folded?'none':'';
+            // Refermer le detail au pliage (→ non-déplié propre à la réouverture)
+            if(_v326[li].folded){
+              const r2=ld2.querySelector('.layer-row2');
+              const mp=document.getElementById('mod-panel-'+li);
+              const tb=ld2.querySelector('.btn-layer-toggle');
+              if(r2)r2.style.display='none';
+              if(mp&&!mp.classList.contains('hidden'))mp.classList.add('hidden');
+              if(tb)tb.classList.remove('open');
+            }
+          }
           if(ch)ch.textContent=_v326[li].folded?'▶':'▾';
           seg.classList.toggle('open',!_v326[li].folded);
         }
@@ -7560,12 +7573,9 @@ function buildLayers(){
     row1.appendChild(btnMod);
     layerDiv.appendChild(row1);
 
-    // ── Ligne 1.5 : Steps iso-métriques v3.26 ────────────────────────────────
-    const lrowDiv=document.createElement('div');lrowDiv.className='lrow-steps-326';lrowDiv.id='lrow-steps-'+li;
-    layerDiv.appendChild(lrowDiv);
-
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
+    row2.style.display='none'; // caché par défaut, révélé par ✎
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
     seqInfo.addEventListener('click',()=>{
@@ -7574,6 +7584,7 @@ function buildLayers(){
       mp.classList.toggle('hidden');
       const ld=document.getElementById('layer-div-'+li);
       const tb=ld?.querySelector('.btn-layer-toggle');
+      if(tb)tb.classList.toggle('open',!mp.classList.contains('hidden'));
       if(isHidden){updateLayerEditBar();setTimeout(()=>mp.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
     });
     row2.appendChild(seqInfo);
@@ -7596,6 +7607,7 @@ function buildLayers(){
       _updateLinearPageIndicator();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
+      updateLCB326(); // sync nb pas dans la LCB
     };
     const _speedMark=()=>{grooveDirty=true;updateGrooveSaveBtn();};
     const bMinus=document.createElement('button');bMinus.className='btn-mod-a btn-mod-sm';bMinus.textContent='◀';bMinus.title='Enlever le dernier pas';
@@ -7903,12 +7915,21 @@ function buildLayers(){
 
     layerDiv.appendChild(modPanel);
 
-    // toggle mod panel
+    // toggle édit détail : row2 (StepSeq) + modPanel (contrôles) ensemble
     btnMod.addEventListener('click',()=>{
-      const open=modPanel.classList.toggle('hidden');
-      btnMod.classList.toggle('open',!open);
-      if(!open){updateSwapBtn();_refreshPadPreview();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
-      updateLayerEditBar();
+      const detailOpen=row2.style.display!=='none';
+      if(detailOpen){
+        row2.style.display='none';
+        modPanel.classList.add('hidden');
+        btnMod.classList.remove('open');
+      } else {
+        row2.style.display='';
+        modPanel.classList.remove('hidden');
+        btnMod.classList.add('open');
+        updateSwapBtn();_refreshPadPreview();
+        setTimeout(()=>row2.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+        updateLayerEditBar();
+      }
     });
 
     cont.appendChild(layerDiv);
@@ -10870,7 +10891,9 @@ function setupCanvasInteraction(){
         modPanel.classList.toggle('hidden');
         const layerDiv=document.getElementById('layer-div-'+li);
         const btn=layerDiv?.querySelector('.btn-layer-toggle');
-        if(btn){btn.textContent=isHidden?'mod ▼':'mod ▶';btn.classList.toggle('open',isHidden);}
+        const row2cv=layerDiv?.querySelector('.layer-row2');
+        if(row2cv)row2cv.style.display=isHidden?'':'none';
+        if(btn){btn.classList.toggle('open',isHidden);}
         if(isHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
       }
       return;
