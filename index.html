@@ -1821,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.8</span>
+    <span class="app-version">v3.26.9</span>
   </div>
 </div>
 
@@ -11717,11 +11717,8 @@ function _setupGCBSplitter(gcbEl){
   gcbEl.addEventListener('pointerup',()=>{
     _dragOverlay.hide();
     if(_sMode==='split'){
-      const c=_cv(),h=c?c.offsetHeight:Math.round(0.44*_availCache);
-      // Snap uniquement aux extrêmes stricts ; position libre entre les deux
-      // Snap A seulement au bord max du drag ; B = position libre avec layers visibles
-      const st=h<30?'C':(h>=_availCache-30?'A':'B');
-      _applySplit(st,undefined,st==='B');
+      // Position totalement libre : on reste exactement là où l'utilisateur lâche
+      _applySplit('B',undefined,true);
     } else {
       // Tap sans drag : restaurer l'état précédent exact sans toucher à la hauteur
       document.body.dataset.split=_splitBefore;
