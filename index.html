@@ -472,8 +472,11 @@ body.view-circle .layer-row3-iso,body.view-circle .layer-row2{display:none!impor
 /* Masquage progressif */
 .row1-hide{display:none!important}
 .layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
-/* Ligne buildLayerEditBar (bouton mod tricolore) — supprimée */
-#layer-edit-bar{display:none!important}
+/* Spécificité 120 : l'emporte sur #step-rows-wrap .layer-row2 (110) */
+#step-rows-wrap .layer-row2.detail-hidden{display:none!important}
+/* Bouton mod tricolore et volet mod — cachés en phase 3 */
+#layer-edit-bar,#layers-mod-bar{display:none!important}
+.layer-mod-panel{display:none!important}
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:inline-block;align-self:flex-start}
 .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
@@ -1852,7 +1855,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.13</span>
+    <span class="app-version">v3.26.14</span>
   </div>
 </div>
 
