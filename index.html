@@ -1821,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.2</span>
+    <span class="app-version">v3.26.3</span>
   </div>
 </div>
 
@@ -11651,15 +11651,20 @@ function updateRhythmInfoBar(){
 /* ── Splitter GCB — setup une seule fois sur #rhythm-info-bar ── */
 function _setupGCBSplitter(gcbEl){
   const _cv=()=>document.getElementById('circle-view');
-  const _avail=()=>Math.max(80,window.innerHeight-56-68);
-  const SNAPS={A:.72,B:.42,C:0};
-  /* _applySplit : positionne body[data-split] et laisse CSS + resizeCanvas gérer l'affichage */
+  // _avail = espace disponible pour canvas+layers (sous le GCB+LCB, au-dessus de la nav bar)
+  const _avail=()=>{
+    const lcb=document.getElementById('layer-control-bar');
+    const lcbH=lcb?lcb.offsetHeight:32;
+    const gcbRect=gcbEl.getBoundingClientRect();
+    return Math.max(80,window.innerHeight-gcbRect.bottom-lcbH-60);
+  };
+  const SNAPS={A:.88,B:.44,C:0};
   function _applySplit(st,animate){
     const c=_cv();
     document.body.dataset.split=st;
     if(c){
       if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
-      c.style.height='';c.style.overflow='';c.style.display=''; // restaure contrôle CSS
+      c.style.height='';c.style.overflow='';
       if(st!=='C'&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
     }
   }
@@ -11668,16 +11673,18 @@ function _setupGCBSplitter(gcbEl){
     for(const[k,r]of Object.entries(SNAPS)){const dd=Math.abs(h-r*avail);if(dd<d){d=dd;best=k;}}
     return best;
   }
-  let _sMode=null,_sY0=0,_sH0=0;
+  let _sMode=null,_sY0=0,_sH0=0,_splitBefore='B';
   gcbEl.addEventListener('pointerdown',e=>{
     if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
     _sMode=null;_sY0=e.clientY;
     const avail=_avail();
-    // Calcul de _sH0 depuis l'état snap courant (pas offsetHeight — invalide en état C)
-    const curSplit=document.body.dataset.split||'B';
-    _sH0={A:Math.round(SNAPS.A*avail),B:Math.round(SNAPS.B*avail),C:0}[curSplit]??Math.round(SNAPS.B*avail);
+    _splitBefore=document.body.dataset.split||'B';
+    _sH0={A:Math.round(SNAPS.A*avail),B:Math.round(SNAPS.B*avail),C:0}[_splitBefore]??Math.round(SNAPS.B*avail);
+    // ⚠ Supprimer data-split AVANT d'agir sur le canvas :
+    // → lève le display:none!important imposé par body[data-split="C"] en état C
+    delete document.body.dataset.split;
     const c=_cv();
-    if(c){c.style.display='';c.style.height=_sH0+'px';c.style.overflow='hidden';}
+    if(c){c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
   },{passive:false});
   gcbEl.addEventListener('pointermove',e=>{
@@ -11687,11 +11694,12 @@ function _setupGCBSplitter(gcbEl){
     if(!_sMode&&Math.abs(dy)>8)_sMode='split';
     if(_sMode==='split'){
       const c=_cv();if(!c)return;
-      // +dy : monter la barre = réduire le canvas → Layers Max (C)
-      //       descendre la barre = agrandir le canvas → Canvas Max (A)
-      const h=Math.max(0,_sH0+dy);
+      const avail=_avail();
+      // monter (dy<0) → canvas réduit → Layers Max
+      // descendre (dy>0) → canvas agrandi → Canvas Max
+      const h=Math.max(0,Math.min(Math.round(SNAPS.A*avail)+40,_sH0+dy));
       c.style.height=h+'px';
-      const st=_snapNearest(h,_avail());
+      const st=_snapNearest(h,avail);
       _dragOverlay.show({A:'▼ Canvas max',B:'⚌ Split',C:'▲ Layers max'}[st]);
     }
   },{passive:false});
@@ -11701,12 +11709,11 @@ function _setupGCBSplitter(gcbEl){
       const c=_cv(),h=c?.offsetHeight??Math.round(SNAPS.B*_avail());
       _applySplit(_snapNearest(h,_avail()));
     } else {
-      // Tap sans drag : restaurer l'état CSS (canvas remis sous contrôle CSS)
-      const c=_cv();if(c){c.style.height='';c.style.overflow='';c.style.display='';}
+      // Tap simple sans drag : restaurer l'état précédent
+      _applySplit(_splitBefore,false);
     }
     _sMode=null;
   }));
-  // Init : état B par défaut
   setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
 }
 
