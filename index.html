@@ -24,7 +24,7 @@ input,textarea{user-select:text;-webkit-user-select:text}
 html{overflow-x:hidden;overscroll-behavior-x:none}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:12px;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding-top:56px;padding-bottom:68px;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
 body.drawer-open{padding-bottom:calc(68px + 220px)}
-.frame{background:#fff;width:100%;min-width:0;margin:0;padding:0}
+.frame{background:#fff;width:100%;max-width:900px;min-width:0;margin:0 auto;padding:0 .85rem .5rem}
 
 /* ─── TOP BAR ─── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:80;background:#fff;border-bottom:1px solid #d0cec7;display:flex;align-items:center;gap:6px;padding:3px 8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -432,7 +432,6 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
 .layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
-.lyr-name-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;flex-shrink:0;color:var(--cs);border-left:3px solid var(--cs);padding-left:5px;margin-right:2px;align-self:stretch;display:flex;align-items:center;line-height:1;width:38px;overflow:hidden}
 .layer-select{font-size:9px;flex:1;min-width:0;border:1px solid var(--cs);border-radius:3px;background:#fff;color:var(--cb);padding:1px 2px;cursor:pointer}
 .btn-mute-lbl{flex-shrink:0;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;padding:0 5px;height:24px;min-width:42px;background:var(--cc);color:#fff;transition:background .15s;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .btn-mute-lbl:hover{filter:brightness(.9)}
@@ -1154,9 +1153,9 @@ body.view-circle .frame{display:flex;flex-direction:column}
 body.view-circle #circle-view{width:100%;order:3}
 body.view-circle #section-band{order:1}
 body.view-circle #band-content{order:2}
-body.view-circle #section-groove{order:2;padding-top:2px}
+body.view-circle #section-groove{order:2}
 body.view-circle #view-mode-bar{order:3;width:100%}
-body.view-circle #layers-wrap{order:5;display:block;width:100%;background:rgba(0,0,0,.02)}
+body.view-circle #layers-wrap{order:5;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
 /* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
 @media(min-width:600px){
@@ -1181,8 +1180,8 @@ body.view-circle #section-encyclo{order:5}
 #rhythm-info-wrap{display:none}
 body.show-rib #rhythm-info-wrap{display:block;width:100%}
 body.show-rib.view-circle #rhythm-info-wrap{order:4}
-body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:0}
-body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:0;margin-bottom:0}
+body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:4px}
+body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:4px;margin-bottom:2px}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 /* CycleInfo bar (entre section-groove et canvas) — même design que les indicateurs de page */
 #cycle-info-bar{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
@@ -1201,9 +1200,8 @@ body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer — bloc stylisé 2 lignes */
-#rhythm-info-bar{display:none;flex-shrink:0;flex-direction:column;align-items:stretch;padding:3px 5px 5px;font-size:9px;color:#aaa;box-sizing:border-box;background:#f0efec;border:none;border-top:2px solid rgba(200,150,26,.5);border-radius:0;margin:0;width:100%;touch-action:none;cursor:grab;position:relative}
-#rhythm-info-bar::before{content:'';position:absolute;top:3px;left:50%;transform:translateX(-50%);width:28px;height:3px;border-radius:2px;background:rgba(200,150,26,.45);pointer-events:none}
-body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150,26,.35)}
+#rhythm-info-bar{display:none;flex-direction:column;flex-shrink:0;background:#f0efec;border-top:2px solid #C8961A;border-bottom:2px solid #C8961A;touch-action:none;cursor:grab;width:100%;box-sizing:border-box;position:relative}
+body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150,26,.75);border-bottom-color:rgba(200,150,26,.75)}
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
@@ -1254,6 +1252,18 @@ body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A}
 body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
+/* ── GCB v3.26 — nouveaux éléments de la barre séparatrice ── */
+#gcb-handle{width:32px;height:3px;background:#C8961A;opacity:.4;border-radius:2px;margin:3px auto 1px;pointer-events:none;flex-shrink:0}
+.gcb-row{display:flex;align-items:center;gap:6px;padding:2px 8px 5px;width:100%;box-sizing:border-box}
+.gcb-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:34px;height:34px;color:#C8961A;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
+.gcb-play-btn.playing{background:#C8961A;color:#1b1b20}
+body.dark-mode .gcb-play-btn{color:#C8961A;border-color:#C8961A}
+body.dark-mode .gcb-play-btn.playing{color:#1b1b20}
+/* Splitter états A/B/C */
+body[data-split="A"] #layers-wrap{display:none!important}
+body[data-split="A"] #layers-mod-bar{display:none!important}
+body[data-split="C"] #circle-view{display:none!important}
+body[data-split="A"].view-circle #circle-view{flex:1}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
@@ -1401,90 +1411,6 @@ body.dark-mode .mod-shift-track::before,body.dark-mode .mod-soft-h-track::before
 body.dark-mode .mod-strip-2{border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .mod-pad{background:linear-gradient(to top,rgba(255,175,45,.1) 0%,transparent 50%,rgba(70,120,210,.1) 100%),#181820}
 body.dark-mode .mod-pad-dot{background:rgba(255,255,255,.18)}
-/* ═══════════════ v3.26 — GCB play btn + splitter + LCB + Totems ═══════════════ */
-/* GCB play button */
-#rib-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:34px;height:34px;color:#C8961A;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
-#rib-play-btn.playing{background:#C8961A;color:#1b1b20}
-body.dark-mode #rib-play-btn{border-color:#C8961A;color:#C8961A}
-body.dark-mode #rib-play-btn.playing{color:#1b1b20}
-/* Splitter states — body[data-split] */
-body[data-split="A"] #layers-wrap{display:none!important}
-body[data-split="A"] #layers-mod-bar{display:none!important}
-body[data-split="A"] #totems-view-wrap{display:none!important}
-body[data-split="A"] #layer-control-bar{pointer-events:none;opacity:.5}
-/* State C: canvas zoomed to 0 via _splCvMaxH=0 in JS (scale approach, no display:none) */
-/* LCB (LayerControlBar) */
-#layer-control-bar{display:none;background:#f0efec;border-top:none;border-bottom:2px solid rgba(0,0,0,.12);touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0;margin-bottom:0}
-body.show-rib #layer-control-bar{display:flex}
-body.show-rib.view-circle #layer-control-bar{order:4}
-@media(min-width:600px){body.show-rib.view-circle #layer-control-bar{flex:0 0 100%;flex-shrink:0}}
-.lcb-left-btns,.lcb-right-btns{flex:none;display:flex}
-.lcb-left-btns{border-right:1px solid rgba(0,0,0,.12)}
-.lcb-right-btns{border-left:1px solid #444}
-.lcb-left-btns button,.lcb-right-btns button{background:#1f1f26;border:none;border-right:1px solid #333;color:#888;width:34px;height:38px;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lcb-left-btns button:last-child,.lcb-right-btns button:last-child{border-right:none}
-.lcb-left-btns button,.lcb-right-btns button{background:#e8e7e3;color:#555;border-color:rgba(0,0,0,.12)}
-.lcb-left-btns button.on,.lcb-right-btns button.on{color:#7A5A0A;background:#EDE0B0}
-.lcb-seg{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;height:38px;background:color-mix(in srgb,var(--cs) 10%,#ebebea);border-right:1px solid rgba(0,0,0,.08);position:relative;min-width:0;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;transition:box-shadow .12s,background .12s}
-.lcb-seg::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--cs);opacity:.6}
-.lcb-seg.open{background:color-mix(in srgb,var(--cs) 16%,#e4e3e0);box-shadow:inset 0 2px 5px rgba(0,0,0,.13),inset 0 -1px 2px rgba(0,0,0,.06)}
-.lcb-vu{width:13px;height:13px;border-radius:50%;background:var(--cs);flex:none;transition:opacity .15s;position:relative;cursor:pointer}
-.lcb-seg.muted .lcb-vu{opacity:.2}
-.lcb-seg.muted .lcb-vu::after{content:'';position:absolute;left:-2px;right:-2px;top:50%;height:1.5px;background:#999;transform:rotate(-35deg)}
-.lcb-seg .lcb-npas{color:var(--cs);font-weight:700;font-size:13px;pointer-events:none}
-.lcb-seg .lcb-unit{color:var(--cs);font-size:11px;opacity:.85;pointer-events:none}
-.lcb-seg .lcb-chev{color:var(--cs);font-size:17px;font-weight:700;line-height:1;width:18px;text-align:center;pointer-events:none}
-.lcb-seg.muted .lcb-npas,.lcb-seg.muted .lcb-unit,.lcb-seg.muted .lcb-chev{opacity:.3}
-.lcb-mute-zone{height:100%;display:flex;align-items:center;justify-content:center;padding:0 10px;cursor:pointer;border-right:1px solid rgba(0,0,0,.10);flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.lcb-fold-zone{flex:1;display:flex;align-items:center;justify-content:center;gap:3px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
-body.dark-mode #layer-control-bar{background:#13131a;border-top:none;border-bottom-color:rgba(255,255,255,.1)}
-body.dark-mode .lcb-left-btns button,body.dark-mode .lcb-right-btns button{background:#18181f;color:#aaa;border-color:#2a2a33}
-body.dark-mode .lcb-left-btns button.on,body.dark-mode .lcb-right-btns button.on{color:#e8cc60;background:#2a2618}
-body.dark-mode .lcb-seg{background:color-mix(in srgb,var(--cs) 10%,#13131a)}
-body.dark-mode .lcb-seg.open{background:color-mix(in srgb,var(--cs) 16%,#0f0f14)}
-body.dark-mode .lcb-mute-zone{border-right-color:rgba(255,255,255,.08)}
-/* Totems (vue création v3.26) */
-#totems-view-wrap{display:none;gap:6px;padding:6px;flex-shrink:0;background:#f5f4f0}
-#totems-view-wrap.v326-active{display:flex}
-body.show-rib.view-circle #totems-view-wrap{order:6}
-@media(min-width:600px){body.show-rib.view-circle #totems-view-wrap{flex:0 0 100%;flex-shrink:0}}
-.v326-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;border-top:3px solid var(--cs);padding:5px 4px;min-width:0;min-height:0}
-.v326-totem.muted{opacity:.4}
-.v326-totem.folded{display:none}
-.v326-pad{position:relative;border-radius:7px;touch-action:none;border:1px solid rgba(0,0,0,.12);overflow:hidden;flex:1;min-height:40px}
-.v326-padA{background:linear-gradient(to top,rgba(255,175,45,.08) 0%,transparent 50%,rgba(70,120,210,.08) 100%),#f0eeea}
-.v326-padB{background:#edeaf4}
-.v326-pad .v326-axx{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:10px;color:#999;pointer-events:none;z-index:1}
-.v326-pad .v326-axy{position:absolute;left:2px;top:0;bottom:0;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;font-size:10px;color:#999;pointer-events:none;z-index:1}
-.v326-cross{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--cs);box-shadow:0 0 7px var(--cs);transform:translate(-50%,-50%);left:50%;top:50%;display:none;pointer-events:none}
-.v326-totem.axed .v326-cross{display:block}
-.v326-totem-btns{display:flex;gap:4px;justify-content:center;flex-wrap:nowrap}
-.v326-totem-btns button{flex:1;min-width:0;background:#e6e5e1;border:1px solid rgba(0,0,0,.14);color:#555;border-radius:6px;height:24px;padding:0 4px;font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.v326-totem-undo{color:#d90!important;border-color:#884!important;visibility:hidden}
-.v326-totem.axed .v326-totem-undo{visibility:visible}
-body.dark-mode #totems-view-wrap{background:#18181a}
-body.dark-mode .v326-pad{border-color:#2a2a33}
-body.dark-mode .v326-padA{background:linear-gradient(to top,rgba(255,175,45,.05) 0%,transparent 50%,rgba(70,120,210,.05) 100%),#1e1e26}
-body.dark-mode .v326-padB{background:#201e2e}
-body.dark-mode .v326-totem-btns button{background:#23232a;border-color:#3a3a44;color:#aaa}
-/* LCB vu-core animation */
-.lcb-vu-core{display:block;width:100%;height:100%;border-radius:50%;background:var(--cs);transform-origin:center;will-change:transform;transition:transform .15s ease-out}
-/* Mini-rings (état C) */
-.v326-ring{width:76px;height:76px;display:none;border-radius:50%;align-self:center;flex-shrink:0;margin:2px auto}
-body[data-split="C"] .v326-totem:not(.folded) .v326-ring{display:block}
-/* Iso-métrique step cells (ligne 2 volet layer) */
-.lrow-steps-326{display:flex;flex-wrap:nowrap;gap:2px;padding:4px 4px 2px;margin:2px 0}
-.lrow-steps-326 .lsCell{flex:1;height:18px;border-radius:3px;background:#d4d2cc;border:none;cursor:pointer;min-width:0;-webkit-tap-highlight-color:transparent}
-.lrow-steps-326 .lsCell.on{background:var(--cs)}
-.lrow-steps-326 .lsCell.soft{background:color-mix(in srgb,var(--cs) 40%,#d4d2cc)}
-.lrow-steps-326 .lsCell.cur{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
-.lrow-steps-326 .lsCell.beat{margin-left:4px}
-body.dark-mode .lrow-steps-326 .lsCell{background:#303038}
-body.dark-mode .lrow-steps-326 .lsCell.soft{background:color-mix(in srgb,var(--cs) 38%,#303038)}
-/* Row1 v3.26 — mute caché, ↺ undo */
-.btn-mute-lbl.v326-hidden{display:none!important}
-.btn-layer-undo-v326{background:none;border:1.5px solid #884;border-radius:4px;padding:1px 5px;cursor:pointer;font-size:13px;color:#d90;visibility:hidden;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.layer-div.has-orig326 .btn-layer-undo-v326{visibility:visible}
 body.dark-mode .mod-mul-popup{background:#1e1e1c;border-color:rgba(255,255,255,.12)}
 body.dark-mode .mod-mul-item{color:#d0cec8}
 body.dark-mode .mod-mul-item:hover{background:rgba(107,95,165,.15)}
@@ -1859,7 +1785,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.10</span>
+    <span class="app-version">v3.26.0</span>
   </div>
 </div>
 
@@ -2302,10 +2228,6 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="step-rows-wrap"><div id="linear-view-bar"></div></div>
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
-  <!-- v3.26 LayerControlBar — remplie par buildLCB() -->
-  <div id="layer-control-bar"></div>
-  <!-- v3.26 Totems view — remplie par buildTotemsView() -->
-  <div id="totems-view-wrap"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layer-edit-bar"></div><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
@@ -3923,7 +3845,7 @@ function scheduler(){
       const swOff=(swingVal>0&&si%2===1)?swingVal*0.5*getBeatSec(li):0;
       if(stepVal!=='.'&&!state[li].muted){
         scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
-        if(li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
+        if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
       }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
@@ -3959,15 +3881,6 @@ function scheduler(){
 function visualLoop(){
   if(!playing)return;
   if(_recDomUpdateLi>=0){const rli=_recDomUpdateLi;_recDomUpdateLi=-1;buildStepsDOM(rli,state[rli].wrapped);}
-  // Animation pastilles LCB (toujours, même en vue cercle)
-  const _lcbNow=performance.now();
-  LAYERS.forEach((_,li)=>{
-    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
-    if(!core)return;
-    const dt=_lcbNow-(_miniVuHit[li]||0);
-    if(dt>=0&&dt<220){core.style.transform='scale('+(1+0.55*(1-dt/220)).toFixed(3)+')';}
-    else{core.style.transform='scale(1)';}
-  });
   if(circleView){ visualLoopCircle(); return; }
   const now=getAC().currentTime-prefs.audioOffset;
   LAYERS.forEach((layer,li)=>{
@@ -3983,9 +3896,6 @@ function visualLoop(){
       else s.classList.remove('rec-past');
     });
   });
-  // Mini-rings (état C) + tête de lecture iso-métrique
-  if(document.body.dataset.split==='C')_drawMiniRings326();
-  _updateLrowSteps326(now);
   highlightMetroStep();
   visualRafID=requestAnimationFrame(visualLoop);
 }
@@ -4326,14 +4236,6 @@ function stopPlay(){
   recLayers.forEach(li=>{state[li].recording=false;updateRecBtn(li);});if(recLayers.length>0)_updateBtnJouerRec();
   clearTimeout(schedTimerID);
   cancelAnimationFrame(visualRafID);
-  // Reset LCB dot scales et tête de lecture iso-métrique
-  LAYERS.forEach((_,li)=>{
-    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
-    if(core)core.style.transform='scale(1)';
-    _lrowLast[li]=-1;
-    const lw=document.getElementById('lrow-steps-'+li);
-    if(lw)lw.querySelectorAll('.lsCell.cur').forEach(c=>c.classList.remove('cur'));
-  });
   _measureViewPage = 0; _linearCyclePage = 0; // retour page 0 à l'arrêt
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
@@ -4350,12 +4252,10 @@ function stopPlay(){
 }
 
 function refreshTransportBtn(){
-  const btn=document.getElementById('btn-play');if(!btn)return;
-  btn.textContent=playing?'■':'▶';
-  btn.classList.toggle('active',playing);
-  // Sync GCB play button (v3.26)
-  const ribPlay=document.getElementById('rib-play-btn');
-  if(ribPlay){ribPlay.textContent=playing?'■':'▶';ribPlay.classList.toggle('playing',playing);}
+  const btn=document.getElementById('btn-play');
+  if(btn){btn.textContent=playing?'■':'▶';btn.classList.toggle('active',playing);}
+  const gcbPlay=document.getElementById('gcb-play-btn');
+  if(gcbPlay){gcbPlay.textContent=playing?'■':'▶';gcbPlay.classList.toggle('playing',playing);}
 }
 function togglePlay(){
   if(!playing){
@@ -4669,6 +4569,8 @@ function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
   if(lw)lw.style.display=layerPanelsOuverts?'':'none';
+  const lmb=document.getElementById('layers-mod-bar');
+  if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
   updateRhythmInfoBar();
 }
 let encycloOuvert = false;
@@ -6550,9 +6452,7 @@ function buildGrooveSection(){
     modPanel.classList.toggle('hidden');
     const layerDiv=document.getElementById('layer-div-'+li);
     const btn=layerDiv?.querySelector('.btn-layer-toggle');
-    const row2leb=layerDiv?.querySelector('.layer-row2');
-    if(row2leb)row2leb.style.display=isHidden?'':'none';
-    if(btn){btn.classList.toggle('open',isHidden);}
+    if(btn){btn.textContent=isHidden?'mod ▼':'mod ▶';btn.classList.toggle('open',isHidden);}
     if(isHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
   });
   header.appendChild(l3);
@@ -6867,554 +6767,6 @@ function updateLayerEditBar(){
 }
 // ── Couches rythmiques ────────────────────────────────────────────────────
 const layerObservers=[];
-// ════════════════════════════════════════════════════════════════════════════
-// v3.26 — Moteur axes + LCB + Totems
-// ════════════════════════════════════════════════════════════════════════════
-const LADDER_V326=[[4,'♩'],[8,'♪'],[12,'♪T'],[16,'♫'],[24,'♫T'],[32,'♬']];
-const BEATS_V326=4;
-// État axes par layer : axes = {dens,geom,fill,calS,calB} | orig = {pat[],n}
-const _v326=LAYERS.map(()=>({axes:null,orig:null,folded:true}));
-let _v326view='rows'; // 'rows' | 'totems'
-let _v326detail=true; // ✎ — afficher le mod panel au tap LCB
-
-function _spbOf326(n){return(n%BEATS_V326===0)?Math.floor(n/BEATS_V326):1;}
-function _grainIdxOf326(li){
-  const n=state[li].pattern.length;
-  let best=0;
-  for(let i=1;i<LADDER_V326.length;i++){if(Math.abs(LADDER_V326[i][0]-n)<Math.abs(LADDER_V326[best][0]-n))best=i;}
-  return best;
-}
-function _snapshotOrig326(li){
-  if(!_v326[li].orig)_v326[li].orig={pat:state[li].pattern.slice()};
-}
-function _ensureAxes326(li){
-  if(_v326[li].axes)return;
-  const n=state[li].pattern.length;let k=0,gh=0;
-  state[li].pattern.forEach(c=>{if(c==='X')k++;else if(c==='x')gh++;});
-  _snapshotOrig326(li);
-  _v326[li].axes={dens:k/n,geom:1,fill:(n-k)?gh/(n-k):0,calS:0,calB:0};
-}
-function inferAxesFromPat326(li){
-  const n=state[li].pattern.length;let k=0,gh=0;
-  const hitPos=[];
-  state[li].pattern.forEach((c,i)=>{if(c==='X'){k++;hitPos.push(i);}else if(c==='x')gh++;});
-  _snapshotOrig326(li);
-  const dens=k/n;
-  const fill=(n-k)?gh/(n-k):0;
-  // geom : mesure l'égalité des écarts entre frappes (1=euclidien, 0=regroupé)
-  let geom=1;
-  if(k>=2){
-    const idealGap=n/k;
-    let variance=0;
-    for(let i=0;i<k;i++){const g=(hitPos[(i+1)%k]-hitPos[i]+n)%n;variance+=(g-idealGap)*(g-idealGap);}
-    variance/=k;
-    const maxVar=((n-idealGap)*(n-idealGap)+idealGap*idealGap*(k-1))/k;
-    geom=maxVar>0?Math.max(0,Math.min(1,1-variance/maxVar)):1;
-  }
-  // calS et calB : depuis la première frappe X
-  const spb=_spbOf326(n);
-  const calS=k>0?hitPos[0]%spb:0;
-  const calB=k>0?Math.floor(hitPos[0]/spb)%BEATS_V326:0;
-  if(_v326[li].axes){
-    _v326[li].axes.dens=dens;_v326[li].axes.fill=fill;
-    _v326[li].axes.geom=geom;_v326[li].axes.calS=calS;_v326[li].axes.calB=calB;
-  } else {
-    _v326[li].axes={dens,geom,fill,calS,calB};
-  }
-  updateTotemsCross326(li);
-  _syncLayerDivHasOrig326(li);
-}
-function _placeGhosts326(pat,m){
-  const n=pat.length;
-  if(!pat.some(c=>c!=='.')){if(m<=0)return;
-    for(let j=0;j<m;j++){const p=Math.round(j*n/m)%n;if(pat[p]==='.')pat[p]='x';}return;}
-  while(m>0){
-    let best=-1,bl=0;
-    for(let s0=0;s0<n;s0++){
-      if(pat[s0]==='.'&&pat[(s0-1+n)%n]!=='.'){
-        let l=0;while(l<n&&pat[(s0+l)%n]==='.')l++;
-        if(l>bl){bl=l;best=s0;}
-      }
-    }
-    if(bl<=0)return;
-    pat[(best+Math.floor((bl-1)/2))%n]='x';m--;
-  }
-}
-function _genFromAxes326(li){
-  const n=state[li].pattern.length,ax=_v326[li].axes;
-  const spb=_spbOf326(n);
-  const cal=ax.calB*spb+Math.max(0,Math.min(spb-1,ax.calS));
-  const k=Math.max(0,Math.min(n,Math.round(ax.dens*n)));
-  const pat=Array(n).fill('.');
-  if(k>0){const used=new Set();
-    for(let i=0;i<k;i++){
-      const eu=i*n/k,cl=i;
-      let p=Math.round(ax.geom*eu+(1-ax.geom)*cl);
-      p=(((p+cal)%n)+n)%n;
-      let guard=0;while(used.has(p)&&guard++<n)p=(p+1)%n;
-      used.add(p);pat[p]='X';
-    }
-  }
-  _placeGhosts326(pat,Math.round(ax.fill*(n-k)));
-  state[li].pattern=pat;
-  buildStepsDOM(li,state[li].wrapped);
-  if(circleView)drawCircles();
-  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
-}
-function _setGrain326(li,gi){
-  gi=Math.max(0,Math.min(LADDER_V326.length-1,gi));
-  const n2=LADDER_V326[gi][0],old=state[li].pattern,n=old.length;
-  if(n2===n)return;
-  const pat=Array(n2).fill('.');
-  for(let i=0;i<n;i++){
-    if(old[i]!=='.'){const j=Math.round(i*n2/n)%n2;if(pat[j]==='.'||old[i]==='X')pat[j]=old[i];}
-  }
-  state[li].pattern=pat;
-  if(_v326[li].axes){const ns=_spbOf326(n2);_v326[li].axes.calS=Math.max(0,Math.min(Math.max(0,ns-1),_v326[li].axes.calS));}
-  buildStepsDOM(li,state[li].wrapped);
-  if(circleView)drawCircles();
-  const nPas=document.getElementById('pas-num-'+li);if(nPas)nPas.textContent=String(n2);
-  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-  updateLCB326();
-}
-function _restoreOrig326(li){
-  if(_v326[li].orig)state[li].pattern=_v326[li].orig.pat.slice();
-  _v326[li].axes=null;_v326[li].orig=null;
-  buildStepsDOM(li,state[li].wrapped);
-  if(circleView)drawCircles();
-  const t=document.getElementById('v326-totem-'+li);
-  if(t){t.classList.remove('axed');}
-  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-  _syncLayerDivHasOrig326(li);updateLCB326();
-}
-function _randPlacement326(li){
-  _snapshotOrig326(li);
-  const n=state[li].pattern.length;let k=0,m=0;
-  state[li].pattern.forEach(c=>{if(c==='X')k++;else if(c==='x')m++;});
-  const idx=[...Array(n).keys()];
-  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
-  const pat=Array(n).fill('.');idx.slice(0,k).forEach(p=>pat[p]='X');
-  _placeGhosts326(pat,m);
-  state[li].pattern=pat;_v326[li].axes=null;
-  buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
-  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
-}
-function _randAccents326(li){
-  _snapshotOrig326(li);
-  const pos=[],vals=[];
-  state[li].pattern.forEach((c,i)=>{if(c!=='.'){pos.push(i);vals.push(c);}});
-  for(let i=vals.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vals[i],vals[j]]=[vals[j],vals[i]];}
-  pos.forEach((p,i)=>{state[li].pattern[p]=vals[i];});_v326[li].axes=null;
-  buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
-  setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-  updateTotemsCross326(li);_syncLayerDivHasOrig326(li);
-}
-function _syncLayerDivHasOrig326(li){
-  const ld=document.getElementById('layer-div-'+li);
-  if(ld)ld.classList.toggle('has-orig326',!!_v326[li].orig);
-}
-
-// ── LCB (LayerControlBar) ─────────────────────────────────────────────────
-const _LAYER_COLS=['#378ADD','#D85A30','#1D9E75'];
-function buildLCB326(){
-  const el=document.getElementById('layer-control-bar');if(!el)return;
-  el.innerHTML='';
-  // 3 segments colorés
-  LAYERS.forEach((layer,li)=>{
-    const seg=document.createElement('div');seg.className='lcb-seg'+(state[li].muted?' muted':'');
-    seg.style.setProperty('--cs',_LAYER_COLS[li]);seg.dataset.li=li;
-    const vu=document.createElement('span');vu.className='lcb-vu';vu.title='Mute '+layer.label;
-    const vuCore=document.createElement('span');vuCore.className='lcb-vu-core';vu.appendChild(vuCore);
-    const npas=document.createElement('span');npas.className='lcb-npas';npas.textContent=String(state[li].pattern.length);
-    const unitLbl=document.createElement('span');unitLbl.className='lcb-unit';
-    const gi=_grainIdxOf326(li);unitLbl.textContent=LADDER_V326[gi][1];
-    const chev=document.createElement('span');chev.className='lcb-chev';
-    {const ld0=document.getElementById('layer-div-'+li);chev.textContent=(ld0&&ld0.style.display==='none')?'▶':'▾';}
-    // Zone mute (gauche — grande zone) + zone fold (droite)
-    const muteZone=document.createElement('div');muteZone.className='lcb-mute-zone';
-    muteZone.appendChild(vu);
-    const foldZone=document.createElement('div');foldZone.className='lcb-fold-zone';
-    foldZone.appendChild(npas);foldZone.appendChild(unitLbl);foldZone.appendChild(chev);
-    seg.appendChild(muteZone);seg.appendChild(foldZone);
-    el.appendChild(seg);
-    // Zone mute → mute toggle
-    muteZone.addEventListener('click',e=>{
-      e.stopPropagation();
-      state[li].muted=!state[li].muted;
-      seg.classList.toggle('muted',state[li].muted);vu.classList.toggle('muted',state[li].muted);
-      const bml=document.getElementById('btn-mute-lbl-'+li);
-      if(bml){bml.classList.toggle('muted',state[li].muted);bml.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;}
-      const ld=document.querySelector('.layer.'+LAYERS[li].cls);
-      if(ld)ld.classList.toggle('muted-layer',state[li].muted);
-      const _sd=document.getElementById('steps-'+LAYERS[li].id);
-      const _r2=_sd?.closest('.layer-row2');if(_r2)_r2.classList.toggle('muted',state[li].muted);
-      const _sk=['low','high','noise'][li];
-      const _smb=document.querySelector(`.sound-layer[data-sound-key="${_sk}"] .btn-mute-lbl`);
-      if(_smb){_smb.classList.toggle('muted',state[li].muted);}
-      _syncBtnVolAllMuted();grooveDirty=true;updateGrooveSaveBtn();
-      if(circleView)drawCircles();
-    });
-    // Drag ↕ grain / Tap → toggle mod panel layer
-    let _lcbDragMode=null,_lcbY0=0,_lcbX0=0,_lcbGi0=0,_lcbDens0=0,_lcbT0=0;
-    seg.addEventListener('pointerdown',e=>{
-      if(e.target.closest('.lcb-mute-zone'))return;
-      _lcbDragMode=null;_lcbY0=e.clientY;_lcbX0=e.clientX;
-      _lcbGi0=_grainIdxOf326(li);_lcbT0=performance.now();
-      seg.setPointerCapture(e.pointerId);
-    });
-    seg.addEventListener('pointermove',e=>{
-      if(!seg.hasPointerCapture(e.pointerId))return;
-      const dy=e.clientY-_lcbY0,dx=e.clientX-_lcbX0;
-      if(!_lcbDragMode&&Math.hypot(dx,dy)>10){
-        _lcbDragMode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
-        if(_lcbDragMode==='dens'){_ensureAxes326(li);_lcbDens0=_v326[li].axes.dens;}
-      }
-      if(_lcbDragMode==='grain'){
-        const gi=Math.max(0,Math.min(LADDER_V326.length-1,_lcbGi0+Math.round(-dy/36)));
-        _setGrain326(li,gi);
-        _dragOverlay.show('<span style="font-size:18px;font-weight:700;color:'+_LAYER_COLS[li]+'">'+state[li].pattern.length+'·'+LADDER_V326[_grainIdxOf326(li)][1]+'</span>');
-      }else if(_lcbDragMode==='dens'){
-        const n=state[li].pattern.length;
-        _v326[li].axes.dens=Math.max(0,Math.min(1,_lcbDens0+dx/200));
-        _genFromAxes326(li);
-        _dragOverlay.show('<span style="font-size:18px;font-weight:700;color:'+_LAYER_COLS[li]+'">densité '+Math.round(_v326[li].axes.dens*n)+'</span>');
-      }
-    });
-    seg.addEventListener('pointerup',()=>{
-      _dragOverlay.hide();
-      if(!_lcbDragMode&&performance.now()-_lcbT0<300){
-        const ch=seg.querySelector('.lcb-chev');
-        if(_v326view==='totems'){
-          // Vue totems : plier/déplier le totem
-          _v326[li].folded=!_v326[li].folded;
-          if(ch)ch.textContent=_v326[li].folded?'▶':'▾';
-          updateTotemsView326();
-        } else {
-          // Vue rows : plier/déplier le layer div
-          if(!layerPanelsOuverts){layerPanelsOuverts=true;const lw=document.getElementById('layers-wrap');if(lw)lw.style.display='';}
-          _v326[li].folded=!_v326[li].folded;
-          const ld2=document.getElementById('layer-div-'+li);
-          if(ld2){
-            ld2.style.display=_v326[li].folded?'none':'';
-            // Refermer le detail au pliage (→ non-déplié propre à la réouverture)
-            if(_v326[li].folded){
-              const r2=ld2.querySelector('.layer-row2');
-              const mp=document.getElementById('mod-panel-'+li);
-              const tb=ld2.querySelector('.btn-layer-toggle');
-              if(r2)r2.style.display='none';
-              if(mp&&!mp.classList.contains('hidden'))mp.classList.add('hidden');
-              if(tb)tb.classList.remove('open');
-            }
-          }
-          if(ch)ch.textContent=_v326[li].folded?'▶':'▾';
-          seg.classList.toggle('open',!_v326[li].folded);
-        }
-      }
-      _lcbDragMode=null;
-    });
-    seg.addEventListener('pointercancel',()=>{_dragOverlay.hide();_lcbDragMode=null;});
-  });
-  // Toggle ☰/▥ droite
-  const rightWrap=document.createElement('div');rightWrap.className='lcb-right-btns';
-  const bRows=document.createElement('button');bRows.id='lcb-b-rows';bRows.textContent='☰';bRows.title='Vue édition';
-  const bTotems=document.createElement('button');bTotems.id='lcb-b-totems';bTotems.textContent='▥';bTotems.title='Vue création (totems)';
-  if(_v326view==='rows')bRows.classList.add('on'); else bTotems.classList.add('on');
-  bRows.addEventListener('click',()=>{_setV326View('rows');});
-  bTotems.addEventListener('click',()=>{_setV326View('totems');});
-  rightWrap.appendChild(bRows);rightWrap.appendChild(bTotems);el.appendChild(rightWrap);
-}
-function updateLCB326(){
-  LAYERS.forEach((layer,li)=>{
-    const seg=document.querySelector(`#layer-control-bar .lcb-seg[data-li="${li}"]`);if(!seg)return;
-    seg.classList.toggle('muted',!!state[li].muted);
-    const vu=seg.querySelector('.lcb-vu');if(vu)vu.classList.toggle('muted',!!state[li].muted);
-    const np=seg.querySelector('.lcb-npas');if(np)np.textContent=String(state[li].pattern.length);
-    const ul=seg.querySelector('.lcb-unit');if(ul){const gi=_grainIdxOf326(li);ul.textContent=LADDER_V326[gi][1];}
-    const ch=seg.querySelector('.lcb-chev');
-    if(ch)ch.textContent=_v326[li].folded?'▶':'▾';
-    seg.classList.toggle('open',!_v326[li].folded);
-  });
-}
-function _setV326View(v){
-  _v326view=v;
-  const wrap=document.getElementById('totems-view-wrap');
-  const lw=document.getElementById('layers-wrap');
-  if(wrap)wrap.classList.toggle('v326-active',v==='totems');
-  if(lw)lw.style.display=v==='totems'?'none':(layerPanelsOuverts?'':'none');
-  // En vue rows : sync layer-divs depuis _v326[li].folded
-  if(v==='rows'){LAYERS.forEach((_,li)=>{const ld=document.getElementById('layer-div-'+li);if(ld)ld.style.display=_v326[li].folded?'none':'';});}
-  const bR=document.getElementById('lcb-b-rows'),bT=document.getElementById('lcb-b-totems');
-  if(bR)bR.classList.toggle('on',v==='rows');
-  if(bT)bT.classList.toggle('on',v==='totems');
-  updateTotemsView326();
-  if(v==='totems')requestAnimationFrame(_resizeTotemsWrap);
-}
-
-// ── Totems view ──────────────────────────────────────────────────────────
-function buildTotemsView326(){
-  const wrap=document.getElementById('totems-view-wrap');if(!wrap)return;
-  wrap.innerHTML='';
-  LAYERS.forEach((layer,li)=>{
-    const col=_LAYER_COLS[li];
-    const t=document.createElement('div');
-    t.className='v326-totem'+(state[li].muted?' muted':'')+(state[li].pattern.length===0?' folded':'')+(_v326[li].orig?' axed':'');
-    t.id='v326-totem-'+li;t.style.setProperty('--cs',col);t.dataset.li=li;
-    // Mini-ring (visible seulement en état C)
-    const ringCv=document.createElement('canvas');ringCv.className='v326-ring';ringCv.width=152;ringCv.height=152;
-    t.appendChild(ringCv);
-    // Pad A : densité ↔ / liant ↕
-    const padA=document.createElement('div');padA.className='v326-pad v326-padA';
-    padA.insertAdjacentHTML('beforeend','<span class="v326-axx">densité</span><span class="v326-axy">liant</span><div class="v326-cross" id="v326-crossA-'+li+'"></div>');
-    // Pad B : décalage (fort·faible) ↔ / géométrie ↕
-    const padB=document.createElement('div');padB.className='v326-pad v326-padB';
-    padB.insertAdjacentHTML('beforeend','<span class="v326-axx">décalage (fort · faible)</span><span class="v326-axy">géométrie</span><div class="v326-cross" id="v326-crossB-'+li+'"></div>');
-    // Buttons
-    const btns=document.createElement('div');btns.className='v326-totem-btns';
-    const bRndPos=document.createElement('button');bRndPos.textContent='pos';bRndPos.title='Placement aléatoire';bRndPos.addEventListener('click',()=>_randPlacement326(li));
-    const bRndAcc=document.createElement('button');bRndAcc.textContent='acc';bRndAcc.title='Accents aléatoires';bRndAcc.addEventListener('click',()=>_randAccents326(li));
-    const bUndo=document.createElement('button');bUndo.className='v326-totem-undo';bUndo.textContent='↺';bUndo.title='Revenir au motif original';bUndo.addEventListener('click',()=>_restoreOrig326(li));
-    btns.appendChild(bRndPos);btns.appendChild(bRndAcc);btns.appendChild(bUndo);
-    t.appendChild(padA);t.appendChild(padB);t.appendChild(btns);
-    wrap.appendChild(t);
-    // Pad handlers
-    function v326PadHandler(pad,applyFn){
-      pad.addEventListener('pointerdown',e=>{
-        _ensureAxes326(li);pad.setPointerCapture(e.pointerId);
-        const r=pad.getBoundingClientRect();
-        const go=ev=>{
-          const x=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
-          const y=Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height));
-          applyFn(x,y);_genFromAxes326(li);
-        };
-        go(e);
-        const mv=ev=>go(ev);
-        const up=()=>{pad.removeEventListener('pointermove',mv);pad.removeEventListener('pointerup',up);pad.removeEventListener('pointercancel',up);};
-        pad.addEventListener('pointermove',mv);pad.addEventListener('pointerup',up);pad.addEventListener('pointercancel',up);
-      },{passive:false});
-    }
-    v326PadHandler(padA,(x,y)=>{_v326[li].axes.dens=x;_v326[li].axes.fill=1-y;});
-    v326PadHandler(padB,(x,y)=>{
-      const n=state[li].pattern.length,spb=_spbOf326(n);
-      const totalPos=spb*BEATS_V326;
-      const idx=Math.round(x*(totalPos-1));
-      _v326[li].axes.calS=Math.floor(idx/BEATS_V326);
-      _v326[li].axes.calB=idx%BEATS_V326;
-      _v326[li].axes.geom=y;
-    });
-  });
-  updateTotemsView326();
-}
-function updateTotemsView326(){
-  LAYERS.forEach((layer,li)=>{
-    const t=document.getElementById('v326-totem-'+li);if(!t)return;
-    t.classList.toggle('muted',!!state[li].muted);
-    t.classList.toggle('folded',!!_v326[li].folded);
-    t.classList.toggle('axed',!!_v326[li].orig);
-    updateTotemsCross326(li);
-    // Fond padB : zones colorées par cran s
-    const padB=t.querySelector('.v326-padB');
-    if(padB){
-      const n=state[li].pattern.length,pspb=_spbOf326(n);
-      const bgs=[];
-      for(let k=0;k<pspb;k++){
-        const lp=(k/pspb*100).toFixed(1)+'%',rp=((k+1)/pspb*100).toFixed(1)+'%';
-        bgs.push((k%2===0?'#262430':'#252436')+' '+lp+' '+rp);
-      }
-      padB.style.backgroundImage='linear-gradient(90deg,'+bgs.join(',')+')';
-    }
-  });
-}
-function updateTotemsCross326(li){
-  const ax=_v326[li].axes;
-  const cA=document.getElementById('v326-crossA-'+li);
-  const cB=document.getElementById('v326-crossB-'+li);
-  if(!ax){if(cA)cA.style.display='none';if(cB)cB.style.display='none';return;}
-  if(cA){cA.style.display='';cA.style.left=(ax.dens*100)+'%';cA.style.top=((1-ax.fill)*100)+'%';}
-  if(cB){
-    const n=state[li].pattern.length,spb=_spbOf326(n);
-    const totalPos=spb*BEATS_V326;
-    const idx=ax.calS*BEATS_V326+ax.calB;
-    const xPct=totalPos>1?idx/(totalPos-1):0;
-    cB.style.display='';cB.style.left=(xPct*100)+'%';cB.style.top=(ax.geom*100)+'%';
-  }
-  const t=document.getElementById('v326-totem-'+li);
-  if(t)t.classList.toggle('axed',!!_v326[li].orig);
-}
-
-// ── Nouvelles fonctions v3.26.9 ──────────────────────────────────────────────
-
-// Mini-rings dans les totems (état C)
-function _drawMiniRings326(){
-  const acNow=getAC().currentTime;
-  LAYERS.forEach((_,li)=>{
-    const totem=document.getElementById('v326-totem-'+li);if(!totem)return;
-    const cv=totem.querySelector('.v326-ring');
-    if(!cv||cv.offsetWidth===0)return;
-    const ctx=cv.getContext('2d');
-    const DPR=2,W=76,H=76,cx=W/2,cy=H/2,r=26;
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-    ctx.clearRect(0,0,W,H);
-    const col=CIRCLE_COLORS[li];
-    const pat=state[li].pattern;const n=pat.length;if(!n)return;
-    // Track
-    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
-    ctx.strokeStyle=col.track;ctx.lineWidth=2;ctx.stroke();
-    // Steps
-    for(let i=0;i<n;i++){
-      const a=-Math.PI/2+2*Math.PI*i/n;
-      const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;
-      const isOn=pat[i]==='X',isSoft=pat[i]==='x';
-      if(isOn||isSoft){
-        ctx.beginPath();ctx.arc(px,py,isSoft?2.2:3.2,0,2*Math.PI);
-        ctx.fillStyle=isSoft?col.fill+'88':col.fill;ctx.fill();
-      }
-    }
-    // Tête de lecture
-    if(playing){
-      const bs=getBeatSec(li);
-      const elapsed=acNow-state[li].startTime;
-      const ph=((elapsed/(n*bs))%1+1)%1;
-      const pa=-Math.PI/2+ph*2*Math.PI;
-      ctx.beginPath();ctx.moveTo(cx,cy);
-      ctx.lineTo(cx+Math.cos(pa)*(r+4),cy+Math.sin(pa)*(r+4));
-      ctx.strokeStyle='#C8961A';ctx.lineWidth=1.5;ctx.stroke();
-    }
-  });
-}
-
-// Tête de lecture iso-métrique (lrow-steps-326)
-const _lrowLast=[-1,-1,-1];
-function _updateLrowSteps326(now){
-  LAYERS.forEach((_,li)=>{
-    const wrap=document.getElementById('lrow-steps-'+li);
-    if(!wrap||!wrap.children.length)return;
-    const n=state[li].pattern.length;if(!n)return;
-    const bs=getBeatSec(li);
-    const elapsed=(now||0)-state[li].startTime;
-    const cur=playing?((Math.floor(elapsed/bs)%n)+n)%n:-1;
-    if(cur===_lrowLast[li])return;
-    if(_lrowLast[li]>=0&&wrap.children[_lrowLast[li]])wrap.children[_lrowLast[li]].classList.remove('cur');
-    if(cur>=0&&wrap.children[cur])wrap.children[cur].classList.add('cur');
-    _lrowLast[li]=cur;
-  });
-}
-
-// Construire les cellules iso-métriques pour un layer
-function _buildLrowSteps326(li){
-  const wrap=document.getElementById('lrow-steps-'+li);if(!wrap)return;
-  const pat=state[li].pattern;const n=pat.length;
-  wrap.innerHTML='';wrap.style.setProperty('--cs',_LAYER_COLS[li]);
-  _lrowLast[li]=-1;
-  const bs=(n%4===0)?n/4:(n%3===0?n/3:0);
-  for(let i=0;i<n;i++){
-    const c=document.createElement('div');
-    c.className='lsCell'+(pat[i]==='X'?' on':pat[i]==='x'?' soft':'')+(bs&&i>0&&i%bs===0?' beat':'');
-    c.addEventListener('click',()=>{
-      const CYCLE={'.':'X','X':'x','x':'.'};
-      state[li].pattern[i]=CYCLE[state[li].pattern[i]]??'.';
-      c.className='lsCell'+(state[li].pattern[i]==='X'?' on':state[li].pattern[i]==='x'?' soft':'')+(c.classList.contains('beat')?' beat':'');
-      // Sync step button existant
-      const stepsDiv=document.getElementById('steps-'+LAYERS[li].id);
-      if(stepsDiv){const s=stepsDiv.querySelectorAll('.step')[i];if(s){s.className='step'+(state[li].pattern[i]==='X'?' on':state[li].pattern[i]==='x'?' soft':'');}}
-      if(circleView)drawCircles();
-      inferAxesFromPat326(li);updateLCB326();
-    });
-    wrap.appendChild(c);
-  }
-}
-
-function _UNUSED_drawTotemPadBgs326(li){
-  const t=document.getElementById('v326-totem-'+li);if(!t)return;
-  const col=_LAYER_COLS[li];
-  function _hexRgb(h){const v=parseInt(h.replace('#',''),16);return[(v>>16)&255,(v>>8)&255,v&255];}
-  const [cr,cg,cb]=_hexRgb(col);
-
-  // ── Pad A : Densité ↔ / Liant ↕ — grille 4×4 ──
-  const bgA=t.querySelector('.v326-pad-bgA');
-  if(bgA&&bgA.parentElement&&bgA.parentElement.clientWidth>0){
-    const W=bgA.parentElement.clientWidth,H=bgA.parentElement.clientHeight;
-    bgA.width=W;bgA.height=H;
-    const ctxA=bgA.getContext('2d');
-    ctxA.clearRect(0,0,W,H);
-    const NCOLS=4,NROWS=4,STEPS=8;
-    const cellW=W/NCOLS,cellH=H/NROWS;
-    for(let row=0;row<NROWS;row++){
-      for(let col_i=0;col_i<NCOLS;col_i++){
-        const x0=col_i*cellW,y0=row*cellH;
-        const densVal=((col_i+0.5)/NCOLS)*0.875;
-        const k=Math.round(densVal*STEPS);
-        const fillVal=1-(row+0.5)/NROWS;
-        const ghosts=Math.round(fillVal*Math.max(0,STEPS-k));
-        // Positions euclidéennes des frappes (Bresenham)
-        const hitSet=new Set();
-        for(let s=0;s<STEPS;s++){if(Math.floor(s*k/STEPS)!==Math.floor((s===0?-1:s-1)*k/STEPS))hitSet.add(s);}
-        // Ghosts dans les silences (premiers silences)
-        const silences=[];for(let s=0;s<STEPS;s++){if(!hitSet.has(s))silences.push(s);}
-        const ghostSet=new Set(silences.slice(0,ghosts));
-        const dotR=Math.min(cellW,cellH)/STEPS*0.9;
-        for(let s=0;s<STEPS;s++){
-          const cx=x0+(s+0.5)*cellW/STEPS,cy=y0+cellH/2;
-          if(hitSet.has(s)){
-            ctxA.beginPath();ctxA.arc(cx,cy,dotR,0,2*Math.PI);
-            ctxA.fillStyle='rgba('+cr+','+cg+','+cb+',0.35)';ctxA.fill();
-          } else if(ghostSet.has(s)){
-            ctxA.beginPath();ctxA.arc(cx,cy,dotR,0,2*Math.PI);
-            ctxA.strokeStyle='rgba('+cr+','+cg+','+cb+',0.18)';ctxA.lineWidth=1;ctxA.stroke();
-          }
-        }
-      }
-    }
-  }
-
-  // ── Pad B : Décalage ↔ / Géométrie ↕ — grille 4×4 ──
-  const bgB=t.querySelector('.v326-pad-bgB');
-  if(bgB&&bgB.parentElement&&bgB.parentElement.clientWidth>0){
-    const W=bgB.parentElement.clientWidth,H=bgB.parentElement.clientHeight;
-    bgB.width=W;bgB.height=H;
-    const ctxB=bgB.getContext('2d');
-    ctxB.clearRect(0,0,W,H);
-    const NCOLS=4,NROWS=4,N=8,K=3;
-    const cellW=W/NCOLS,cellH=H/NROWS;
-    for(let row=0;row<NROWS;row++){
-      for(let col_i=0;col_i<NCOLS;col_i++){
-        const x0=col_i*cellW,y0=row*cellH;
-        // ligne 0 (top) = geom=0 (regroupé), ligne 3 (bottom) = geom=1 (euclidien)
-        const geomVal=row/(NROWS-1);
-        const cal=Math.round((col_i/(NCOLS-1))*3);
-        const dotR=Math.min(cellW,cellH)/N*0.9;
-        for(let h=0;h<K;h++){
-          const eu=Math.round(h*N/K);
-          const clust=0;
-          const posRaw=Math.round(geomVal*eu+(1-geomVal)*clust);
-          const pos=((posRaw+cal)%N+N)%N;
-          const cx=x0+(pos+0.5)*cellW/N,cy=y0+cellH/2;
-          ctxB.beginPath();ctxB.arc(cx,cy,dotR,0,2*Math.PI);
-          ctxB.fillStyle='rgba('+cr+','+cg+','+cb+',0.35)';ctxB.fill();
-        }
-      }
-    }
-  }
-}
-
-function _resizeTotemsWrap(){
-  const wrap=document.getElementById('totems-view-wrap');
-  if(!wrap||!wrap.classList.contains('v326-active'))return;
-  const gcb=document.getElementById('rhythm-info-bar');
-  const lcb=document.getElementById('layer-control-bar');
-  const nb=document.querySelector('.bottom-bar');
-  const cv=document.getElementById('circle-view');
-  const topH=56;
-  const gcbH=gcb?gcb.offsetHeight:0;
-  const lcbH=lcb?lcb.offsetHeight:0;
-  const nbH=nb?nb.offsetHeight:60;
-  const cvH=cv?cv.offsetHeight:0;
-  const avail=window.innerHeight-topH-gcbH-lcbH-nbH-cvH-8;
-  wrap.style.height=Math.max(110,avail)+'px';
-  wrap.style.overflow='hidden';
-}
-
 function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
   const cont=document.getElementById('layers');if(!cont)return;
@@ -7426,11 +6778,17 @@ function buildLayers(){
     ribDiv=document.createElement('div');ribDiv.id='rhythm-info-bar';
     if(riWrap) riWrap.appendChild(ribDiv); else cont.appendChild(ribDiv);
   }
+  // Barre mod globale — sibling AVANT layers-wrap (pas à l'intérieur)
+  if(!document.getElementById('layers-mod-bar')){
+    const lmBar=document.createElement('div');lmBar.id='layers-mod-bar';
+    const lwEl2=document.getElementById('layers-wrap');
+    if(lwEl2&&lwEl2.parentNode) lwEl2.parentNode.insertBefore(lmBar,lwEl2);
+  }
+
   LAYERS.forEach((layer,li)=>{
     const layerDiv=document.createElement('div');
     layerDiv.className='layer '+layer.cls+(state[li].muted?' muted-layer':'');
     layerDiv.id='layer-div-'+li;
-    layerDiv.style.display='none'; // masqué au démarrage, ouvert via LCB
     try{
     const _accent=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
     // Marquer section-teacher si le pattern courant est source:'teacher'
@@ -7440,12 +6798,8 @@ function buildLayers(){
     }
     refreshLayerClass();
 
-    // ── Ligne 1 : [label coloré][●/○][select][≡ TX][💾][i][⏺][✎] ──────
+    // ── Ligne 1 : [●/○][label][select][≡ TX][💾][i][⏺][mod▶] ──────────
     const row1=document.createElement('div');row1.className='layer-row1';
-    // Label coloré (identifiant visuel du layer)
-    const lyrNameLbl=document.createElement('span');lyrNameLbl.className='lyr-name-lbl';
-    lyrNameLbl.textContent=layer.label;lyrNameLbl.style.setProperty('--cs',_LAYER_COLS[li]);
-    row1.appendChild(lyrNameLbl);
 
     // ●/○ mute
     const btnMute=document.createElement('button');
@@ -7470,7 +6824,6 @@ function buildLayers(){
       const _smb=document.querySelector(`.sound-layer[data-sound-key="${['low','high','noise'][li]}"] .btn-mute-lbl`);
       if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;}
     });
-    btnMute.classList.add('v326-hidden'); // mute déplacé dans LCB
     row1.appendChild(btnMute);
 
     // Bouton rec ⏺ (dans row1, à droite du i)
@@ -7522,8 +6875,6 @@ function buildLayers(){
       if(pasNum)pasNum.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,false);
       _syncPadToPattern(li);
-      _v326[li].axes=null;_v326[li].orig=null;_syncLayerDivHasOrig326(li);
-      updateLCB326();updateTotemsView326();
       if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
     };
@@ -7557,25 +6908,20 @@ function buildLayers(){
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
     });
-    // i info + rec + ↺ undo (v3.26)
+    // i info + rec
     row1.appendChild(btnI);
     row1.appendChild(btnDicePat);
     row1.appendChild(bRec);
-    // ↺ retour au motif original (visible seulement quand axes actifs)
-    const btnUndoV326=document.createElement('button');btnUndoV326.className='btn-layer-undo-v326';
-    btnUndoV326.textContent='↺';btnUndoV326.title='Retour au motif original';
-    btnUndoV326.addEventListener('click',e=>{e.stopPropagation();_restoreOrig326(li);});
-    row1.appendChild(btnUndoV326);
-    // Bouton ▾ mod dans row1 (unique, visible dans toutes les vues)
+    // Bouton mod dans row1 (unique, visible dans toutes les vues)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
     btnMod.style.cssText='margin-left:auto;flex-shrink:0;align-self:flex-start';
-    btnMod.textContent='✎';
+    btnMod.textContent='mod ▶';
     row1.appendChild(btnMod);
+    {const ro=new ResizeObserver(([e])=>{btnDicePat.classList.toggle('visible',e.contentRect.width>=260);});ro.observe(row1);}
     layerDiv.appendChild(row1);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
-    row2.style.display='none'; // caché par défaut, révélé par ✎
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
     seqInfo.addEventListener('click',()=>{
@@ -7584,7 +6930,7 @@ function buildLayers(){
       mp.classList.toggle('hidden');
       const ld=document.getElementById('layer-div-'+li);
       const tb=ld?.querySelector('.btn-layer-toggle');
-      if(tb)tb.classList.toggle('open',!mp.classList.contains('hidden'));
+      if(tb){tb.textContent=isHidden?'mod ▼':'mod ▶';tb.classList.toggle('open',isHidden);}
       if(isHidden){updateLayerEditBar();setTimeout(()=>mp.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
     });
     row2.appendChild(seqInfo);
@@ -7607,7 +6953,6 @@ function buildLayers(){
       _updateLinearPageIndicator();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
-      updateLCB326(); // sync nb pas dans la LCB
     };
     const _speedMark=()=>{grooveDirty=true;updateGrooveSaveBtn();};
     const bMinus=document.createElement('button');bMinus.className='btn-mod-a btn-mod-sm';bMinus.textContent='◀';bMinus.title='Enlever le dernier pas';
@@ -7664,14 +7009,13 @@ function buildLayers(){
       state[li].pendingDouble=dbl;state[li].pendingHalf=hlf;state[li].pendingClear=(!dbl&&!hlf);
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
-      _syncPadToPattern(li);updateLCB326();
+      _syncPadToPattern(li);
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{
       if(!playing){state[li].ternOn=!state[li].ternOn;state[li].pendingTern=null;}
       else{state[li].pendingTern=state[li].pendingTern!=null?!state[li].pendingTern:!state[li].ternOn;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
-      updateLCB326();
     });
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
@@ -7915,21 +7259,12 @@ function buildLayers(){
 
     layerDiv.appendChild(modPanel);
 
-    // toggle édit détail : row2 (StepSeq) + modPanel (contrôles) ensemble
+    // toggle mod panel
     btnMod.addEventListener('click',()=>{
-      const detailOpen=row2.style.display!=='none';
-      if(detailOpen){
-        row2.style.display='none';
-        modPanel.classList.add('hidden');
-        btnMod.classList.remove('open');
-      } else {
-        row2.style.display='';
-        modPanel.classList.remove('hidden');
-        btnMod.classList.add('open');
-        updateSwapBtn();_refreshPadPreview();
-        setTimeout(()=>row2.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
-        updateLayerEditBar();
-      }
+      const open=modPanel.classList.toggle('hidden');
+      btnMod.textContent=open?'mod ▶':'mod ▼';btnMod.classList.toggle('open',!open);
+      if(!open){updateSwapBtn();_refreshPadPreview();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+      updateLayerEditBar();
     });
 
     cont.appendChild(layerDiv);
@@ -7952,12 +7287,12 @@ function buildLayers(){
   });
   if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   buildLayerEditBar();
-  // Appliquer l'état initial de layers-wrap
+  // Appliquer l'état initial des layers-wrap et layers-mod-bar
   const _lwInit=document.getElementById('layers-wrap');
-  if(_lwInit) _lwInit.style.display=(_v326view==='totems')?'none':(layerPanelsOuverts?'':'none');
+  if(_lwInit) _lwInit.style.display=layerPanelsOuverts?'':'none';
+  const _lmbInit=document.getElementById('layers-mod-bar');
+  if(_lmbInit) _lmbInit.style.display=layerPanelsOuverts?'flex':'none';
   updateRhythmInfoBar();
-  buildLCB326();
-  buildTotemsView326();
 }
 
 function findPatternBySeq(arr){
@@ -8014,7 +7349,6 @@ function buildStepsDOM(li,wrap){
   if(_r2) _r2.classList.toggle('muted',!!state[li].muted);
   if(circleView) drawCircles();
   updateStepSeqInfo(li);
-  _buildLrowSteps326(li);
 }
 
 function onStepClick(li,si,el){
@@ -8025,18 +7359,11 @@ function onStepClick(li,si,el){
   state[li].pattern[si]=newVal;
   el.className='step'+(newVal==='X'?' on':newVal==='x'?' soft':'');
   if(state[li].stepPos===si)el.classList.add('cur');
-  // Sync cellule iso-métrique
-  const lsWrap=document.getElementById('lrow-steps-'+li);
-  if(lsWrap&&lsWrap.children[si]){
-    const lc=lsWrap.children[si];
-    lc.className='lsCell'+(newVal==='X'?' on':newVal==='x'?' soft':'')+(lc.classList.contains('beat')?' beat':'');
-  }
   if(circleView)drawCircles();
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
   _syncPadToPattern(li);
-  inferAxesFromPat326(li);updateLCB326();
 }
 
 // ── Sauvegarde pattern couche — popover ──────────────────────────────────
@@ -10014,8 +9341,6 @@ function playMetroClick(atTime,type){
 
 let circleView = false;
 let circleModeView = 'measure'; // 'cycle' | 'measure' | 'linear' — utilisé par les fonctions de dessin
-let _splCvMaxH = null; // splitter max-height constraint on #circle-view (null = no constraint)
-let _splNaturalH = 0; // natural canvas container height (updated by resizeCanvas when unconstrained)
 let _measureViewPage = 0;       // page affichée en vue Mesure (0-indexed), reset à l'arrêt
 let _linearCyclePage = 0;       // page affichée en vue Cycle linéaire (0-indexed), reset à l'arrêt
 let _lciMaxPageSize = 24;       // nb max de pas par page en vue Cycle (16/24/48, défaut 24)
@@ -10085,14 +9410,7 @@ function resizeCanvas(){
     cv.style.width=canvW+'px'; cv.style.height=canvH+'px';
     cv.style.transform=''; cv.style.transformOrigin='';
     wrap.style.width=(isDesktop2?canvW+'px':'100%');
-    // Splitter scale for linear mode
-    const linScale = (_splCvMaxH !== null) ? Math.min(1, _splCvMaxH / canvH) : 1;
-    const linH = Math.round(canvH * linScale);
-    cv.style.height = linH + 'px';
-    cv.height = Math.round(canvH * linScale) || canvH; // keep resolution reasonable
-    wrap.style.height = linH + 'px';
-    wrap.style.overflow = '';
-    if(_splCvMaxH === null) _splNaturalH = linH;
+    wrap.style.height=''; // hauteur auto : circle-view s'adapte à ses enfants (canvas + lci bar)
     drawCircles(); return;
   }
   const dotR = 10;
@@ -10105,10 +9423,7 @@ function resizeCanvas(){
   const frameW = frame ? frame.clientWidth : window.innerWidth;
   const isDesktop = window.innerWidth >= 600;
   const maxW = isDesktop ? Math.min(szW, Math.floor(frameW*0.46)) : frameW - 16;
-  // Scale canvas both by available width AND by splitter constraint (zoom effect)
-  const scaleW = Math.min(1, maxW / szW);
-  const scaleH = (_splCvMaxH !== null) ? Math.min(1, _splCvMaxH / szNatural) : 1;
-  const scale = Math.min(scaleW, scaleH);
+  const scale = Math.min(1, maxW / szW);
 
   cv.width = szW; cv.height = szNatural;
   const physW = Math.round(szW * scale);
@@ -10124,13 +9439,8 @@ function resizeCanvas(){
   }
   const toggleEl = document.getElementById('circle-mode-toggle');
   const toggleH = toggleEl ? (toggleEl.offsetHeight + 4) : 0;
-  const wrapH = physH + toggleH;
-  wrap.style.height = wrapH + 'px';
-  wrap.style.overflow = '';
-  // Track natural height (no constraint) for splitter snap calculations
-  if(_splCvMaxH === null) _splNaturalH = wrapH;
+  wrap.style.height = (physH + toggleH) + 'px';
   drawCircles();
-  _resizeTotemsWrap();
 }
 
 function _triggerRightFlash(li, hold=false){
@@ -10891,9 +10201,7 @@ function setupCanvasInteraction(){
         modPanel.classList.toggle('hidden');
         const layerDiv=document.getElementById('layer-div-'+li);
         const btn=layerDiv?.querySelector('.btn-layer-toggle');
-        const row2cv=layerDiv?.querySelector('.layer-row2');
-        if(row2cv)row2cv.style.display=isHidden?'':'none';
-        if(btn){btn.classList.toggle('open',isHidden);}
+        if(btn){btn.textContent=isHidden?'mod ▼':'mod ▶';btn.classList.toggle('open',isHidden);}
         if(isHidden){updateLayerEditBar();setTimeout(()=>modPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
       }
       return;
@@ -11237,6 +10545,8 @@ function _applyView(){
   const srAV = document.getElementById('step-rows-wrap');
   if(cv) cv.style.display = (circleView && layersOuverts) ? 'flex' : 'none';
   if(lw) lw.style.display = layerPanelsOuverts ? '' : 'none';
+  const lmbAV=document.getElementById('layers-mod-bar');
+  if(lmbAV) lmbAV.style.display=layerPanelsOuverts?'flex':'none';
   // step-rows-wrap = vue Groove (chevron), pas les volets layer
   if(srAV) srAV.style.display = layersOuverts ? '' : 'none';
 
@@ -12020,6 +11330,26 @@ function updateRhythmInfoBar(){
   document.body.classList.toggle('has-rib',hasAnyPattern);
   document.body.classList.toggle('show-rib',hasAnyPattern);
   if(!hasAnyPattern){el.style.display='none';return;}
+  // ── Centre : 3 colonnes layer (bouton + info empilés) ──
+  const LCOLS=['#378ADD','#D85A30','#1D9E75'];
+  // ── Bouton mod globale au-dessus de layers-wrap ──
+  const anyModOpen=[...document.querySelectorAll('.layer-mod-panel')].some(p=>!p.classList.contains('hidden'));
+  const lmaBtn=document.getElementById('layers-mod-all-btn');
+  if(lmaBtn) lmaBtn.innerHTML=`<span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span>&thinsp;${anyModOpen?'▼':'▶'}`;
+  else {
+    const lmBar=document.getElementById('layers-mod-bar');
+    if(lmBar){
+      lmBar.innerHTML=`<button id="layers-mod-all-btn" class="layers-mod-all-btn"><span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span>&thinsp;${anyModOpen?'▼':'▶'}</button>`;
+      lmBar.querySelector('#layers-mod-all-btn')?.addEventListener('click',()=>{
+        const panels=[...document.querySelectorAll('.layer-mod-panel')];
+        const open=panels.some(p=>!p.classList.contains('hidden'));
+        const btns=[...document.querySelectorAll('.btn-layer-toggle')];
+        panels.forEach((p,i)=>{const b=btns[i];if(open&&!p.classList.contains('hidden')){p.classList.add('hidden');if(b){b.textContent='mod ▶';b.classList.remove('open');}}else if(!open&&p.classList.contains('hidden')){p.classList.remove('hidden');if(b){b.textContent='mod ▼';b.classList.add('open');}}});
+        if(!open) setTimeout(()=>document.getElementById('layers-wrap')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+        updateRhythmInfoBar();
+      });
+    }
+  }
   // ── Bouton InfoLayer droit : hamburger tricolore (toggle layerPanelsOuverts) ──
   const modBtnHtml=`<button class="rib-mod-btn rib-grid-mod" id="rib-mod-btn" title="${layerPanelsOuverts?'Masquer layers':'Afficher layers'}"><span class="rib-hbr"><span class="rib-hbr-bar" style="background:#378ADD"></span><span class="rib-hbr-bar" style="background:#D85A30"></span><span class="rib-hbr-bar" style="background:#1D9E75"></span></span></button>`;
   // ── Colonnes layer : bouton (ligne 1) + info (ligne 2), alignées verticalement ──
@@ -12027,7 +11357,7 @@ function updateRhythmInfoBar(){
   const layerCols=[0,1,2].map(li=>{
     const n=state[li].pattern.length;
     if(!n) return `<div class="rib-layer-col"></div>`;
-    const col=_LAYER_COLS[li],muted=!!state[li].muted;
+    const col=LCOLS[li],muted=!!state[li].muted;
     const btnHtml=`<button class="rib-layer-btn${muted?' muted':''}" data-li="${li}" style="color:${col};border-color:${col}" title="${muted?'Activer':'Muter'} layer ${li+1}"><span class="rib-steps">${n}</span><span class="rib-note">${_stepNoteStr(li)}</span></button>`;
     let txt;
     if(isMesureCycle){
@@ -12052,19 +11382,22 @@ function updateRhythmInfoBar(){
   const _rbSym=symFromFelBeatSteps(_rbEq);
   const _metroOn=!metro.muted;
   const _sonMuted=bandMuted;
-  const leftHtml=`<div class="rib-left"><button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button><div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div><div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div></div>`;
-  // Col 2 : bouton ▶ play centré (v3.26 — remplace les 3 colonnes layer)
-  const centerHtml=`<div class="rib-center"><button id="rib-play-btn"${playing?' class="playing"':''}>${playing?'■':'▶'}</button></div>`;
-  // Col 3 : signature + son (hamburger déplacé dans LCB)
-  const rightHtml=`<div class="rib-right"><button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button><button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button></div>`;
+  // GCB HTML — ⏱ | ♩=tempo | ▶ | sig | 🔊
   el.style.display='flex';
-  el.innerHTML=`<div class="rib-grid">${leftHtml}${centerHtml}${rightHtml}</div>`;
+  el.innerHTML=`<div id="gcb-handle"></div><div class="gcb-row">`+
+    `<button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button>`+
+    `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div>`+
+    `<div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div>`+
+    `<button class="gcb-play-btn${playing?' playing':''}" id="gcb-play-btn" title="Play / Stop">${playing?'■':'▶'}</button>`+
+    `<button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>`+
+    `<button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>`+
+    `</div>`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
   });
   el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{
-    setMetroGlobal(metro.muted); // toggle : muted→on, on→muted
+    setMetroGlobal(metro.muted);
   });
   el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
     const willMute=!bandMuted;
@@ -12073,6 +11406,7 @@ function updateRhythmInfoBar(){
     clearTimeout(_dragOverlay._sonTimer);
     _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
   });
+  el.querySelector('#gcb-play-btn')?.addEventListener('click',togglePlay);
   {
     const zone=el.querySelector('#rib-tempo-zone');
     const bpmMaster=document.getElementById('bpm');
@@ -12102,211 +11436,65 @@ function updateRhythmInfoBar(){
     });
     zone?.addEventListener('pointercancel',()=>{_dragOverlay.hide();_ribDrag=false;});
   }
-  // ▶ play button (v3.26 GCB)
-  el.querySelector('#rib-play-btn')?.addEventListener('click',()=>{
-    const playBtn=document.getElementById('btn-play');
-    if(playBtn)playBtn.click(); else togglePlay?.();
-  });
-  // Splitter drag sur la barre GCB — zoom canvas (UP) + slide layers (DOWN)
-  {
-    let _spl_y0=0,_spl_moved=false,_spl_h0=0,_spl_rafId=null;
-    const _splLayerIds=['layer-control-bar','totems-view-wrap','layers-wrap'];
-    const _splLayers=()=>_splLayerIds.map(id=>document.getElementById(id)).filter(Boolean);
-
-    function _spl_layoutMax(){
-      const gcb=document.getElementById('rhythm-info-bar');
-      const lcb=document.getElementById('layer-control-bar');
-      const nb=document.querySelector('.bottom-bar');
-      return Math.max(60,window.innerHeight-(gcb?gcb.offsetHeight:48)
-        -((lcb&&lcb.offsetParent)?lcb.offsetHeight:38)-(nb?nb.offsetHeight:60)-8);
-    }
-
-    function _spl_clearLayers(animate){
-      _splLayers().forEach(e=>{
-        if(animate){e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
-          setTimeout(()=>{e.style.transition='';},220);}
-        else e.style.transition='none';
-        e.style.transform='';
-      });
-    }
-
-    function _spl_setState(s,animate){
-      const wrap=document.getElementById('circle-view');
-      if(!wrap)return;
-
-      if(s==='C'){
-        // Canvas zooms to 0, layers stay in place
-        document.body.dataset.split='C';
-        _spl_clearLayers(false);
-        _splCvMaxH=0;
-        if(animate){
-          wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
-          setTimeout(()=>{wrap.style.transition='';},220);
-        }
-        if(typeof resizeCanvas==='function')resizeCanvas();
-
-      }else if(s==='A'){
-        // Layers slide down off screen, canvas at natural size
-        _splCvMaxH=null;
-        if(animate){
-          const offH=window.innerHeight;
-          _splLayers().forEach(e=>{
-            e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
-            e.style.transform=`translateY(${offH}px)`;
-          });
-          setTimeout(()=>{
-            document.body.dataset.split='A';
-            _spl_clearLayers(false);
-          },200);
-        }else{
-          document.body.dataset.split='A';
-          _spl_clearLayers(false);
-        }
-        if(typeof resizeCanvas==='function')resizeCanvas();
-
-      }else{
-        // State B — restore canvas and layers
-        const prevState=document.body.dataset.split||'B';
-        document.body.dataset.split='B';
-        _splCvMaxH=null;
-        if(animate&&prevState==='A'){
-          // Layers slide in from below
-          _splLayers().forEach(e=>{
-            e.style.transition='none';
-            e.style.transform=`translateY(${window.innerHeight}px)`;
-          });
-          void document.body.offsetHeight; // force reflow
-          _splLayers().forEach(e=>{
-            e.style.transition='transform .18s cubic-bezier(.4,0,.2,1)';
-            e.style.transform='';
-          });
-          setTimeout(()=>_splLayers().forEach(e=>e.style.transition=''),220);
-        }else{
-          _spl_clearLayers(animate);
-        }
-        if(animate){
-          wrap.style.transition='height .18s cubic-bezier(.4,0,.2,1)';
-          setTimeout(()=>{wrap.style.transition='';},220);
-        }
-        if(typeof resizeCanvas==='function')resizeCanvas();
-      }
-    }
-
-    el.addEventListener('pointerdown',e=>{
-      if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
-      const wrap=document.getElementById('circle-view');
-      if(!wrap)return;
-      _spl_y0=e.clientY;_spl_moved=false;
-      _spl_h0=_splNaturalH||wrap.getBoundingClientRect().height||200;
-      wrap.style.transition='none';
-      el.setPointerCapture(e.pointerId);
-    });
-
-    el.addEventListener('pointermove',e=>{
-      if(!el.hasPointerCapture(e.pointerId))return;
-      const dy=e.clientY-_spl_y0;
-      if(Math.abs(dy)>4){
-        _spl_moved=true;
-        const M=_spl_layoutMax();
-        const naturalH=_splNaturalH||_spl_h0;
-        const virtualH=Math.max(0,Math.min(M,_spl_h0+dy));
-        if(virtualH<=naturalH){
-          // Canvas shrinks (zoom out toward C)
-          _splCvMaxH=virtualH;
-          _spl_clearLayers(false);
-        }else{
-          // Canvas at natural, translate layers down (toward A)
-          _splCvMaxH=null;
-          const slide=Math.min((virtualH-naturalH)*0.8,M*0.5);
-          _splLayers().forEach(lel=>lel.style.transform=`translateY(${slide}px)`);
-        }
-        if(!_spl_rafId)_spl_rafId=requestAnimationFrame(()=>{
-          if(typeof resizeCanvas==='function')resizeCanvas();
-          _spl_rafId=null;
-        });
-      }
-    });
-
-    el.addEventListener('pointerup',e=>{
-      if(!_spl_moved){_spl_moved=false;return;}
-      const M=_spl_layoutMax();
-      const naturalH=_splNaturalH||_spl_h0;
-      // Virtual height maps both directions into a single axis for snap
-      const virtualH=Math.max(0,Math.min(M,_spl_h0+(e.clientY-_spl_y0)));
-      const states=[['A',M],['B',naturalH],['C',0]];
-      states.sort((a,b)=>Math.abs(virtualH-a[1])-Math.abs(virtualH-b[1]));
-      _spl_setState(states[0][0],true);
-      _spl_moved=false;
-    });
-
-    el.addEventListener('pointercancel',()=>{
-      _spl_moved=false;
-      _spl_setState(document.body.dataset.split||'B',false);
-    });
-  }
-  el.querySelector('#rib-mod-btn')?.addEventListener('click',()=>{
-    _doToggleLayerPanels();
-  });
-  el.querySelectorAll('.rib-layer-btn').forEach(btn=>{
-    let _lpt=null,_lpFired=false,_lpsx=0,_lpsy=0;
-    btn.addEventListener('pointerdown',e=>{
-      if(e.button!==0)return;
-      _lpFired=false;_lpsx=e.clientX;_lpsy=e.clientY;
-      _lpt=setTimeout(()=>{
-        _lpt=null;_lpFired=true;
-        const li=+btn.dataset.li;
-        // Si 3LayerView off → l'activer d'abord
-        if(!layerPanelsOuverts)_doToggleLayerPanels();
-        const mp=document.getElementById('mod-panel-'+li);
-        if(mp)mp.classList.toggle('hidden');
-      },450);
-    });
-    btn.addEventListener('pointermove',e=>{
-      if(_lpt&&Math.hypot(e.clientX-_lpsx,e.clientY-_lpsy)>12){clearTimeout(_lpt);_lpt=null;}
-    });
-    ['pointerup','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>{if(_lpt){clearTimeout(_lpt);_lpt=null;}}));
-    btn.addEventListener('click',()=>{
-      if(_lpFired){_lpFired=false;return;} // appui long déjà traité
-      const li=+btn.dataset.li;
-      state[li].muted=!state[li].muted;
-      // Sync btn-mute-lbl (3Layers.Pattern)
-      const bml=document.getElementById('btn-mute-lbl-'+li);
-      if(bml){bml.classList.toggle('muted',state[li].muted);bml.title=(state[li].muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
-      // Sync layerDiv muted-layer
-      const ld=document.querySelector('.layer.'+LAYERS[li].cls);
-      if(ld)ld.classList.toggle('muted-layer',state[li].muted);
-      // Sync step-rows row2
-      const _sd=document.getElementById('steps-'+LAYERS[li].id);
-      const _r2=_sd?.closest('.layer-row2');
-      if(_r2)_r2.classList.toggle('muted',state[li].muted);
-      // Sync bouton mute Sons/Instruments
-      const _sk=['low','high','noise'][li];
-      const _smb=document.querySelector(`.sound-layer[data-sound-key="${_sk}"] .btn-mute-lbl`);
-      if(_smb){_smb.classList.toggle('muted',state[li].muted);_smb.title=(state[li].muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
-      _syncBtnVolAllMuted();
-      updateRhythmInfoBar(); drawCircles();
-      updateLCB326();
-    });
-  });
+  if(!el._gcbSplitterSetup){el._gcbSplitterSetup=true;_setupGCBSplitter(el);}
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
-  updateLCB326();
+}
+
+/* ── Splitter GCB — setup une seule fois sur #rhythm-info-bar ── */
+function _setupGCBSplitter(gcbEl){
+  const _cv=()=>document.getElementById('circle-view');
+  const _avail=()=>Math.max(80,window.innerHeight-56-68);
+  const SNAPS={A:.72,B:.42,C:0};
+  /* _applySplit : positionne le body[data-split] et laisse CSS + resizeCanvas gérer l'affichage */
+  function _applySplit(st,animate){
+    const c=_cv();
+    document.body.dataset.split=st;
+    if(c){
+      if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
+      c.style.height='';c.style.overflow='';
+      if(st!=='C'&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
+    }
+  }
+  function _snapNearest(h,avail){
+    let best='B',d=Infinity;
+    for(const[k,r]of Object.entries(SNAPS)){const dd=Math.abs(h-r*avail);if(dd<d){d=dd;best=k;}}
+    return best;
+  }
+  let _sMode=null,_sY0=0,_sH0=0;
+  gcbEl.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
+    _sMode=null;_sY0=e.clientY;_sH0=_cv()?.offsetHeight??Math.round(SNAPS.B*_avail());
+    gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
+  },{passive:false});
+  gcbEl.addEventListener('pointermove',e=>{
+    if(!gcbEl.hasPointerCapture(e.pointerId))return;
+    e.preventDefault();
+    const dy=e.clientY-_sY0;
+    if(!_sMode&&Math.abs(dy)>8)_sMode='split';
+    if(_sMode==='split'){
+      const c=_cv();if(!c)return;
+      const h=Math.max(0,_sH0-dy);
+      c.style.height=h+'px';c.style.overflow='hidden';
+      const st=_snapNearest(h,_avail());
+      _dragOverlay.show({A:'▲ Canvas max',B:'⚌ Split',C:'▼ Layers max'}[st]);
+    }
+  },{passive:false});
+  ['pointerup','pointercancel'].forEach(ev=>gcbEl.addEventListener(ev,()=>{
+    _dragOverlay.hide();
+    if(_sMode==='split'){
+      const c=_cv(),h=c?.offsetHeight??Math.round(SNAPS.B*_avail());
+      _applySplit(_snapNearest(h,_avail()));
+    }
+    _sMode=null;
+  }));
+  // Init : état B par défaut (laisse un cycle de rendu pour que resizeCanvas ait eu lieu)
+  setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
 }
 
 function visualLoopCircle(){
   if(!playing) return;
-  // Animation pastilles LCB (même en vue cercle)
-  const _lcbNowC=performance.now();
-  LAYERS.forEach((_,li)=>{
-    const core=document.querySelector('#layer-control-bar .lcb-seg[data-li="'+li+'"] .lcb-vu-core');
-    if(!core)return;
-    const dt=_lcbNowC-(_miniVuHit[li]||0);
-    if(dt>=0&&dt<220){core.style.transform='scale('+(1+0.55*(1-dt/220)).toFixed(3)+')';}
-    else{core.style.transform='scale(1)';}
-  });
   drawCircles();
   highlightMetroStep();
-  if(document.body.dataset.split==='C')_drawMiniRings326();
-  _updateLrowSteps326(getAC().currentTime-prefs.audioOffset);
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
@@ -16623,7 +15811,7 @@ function attachEvents(){
       });
     });
   })();
-  window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); _resizeTotemsWrap(); });
+  window.addEventListener('resize',()=>{ if(circleView) resizeCanvas(); });
 
   // btn-sons remplacé par btn-vol (géré dans le bloc Btn Vol ci-dessus)
 
