@@ -450,13 +450,19 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 body.dark-mode .layer-row3-iso{background:rgba(255,255,255,.035);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .iso-cell{border-right-color:rgba(255,255,255,.05)}
 body.view-circle .layer-row3-iso,body.view-circle .layer-row2{display:none!important}
-.btn-pat-nav{flex-shrink:0;font-size:10px;padding:2px 4px;min-width:18px;opacity:.7;color:var(--cs)}
+.btn-pat-nav,.btn-pat-reset,.btn-detail-toggle{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;padding:2px 3px;flex-shrink:0}
+.btn-pat-nav{font-size:10px;opacity:.55;color:var(--cs)}
 .btn-pat-nav:hover{opacity:1}
-.btn-pat-reset{flex-shrink:0;font-size:12px;padding:1px 3px;opacity:.6}
-.btn-pat-reset:hover{opacity:1}
-.btn-detail-toggle{flex-shrink:0;margin-left:auto;font-size:12px;padding:2px 5px;opacity:.45;color:var(--cs)}
-.btn-detail-toggle.open{opacity:1;font-weight:700;color:var(--cs)}
-.btn-detail-toggle:hover{opacity:.85}
+.btn-pat-reset{font-size:13px;opacity:.5}
+.btn-pat-reset:hover{opacity:.85}
+.btn-detail-toggle{font-size:13px;opacity:.38;margin-left:auto;color:var(--cs)}
+.btn-detail-toggle.open{opacity:.9;font-weight:700}
+.btn-detail-toggle:hover{opacity:.8}
+.preset-nav-group{display:flex;align-items:stretch;flex:1;min-width:0;max-width:190px;gap:0}
+.preset-nav-group .pm-preset-btn{border-radius:0;flex:1;min-width:0;border-left:none!important;border-right:none!important}
+.layer-name-lbl{font-size:10px;font-weight:700;color:var(--cs);flex-shrink:0;padding:0 5px 0 3px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center}
+.row1-hide{display:none!important}
+.layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:inline-block;align-self:flex-start}
 .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
@@ -1835,7 +1841,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.11</span>
+    <span class="app-version">v3.26.12</span>
   </div>
 </div>
 
@@ -7133,24 +7139,34 @@ function buildLayers(){
       ()=>_sortByFamille((packCours.patterns||[]).filter(p=>!p.localDeletePending),packCours.familles),
       ()=>state[li].patternId, _patOnSelect
     );
-    // ◀ prev preset dans la famille
+    // Nom du layer — gauche, masqué en dernier si espace insuffisant
+    const nameLbl=document.createElement('span');nameLbl.className='layer-name-lbl';nameLbl.textContent=layer.label;
+    row1.appendChild(nameLbl);
+    // [◀][nom preset][▶] — groupe collé, flex:1
+    const navGroup=document.createElement('div');navGroup.className='preset-nav-group';
     const btnPrev=document.createElement('button');btnPrev.className='btn-pat-nav';btnPrev.textContent='◀';btnPrev.title='Pattern précédent';
     btnPrev.addEventListener('click',()=>{
       const list=_sortByFamille((packCours.patterns||[]).filter(p=>!p.localDeletePending),packCours.familles);
       const idx=list.findIndex(p=>p.id===state[li].patternId);
       if(idx>=0)_patOnSelect(list[((idx-1)+list.length)%list.length].id);
     });
-    row1.appendChild(btnPrev);
-    row1.appendChild(patPresetBtn);
-    // ▶ next preset
     const btnNext=document.createElement('button');btnNext.className='btn-pat-nav';btnNext.textContent='▶';btnNext.title='Pattern suivant';
     btnNext.addEventListener('click',()=>{
       const list=_sortByFamille((packCours.patterns||[]).filter(p=>!p.localDeletePending),packCours.familles);
       const idx=list.findIndex(p=>p.id===state[li].patternId);
       if(idx>=0)_patOnSelect(list[(idx+1)%list.length].id);
     });
-    row1.appendChild(btnNext);
-    // ↺ retour au pattern d'origine (version sauvegardée en DB)
+    navGroup.appendChild(btnPrev);navGroup.appendChild(patPresetBtn);navGroup.appendChild(btnNext);
+    row1.appendChild(navGroup);
+    // 💾 sauvegarde du pattern → popover
+    const saveBtn=document.createElement('button');
+    saveBtn.className='btn-sec-save';saveBtn.id='save-btn-layer-'+li;
+    saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
+    saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
+    row1.appendChild(saveBtn);
+    // i info
+    row1.appendChild(btnI);
+    // ↺ retour au pattern d'origine (après i)
     const btnReset=document.createElement('button');btnReset.className='btn-pat-reset';btnReset.textContent='↺';btnReset.title='Revenir au pattern d\'origine';
     btnReset.addEventListener('click',()=>{
       const orig=state[li].patternId?getPattern(state[li].patternId):null;
@@ -7160,14 +7176,7 @@ function buildLayers(){
       if(circleView)drawCircles();
     });
     row1.appendChild(btnReset);
-
-    // 💾 sauvegarde du pattern → popover
-    const saveBtn=document.createElement('button');
-    saveBtn.className='btn-sec-save';saveBtn.id='save-btn-layer-'+li;
-    saveBtn.textContent='💾';saveBtn.title='Sauvegarder ce pattern';
-    saveBtn.addEventListener('click',e=>{e.stopPropagation();saveLayerPattern(li,saveBtn);});
-    row1.appendChild(saveBtn);
-    // 🎲 pattern aléatoire (basse priorité)
+    // 🎲 masqué en premier si espace insuffisant
     const btnDicePat=document.createElement('button');btnDicePat.className='btn-dice-rng';btnDicePat.title='Pattern aléatoire';btnDicePat.textContent='🎲';
     btnDicePat.addEventListener('click',e=>{
       e.stopPropagation();
@@ -7175,24 +7184,29 @@ function buildLayers(){
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
     });
-    // i info + rec
-    row1.appendChild(btnI);
     row1.appendChild(btnDicePat);
+    // ⏺ rec — masqué en second
     row1.appendChild(bRec);
-    // btnMod caché (handlers existants réutilisés par step-seq-info)
+    // btnMod caché (handler conservé par step-seq-info)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
     btnMod.style.display='none';row1.appendChild(btnMod);
-    // ✎ toggle détail (row2 steps + row3 iso-métrique)
+    // ✎ toggle détail (row2 steps + row3 iso) — toujours visible, margin-left:auto
     const btnDetail=document.createElement('button');btnDetail.className='btn-detail-toggle'+(_layerDetailVisible[li]?' open':'');
     btnDetail.title='Afficher/masquer l\'édition';btnDetail.textContent='✎';
     btnDetail.addEventListener('click',()=>{
       _layerDetailVisible[li]=!_layerDetailVisible[li];
       btnDetail.classList.toggle('open',_layerDetailVisible[li]);
-      row2.style.display=_layerDetailVisible[li]?'':'none';
-      const r3=layerDiv.querySelector('.layer-row3-iso');if(r3)r3.style.display=_layerDetailVisible[li]?'':'none';
+      row2.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
+      const r3=layerDiv.querySelector('.layer-row3-iso');if(r3)r3.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
     });
     row1.appendChild(btnDetail);
-    {const ro=new ResizeObserver(([e])=>{btnDicePat.classList.toggle('visible',e.contentRect.width>=260);});ro.observe(row1);}
+    // Masquage progressif : 🎲 en premier → ⏺ en second → nom en dernier
+    {const ro=new ResizeObserver(([e])=>{
+      const w=e.contentRect.width;
+      btnDicePat.classList.toggle('row1-hide',w<280);
+      bRec.classList.toggle('row1-hide',w<220);
+      nameLbl.classList.toggle('row1-hide',w<160);
+    });ro.observe(row1);}
     layerDiv.appendChild(row1);
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
