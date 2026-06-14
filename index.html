@@ -1821,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.3</span>
+    <span class="app-version">v3.26.4</span>
   </div>
 </div>
 
@@ -11651,7 +11651,6 @@ function updateRhythmInfoBar(){
 /* ── Splitter GCB — setup une seule fois sur #rhythm-info-bar ── */
 function _setupGCBSplitter(gcbEl){
   const _cv=()=>document.getElementById('circle-view');
-  // _avail = espace disponible pour canvas+layers (sous le GCB+LCB, au-dessus de la nav bar)
   const _avail=()=>{
     const lcb=document.getElementById('layer-control-bar');
     const lcbH=lcb?lcb.offsetHeight:32;
@@ -11659,8 +11658,13 @@ function _setupGCBSplitter(gcbEl){
     return Math.max(80,window.innerHeight-gcbRect.bottom-lcbH-60);
   };
   const SNAPS={A:.88,B:.44,C:0};
+  function _clearCanvasTransform(){
+    const cv=document.getElementById('rhythm-canvas');
+    if(cv){cv.style.transform='';cv.style.transformOrigin='';}
+  }
   function _applySplit(st,animate){
     const c=_cv();
+    _clearCanvasTransform();
     document.body.dataset.split=st;
     if(c){
       if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
@@ -11668,22 +11672,22 @@ function _setupGCBSplitter(gcbEl){
       if(st!=='C'&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
     }
   }
-  function _snapNearest(h,avail){
-    let best='B',d=Infinity;
-    for(const[k,r]of Object.entries(SNAPS)){const dd=Math.abs(h-r*avail);if(dd<d){d=dd;best=k;}}
-    return best;
-  }
-  let _sMode=null,_sY0=0,_sH0=0,_splitBefore='B';
+  let _sMode=null,_sY0=0,_sH0=0,_availCache=0,_physH=0,_splitBefore='B';
   gcbEl.addEventListener('pointerdown',e=>{
     if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
     _sMode=null;_sY0=e.clientY;
-    const avail=_avail();
     _splitBefore=document.body.dataset.split||'B';
-    _sH0={A:Math.round(SNAPS.A*avail),B:Math.round(SNAPS.B*avail),C:0}[_splitBefore]??Math.round(SNAPS.B*avail);
-    // ⚠ Supprimer data-split AVANT d'agir sur le canvas :
-    // → lève le display:none!important imposé par body[data-split="C"] en état C
-    delete document.body.dataset.split;
+    // ① Capturer avail AVANT toute modification de layout (getBoundingClientRect stable)
+    _availCache=_avail();
     const c=_cv();
+    const canvasEl=document.getElementById('rhythm-canvas');
+    // ② _sH0 = hauteur réelle du container AVANT de supprimer data-split
+    //    (évite le saut : on part de là où est vraiment le canvas, pas d'une valeur estimée)
+    _sH0=c?c.offsetHeight:Math.round(SNAPS.B*_availCache);
+    // ③ _physH = hauteur physique du canvas pour le zoom proportionnel
+    _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:Math.round(SNAPS.A*_availCache);
+    // ④ Supprimer data-split MAINTENANT : lève le display:none!important de l'état C
+    delete document.body.dataset.split;
     if(c){c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
   },{passive:false});
@@ -11694,22 +11698,29 @@ function _setupGCBSplitter(gcbEl){
     if(!_sMode&&Math.abs(dy)>8)_sMode='split';
     if(_sMode==='split'){
       const c=_cv();if(!c)return;
-      const avail=_avail();
-      // monter (dy<0) → canvas réduit → Layers Max
-      // descendre (dy>0) → canvas agrandi → Canvas Max
-      const h=Math.max(0,Math.min(Math.round(SNAPS.A*avail)+40,_sH0+dy));
+      // Position libre (pas de clamp haut) ; seulement min=0
+      const h=Math.max(0,_sH0+dy);
       c.style.height=h+'px';
-      const st=_snapNearest(h,avail);
-      _dragOverlay.show({A:'▼ Canvas max',B:'⚌ Split',C:'▲ Layers max'}[st]);
+      // Zoom proportionnel du canvas : vues circulaires uniquement (pas linéaire, pas step-seq)
+      const canvasEl=document.getElementById('rhythm-canvas');
+      if(canvasEl&&_physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+        const s=Math.min(1,h/_physH);
+        canvasEl.style.transform=s<0.995?`scale(${s.toFixed(3)})`:'';
+        canvasEl.style.transformOrigin='top center';
+      }
+      const pct=_availCache>0?Math.round(100*h/_availCache):0;
+      _dragOverlay.show(`<span style="font-size:13px;opacity:.65">${pct}%</span>`);
     }
   },{passive:false});
   ['pointerup','pointercancel'].forEach(ev=>gcbEl.addEventListener(ev,()=>{
     _dragOverlay.hide();
     if(_sMode==='split'){
-      const c=_cv(),h=c?.offsetHeight??Math.round(SNAPS.B*_avail());
-      _applySplit(_snapNearest(h,_avail()));
+      const c=_cv(),h=c?c.offsetHeight:Math.round(SNAPS.B*_availCache);
+      // Aimanter uniquement aux extrêmes ; position libre entre les deux (état B)
+      const st=h<_availCache*0.15?'C':(h>_availCache*0.78?'A':'B');
+      _applySplit(st);
     } else {
-      // Tap simple sans drag : restaurer l'état précédent
+      // Tap sans drag : restaurer l'état précédent
       _applySplit(_splitBefore,false);
     }
     _sMode=null;
