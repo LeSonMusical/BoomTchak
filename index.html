@@ -1855,7 +1855,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.14</span>
+    <span class="app-version">v3.26.15</span>
   </div>
 </div>
 
@@ -7166,10 +7166,16 @@ function buildLayers(){
     nameLbl.innerHTML=layer.label+'<span class="layer-name-chev">▶</span>';
     nameLbl.addEventListener('click',()=>{
       _layerDetailVisible[li]=!_layerDetailVisible[li];
-      nameLbl.classList.toggle('open',_layerDetailVisible[li]);
-      nameLbl.title=(_layerDetailVisible[li]?'Masquer':'Afficher')+' l\'édition';
-      row2.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
-      const r3=layerDiv.querySelector('.layer-row3-iso');if(r3)r3.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
+      const _vis=_layerDetailVisible[li];
+      nameLbl.classList.toggle('open',_vis);
+      nameLbl.title=(_vis?'Masquer':'Afficher')+' l\'édition';
+      // Query DOM live — row2 peut être dans layerDiv (vue normale) ou #step-rows-wrap (vue pas)
+      const _ld=document.getElementById('layer-div-'+li);
+      const _r2=_ld?.querySelector('.layer-row2')
+        ||document.querySelector('#step-rows-wrap .layer-row2.'+layer.cls);
+      if(_r2){if(_vis)_r2.style.removeProperty('display');else _r2.style.setProperty('display','none','important');}
+      const _r3=_ld?.querySelector('.layer-row3-iso');
+      if(_r3)_r3.classList.toggle('detail-hidden',!_vis);
     });
     row1.appendChild(nameLbl);
     // [◀][nom preset][▶] — groupe collé, flex:1
@@ -7230,6 +7236,8 @@ function buildLayers(){
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
+    // Respecte l'état de visibilité persistant (buildLayers peut être rappelé après un fold)
+    if(!_layerDetailVisible[li])row2.style.setProperty('display','none','important');
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
     seqInfo.addEventListener('click',()=>{
