@@ -451,6 +451,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .iso-cell.iso-beat{margin-left:4px}
 .iso-cell.iso-cur{outline:2px solid rgba(255,255,255,.75);outline-offset:-1px}
 body.dark-mode .iso-cell{background:#26262d;border-color:#36363e}
+body.dark-mode .iso-cell.iso-on{background:var(--cc);border-color:var(--cb)}
 body.dark-mode .iso-cell.iso-soft{background:color-mix(in srgb,var(--cc) 42%,#26262d)}
 body.view-circle .layer-row2{display:none!important} /* steps cachés en vue circulaire — représentés par le canvas */
 /* Bouton nom layer — fold/unfold + couleur layer */
@@ -477,8 +478,6 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 .layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
 /* Spécificité 120 : l'emporte sur #step-rows-wrap .layer-row2 (110) */
 #step-rows-wrap .layer-row2.detail-hidden{display:none!important}
-/* Iso row cachée en vue step-seq (déjà représentée dans step-rows-wrap) */
-body.step-seq .layer-row3-iso{display:none!important}
 /* Bouton mod tricolore et volet mod — cachés en phase 3 */
 #layer-edit-bar,#layers-mod-bar{display:none!important}
 /* Strip-2 (pad XY/sliders) caché — Phase 4 */
@@ -1861,7 +1860,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.18</span>
+    <span class="app-version">v3.26.19</span>
   </div>
 </div>
 
