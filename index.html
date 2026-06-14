@@ -444,25 +444,36 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .layer-row2.collapsed{display:none}
 .layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0;position:relative}
 /* ── Phase 3 — Vue Édition ─────────────────────────────────────────────── */
-.layer-row3-iso{display:flex;position:relative;height:18px;border-top:1px solid rgba(0,0,0,.07);overflow:hidden;background:rgba(0,0,0,.025);flex-shrink:0}
-.iso-cell{flex:1;min-width:0;border-right:1px solid rgba(0,0,0,.06);transition:opacity .04s}
-.iso-cell.iso-cur{outline:2px solid rgba(255,215,0,.9);outline-offset:-2px;z-index:1;position:relative}
+.layer-row3-iso{display:flex;position:relative;height:30px;border-top:1px solid rgba(0,0,0,.08);overflow:hidden;background:rgba(0,0,0,.025);flex-shrink:0}
+.iso-cell{flex:1;min-width:0;border-right:1px solid rgba(0,0,0,.06)}
+.iso-cell.iso-cur{outline:2px solid rgba(255,215,0,.92);outline-offset:-2px;z-index:1;position:relative}
 body.dark-mode .layer-row3-iso{background:rgba(255,255,255,.035);border-top-color:rgba(255,255,255,.07)}
 body.dark-mode .iso-cell{border-right-color:rgba(255,255,255,.05)}
 body.view-circle .layer-row3-iso,body.view-circle .layer-row2{display:none!important}
-.btn-pat-nav,.btn-pat-reset,.btn-detail-toggle{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;padding:2px 3px;flex-shrink:0}
+/* Bouton nom layer — fold/unfold + couleur layer */
+.layer-name-btn{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;
+  padding:2px 6px 2px 4px;flex-shrink:0;width:62px;min-width:62px;
+  font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;
+  color:var(--cs);opacity:.6;display:flex;align-items:center;gap:3px;border-left:2.5px solid var(--cs)!important;
+  border-radius:0!important;justify-content:flex-start}
+.layer-name-btn.open{opacity:1}
+.layer-name-btn:hover{opacity:.9}
+.layer-name-chev{font-size:8px;display:inline-block;transition:transform .12s}
+.layer-name-btn.open .layer-name-chev{transform:rotate(90deg)}
+/* Boutons nav preset et reset */
+.btn-pat-nav,.btn-pat-reset{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;padding:2px 3px;flex-shrink:0}
 .btn-pat-nav{font-size:10px;opacity:.55;color:var(--cs)}
 .btn-pat-nav:hover{opacity:1}
 .btn-pat-reset{font-size:13px;opacity:.5}
 .btn-pat-reset:hover{opacity:.85}
-.btn-detail-toggle{font-size:13px;opacity:.38;margin-left:auto;color:var(--cs)}
-.btn-detail-toggle.open{opacity:.9;font-weight:700}
-.btn-detail-toggle:hover{opacity:.8}
+/* Groupe ◀[nom preset]▶ collé */
 .preset-nav-group{display:flex;align-items:stretch;flex:1;min-width:0;max-width:190px;gap:0}
 .preset-nav-group .pm-preset-btn{border-radius:0;flex:1;min-width:0;border-left:none!important;border-right:none!important}
-.layer-name-lbl{font-size:10px;font-weight:700;color:var(--cs);flex-shrink:0;padding:0 5px 0 3px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center}
+/* Masquage progressif */
 .row1-hide{display:none!important}
 .layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
+/* Ligne buildLayerEditBar (bouton mod tricolore) — supprimée */
+#layer-edit-bar{display:none!important}
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:inline-block;align-self:flex-start}
 .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
@@ -1841,7 +1852,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.12</span>
+    <span class="app-version">v3.26.13</span>
   </div>
 </div>
 
@@ -6998,7 +7009,12 @@ function buildLCB(){
 function _buildIsoRow(li){
   const ld=document.getElementById('layer-div-'+li);if(!ld)return;
   let row3=ld.querySelector('.layer-row3-iso');
-  if(!row3){row3=document.createElement('div');row3.className='layer-row3-iso';ld.appendChild(row3);}
+  if(!row3){
+    row3=document.createElement('div');row3.className='layer-row3-iso';
+    // Insérer AVANT le modPanel pour l'ordre : steps → iso → mod (caché)
+    const mp=document.getElementById('mod-panel-'+li);
+    if(mp)ld.insertBefore(row3,mp); else ld.appendChild(row3);
+  }
   const pat=state[li].pattern;
   const acc=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
   row3.innerHTML='';
@@ -7008,7 +7024,8 @@ function _buildIsoRow(li){
     else if(s==='x'){c.style.background=acc;c.style.opacity='.28';}
     row3.appendChild(c);
   });
-  row3.style.display=_layerDetailVisible[li]?'':'none';
+  if(!_layerDetailVisible[li])row3.classList.add('detail-hidden');
+  else row3.classList.remove('detail-hidden');
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -7139,8 +7156,18 @@ function buildLayers(){
       ()=>_sortByFamille((packCours.patterns||[]).filter(p=>!p.localDeletePending),packCours.familles),
       ()=>state[li].patternId, _patOnSelect
     );
-    // Nom du layer — gauche, masqué en dernier si espace insuffisant
-    const nameLbl=document.createElement('span');nameLbl.className='layer-name-lbl';nameLbl.textContent=layer.label;
+    // Bouton nom layer — fold/unfold du détail (remplace ✎), largeur fixe pour aligner les presets
+    const _nameOpen=_layerDetailVisible[li];
+    const nameLbl=document.createElement('button');nameLbl.className='layer-name-btn'+(_nameOpen?' open':'');
+    nameLbl.title=(_nameOpen?'Masquer':'Afficher')+' l\'édition';
+    nameLbl.innerHTML=layer.label+'<span class="layer-name-chev">▶</span>';
+    nameLbl.addEventListener('click',()=>{
+      _layerDetailVisible[li]=!_layerDetailVisible[li];
+      nameLbl.classList.toggle('open',_layerDetailVisible[li]);
+      nameLbl.title=(_layerDetailVisible[li]?'Masquer':'Afficher')+' l\'édition';
+      row2.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
+      const r3=layerDiv.querySelector('.layer-row3-iso');if(r3)r3.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
+    });
     row1.appendChild(nameLbl);
     // [◀][nom preset][▶] — groupe collé, flex:1
     const navGroup=document.createElement('div');navGroup.className='preset-nav-group';
@@ -7190,22 +7217,11 @@ function buildLayers(){
     // btnMod caché (handler conservé par step-seq-info)
     const btnMod=document.createElement('button');btnMod.className='btn-layer-toggle';
     btnMod.style.display='none';row1.appendChild(btnMod);
-    // ✎ toggle détail (row2 steps + row3 iso) — toujours visible, margin-left:auto
-    const btnDetail=document.createElement('button');btnDetail.className='btn-detail-toggle'+(_layerDetailVisible[li]?' open':'');
-    btnDetail.title='Afficher/masquer l\'édition';btnDetail.textContent='✎';
-    btnDetail.addEventListener('click',()=>{
-      _layerDetailVisible[li]=!_layerDetailVisible[li];
-      btnDetail.classList.toggle('open',_layerDetailVisible[li]);
-      row2.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
-      const r3=layerDiv.querySelector('.layer-row3-iso');if(r3)r3.classList.toggle('detail-hidden',!_layerDetailVisible[li]);
-    });
-    row1.appendChild(btnDetail);
-    // Masquage progressif : 🎲 en premier → ⏺ en second → nom en dernier
+    // Masquage progressif : 🎲 en premier → ⏺ en second (nom toujours visible = toggle détail)
     {const ro=new ResizeObserver(([e])=>{
       const w=e.contentRect.width;
       btnDicePat.classList.toggle('row1-hide',w<280);
       bRec.classList.toggle('row1-hide',w<220);
-      nameLbl.classList.toggle('row1-hide',w<160);
     });ro.observe(row1);}
     layerDiv.appendChild(row1);
 
