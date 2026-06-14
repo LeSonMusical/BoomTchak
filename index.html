@@ -1860,7 +1860,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.19</span>
+    <span class="app-version">v3.26.20</span>
   </div>
 </div>
 
@@ -7281,6 +7281,7 @@ function buildLayers(){
     const _reszMark=()=>{
       nPas.textContent=String(state[li].pattern.length);
       buildStepsDOM(li,state[li].wrapped);if(circleView)drawCircles();
+      buildLCB(); // sync segments LCB [nb pas][unité] après changement de longueur
       _updateLinearPageIndicator();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
       if(updateSwapBtnRef.fn)updateSwapBtnRef.fn();
@@ -10570,6 +10571,9 @@ function setupCanvasInteraction(){
     setLayerDirty(li, isDirty);
     _syncPadToPattern(li);
     drawCircles();
+    // Sync cellule iso-métrique (même logique que onStepClick)
+    const _ic=document.querySelector(`#layer-div-${li} .iso-cell[data-iso-idx="${si}"]`);
+    if(_ic){_ic.classList.toggle('iso-on',newVal==='X');_ic.classList.toggle('iso-soft',newVal==='x');}
   }
   cv.addEventListener('click', e=>onPt(e.clientX, e.clientY));
   cv.addEventListener('mousemove',e=>{
