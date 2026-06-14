@@ -1821,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.5</span>
+    <span class="app-version">v3.26.6</span>
   </div>
 </div>
 
@@ -11670,8 +11670,13 @@ function _setupGCBSplitter(gcbEl){
         _clearCanvasTransform();
         if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
         c.style.height='';
+        c.style.overflow='';
+      } else {
+        // B libre : overflow:hidden seulement si le canvas est upscalé (évite débordement latéral)
+        const canvasEl=document.getElementById('rhythm-canvas');
+        const s=canvasEl&&canvasEl.offsetHeight>0?c.offsetHeight/canvasEl.offsetHeight:0;
+        c.style.overflow=s>1.01?'hidden':'';
       }
-      c.style.overflow='';
       if(st!=='C'&&!keepH&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
     }
   }
@@ -11701,13 +11706,15 @@ function _setupGCBSplitter(gcbEl){
     if(!_sMode&&Math.abs(dy)>8)_sMode='split';
     if(_sMode==='split'){
       const c=_cv();if(!c)return;
-      const h=Math.max(0,_sH0+dy);
+      // h plafonné à _availCache (pas dans la nav bar) ; min 0
+      const h=Math.max(0,Math.min(_availCache,_sH0+dy));
       c.style.height=h+'px';
       // Zoom proportionnel du canvas (vues circulaires uniquement, pas linéaire ni step-seq)
+      // s peut être > 1 : le canvas upscale jusqu'à remplir l'écran ; overflow:hidden clip les côtés
       const canvasEl=document.getElementById('rhythm-canvas');
       if(canvasEl&&_physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
-        const s=Math.min(1,h/_physH);
-        canvasEl.style.transform=s<0.995?`scale(${s.toFixed(3)})`:'';
+        const s=h/_physH;
+        canvasEl.style.transform=Math.abs(s-1)>0.005?`scale(${s.toFixed(3)})`:'';
         canvasEl.style.transformOrigin='top center';
       }
       const pct=_availCache>0?Math.round(100*h/_availCache):0;
@@ -11719,7 +11726,8 @@ function _setupGCBSplitter(gcbEl){
     if(_sMode==='split'){
       const c=_cv(),h=c?c.offsetHeight:Math.round(0.44*_availCache);
       // Snap uniquement aux extrêmes stricts ; position libre entre les deux
-      const st=h<30?'C':(h>=_physH-30?'A':'B');
+      // A = canvas à taille naturelle (reset resizeCanvas) ; s'enclenche au bord max du drag
+      const st=h<30?'C':(h>=_availCache-30?'A':'B');
       _applySplit(st,undefined,st==='B');
     } else {
       // Tap sans drag : restaurer l'état précédent exact sans toucher à la hauteur
