@@ -1239,6 +1239,9 @@ body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-col
 #layers-mod-bar{display:none;justify-content:flex-end;padding:2px 8px 0;align-items:center;width:100%;box-sizing:border-box}
 body.view-circle #layers-mod-bar{order:5}
 @media(min-width:600px){body.view-circle #layers-mod-bar{flex:0 0 100%;flex-shrink:0}}
+/* LCB : order 4 mobile (juste sous la GCB), order 5 desktop (pleine largeur sous la GCB) */
+body.view-circle #layer-control-bar{order:4;width:100%}
+@media(min-width:600px){body.view-circle #layer-control-bar{order:5;flex:0 0 100%;flex-shrink:0}}
 .layers-mod-all-btn{background:none;border:1.5px solid rgba(0,0,0,.18);border-radius:4px;padding:1px 6px;cursor:pointer;font-size:10px;font-weight:700;line-height:1.3;-webkit-tap-highlight-color:transparent}
 body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 #rhythm-info-bar .rib-l2-item{font-size:8px;opacity:.72;white-space:nowrap}
@@ -1254,8 +1257,15 @@ body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A}
 body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
 /* ── GCB v3.26 — nouveaux éléments de la barre séparatrice ── */
 #gcb-handle{width:32px;height:3px;background:#C8961A;opacity:.4;border-radius:2px;margin:3px auto 1px;pointer-events:none;flex-shrink:0}
-.gcb-row{display:flex;align-items:center;gap:6px;padding:2px 8px 5px;width:100%;box-sizing:border-box}
-.gcb-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:34px;height:34px;color:#C8961A;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
+.gcb-row{display:flex;align-items:center;padding:2px 6px 5px;width:100%;box-sizing:border-box;gap:4px}
+/* ⏱ et 🔊 : extrêmes fixes */
+.gcb-row .rib-metro-btn,.gcb-row .rib-son-btn{flex-shrink:0}
+/* Zone tempo : flex:1 pour remplir l'espace à gauche du ▶ */
+.gcb-row #rib-tempo-zone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+/* Signature : flex:1 pour remplir l'espace à droite du ▶ */
+.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#2A6A50!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+body.dark-mode .gcb-row .rib-sig-btn{color:#4AB58A!important}
+.gcb-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:36px;height:36px;color:#C8961A;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
 .gcb-play-btn.playing{background:#C8961A;color:#1b1b20}
 body.dark-mode .gcb-play-btn{color:#C8961A;border-color:#C8961A}
 body.dark-mode .gcb-play-btn.playing{color:#1b1b20}
@@ -1284,7 +1294,7 @@ body.dark-mode .lcb-seg+.lcb-seg{border-left-color:rgba(255,255,255,.07)}
 .lcb-unit{font-size:11px;opacity:.8}
 .lcb-seg.seg-muted .lcb-npas,.lcb-seg.seg-muted .lcb-unit{opacity:.28}
 /* Chevron fold */
-.lcb-chev{font-size:13px;flex-shrink:0;color:#999;padding:0 2px;transition:transform .15s;pointer-events:none}
+.lcb-chev{font-size:16px;font-weight:700;flex-shrink:0;color:#999;padding:2px 6px;transition:transform .15s;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lcb-seg.seg-folded .lcb-chev{transform:rotate(-90deg)}
 body.dark-mode .lcb-chev{color:#555}
 /* Bouton toggle vue Édition/Totems */
@@ -1811,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.1</span>
+    <span class="app-version">v3.26.2</span>
   </div>
 </div>
 
@@ -6917,9 +6927,11 @@ function buildLCB(){
     // VU tap → mute
     vuEl?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
     vuEl?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
-    // Drag grain/densité
+    const chevEl=seg.querySelector('.lcb-chev');
+    // Drag grain/densité sur le segment (hors VU et hors chevron)
     seg.addEventListener('pointerdown',e=>{
       if(e.target===vuEl||vuEl?.contains(e.target))return;
+      if(e.target===chevEl)return; // chevron gère son propre tap
       _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;_gi0=_lcbCurrentGrainIndex(li);
       seg.setPointerCapture(e.pointerId);
     },{passive:true});
@@ -6942,10 +6954,9 @@ function buildLCB(){
       _dragOverlay.hide();
       _mode=null;
     }));
-    // Tap segment (hors VU) → plier/déplier layer
-    seg.addEventListener('click',e=>{
-      if(_didDrag)return;
-      if(e.target===vuEl||vuEl?.contains(e.target))return;
+    // Chevron tap → plier/déplier layer (zone action explicite)
+    chevEl?.addEventListener('click',e=>{
+      e.stopPropagation();
       _lcbFolded[li]=!_lcbFolded[li];
       _lcbApplyFold(li);
       buildLCB();
@@ -11642,13 +11653,13 @@ function _setupGCBSplitter(gcbEl){
   const _cv=()=>document.getElementById('circle-view');
   const _avail=()=>Math.max(80,window.innerHeight-56-68);
   const SNAPS={A:.72,B:.42,C:0};
-  /* _applySplit : positionne le body[data-split] et laisse CSS + resizeCanvas gérer l'affichage */
+  /* _applySplit : positionne body[data-split] et laisse CSS + resizeCanvas gérer l'affichage */
   function _applySplit(st,animate){
     const c=_cv();
     document.body.dataset.split=st;
     if(c){
       if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
-      c.style.height='';c.style.overflow='';
+      c.style.height='';c.style.overflow='';c.style.display=''; // restaure contrôle CSS
       if(st!=='C'&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
     }
   }
@@ -11660,7 +11671,13 @@ function _setupGCBSplitter(gcbEl){
   let _sMode=null,_sY0=0,_sH0=0;
   gcbEl.addEventListener('pointerdown',e=>{
     if(e.target.closest('button')||e.target.closest('#rib-tempo-zone'))return;
-    _sMode=null;_sY0=e.clientY;_sH0=_cv()?.offsetHeight??Math.round(SNAPS.B*_avail());
+    _sMode=null;_sY0=e.clientY;
+    const avail=_avail();
+    // Calcul de _sH0 depuis l'état snap courant (pas offsetHeight — invalide en état C)
+    const curSplit=document.body.dataset.split||'B';
+    _sH0={A:Math.round(SNAPS.A*avail),B:Math.round(SNAPS.B*avail),C:0}[curSplit]??Math.round(SNAPS.B*avail);
+    const c=_cv();
+    if(c){c.style.display='';c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
   },{passive:false});
   gcbEl.addEventListener('pointermove',e=>{
@@ -11670,10 +11687,12 @@ function _setupGCBSplitter(gcbEl){
     if(!_sMode&&Math.abs(dy)>8)_sMode='split';
     if(_sMode==='split'){
       const c=_cv();if(!c)return;
-      const h=Math.max(0,_sH0-dy);
-      c.style.height=h+'px';c.style.overflow='hidden';
+      // +dy : monter la barre = réduire le canvas → Layers Max (C)
+      //       descendre la barre = agrandir le canvas → Canvas Max (A)
+      const h=Math.max(0,_sH0+dy);
+      c.style.height=h+'px';
       const st=_snapNearest(h,_avail());
-      _dragOverlay.show({A:'▲ Canvas max',B:'⚌ Split',C:'▼ Layers max'}[st]);
+      _dragOverlay.show({A:'▼ Canvas max',B:'⚌ Split',C:'▲ Layers max'}[st]);
     }
   },{passive:false});
   ['pointerup','pointercancel'].forEach(ev=>gcbEl.addEventListener(ev,()=>{
@@ -11681,10 +11700,13 @@ function _setupGCBSplitter(gcbEl){
     if(_sMode==='split'){
       const c=_cv(),h=c?.offsetHeight??Math.round(SNAPS.B*_avail());
       _applySplit(_snapNearest(h,_avail()));
+    } else {
+      // Tap sans drag : restaurer l'état CSS (canvas remis sous contrôle CSS)
+      const c=_cv();if(c){c.style.height='';c.style.overflow='';c.style.display='';}
     }
     _sMode=null;
   }));
-  // Init : état B par défaut (laisse un cycle de rendu pour que resizeCanvas ait eu lieu)
+  // Init : état B par défaut
   setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
 }
 
