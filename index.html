@@ -1861,7 +1861,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.17</span>
+    <span class="app-version">v3.26.18</span>
   </div>
 </div>
 
@@ -10893,7 +10893,7 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); updateCycleInfoBar(_measureViewPage); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); updateCycleInfoBar(_measureViewPage); LAYERS.forEach((_,li)=>_buildIsoRow(li)); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     // Linéaire (step-seq ou fallback)
@@ -11868,6 +11868,14 @@ function visualLoopCircle(){
   if(!playing) return;
   drawCircles();
   highlightMetroStep();
+  // Tête de lecture iso-métrique (row3) — mise à jour ici car le LAYERS.forEach de visualLoop est court-circuité en vue circulaire
+  const _now=getAC().currentTime-prefs.audioOffset;
+  LAYERS.forEach((layer,li)=>{
+    const _bs=getBeatSec(li);if(!_bs||_bs<=0)return;
+    const _si=Math.floor((_now-state[li].startTime)/_bs)%state[li].pattern.length;
+    const _r3=document.querySelector(`#layer-div-${li} .layer-row3-iso`);
+    if(_r3&&_layerDetailVisible[li]){_r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===_si));}
+  });
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
 
