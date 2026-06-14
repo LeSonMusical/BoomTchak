@@ -444,11 +444,14 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .layer-row2.collapsed{display:none}
 .layer-steps{flex:1;display:flex;flex-wrap:wrap;gap:2px;min-width:0;position:relative}
 /* ── Phase 3 — Vue Édition ─────────────────────────────────────────────── */
-.layer-row3-iso{display:flex;position:relative;height:30px;border-top:1px solid rgba(0,0,0,.08);overflow:hidden;background:rgba(0,0,0,.025);flex-shrink:0}
-.iso-cell{flex:1;min-width:0;border-right:1px solid rgba(0,0,0,.06)}
-.iso-cell.iso-cur{outline:2px solid rgba(255,215,0,.92);outline-offset:-2px;z-index:1;position:relative}
-body.dark-mode .layer-row3-iso{background:rgba(255,255,255,.035);border-top-color:rgba(255,255,255,.07)}
-body.dark-mode .iso-cell{border-right-color:rgba(255,255,255,.05)}
+.layer-row3-iso{display:flex;gap:2px;padding:4px 6px 6px;background:var(--cl);flex-shrink:0}
+.iso-cell{flex:1;height:30px;max-width:34px;min-width:0;border-radius:5px;background:rgba(38,38,45,.15);border:1px solid rgba(0,0,0,.18);cursor:pointer;flex-shrink:0}
+.iso-cell.iso-on{background:var(--cc);border-color:var(--cb)}
+.iso-cell.iso-soft{background:color-mix(in srgb,var(--cc) 42%,transparent);border-color:var(--cs)}
+.iso-cell.iso-beat{margin-left:4px}
+.iso-cell.iso-cur{outline:2px solid rgba(255,255,255,.75);outline-offset:-1px}
+body.dark-mode .iso-cell{background:#26262d;border-color:#36363e}
+body.dark-mode .iso-cell.iso-soft{background:color-mix(in srgb,var(--cc) 42%,#26262d)}
 body.view-circle .layer-row2{display:none!important} /* steps cachés en vue circulaire — représentés par le canvas */
 /* Bouton nom layer — fold/unfold + couleur layer */
 .layer-name-btn{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;
@@ -474,9 +477,12 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 .layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
 /* Spécificité 120 : l'emporte sur #step-rows-wrap .layer-row2 (110) */
 #step-rows-wrap .layer-row2.detail-hidden{display:none!important}
+/* Iso row cachée en vue step-seq (déjà représentée dans step-rows-wrap) */
+body.step-seq .layer-row3-iso{display:none!important}
 /* Bouton mod tricolore et volet mod — cachés en phase 3 */
 #layer-edit-bar,#layers-mod-bar{display:none!important}
-.layer-mod-panel{display:none!important}
+/* Strip-2 (pad XY/sliders) caché — Phase 4 */
+.mod-strip-2{display:none!important}
 .btn-layer-mod{margin-left:auto;cursor:pointer;font-size:14px;font-weight:700;background:none;border:none;padding:2px 3px;line-height:1;opacity:.55;flex-shrink:0;color:var(--cb);display:inline-block;align-self:flex-start}
 .btn-layer-mod:hover{opacity:1}
 .step{width:22px;height:22px;border-radius:3px;border:1.5px solid var(--cs);background:#fff;cursor:pointer;flex-shrink:0;transition:background .08s,box-shadow .08s;position:relative;z-index:1}
@@ -1855,7 +1861,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.16</span>
+    <span class="app-version">v3.26.17</span>
   </div>
 </div>
 
@@ -7019,12 +7025,19 @@ function _buildIsoRow(li){
     if(mp)ld.insertBefore(row3,mp); else ld.appendChild(row3);
   }
   const pat=state[li].pattern;
-  const acc=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
+  const n=pat.length;const bs=(n%4===0)?n/4:0;
   row3.innerHTML='';
   pat.forEach((s,i)=>{
-    const c=document.createElement('div');c.className='iso-cell';c.dataset.isoIdx=i;
-    if(s==='X'){c.style.background=acc;c.style.opacity='.72';}
-    else if(s==='x'){c.style.background=acc;c.style.opacity='.28';}
+    const c=document.createElement('div');
+    c.className='iso-cell'+(s==='X'?' iso-on':s==='x'?' iso-soft':'')+((bs&&i>0&&i%bs===0)?' iso-beat':'');
+    c.dataset.isoIdx=i;
+    c.addEventListener('click',()=>{
+      const v=state[li].pattern[i];
+      state[li].pattern[i]=v==='.'?'X':v==='X'?'x':'.';
+      buildStepsDOM(li,state[li].wrapped);
+      _buildIsoRow(li);
+      setLayerDirty(li,true);
+    });
     row3.appendChild(c);
   });
   if(!_layerDetailVisible[li])row3.classList.add('detail-hidden');
@@ -7176,6 +7189,8 @@ function buildLayers(){
       if(_r2){if(_vis)_r2.style.removeProperty('display');else _r2.style.setProperty('display','none','important');}
       const _r3=_ld?.querySelector('.layer-row3-iso');
       if(_r3)_r3.classList.toggle('detail-hidden',!_vis);
+      const _mp=document.getElementById('mod-panel-'+li);
+      if(_mp){if(_vis)_mp.style.removeProperty('display');else _mp.style.setProperty('display','none','important');}
     });
     row1.appendChild(nameLbl);
     // [◀][nom preset][▶] — groupe collé, flex:1
@@ -7256,8 +7271,9 @@ function buildLayers(){
 
     // ── Panneau mod v3.15.4 — Dual Strip (strip-1: actions | strip-2: contrôles fins) ──
     const modPanel=document.createElement('div');
-    modPanel.className='layer-mod-panel hidden';
+    modPanel.className='layer-mod-panel';
     modPanel.id='mod-panel-'+li;
+    if(!_layerDetailVisible[li])modPanel.style.setProperty('display','none','important');
 
     // ── Nb de pas : ◀ N ▶ ──────────────────────────────────────────────────────
     const nPas=document.createElement('span');nPas.className='mod-pas-num';nPas.id='pas-num-'+li;nPas.textContent=String(state[li].pattern.length);nPas.style.color=_accent;
@@ -7684,7 +7700,7 @@ function onStepClick(li,si,el){
   // Sync cellule iso-métrique correspondante
   const _iacc=['#378ADD','#D85A30','#1D9E75'][li]||'#6B5FA5';
   const _ic=document.querySelector(`#layer-div-${li} .iso-cell[data-iso-idx="${si}"]`);
-  if(_ic){_ic.style.background=newVal!=='.'?_iacc:'';_ic.style.opacity=newVal==='X'?'.72':newVal==='x'?'.28':'';}
+  if(_ic){_ic.classList.toggle('iso-on',newVal==='X');_ic.classList.toggle('iso-soft',newVal==='x');}
   // Dirty check — layer seulement, pas groove (les séquences se sauvegardent via 💾 layer)
   const isDirty=srcPat?state[li].pattern.join('')!==srcPat.sequence:false;
   setLayerDirty(li,isDirty);
