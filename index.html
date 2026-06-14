@@ -1265,6 +1265,32 @@ body[data-split="A"] #layers-mod-bar{display:none!important}
 body[data-split="C"] #circle-view{display:none!important}
 body[data-split="A"].view-circle #circle-view{flex:1}
 
+/* ─── LAYER CONTROL BAR (LCB) ─── */
+#layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1.5px solid rgba(200,150,26,.6);min-height:32px}
+body.show-rib #layer-control-bar{display:flex}
+body.dark-mode #layer-control-bar{background:#13131a;border-bottom-color:rgba(200,150,26,.3)}
+/* Dans état A (Canvas max) : LCB reste visible pour accès mute */
+/* Dans état C (Layers max) : canvas caché, LCB toujours visible */
+.lcb-seg{flex:1;display:flex;align-items:center;padding:4px 4px;min-width:0;position:relative;touch-action:none;gap:3px;-webkit-tap-highlight-color:transparent;cursor:pointer;overflow:hidden}
+.lcb-seg+.lcb-seg{border-left:1px solid rgba(0,0,0,.1)}
+body.dark-mode .lcb-seg+.lcb-seg{border-left-color:rgba(255,255,255,.07)}
+/* Pastille VU */
+.lcb-vu{width:14px;height:14px;border-radius:50%;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .06s ease,box-shadow .12s ease;box-shadow:0 0 0 0 currentColor}
+.lcb-vu.lcb-vu-hit{transform:scale(1.45);box-shadow:0 0 6px 2px currentColor}
+.lcb-seg.seg-muted .lcb-vu{opacity:.25;filter:grayscale(.8)}
+/* Grain label */
+.lcb-grain{display:flex;align-items:baseline;gap:1px;flex:1;min-width:0;justify-content:center;pointer-events:none}
+.lcb-npas{font-size:13px;font-weight:700}
+.lcb-unit{font-size:11px;opacity:.8}
+.lcb-seg.seg-muted .lcb-npas,.lcb-seg.seg-muted .lcb-unit{opacity:.28}
+/* Chevron fold */
+.lcb-chev{font-size:13px;flex-shrink:0;color:#999;padding:0 2px;transition:transform .15s;pointer-events:none}
+.lcb-seg.seg-folded .lcb-chev{transform:rotate(-90deg)}
+body.dark-mode .lcb-chev{color:#555}
+/* Bouton toggle vue Édition/Totems */
+#lcb-view-toggle{flex-shrink:0;border:none;background:none;font-size:14px;padding:4px 10px;cursor:pointer;color:#888;-webkit-tap-highlight-color:transparent;border-left:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center}
+body.dark-mode #lcb-view-toggle{color:#555;border-left-color:rgba(255,255,255,.07)}
+
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
 #step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
@@ -1785,7 +1811,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.0</span>
+    <span class="app-version">v3.26.1</span>
   </div>
 </div>
 
@@ -2228,6 +2254,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="step-rows-wrap"><div id="linear-view-bar"></div></div>
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
+  <!-- Layer Control Bar (LCB) — 3 segments colorés par layer, toujours visible sous GCB -->
+  <div id="layer-control-bar"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layer-edit-bar"></div><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
@@ -3067,6 +3095,17 @@ const LAYERS=[
   {id:'noise',label:'Noise', cls:'c-noise'},
 ];
 
+// ── LCB — échelle de grain iso-durée ─────────────────────────────────────
+// Chaque entrée : {n=pas de référence, sym=symbole, halfOn, doubleOn, ternOn}
+// Durée de cycle constante (8 croches) quelle que soit l'entrée choisie.
+const _LCB_LADDER=[
+  {n:4,  sym:'♩',  halfOn:true,  doubleOn:false,ternOn:false},
+  {n:8,  sym:'♪',  halfOn:false, doubleOn:false,ternOn:false},
+  {n:12, sym:'♪T', halfOn:false, doubleOn:false,ternOn:true},
+  {n:16, sym:'♬',  halfOn:false, doubleOn:true, ternOn:false},
+  {n:24, sym:'♬T', halfOn:false, doubleOn:true, ternOn:true},
+];
+
 // ── États runtime audio ───────────────────────────────────────────────────
 let state=LAYERS.map(()=>({
   pattern:['.'],
@@ -3846,6 +3885,7 @@ function scheduler(){
       if(stepVal!=='.'&&!state[li].muted){
         scheduleNote(li,state[li].nextStepTime+swOff,stepVal==='x'?prefs.softVel:1.0);
         if(!layersOuverts&&li<3){const _acNow=getAC().currentTime;_miniVuHit[li]=performance.now()+(state[li].nextStepTime+swOff-_acNow)*1000;_miniVuSoft[li]=stepVal==='x';}
+        {const _acNow2=getAC().currentTime;const _dMs=Math.max(0,(state[li].nextStepTime+swOff-_acNow2)*1000);_lcbVuHit(li,_dMs);}
       }
       state[li].nextStepTime+=getBeatSec(li);
       state[li].stepPos=(si+1)%state[li].pattern.length;
@@ -4565,6 +4605,8 @@ function updateSettingsBadge(){
 }
 let layersOuverts = true;
 let layerPanelsOuverts = true;
+let _lcbFolded=[false,false,false]; // état pliage par layer (tap ▾ de la LCB)
+let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
@@ -6765,6 +6807,158 @@ function updateLayerEditBar(){
     lebMod.innerHTML='<span style="color:#378ADD">m</span><span style="color:#D85A30">o</span><span style="color:#1D9E75">d</span> <span class="leb-mod-chevron">'+(anyOpen?'▼':'▶')+'</span>';
   }
 }
+// ═══════════════════════════════════════════════════════════════════════════
+// ── LCB — Layer Control Bar ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Retourne l'index courant dans _LCB_LADDER pour un layer donné
+function _lcbCurrentGrainIndex(li){
+  const s=state[li];
+  if(s.halfOn&&!s.doubleOn&&!s.ternOn) return 0; // 4♩
+  if(!s.halfOn&&!s.doubleOn&&!s.ternOn) return 1; // 8♪
+  if(!s.halfOn&&!s.doubleOn&&s.ternOn) return 2;  // 12♪T
+  if(!s.halfOn&&s.doubleOn&&!s.ternOn) return 3;  // 16♬
+  if(!s.halfOn&&s.doubleOn&&s.ternOn) return 4;   // 24♬T
+  return 1; // fallback → 8♪
+}
+
+// Change de grain iso-durée : rééchantillonne le pattern + applique les modificateurs
+function _lcbSetGrain(li,gi){
+  gi=Math.max(0,Math.min(_LCB_LADDER.length-1,gi));
+  const oldGi=_lcbCurrentGrainIndex(li);
+  if(gi===oldGi)return;
+  const oldN=_LCB_LADDER[oldGi].n,newN=_LCB_LADDER[gi].n;
+  const oldPat=state[li].pattern,oldLen=oldPat.length;
+  const newLen=Math.max(1,Math.round(oldLen*newN/oldN));
+  // Rééchantillonnage proportionnel (même logique que maquette it.6)
+  const newPat=Array(newLen).fill('.');
+  for(let i=0;i<oldLen;i++){
+    if(oldPat[i]!=='.'){
+      const j=Math.round(i*newLen/oldLen)%newLen;
+      if(newPat[j]==='.'||oldPat[i]==='X')newPat[j]=oldPat[i];
+    }
+  }
+  state[li].pattern=newPat;
+  // Applique les modificateurs (immédiat — même comportement que le resize de pas)
+  const g=_LCB_LADDER[gi];
+  state[li].halfOn=g.halfOn;state[li].doubleOn=g.doubleOn;state[li].ternOn=g.ternOn;
+  state[li].pendingHalf=false;state[li].pendingDouble=false;
+  state[li].pendingClear=false;state[li].pendingTern=null;
+  // Rebuild DOM
+  buildStepsDOM(li,false);
+  buildLayerEditBar();
+  buildLCB();
+  updateRhythmInfoBar();
+}
+
+// Applique l'état pliage d'un layer (masque/affiche le .layer div)
+function _lcbApplyFold(li){
+  const layerDiv=document.getElementById('layer-div-'+li);
+  if(layerDiv)layerDiv.style.display=_lcbFolded[li]?'none':'';
+}
+
+// Toggle mute via LCB (synchronise tous les boutons existants)
+function _lcbToggleMute(li){
+  state[li].muted=!state[li].muted;
+  const muted=state[li].muted;
+  const btnMute=document.getElementById('btn-mute-lbl-'+li);
+  if(btnMute){btnMute.classList.toggle('muted',muted);btnMute.title=(muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+  const layerDiv=document.getElementById('layer-div-'+li);
+  if(layerDiv)layerDiv.classList.toggle('muted-layer',muted);
+  const r2=layerDiv?.querySelector('.layer-row2');
+  if(r2)r2.classList.toggle('muted',muted);
+  const smb=document.querySelector(`.sound-layer[data-sound-key="${LAYERS[li].id}"] .btn-mute-lbl`);
+  if(smb){smb.classList.toggle('muted',muted);smb.title=(muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
+  buildLCB();
+  updateRhythmInfoBar();
+}
+
+// Flash VU pastille LCB au coup (appelé depuis le scheduler avec un délai en ms)
+function _lcbVuHit(li,delayMs){
+  setTimeout(()=>{
+    const el=document.getElementById('lcb-vu-'+li);
+    if(!el)return;
+    el.classList.add('lcb-vu-hit');
+    setTimeout(()=>el.classList.remove('lcb-vu-hit'),160);
+  },Math.max(0,delayMs));
+}
+
+// Construit (ou reconstruit) la LCB complète avec ses handlers
+function buildLCB(){
+  const bar=document.getElementById('layer-control-bar');
+  if(!bar)return;
+  if(!state||!state[0]||!state[0].pattern)return;
+  const COLS=['#378ADD','#D85A30','#1D9E75'];
+  let html='';
+  LAYERS.forEach((layer,li)=>{
+    const muted=!!state[li].muted;
+    const folded=!!_lcbFolded[li];
+    const col=COLS[li];
+    const gi=_lcbCurrentGrainIndex(li);
+    const g=_LCB_LADDER[gi];
+    const n=state[li].pattern.length;
+    html+=`<div class="lcb-seg${muted?' seg-muted':''}${folded?' seg-folded':''}" data-li="${li}" style="border-left:3px solid ${col}">`+
+      `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
+      `<div class="lcb-grain">`+
+        `<span class="lcb-npas" style="color:${col}">${n}</span>`+
+        `<span class="lcb-unit" style="color:${col}">${g.sym}</span>`+
+      `</div>`+
+      `<span class="lcb-chev" style="color:${col}88">▾</span>`+
+      `</div>`;
+  });
+  html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'▥'}</button>`;
+  bar.innerHTML=html;
+  // ── Handlers par segment ──
+  bar.querySelectorAll('.lcb-seg').forEach(seg=>{
+    const li=parseInt(seg.dataset.li);
+    const vuEl=seg.querySelector('#lcb-vu-'+li);
+    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0;
+    const DRAG_THRESH=8,GRAIN_PX=28;
+    // VU tap → mute
+    vuEl?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
+    vuEl?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
+    // Drag grain/densité
+    seg.addEventListener('pointerdown',e=>{
+      if(e.target===vuEl||vuEl?.contains(e.target))return;
+      _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;_gi0=_lcbCurrentGrainIndex(li);
+      seg.setPointerCapture(e.pointerId);
+    },{passive:true});
+    seg.addEventListener('pointermove',e=>{
+      if(!seg.hasPointerCapture(e.pointerId))return;
+      const dx=e.clientX-_x0,dy=e.clientY-_y0;
+      if(!_mode&&(Math.abs(dx)>DRAG_THRESH||Math.abs(dy)>DRAG_THRESH)){
+        _didDrag=true;
+        _mode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
+      }
+      if(_mode==='grain'){
+        const newGi=Math.max(0,Math.min(_LCB_LADDER.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
+        const curGi=_lcbCurrentGrainIndex(li);
+        if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
+        const col=COLS[li],n=state[li].pattern.length;
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_LCB_LADDER[_lcbCurrentGrainIndex(li)].sym}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`);
+      }
+    },{passive:true});
+    ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
+      _dragOverlay.hide();
+      _mode=null;
+    }));
+    // Tap segment (hors VU) → plier/déplier layer
+    seg.addEventListener('click',e=>{
+      if(_didDrag)return;
+      if(e.target===vuEl||vuEl?.contains(e.target))return;
+      _lcbFolded[li]=!_lcbFolded[li];
+      _lcbApplyFold(li);
+      buildLCB();
+    });
+  });
+  // Toggle vue Édition/Totems
+  bar.querySelector('#lcb-view-toggle')?.addEventListener('click',()=>{
+    _lcbViewMode=(_lcbViewMode==='totems'?'edition':'totems');
+    buildLCB();
+    // Phase 4 : basculer vers vue Totems (à implémenter)
+  });
+}
+
 // ── Couches rythmiques ────────────────────────────────────────────────────
 const layerObservers=[];
 function buildLayers(){
@@ -7292,6 +7486,9 @@ function buildLayers(){
   if(_lwInit) _lwInit.style.display=layerPanelsOuverts?'':'none';
   const _lmbInit=document.getElementById('layers-mod-bar');
   if(_lmbInit) _lmbInit.style.display=layerPanelsOuverts?'flex':'none';
+  // Appliquer l'état de pliage par layer
+  LAYERS.forEach((_,li)=>_lcbApplyFold(li));
+  buildLCB();
   updateRhythmInfoBar();
 }
 
