@@ -1821,7 +1821,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.9</span>
+    <span class="app-version">v3.26.10</span>
   </div>
 </div>
 
@@ -11651,17 +11651,11 @@ function updateRhythmInfoBar(){
 /* ── Splitter GCB — setup une seule fois sur #rhythm-info-bar ── */
 function _setupGCBSplitter(gcbEl){
   const _cv=()=>document.getElementById('circle-view');
-  const _avail=()=>{
-    const lcb=document.getElementById('layer-control-bar');
-    const lcbH=lcb?lcb.offsetHeight:32;
-    const gcbRect=gcbEl.getBoundingClientRect();
-    return Math.max(80,window.innerHeight-gcbRect.bottom-lcbH-60);
-  };
   function _clearCanvasTransform(){
     const cv=document.getElementById('rhythm-canvas');
     if(cv){cv.style.transform='';cv.style.transformOrigin='';}
   }
-  // keepH=true : position libre B — conserver c.style.height et le zoom canvas
+  // keepH=true : position libre B — conserver c.style.height et zoom canvas
   function _applySplit(st,animate,keepH){
     const c=_cv();
     document.body.dataset.split=st;
@@ -11670,26 +11664,22 @@ function _setupGCBSplitter(gcbEl){
         _clearCanvasTransform();
         if(animate!==false){c.style.transition='height .18s ease';setTimeout(()=>{c.style.transition='';},220);}
         c.style.height='';
+        c.style.overflow='';
+        if(st!=='C'&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
+      } else {
+        c.style.overflow='hidden';
       }
-      c.style.overflow='';
-      if(st!=='C'&&!keepH&&typeof resizeCanvas==='function')setTimeout(resizeCanvas,animate===false?0:230);
     }
   }
-  let _sMode=null,_sY0=0,_sH0=0,_availCache=0,_physH=0,_splitBefore='B',_tapTarget=null;
+  let _sMode=null,_sY0=0,_sH0=0,_physH=0,_splitBefore='B',_tapTarget=null;
   gcbEl.addEventListener('pointerdown',e=>{
-    // Exclure uniquement la zone tempo (elle a son propre drag handler)
     if(e.target.closest('#rib-tempo-zone'))return;
     _sMode=null;_sY0=e.clientY;_tapTarget=e.target;
     _splitBefore=document.body.dataset.split||'B';
-    // ① Capturer avail AVANT toute modification de layout
-    _availCache=_avail();
     const c=_cv();
     const canvasEl=document.getElementById('rhythm-canvas');
-    // ② _sH0 = hauteur réelle du container (offsetHeight, pas estimation SNAPS)
-    _sH0=c?c.offsetHeight:Math.round(0.44*_availCache);
-    // ③ _physH = hauteur physique du canvas pour le zoom ; fallback si caché (état C)
-    _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:Math.round(0.88*_availCache);
-    // ④ Supprimer data-split : lève le display:none!important de l'état C
+    _sH0=c?c.offsetHeight:200;
+    _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:(_sH0||200);
     delete document.body.dataset.split;
     if(c){c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
@@ -11697,34 +11687,32 @@ function _setupGCBSplitter(gcbEl){
   gcbEl.addEventListener('pointermove',e=>{
     if(!gcbEl.hasPointerCapture(e.pointerId))return;
     e.preventDefault();
-    const dy=e.clientY-_sY0;
-    if(!_sMode&&Math.abs(dy)>8)_sMode='split';
+    if(!_sMode&&Math.abs(e.clientY-_sY0)>8){
+      _sMode='split';
+      _sY0=e.clientY; // reset référence au moment de la détection → zéro saut
+    }
     if(_sMode==='split'){
       const c=_cv();if(!c)return;
-      const h=Math.max(0,Math.min(_availCache,_sH0+dy));
+      const h=Math.max(0,_sH0+(e.clientY-_sY0)); // libre, sans cap supérieur
       c.style.height=h+'px';
-      // Zoom proportionnel du canvas (vues circulaires uniquement, pas linéaire ni step-seq)
       const canvasEl=document.getElementById('rhythm-canvas');
       if(canvasEl&&_physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
-        const s=Math.min(1,h/_physH);
-        canvasEl.style.transform=s<0.995?`scale(${s.toFixed(3)})`:'';
+        const s=h/_physH; // zoom libre, s peut être > 1
+        canvasEl.style.transform=Math.abs(s-1)>0.005?`scale(${s.toFixed(3)})`:'';
         canvasEl.style.transformOrigin='top center';
       }
-      const pct=_availCache>0?Math.round(100*h/_availCache):0;
+      const pct=_physH>0?Math.round(100*h/_physH):0;
       _dragOverlay.show(`<span style="font-size:13px;opacity:.65">${pct}%</span>`);
     }
   },{passive:false});
   gcbEl.addEventListener('pointerup',()=>{
     _dragOverlay.hide();
     if(_sMode==='split'){
-      // Position totalement libre : on reste exactement là où l'utilisateur lâche
       _applySplit('B',undefined,true);
     } else {
-      // Tap sans drag : restaurer l'état précédent exact sans toucher à la hauteur
       document.body.dataset.split=_splitBefore;
       const c=_cv();
-      if(c){c.style.height=_splitBefore==='C'?'':(_sH0>0?_sH0+'px':'');c.style.overflow='';}
-      // Propager le click si la cible est un bouton (capturé par setPointerCapture)
+      if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
         if(btn)setTimeout(()=>btn.click(),0);
@@ -11734,11 +11722,10 @@ function _setupGCBSplitter(gcbEl){
   });
   gcbEl.addEventListener('pointercancel',()=>{
     _dragOverlay.hide();
-    // Annulation : restaurer état précédent proprement
-    const c=_cv();
     _clearCanvasTransform();
     document.body.dataset.split=_splitBefore;
-    if(c){c.style.height=_splitBefore==='C'?'':(_sH0>0?_sH0+'px':'');c.style.overflow='';}
+    const c=_cv();
+    if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
     _sMode=null;_tapTarget=null;
   });
   setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
