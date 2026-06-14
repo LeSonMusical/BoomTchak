@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.25.20** (session 2026-06-13)
+**v3.26.11** (session 2026-06-14)
 
 ---
 
@@ -270,6 +270,9 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.26.11 | Phase 3 Vue Édition : preset bar par layer [◀][nom][▶][💾][↺][i][🎲][⏺][✎] ; row3 iso-métrique (cellules flex ∝ durée + tête de lecture dans visualLoop) ; `_layerDetailVisible[li]` pour toggle ✎ ; `_buildIsoRow(li)` sync sur patSelect/buildStepsDOM/stepClick |
+| v3.26.10 | Splitter libre — suppression `_avail()/_availCache`, reset `_sY0` à la détection du drag (zéro saut), zoom canvas libre `s=h/_physH` (s>1 autorisé), zéro snap |
+| v3.26.1–9 | Phase 1 GCB (⏱·tempo·▶·sig·🔊) + Phase 2 LCB (3 segments VU/mute/grain/fold, toggle ☰/▥) + fixes splitter itératifs (état C, direction, snap, zoom) |
 | v3.25.20 | Maquette it.6 — dernier tour : suppression ◀t/t▶ (redondants axe X combiné) ; WYSIWYH step manuel → inferAxesFromPat (dens/fill sync, calS/calB/geom préservés) ; suppression bouton v25/v26, mix fixe = 1re ligne v3.25 + cells v3.26 ; icône 👁 → ✎ (édition détail) |
 | v3.25.19 | Maquette it.5 (retours Lamberio) : axe X pad Placement = s et b imbriqués (idx=calS·BEATS+calB, entre 2 crans s → BEATS valeurs b) ; fond padB zones alternées par cran s ; overlay pad affiche s/b/r ; axes préservés au changement de grain (calS recalé) ; suppression texte explicatif sous LCB |
 | v3.25.18 | Maquette it.4 (retours Lamberio) : GCB = ⏱·tempo·▶·sig·🔊 (play centré) ; segments LCB [pastille][nb pas][unité][gros chevron] ; 🎲 = random preset ; nb pas·unité retirés de la barre layer ; boutons 👁 détail + v25/v26 à gauche de la LCB ; pads réorganisés Densité (accents↔·liant↕) / Placement (décalage↔·géo↕) ; décalage fort (intra-temps, pad X) vs faible (par temps, ◀t t▶) — formalisation r=b·spb+s |
