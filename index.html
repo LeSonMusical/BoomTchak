@@ -1860,7 +1860,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.21</span>
+    <span class="app-version">v3.26.22</span>
   </div>
 </div>
 
@@ -7367,13 +7367,13 @@ function buildLayers(){
       state[li].pendingDouble=dbl;state[li].pendingHalf=hlf;state[li].pendingClear=(!dbl&&!hlf);
       if(!playing){state[li].doubleOn=dbl;state[li].halfOn=hlf;state[li].pendingDouble=false;state[li].pendingHalf=false;state[li].pendingClear=false;}
       updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
-      _syncPadToPattern(li);
+      _syncPadToPattern(li);_lcbUpdateSeg(li);
     });
     bTern=document.createElement('button');bTern.className='btn-mod-a btn-mod-bright btn-mod-tern'+(state[li].ternOn?' on':'');bTern.id='mod-tern-'+li;bTern.textContent='T';bTern.title='Vitesse ×3/2 : step = croche ternaire';
     bTern.addEventListener('click',()=>{
       if(!playing){state[li].ternOn=!state[li].ternOn;state[li].pendingTern=null;}
       else{state[li].pendingTern=state[li].pendingTern!=null?!state[li].pendingTern:!state[li].ternOn;}
-      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();
+      updateSpeedBtns();buildStepsDOM(li,state[li].wrapped);_speedMark();_lcbUpdateSeg(li);
     });
     updateSpeedBtns();
     unitSel.style.color=_accent;unitSel.style.borderColor=_accent;
