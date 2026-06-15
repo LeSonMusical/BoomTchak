@@ -1860,7 +1860,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.22</span>
+    <span class="app-version">v3.26.23</span>
   </div>
 </div>
 
@@ -3986,7 +3986,7 @@ function visualLoop(){
     });
     // Tête de lecture iso-métrique (row3)
     const r3=document.querySelector(`#layer-div-${li} .layer-row3-iso`);
-    if(r3&&_layerDetailVisible[li]){r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===si));}
+    if(r3&&_layerDetailVisible[li]&&_isoRowVisible[li]){r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===si));}
   });
   highlightMetroStep();
   visualRafID=requestAnimationFrame(visualLoop);
@@ -4659,6 +4659,7 @@ let layersOuverts = true;
 let layerPanelsOuverts = true;
 let _lcbFolded=[false,false,false]; // état pliage par layer (tap ▾ de la LCB)
 let _layerDetailVisible=[true,true,true]; // ✎ toggle détail (steps + iso) par layer
+let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off par défaut)
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
@@ -7064,8 +7065,7 @@ function _buildIsoRow(li){
     });
     row3.appendChild(c);
   });
-  if(!_layerDetailVisible[li])row3.classList.add('detail-hidden');
-  else row3.classList.remove('detail-hidden');
+  row3.classList.toggle('detail-hidden',!_layerDetailVisible[li]||!_isoRowVisible[li]);
 }
 
 // ── Couches rythmiques ────────────────────────────────────────────────────
@@ -7213,7 +7213,7 @@ function buildLayers(){
         ||document.querySelector('#step-rows-wrap .layer-row2.'+layer.cls);
       if(_r2){if(_vis)_r2.style.removeProperty('display');else _r2.style.setProperty('display','none','important');}
       const _r3=_ld?.querySelector('.layer-row3-iso');
-      if(_r3)_r3.classList.toggle('detail-hidden',!_vis);
+      if(_r3)_r3.classList.toggle('detail-hidden',!_vis||!_isoRowVisible[li]);
       const _mp=document.getElementById('mod-panel-'+li);
       if(_mp){if(_vis)_mp.style.removeProperty('display');else _mp.style.setProperty('display','none','important');}
     });
@@ -7605,8 +7605,17 @@ function buildLayers(){
     const grUnit=document.createElement('div');grUnit.className='mod-za-group';
     grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
     const grSpacer=document.createElement('div');grSpacer.style.flex='1';
+    const bIso=document.createElement('button');bIso.className='btn-mod-a btn-mod-sm btn-mod-bright'+(!!_isoRowVisible[li]?' on':'');
+    bIso.textContent='▦';bIso.title='Afficher/masquer la ligne iso-step';bIso.style.color=_accent;
+    bIso.addEventListener('click',()=>{
+      _isoRowVisible[li]=!_isoRowVisible[li];
+      bIso.classList.toggle('on',_isoRowVisible[li]);
+      const _ld2=document.getElementById('layer-div-'+li);
+      const _r3=_ld2?.querySelector('.layer-row3-iso');
+      if(_r3)_r3.classList.toggle('detail-hidden',!_isoRowVisible[li]);
+    });
     const grAct=document.createElement('div');grAct.className='mod-za-group';
-    grAct.appendChild(bCopy);grAct.appendChild(bPaste);grAct.appendChild(bClear);
+    grAct.appendChild(bIso);grAct.appendChild(bCopy);grAct.appendChild(bPaste);grAct.appendChild(bClear);
     strip1.appendChild(grPas);strip1.appendChild(_mkSep());strip1.appendChild(grUnit);strip1.appendChild(grSpacer);strip1.appendChild(grAct);
 
     // ── STRIP 2 : [shift] ⚅ [pad] ✨ [doux] ─────────────────────────────────
@@ -11903,7 +11912,7 @@ function visualLoopCircle(){
     const _bs=getBeatSec(li);if(!_bs||_bs<=0)return;
     const _si=Math.floor((_now-state[li].startTime)/_bs)%state[li].pattern.length;
     const _r3=document.querySelector(`#layer-div-${li} .layer-row3-iso`);
-    if(_r3&&_layerDetailVisible[li]){_r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===_si));}
+    if(_r3&&_layerDetailVisible[li]&&_isoRowVisible[li]){_r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===_si));}
   });
   visualRafID = requestAnimationFrame(visualLoopCircle);
 }
