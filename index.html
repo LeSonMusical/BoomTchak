@@ -1860,7 +1860,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.20</span>
+    <span class="app-version">v3.26.21</span>
   </div>
 </div>
 
@@ -6875,6 +6875,18 @@ function _lcbCurrentGrainIndex(li){
   return 1; // fallback → 8♪
 }
 
+// Met à jour le texte d'un segment LCB sans reconstruire toute la barre (évite de casser le drag)
+function _lcbUpdateSeg(li){
+  const seg=document.querySelector(`#layer-control-bar .lcb-seg[data-li="${li}"]`);
+  if(!seg)return;
+  const gi=_lcbCurrentGrainIndex(li);
+  const g=_LCB_LADDER[gi];
+  const npEl=seg.querySelector('.lcb-npas');
+  const unitEl=seg.querySelector('.lcb-unit');
+  if(npEl)npEl.textContent=String(state[li].pattern.length);
+  if(unitEl)unitEl.textContent=g.sym;
+}
+
 // Change de grain iso-durée : rééchantillonne le pattern + applique les modificateurs
 function _lcbSetGrain(li,gi){
   gi=Math.max(0,Math.min(_LCB_LADDER.length-1,gi));
@@ -6897,11 +6909,22 @@ function _lcbSetGrain(li,gi){
   state[li].halfOn=g.halfOn;state[li].doubleOn=g.doubleOn;state[li].ternOn=g.ternOn;
   state[li].pendingHalf=false;state[li].pendingDouble=false;
   state[li].pendingClear=false;state[li].pendingTern=null;
-  // Rebuild DOM
+  // Rebuild DOM steps
   buildStepsDOM(li,false);
   buildLayerEditBar();
-  buildLCB();
+  // Mise à jour LCB sans détruire le drag en cours (pas de buildLCB() ici)
+  _lcbUpdateSeg(li);
+  // Sync strip-1 (nPas, unitSel, bTern, step-unit-lbl)
+  const _np=document.getElementById('pas-num-'+li);
+  if(_np)_np.textContent=String(newLen);
+  const _us=document.querySelector('#mod-panel-'+li+' .mod-sel-unit');
+  if(_us)_us.value=g.doubleOn?'×2':g.halfOn?'÷2':'=';
+  const _bt=document.getElementById('mod-tern-'+li);
+  if(_bt)_bt.classList.toggle('on',!!g.ternOn);
+  const _sl=document.getElementById('step-unit-lbl-'+li);
+  if(_sl){const d=g.doubleOn,h=g.halfOn,t=g.ternOn;_sl.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';}
   updateRhythmInfoBar();
+  grooveDirty=true;updateGrooveSaveBtn();
 }
 
 // Applique l'état pliage d'un layer (masque/affiche le .layer div)
@@ -6995,7 +7018,9 @@ function buildLCB(){
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
       _dragOverlay.hide();
-      _mode=null;
+      const _wasDragging=_didDrag;
+      _mode=null;_didDrag=false;
+      if(_wasDragging)buildLCB(); // rebuild propre LCB après fin de drag
     }));
     // Chevron tap → plier/déplier layer (zone action explicite)
     chevEl?.addEventListener('click',e=>{
@@ -7154,6 +7179,7 @@ function buildLayers(){
       buildStepsDOM(li,false);
       _buildIsoRow(li);
       _syncPadToPattern(li);
+      buildLCB(); // sync lcb-npas après changement de preset
       if(circleView) drawCircles();
       setTimeout(()=>checkWrap(li),0);
     };
