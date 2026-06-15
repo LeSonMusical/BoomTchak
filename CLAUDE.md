@@ -270,6 +270,14 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.26.23 | Bouton ▦ toggle iso-step dans strip-1 (off par défaut, `_isoRowVisible[li]`) ; `detail-hidden` piloté par `_layerDetailVisible[li]&&_isoRowVisible[li]` |
+| v3.26.22 | Sync LCB→strip-1 bidirectionnelle : `unitSel.value` + `bTern.classList` mis à jour depuis `_lcbSetGrain()` ; `_lcbUpdateSeg()` depuis `unitSel.change` et `bTern.click` |
+| v3.26.21 | Fix LCB grain drag : `_lcbSetGrain` appelle `_lcbUpdateSeg` (pas `buildLCB`) pendant le drag pour éviter destruction du pointer capture ; sync strip-1 depuis LCB |
+| v3.26.20 | Fix sync iso depuis canvas click : `onPt()` met à jour `.iso-cell[data-iso-idx]` (classList iso-on/iso-soft) après modification du pattern ; `buildLCB()` dans `_reszMark` |
+| v3.26.19 | Fix X forts invisibles dark mode : `.iso-cell.iso-on` garde `var(--cc)` en dark mode ; iso row intégrée dans step-seq (`_moveRow2ToStepView` ne déplace pas row3) |
+| v3.26.18 | Tête de lecture iso (`iso-cur`) dans `visualLoop` et `visualLoopCircle` ; fix cellules stale vue circulaire (clearCanvas avant draw) |
+| v3.26.17 | Design iso cells : `border-radius:5px`, fond `rgba(38,38,45,.15)` (dark bg), `cursor:pointer`, click → cycle `.`/`X`/`x` → `buildStepsDOM` + `_buildIsoRow` ; strip-1 assemblé dans `modPanel` |
+| v3.26.12–16 | Fixes itératifs splitter (drag libre sans snap, reset `_sY0` à détection, zoom `s=h/_physH`), LCB (rebuild propre après pointerup, `_lcbFolded`, `_lcbApplyFold`), GCB (gcb-handle, gcb-row, classes CSS splitter A/B/C) |
 | v3.26.11 | Phase 3 Vue Édition : preset bar par layer [◀][nom][▶][💾][↺][i][🎲][⏺][✎] ; row3 iso-métrique (cellules flex ∝ durée + tête de lecture dans visualLoop) ; `_layerDetailVisible[li]` pour toggle ✎ ; `_buildIsoRow(li)` sync sur patSelect/buildStepsDOM/stepClick |
 | v3.26.10 | Splitter libre — suppression `_avail()/_availCache`, reset `_sY0` à la détection du drag (zéro saut), zoom canvas libre `s=h/_physH` (s>1 autorisé), zéro snap |
 | v3.26.1–9 | Phase 1 GCB (⏱·tempo·▶·sig·🔊) + Phase 2 LCB (3 segments VU/mute/grain/fold, toggle ☰/▥) + fixes splitter itératifs (état C, direction, snap, zoom) |
