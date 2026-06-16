@@ -1294,9 +1294,25 @@ body.dark-mode .layers-mod-all-btn{border-color:rgba(255,255,255,.15)}
 body.dark-mode #rhythm-info-bar{color:#666}
 body.dark-mode #rhythm-info-bar .rib-sig-btn{color:#4AB58A}
 body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
-/* ── GCB v3.26 — nouveaux éléments de la barre séparatrice ── */
-#gcb-handle{width:32px;height:3px;background:#C8961A;opacity:.4;border-radius:2px;margin:3px auto 1px;pointer-events:none;flex-shrink:0}
-.gcb-row{display:flex;align-items:center;padding:2px 6px 5px;width:100%;box-sizing:border-box;gap:4px}
+/* ── GCB/LCB double-barre unifiée v3.26.24 ──────────────────────────────── */
+/* GCB : pas de border-bottom — continuité visuelle avec LCB */
+#rhythm-info-bar{border-bottom:none}
+#gcb-handle{width:40px;height:3px;background:#C8961A;opacity:.45;border-radius:2px;margin:2px auto 0;pointer-events:none;flex-shrink:0}
+.gcb-row{display:flex;align-items:center;padding:1px 6px 4px;width:100%;box-sizing:border-box;gap:4px}
+/* Play : plus grand, ombre, au premier plan */
+.gcb-play-btn{background:transparent;border:3px solid #C8961A;border-radius:50%;width:44px;height:44px;color:#C8961A;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 10px rgba(200,150,26,.22),0 0 0 3px rgba(255,255,255,.65)}
+.gcb-play-btn.playing{background:#C8961A;color:#1b1b20;box-shadow:0 3px 18px rgba(200,150,26,.55),0 0 0 3px rgba(200,150,26,.18)}
+body.dark-mode .gcb-play-btn{color:#C8961A;border-color:#C8961A;box-shadow:0 2px 10px rgba(200,150,26,.3),0 0 0 3px rgba(255,255,255,.08)}
+body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(200,150,26,.5),0 0 0 3px rgba(200,150,26,.2)}
+/* LCB : séparateur interne fin + bord bas affirmé */
+#layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
+body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
+/* Segment ouvert (panel visible = au premier plan) */
+.lcb-seg.seg-open{background:rgba(255,255,255,.62)}
+body.dark-mode .lcb-seg.seg-open{background:rgba(255,255,255,.06)}
+/* Segment fermé (panel caché = en retrait) */
+.lcb-seg:not(.seg-open) .lcb-grain{opacity:.42}
+.lcb-seg:not(.seg-open) .lcb-vu:not(.muted){opacity:.38;filter:grayscale(.45)}
 /* ⏱ et 🔊 : extrêmes fixes */
 .gcb-row .rib-metro-btn,.gcb-row .rib-son-btn{flex-shrink:0}
 /* Zone tempo : flex:1 pour remplir l'espace à gauche du ▶ */
@@ -1315,9 +1331,7 @@ body[data-split="C"] #circle-view{display:none!important}
 body[data-split="A"].view-circle #circle-view{flex:1}
 
 /* ─── LAYER CONTROL BAR (LCB) ─── */
-#layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1.5px solid rgba(200,150,26,.6);min-height:32px}
 body.show-rib #layer-control-bar{display:flex}
-body.dark-mode #layer-control-bar{background:#13131a;border-bottom-color:rgba(200,150,26,.3)}
 /* Dans état A (Canvas max) : LCB reste visible pour accès mute */
 /* Dans état C (Layers max) : canvas caché, LCB toujours visible */
 .lcb-seg{flex:1;display:flex;align-items:center;padding:4px 4px;min-width:0;position:relative;touch-action:none;gap:3px;-webkit-tap-highlight-color:transparent;cursor:pointer;overflow:hidden}
@@ -1860,7 +1874,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.23</span>
+    <span class="app-version">v3.26.24</span>
   </div>
 </div>
 
@@ -6974,7 +6988,8 @@ function buildLCB(){
     const gi=_lcbCurrentGrainIndex(li);
     const g=_LCB_LADDER[gi];
     const n=state[li].pattern.length;
-    html+=`<div class="lcb-seg${muted?' seg-muted':''}${folded?' seg-folded':''}" data-li="${li}" style="border-left:3px solid ${col}">`+
+    const open=!!_layerDetailVisible[li];
+    html+=`<div class="lcb-seg${muted?' seg-muted':''}${folded?' seg-folded':''}${open?' seg-open':''}" data-li="${li}" style="border-left:${open?3:2}px solid ${col}">`+
       `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
       `<div class="lcb-grain">`+
         `<span class="lcb-npas" style="color:${col}">${n}</span>`+
@@ -7216,6 +7231,9 @@ function buildLayers(){
       if(_r3)_r3.classList.toggle('detail-hidden',!_vis||!_isoRowVisible[li]);
       const _mp=document.getElementById('mod-panel-'+li);
       if(_mp){if(_vis)_mp.style.removeProperty('display');else _mp.style.setProperty('display','none','important');}
+      // Sync segment LCB : seg-open + épaisseur border-left (en avant/en arrière)
+      const _seg=document.querySelector(`#layer-control-bar .lcb-seg[data-li="${li}"]`);
+      if(_seg){_seg.classList.toggle('seg-open',_vis);_seg.style.borderLeftWidth=_vis?'3px':'2px';}
     });
     row1.appendChild(nameLbl);
     // [◀][nom preset][▶] — groupe collé, flex:1
