@@ -1307,10 +1307,10 @@ body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(20
 /* LCB : séparateur interne fin + bord bas affirmé */
 #layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
 body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
-/* Segment visible (layer non-plié) → bordure supérieure couleur layer */
-.lcb-seg:not(.seg-folded){border-top-color:var(--lc)}
-/* Segment déplié (détail ouvert) → bordure gauche couleur layer + fond élevé */
-.lcb-seg.seg-open{border-left:3px solid var(--lc)!important;background:rgba(255,255,255,.82)}
+/* Segment visible (non plié) ET déplié (détail ouvert) → bordure gauche couleur layer */
+.lcb-seg.seg-open:not(.seg-folded){border-left:3px solid var(--lc)!important}
+/* Déplié → fond légèrement élevé (indépendant du pliage layer) */
+.lcb-seg.seg-open{background:rgba(255,255,255,.82)}
 body.dark-mode .lcb-seg.seg-open{background:rgba(255,255,255,.1)}
 /* Segment replié (détail fermé) → grain atténué */
 .lcb-seg:not(.seg-open) .lcb-grain{opacity:.55}
@@ -1341,6 +1341,8 @@ body.show-rib #layer-control-bar{display:flex}
 .lcb-seg{flex:1;display:flex;align-items:center;padding:4px 4px;min-width:0;position:relative;touch-action:none;gap:3px;-webkit-tap-highlight-color:transparent;cursor:pointer;overflow:hidden;border-top:3px solid transparent;border-left:2px solid rgba(0,0,0,.12)!important}
 .lcb-seg+.lcb-seg{border-left:1px solid rgba(0,0,0,.1)}
 body.dark-mode .lcb-seg+.lcb-seg{border-left-color:rgba(255,255,255,.07)}
+/* Zone mute (égale au chevron) */
+.lcb-vu-zone{display:flex;align-items:center;justify-content:center;padding:2px 6px;align-self:stretch;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* Pastille VU */
 .lcb-vu{width:10px;height:10px;border-radius:50%;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s ease,box-shadow .15s ease;box-shadow:0 0 0 0 currentColor;position:relative;overflow:hidden}
 .lcb-vu.lcb-vu-hit{transform:scale(1.7);box-shadow:0 0 8px 3px currentColor;opacity:1}
@@ -1880,7 +1882,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.26</span>
+    <span class="app-version">v3.26.27</span>
   </div>
 </div>
 
@@ -6997,7 +6999,9 @@ function buildLCB(){
     const n=state[li].pattern.length;
     const open=!!_layerDetailVisible[li];
     html+=`<div class="lcb-seg${muted?' seg-muted':''}${folded?' seg-folded':''}${open?' seg-open':''}" data-li="${li}" style="--lc:${col}">`+
-      `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
+      `<div class="lcb-vu-zone">`+
+        `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
+      `</div>`+
       `<div class="lcb-grain">`+
         `<span class="lcb-npas" style="color:${col}">${n}</span>`+
         `<span class="lcb-unit" style="color:${col}">${g.sym}</span>`+
@@ -7011,15 +7015,16 @@ function buildLCB(){
   bar.querySelectorAll('.lcb-seg').forEach(seg=>{
     const li=parseInt(seg.dataset.li);
     const vuEl=seg.querySelector('#lcb-vu-'+li);
+    const vuZone=seg.querySelector('.lcb-vu-zone');
     let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0;
     const DRAG_THRESH=8,GRAIN_PX=28;
-    // VU tap → mute
-    vuEl?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
-    vuEl?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
+    // Zone mute (même taille que le chevron) → mute
+    vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
+    vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
     const chevEl=seg.querySelector('.lcb-chev');
-    // Drag grain/densité sur le segment (hors VU et hors chevron)
+    // Drag grain/densité sur le segment (hors zone VU et hors chevron)
     seg.addEventListener('pointerdown',e=>{
-      if(e.target===vuEl||vuEl?.contains(e.target))return;
+      if(e.target===vuEl||vuZone?.contains(e.target))return;
       if(e.target===chevEl)return; // chevron gère son propre tap
       _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;_gi0=_lcbCurrentGrainIndex(li);
       seg.setPointerCapture(e.pointerId);
@@ -11870,6 +11875,7 @@ function _setupGCBSplitter(gcbEl){
   let _sMode=null,_sY0=0,_sH0=0,_physH=0,_splitBefore='B',_tapTarget=null;
   gcbEl.addEventListener('pointerdown',e=>{
     if(e.target.closest('#rib-tempo-zone'))return;
+    if(e.target.closest('button'))return; // boutons gèrent leurs propres clicks
     _sMode=null;_sY0=e.clientY;_tapTarget=e.target;
     _splitBefore=document.body.dataset.split||'B';
     const c=_cv();
