@@ -428,7 +428,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 #layers-wrap{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0}
 /* Indent visuel : les layers appartiennent au groove */
 #layers{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;padding-left:2px}
-.layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);background:#fff}
+.layer{display:flex;flex-direction:column;border-radius:5px;overflow:hidden;border:1px solid var(--cs);border-left:3px solid var(--cc);background:#fff}
 /* Ligne 1 : contrôles */
 .layer-row1{display:flex;align-items:center;gap:3px;padding:4px 6px;background:var(--cl);border-bottom:1px solid var(--cs);min-height:34px}
 .layer-lbl{font-size:10px;font-weight:700;color:var(--cb);flex-shrink:0;white-space:nowrap;letter-spacing:.02em}
@@ -458,7 +458,7 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 .layer-name-btn{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;
   padding:2px 6px 2px 4px;flex-shrink:0;width:62px;min-width:62px;
   font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;
-  color:var(--cs);opacity:.6;display:flex;align-items:center;gap:3px;border-left:2.5px solid var(--cs)!important;
+  color:var(--cb);opacity:.78;display:flex;align-items:center;gap:3px;
   border-radius:0!important;justify-content:flex-start}
 .layer-name-btn.open{opacity:1}
 .layer-name-btn:hover{opacity:.9}
@@ -468,7 +468,7 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 .btn-pat-nav,.btn-pat-reset{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;padding:2px 3px;flex-shrink:0}
 .btn-pat-nav{font-size:10px;opacity:.55;color:var(--cs)}
 .btn-pat-nav:hover{opacity:1}
-.btn-pat-reset{font-size:13px;opacity:.5}
+.btn-pat-reset{font-size:13px;opacity:.5;color:var(--cb)}
 .btn-pat-reset:hover{opacity:.85}
 /* Groupe ◀[nom preset]▶ collé */
 .preset-nav-group{display:flex;align-items:stretch;flex:1;min-width:0;max-width:190px;gap:0}
@@ -1308,9 +1308,11 @@ body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(20
 #layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
 body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
 /* Segment ouvert (panel visible = au premier plan) */
-.lcb-seg.seg-open{background:rgba(255,255,255,.62)}
-body.dark-mode .lcb-seg.seg-open{background:rgba(255,255,255,.06)}
+.lcb-seg.seg-open{background:rgba(255,255,255,.92)}
+body.dark-mode .lcb-seg.seg-open{background:rgba(255,255,255,.13)}
 /* Segment fermé (panel caché = en retrait) */
+.lcb-seg:not(.seg-open){background:rgba(0,0,0,.08);border-left-color:rgba(0,0,0,.18)!important}
+body.dark-mode .lcb-seg:not(.seg-open){background:rgba(0,0,0,.28);border-left-color:rgba(255,255,255,.12)!important}
 .lcb-seg:not(.seg-open) .lcb-grain{opacity:.42}
 .lcb-seg:not(.seg-open) .lcb-vu:not(.muted){opacity:.38;filter:grayscale(.45)}
 /* ⏱ et 🔊 : extrêmes fixes */
@@ -1874,7 +1876,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.24</span>
+    <span class="app-version">v3.26.25</span>
   </div>
 </div>
 
