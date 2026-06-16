@@ -1307,6 +1307,8 @@ body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(20
 /* LCB : séparateur interne fin + bord bas affirmé */
 #layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
 body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
+/* Segment layer ON (non muted) → bordure supérieure colorée */
+.lcb-seg:not(.seg-muted){border-top-color:var(--lc)}
 /* Segment visible (non plié) ET déplié (détail ouvert) → bordure gauche couleur layer */
 .lcb-seg.seg-open:not(.seg-folded){border-left:3px solid var(--lc)!important}
 /* Déplié → fond légèrement élevé (indépendant du pliage layer) */
@@ -1345,8 +1347,10 @@ body.dark-mode .lcb-seg+.lcb-seg{border-left-color:rgba(255,255,255,.07)}
 .lcb-vu-zone{display:flex;align-items:center;justify-content:center;padding:2px 6px;align-self:stretch;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* Pastille VU */
 .lcb-vu{width:10px;height:10px;border-radius:50%;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s ease,box-shadow .15s ease;box-shadow:0 0 0 0 currentColor;position:relative;overflow:hidden}
+/* Transport play : step inactif = minuscule point ; accent = plein ; non-accent = moyen */
+body.playing .lcb-vu:not(.lcb-vu-hit):not(.lcb-vu-soft){transform:scale(0.55);opacity:.38}
 .lcb-vu.lcb-vu-hit{transform:scale(1.7);box-shadow:0 0 8px 3px currentColor;opacity:1}
-.lcb-vu.lcb-vu-soft{transform:scale(1.25);box-shadow:0 0 4px 1px currentColor;opacity:.72}
+.lcb-vu.lcb-vu-soft{transform:scale(1.25);box-shadow:0 0 4px 1px currentColor;opacity:.65}
 .lcb-seg.seg-muted .lcb-vu::after{content:'';position:absolute;inset:-2px;background:linear-gradient(135deg,transparent 42%,rgba(40,40,40,.9) 42%,rgba(40,40,40,.9) 58%,transparent 58%);border-radius:50%;pointer-events:none}
 body.dark-mode .lcb-seg.seg-muted .lcb-vu::after{background:linear-gradient(135deg,transparent 42%,rgba(210,210,210,.85) 42%,rgba(210,210,210,.85) 58%,transparent 58%)}
 /* Grain label */
@@ -1882,7 +1886,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.27</span>
+    <span class="app-version">v3.26.28</span>
   </div>
 </div>
 
@@ -4370,6 +4374,7 @@ function refreshTransportBtn(){
   if(btn){btn.textContent=playing?'■':'▶';btn.classList.toggle('active',playing);}
   const gcbPlay=document.getElementById('gcb-play-btn');
   if(gcbPlay){gcbPlay.textContent=playing?'■':'▶';gcbPlay.classList.toggle('playing',playing);}
+  document.body.classList.toggle('playing',!!playing);
 }
 function togglePlay(){
   if(!playing){
