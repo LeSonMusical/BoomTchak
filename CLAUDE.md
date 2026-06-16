@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.26.23** (session 2026-06-15)
+**v3.26.29** (session 2026-06-16)
 
 ---
 
@@ -270,6 +270,12 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.26.29 | LCB : bordure haute = visible/caché layer (`:not(.seg-folded)`) |
+| v3.26.28 | LCB : bordure haute colorée quand layer ON (`not.seg-muted`) → corrigé v3.26.29 ; pastilles VU transport : `body.playing` → scale(.55)/opac:.38 repos, `.lcb-vu-soft` scale(1.25), `.lcb-vu-hit` scale(1.7) ; `refreshTransportBtn` toggle `body.playing` |
+| v3.26.27 | GCB : early-return `button` dans `pointerdown` → fix double togglePlay (stop=reset+play) + fix click métronome bloqué ; LCB : `.lcb-vu-zone` zone mute = taille chevron ; bordure gauche `.seg-open:not(.seg-folded)` ; suppression border-top sur pliage |
+| v3.26.26 | LCB : bordures top/left via CSS var `--lc` ; `.lcb-vu-zone` ; `.lcb-vu-soft`/`.lcb-vu-hit` soft vs accent ; `_layerDetailVisible=[false,false,false]` défaut (visible+replié) ; ordre mod-panel(5)/iso-row(10) dans flex layer ; diagonal `::after` sur VU muted |
+| v3.26.25 | Design : `.layer{border-left:3px solid var(--cc)}` ; `.layer-name-btn` sans barre latérale + `color:var(--cb)` ; `.btn-pat-reset{color:var(--cb)}` |
+| v3.26.24 | GCB+LCB double-barre unifiée : `gcb-play-btn` cerclé doré élevé ; `buildLCB` style `--lc:${col}` ; segments LCB avec états open/folded/muted visuels |
 | v3.26.23 | Bouton ▦ toggle iso-step dans strip-1 (off par défaut, `_isoRowVisible[li]`) ; `detail-hidden` piloté par `_layerDetailVisible[li]&&_isoRowVisible[li]` |
 | v3.26.22 | Sync LCB→strip-1 bidirectionnelle : `unitSel.value` + `bTern.classList` mis à jour depuis `_lcbSetGrain()` ; `_lcbUpdateSeg()` depuis `unitSel.change` et `bTern.click` |
 | v3.26.21 | Fix LCB grain drag : `_lcbSetGrain` appelle `_lcbUpdateSeg` (pas `buildLCB`) pendant le drag pour éviter destruction du pointer capture ; sync strip-1 depuis LCB |

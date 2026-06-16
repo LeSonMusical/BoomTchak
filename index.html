@@ -1307,8 +1307,8 @@ body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(20
 /* LCB : séparateur interne fin + bord bas affirmé */
 #layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
 body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
-/* Segment layer ON (non muted) → bordure supérieure colorée */
-.lcb-seg:not(.seg-muted){border-top-color:var(--lc)}
+/* Segment layer visible (non plié) → bordure supérieure colorée */
+.lcb-seg:not(.seg-folded){border-top-color:var(--lc)}
 /* Segment visible (non plié) ET déplié (détail ouvert) → bordure gauche couleur layer */
 .lcb-seg.seg-open:not(.seg-folded){border-left:3px solid var(--lc)!important}
 /* Déplié → fond légèrement élevé (indépendant du pliage layer) */
@@ -1886,7 +1886,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.28</span>
+    <span class="app-version">v3.26.29</span>
   </div>
 </div>
 
