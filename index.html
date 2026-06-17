@@ -370,6 +370,7 @@ body.dark-mode #groove-preset-btn.groove-switch-flash{animation:_gpSwitchDk .4s 
 .groove-fam-btn:hover{opacity:1}
 .groove-l1-left .btn-dice-rng{display:inline-flex;opacity:.55}
 .groove-l1-center .btn-dice-rng{display:inline-flex;opacity:.65}
+.layer-row1 .btn-dice-rng{display:inline-flex;opacity:.65}
 /* Barre de vue — top du canvas (circle) ou top des step rows (linear) */
 #canvas-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:3px 6px;flex-shrink:0}
 #linear-view-bar{display:none;align-items:center;justify-content:center;gap:4px;padding:2px 0 4px;width:100%}
@@ -1892,7 +1893,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.33</span>
+    <span class="app-version">v3.26.34</span>
   </div>
 </div>
 
@@ -4557,7 +4558,9 @@ function setLayerDirty(li, isDirty){
 }
 
 function updateGrooveSaveBtn(){
-  setDirtyUI('groove-preset-btn', 'save-btn-groove', grooveDirty || metroDirty || bandDirty);
+  const _dirty=grooveDirty||metroDirty||bandDirty;
+  setDirtyUI('groove-preset-btn', 'save-btn-groove', _dirty);
+  const _grb=document.getElementById('groove-renew-btn');if(_grb)_grb.style.display=_dirty?'':'none';
   updateGrooveNameTopBar();
 }
 
@@ -6520,7 +6523,11 @@ function buildGrooveSection(){
   btnNext.className='groove-nav-btn';btnNext.id='groove-nav-next';btnNext.textContent='▶';btnNext.title='Groove suivant';
   const saveBtnGroove=document.createElement('button');
   saveBtnGroove.id='save-btn-groove';saveBtnGroove.className='btn-sec-save';saveBtnGroove.textContent='💾';
-  gCenter.appendChild(btnDiceGroove);gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);gCenter.appendChild(saveBtnGroove);
+  const renewBtnGroove=document.createElement('button');
+  renewBtnGroove.id='groove-renew-btn';renewBtnGroove.className='btn-pat-reset';renewBtnGroove.textContent='↺';renewBtnGroove.title='Revenir au groove sauvegardé';
+  renewBtnGroove.style.display=(grooveDirty||metroDirty||bandDirty)?'':'none';
+  renewBtnGroove.addEventListener('click',()=>applyGroove(currentGrooveId));
+  gCenter.appendChild(btnDiceGroove);gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);gCenter.appendChild(saveBtnGroove);gCenter.appendChild(renewBtnGroove);
 
   // Groupe droit : i seulement
   const gRight=document.createElement('div');gRight.className='groove-l1-right';
@@ -7309,7 +7316,7 @@ function buildLayers(){
       if(circleView)drawCircles();
     });
     row1.appendChild(btnReset);
-    // 🎲 masqué en premier si espace insuffisant
+    // 🎲 masqué en premier si espace insuffisant — placé avant le groupe preset
     const btnDicePat=document.createElement('button');btnDicePat.className='btn-dice-rng';btnDicePat.title='Pattern aléatoire';btnDicePat.textContent='🎲';
     btnDicePat.addEventListener('click',e=>{
       e.stopPropagation();
@@ -7317,7 +7324,7 @@ function buildLayers(){
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
     });
-    row1.appendChild(btnDicePat);
+    row1.insertBefore(btnDicePat, navGroup);
     // ⏺ rec — masqué en second
     row1.appendChild(bRec);
     // btnMod caché (handler conservé par step-seq-info)
@@ -7664,7 +7671,7 @@ function buildLayers(){
     grUnit.appendChild(unitSel);grUnit.appendChild(bTern);
     const grSpacer=document.createElement('div');grSpacer.style.flex='1';
     const bIso=document.createElement('button');bIso.className='btn-mod-a btn-mod-sm btn-mod-bright'+(!!_isoRowVisible[li]?' on':'');
-    bIso.textContent='▦';bIso.title='Afficher/masquer la ligne iso-step';bIso.style.color=_accent;
+    bIso.textContent='✏';bIso.title='Afficher/masquer la vue iso-step';bIso.style.color=_accent;
     bIso.addEventListener('click',()=>{
       _isoRowVisible[li]=!_isoRowVisible[li];
       bIso.classList.toggle('on',_isoRowVisible[li]);
