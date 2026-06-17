@@ -476,8 +476,7 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 /* Masquage progressif */
 .row1-hide{display:none!important}
 .layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
-/* Spécificité 120 : l'emporte sur #step-rows-wrap .layer-row2 (110) */
-#step-rows-wrap .layer-row2.detail-hidden{display:none!important}
+/* En vue step-seq, row2 est toujours affiché — régi par #step-rows-wrap .layer-row2{display:flex!important} */
 /* Bouton mod tricolore et volet mod — cachés en phase 3 */
 #layer-edit-bar,#layers-mod-bar{display:none!important}
 /* Strip-2 (pad XY/sliders) caché — Phase 4 */
@@ -1365,6 +1364,12 @@ body.dark-mode .lcb-chev{color:#555}
 /* Bouton toggle vue Édition/Totems */
 #lcb-view-toggle{flex-shrink:0;border:none;background:none;font-size:14px;padding:4px 10px;cursor:pointer;color:#888;-webkit-tap-highlight-color:transparent;border-left:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center}
 body.dark-mode #lcb-view-toggle{color:#555;border-left-color:rgba(255,255,255,.07)}
+/* Hamburger tricolore — gauche de la LCB — show/hide tous les volets layers d'un coup */
+#lcb-hamburger{flex-shrink:0;background:none;border:none;border-right:1px solid rgba(0,0,0,.1);cursor:pointer;padding:4px 8px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;align-self:stretch;-webkit-tap-highlight-color:transparent}
+body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
+#lcb-hamburger .gvb-bar{width:14px;height:2.5px;border-radius:1.5px;display:block;transition:opacity .15s}
+#lcb-hamburger.open .gvb-bar{opacity:.35}
+#lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
@@ -1886,7 +1891,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.29</span>
+    <span class="app-version">v3.26.30</span>
   </div>
 </div>
 
@@ -4694,6 +4699,10 @@ function _doToggleLayerPanels(){
   if(lw)lw.style.display=layerPanelsOuverts?'':'none';
   const lmb=document.getElementById('layers-mod-bar');
   if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
+  // En vue step-seq, les lignes steps vivent dans step-rows-wrap (hors de layers-wrap)
+  const srw=document.getElementById('step-rows-wrap');
+  if(srw&&document.body.classList.contains('step-seq'))srw.style.display=layerPanelsOuverts?'':'none';
+  buildLCB();
   updateRhythmInfoBar();
 }
 let encycloOuvert = false;
@@ -6994,7 +7003,11 @@ function buildLCB(){
   if(!bar)return;
   if(!state||!state[0]||!state[0].pattern)return;
   const COLS=['#378ADD','#D85A30','#1D9E75'];
-  let html='';
+  let html=`<button id="lcb-hamburger" class="${layerPanelsOuverts?'open':''}" title="${layerPanelsOuverts?'Masquer les volets':'Afficher les volets'}">` +
+    `<span class="gvb-bar" style="background:#378ADD"></span>` +
+    `<span class="gvb-bar" style="background:#D85A30"></span>` +
+    `<span class="gvb-bar" style="background:#1D9E75"></span>` +
+    `</button>`;
   LAYERS.forEach((layer,li)=>{
     const muted=!!state[li].muted;
     const folded=!!_lcbFolded[li];
@@ -7016,6 +7029,8 @@ function buildLCB(){
   });
   html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'▥'}</button>`;
   bar.innerHTML=html;
+  // Hamburger — show/hide tous les volets layers
+  bar.querySelector('#lcb-hamburger')?.addEventListener('click',()=>_doToggleLayerPanels());
   // ── Handlers par segment ──
   bar.querySelectorAll('.lcb-seg').forEach(seg=>{
     const li=parseInt(seg.dataset.li);
@@ -7243,7 +7258,8 @@ function buildLayers(){
       const _ld=document.getElementById('layer-div-'+li);
       const _r2=_ld?.querySelector('.layer-row2')
         ||document.querySelector('#step-rows-wrap .layer-row2.'+layer.cls);
-      if(_r2){if(_vis)_r2.style.removeProperty('display');else _r2.style.setProperty('display','none','important');}
+      // En step-seq, row2 est dans step-rows-wrap et doit rester visible quoi qu'il arrive
+      if(_r2){if(_vis)_r2.style.removeProperty('display');else if(!document.body.classList.contains('step-seq'))_r2.style.setProperty('display','none','important');}
       const _r3=_ld?.querySelector('.layer-row3-iso');
       if(_r3)_r3.classList.toggle('detail-hidden',!_vis||!_isoRowVisible[li]);
       const _mp=document.getElementById('mod-panel-'+li);
@@ -7311,8 +7327,8 @@ function buildLayers(){
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
-    // Respecte l'état de visibilité persistant (buildLayers peut être rappelé après un fold)
-    if(!_layerDetailVisible[li])row2.style.setProperty('display','none','important');
+    // Respecte l'état de visibilité persistant — sauf en step-seq où row2 est toujours affiché
+    if(!_layerDetailVisible[li]&&!document.body.classList.contains('step-seq'))row2.style.setProperty('display','none','important');
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
     seqInfo.addEventListener('click',()=>{
@@ -10731,7 +10747,8 @@ function _moveRow2ToStepView(){
   LAYERS.forEach((_,li)=>{
     const d=document.getElementById('steps-'+LAYERS[li].id); if(!d) return;
     const r2=d.closest('.layer-row2'); if(!r2) return;
-    wrap.appendChild(r2); // appendChild déplace le nœud s'il est déjà dans le DOM
+    r2.style.removeProperty('display'); // libère l'éventuel inline display:none pour que CSS step-seq prenne le contrôle
+    wrap.appendChild(r2);
   });
 }
 
