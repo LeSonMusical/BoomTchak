@@ -1893,7 +1893,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.34</span>
+    <span class="app-version">v3.26.35</span>
   </div>
 </div>
 
@@ -6917,17 +6917,20 @@ function _lcbCurrentGrainIndex(li){
   if(!s.halfOn&&s.doubleOn&&s.ternOn) return 4;   // 24♬T
   return 1; // fallback → 8♪
 }
+// Libellé d'unité de step — source unique partagée par LCB et volet édition
+function _unitLabel(s){
+  const d=s.doubleOn,h=s.halfOn,t=s.ternOn;
+  return d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
+}
 
 // Met à jour le texte d'un segment LCB sans reconstruire toute la barre (évite de casser le drag)
 function _lcbUpdateSeg(li){
   const seg=document.querySelector(`#layer-control-bar .lcb-seg[data-li="${li}"]`);
   if(!seg)return;
-  const gi=_lcbCurrentGrainIndex(li);
-  const g=_LCB_LADDER[gi];
   const npEl=seg.querySelector('.lcb-npas');
   const unitEl=seg.querySelector('.lcb-unit');
   if(npEl)npEl.textContent=String(state[li].pattern.length);
-  if(unitEl)unitEl.textContent=g.sym;
+  if(unitEl)unitEl.textContent=_unitLabel(state[li]);
 }
 
 // Change de grain iso-durée : rééchantillonne le pattern + applique les modificateurs
@@ -6965,7 +6968,7 @@ function _lcbSetGrain(li,gi){
   const _bt=document.getElementById('mod-tern-'+li);
   if(_bt)_bt.classList.toggle('on',!!g.ternOn);
   const _sl=document.getElementById('step-unit-lbl-'+li);
-  if(_sl){const d=g.doubleOn,h=g.halfOn,t=g.ternOn;_sl.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';}
+  if(_sl)_sl.textContent=_unitLabel(state[li]);
   updateRhythmInfoBar();
   grooveDirty=true;updateGrooveSaveBtn();
 }
@@ -7020,8 +7023,6 @@ function buildLCB(){
     const muted=!!state[li].muted;
     const folded=!!_lcbFolded[li];
     const col=COLS[li];
-    const gi=_lcbCurrentGrainIndex(li);
-    const g=_LCB_LADDER[gi];
     const n=state[li].pattern.length;
     const open=!!_layerDetailVisible[li];
     html+=`<div class="lcb-seg${muted?' seg-muted':''}${folded?' seg-folded':''}${open?' seg-open':''}" data-li="${li}" style="--lc:${col}">`+
@@ -7030,7 +7031,7 @@ function buildLCB(){
       `</div>`+
       `<div class="lcb-grain">`+
         `<span class="lcb-npas" style="color:${col}">${n}</span>`+
-        `<span class="lcb-unit" style="color:${col}">${g.sym}</span>`+
+        `<span class="lcb-unit" style="color:${col}">${_unitLabel(state[li])}</span>`+
       `</div>`+
       `<span class="lcb-chev" style="color:${col}88">▾</span>`+
       `</div>`;
@@ -7074,7 +7075,7 @@ function buildLCB(){
         const curGi=_lcbCurrentGrainIndex(li);
         if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_LCB_LADDER[_lcbCurrentGrainIndex(li)].sym}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`);
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`);
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7423,9 +7424,8 @@ function buildLayers(){
       updateStepSeqInfo(li);
     };
     _updateStepUnitLbl=()=>{
-      const d=state[li].doubleOn,h=state[li].halfOn,t=state[li].ternOn;
       const el=document.getElementById('step-unit-lbl-'+li);
-      if(el)el.textContent=d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
+      if(el)el.textContent=_unitLabel(state[li]);
     };
     unitSel.addEventListener('change',()=>{
       const v=unitSel.value;const dbl=v==='×2',hlf=v==='÷2';
