@@ -1372,9 +1372,14 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
-/* row2 reste dans layer-div — step-rows-wrap ne contient que #linear-view-bar */
+/* row2 vit en permanence dans #step-rows-wrap (Groove.view, au-dessus du GCB) */
+/* En vue Pas : step-rows-wrap visible → steps affichés ; autres vues : step-rows-wrap caché */
 #step-rows-wrap{display:none;flex-direction:column;width:100%;flex-shrink:0}
 body.step-seq #step-rows-wrap{display:flex}
+/* Row2 dans step-rows-wrap : toujours visible, bordure gauche couleur layer */
+#step-rows-wrap .layer-row2{display:flex;align-items:flex-start;border-left:3px solid var(--cs)}
+/* Layer muté : steps actifs atténués */
+#step-rows-wrap .layer-row2.muted .step.on,#step-rows-wrap .layer-row2.muted .step.soft{opacity:.3}
 /* Strip info gauche step-seq — supprimé v3.21 */
 .step-seq-info{display:none!important}
 
@@ -1887,7 +1892,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.31</span>
+    <span class="app-version">v3.26.32</span>
   </div>
 </div>
 
@@ -6970,7 +6975,8 @@ function _lcbToggleMute(li){
   if(btnMute){btnMute.classList.toggle('muted',muted);btnMute.title=(muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
   const layerDiv=document.getElementById('layer-div-'+li);
   if(layerDiv)layerDiv.classList.toggle('muted-layer',muted);
-  const r2=layerDiv?.querySelector('.layer-row2');
+  // row2 est dans step-rows-wrap — lookup via steps-{id}
+  const r2=document.getElementById('steps-'+LAYERS[li].id)?.closest('.layer-row2');
   if(r2)r2.classList.toggle('muted',muted);
   const smb=document.querySelector(`.sound-layer[data-sound-key="${LAYERS[li].id}"] .btn-mute-lbl`);
   if(smb){smb.classList.toggle('muted',muted);smb.title=(muted?'Activer : ':'Muet : ')+LAYERS[li].label;}
@@ -7119,6 +7125,10 @@ function buildLayers(){
   layerObservers.forEach(o=>o.disconnect());layerObservers.length=0;
   const cont=document.getElementById('layers');if(!cont)return;
   cont.innerHTML='';_layerCPRefreshers.length=0;
+  // Les row2 (steps) vivent dans #step-rows-wrap (Groove.view, au-dessus du GCB)
+  // → on purge les anciennes row2 avant de reconstruire
+  const _srwBuild=document.getElementById('step-rows-wrap');
+  if(_srwBuild) _srwBuild.querySelectorAll('.layer-row2').forEach(r=>r.remove());
   // Barre info rythmique : placée dans #rhythm-info-wrap (sous la groove view)
   const riWrap=document.getElementById('rhythm-info-wrap');
   let ribDiv=document.getElementById('rhythm-info-bar');
@@ -7160,8 +7170,8 @@ function buildLayers(){
       btnMute.classList.toggle('muted',state[li].muted);
       btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
       layerDiv.classList.toggle('muted-layer',state[li].muted);
-      // row2 est toujours dans layerDiv — sync directe
-      const _r2=layerDiv.querySelector('.layer-row2');
+      // row2 est dans step-rows-wrap — lookup via steps-{id}
+      const _r2=document.getElementById('steps-'+layer.id)?.closest('.layer-row2');
       if(_r2) _r2.classList.toggle('muted',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
@@ -7335,7 +7345,9 @@ function buildLayers(){
     row2.appendChild(seqInfo);
     const stepsDiv=document.createElement('div');stepsDiv.className='layer-steps';stepsDiv.id='steps-'+layer.id;
     row2.appendChild(stepsDiv);
-    layerDiv.appendChild(row2);
+    // row2 dans step-rows-wrap (Groove.view, au-dessus du GCB) — jamais dans layer-div
+    const _srwR=document.getElementById('step-rows-wrap');
+    if(_srwR) _srwR.appendChild(row2); else layerDiv.appendChild(row2);
 
     // ── Panneau mod v3.15.4 — Dual Strip (strip-1: actions | strip-2: contrôles fins) ──
     const modPanel=document.createElement('div');
