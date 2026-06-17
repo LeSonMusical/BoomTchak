@@ -1297,13 +1297,13 @@ body.dark-mode #rhythm-info-bar .rib-mod-btn{border-color:rgba(255,255,255,.15)}
 /* ── GCB/LCB double-barre unifiée v3.26.24 ──────────────────────────────── */
 /* GCB : pas de border-bottom — continuité visuelle avec LCB */
 #rhythm-info-bar{border-bottom:none}
-#gcb-handle{width:40px;height:3px;background:#C8961A;opacity:.45;border-radius:2px;margin:2px auto 0;pointer-events:none;flex-shrink:0}
+#gcb-handle{width:40px;height:3px;background:#999;opacity:.35;border-radius:2px;margin:2px auto 0;pointer-events:none;flex-shrink:0}
 .gcb-row{display:flex;align-items:center;padding:1px 6px 4px;width:100%;box-sizing:border-box;gap:4px}
-/* Play : plus grand, ombre, au premier plan */
-.gcb-play-btn{background:transparent;border:3px solid #C8961A;border-radius:50%;width:44px;height:44px;color:#C8961A;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 10px rgba(200,150,26,.22),0 0 0 3px rgba(255,255,255,.65)}
-.gcb-play-btn.playing{background:#C8961A;color:#1b1b20;box-shadow:0 3px 18px rgba(200,150,26,.55),0 0 0 3px rgba(200,150,26,.18)}
-body.dark-mode .gcb-play-btn{color:#C8961A;border-color:#C8961A;box-shadow:0 2px 10px rgba(200,150,26,.3),0 0 0 3px rgba(255,255,255,.08)}
-body.dark-mode .gcb-play-btn.playing{color:#1b1b20;box-shadow:0 3px 18px rgba(200,150,26,.5),0 0 0 3px rgba(200,150,26,.2)}
+/* Play : neutre — cercle sobre, pas de dorure */
+.gcb-play-btn{background:transparent;border:3px solid rgba(0,0,0,.35);border-radius:50%;width:44px;height:44px;color:#333;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.1),0 0 0 3px rgba(255,255,255,.55)}
+.gcb-play-btn.playing{background:#3a3a3a;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.25),0 0 0 3px rgba(0,0,0,.08)}
+body.dark-mode .gcb-play-btn{color:#ccc;border-color:rgba(255,255,255,.38);box-shadow:0 2px 8px rgba(0,0,0,.3),0 0 0 3px rgba(255,255,255,.06)}
+body.dark-mode .gcb-play-btn.playing{background:#ddd;color:#111;box-shadow:0 3px 12px rgba(255,255,255,.1),0 0 0 3px rgba(255,255,255,.08)}
 /* LCB : séparateur interne fin + bord bas affirmé */
 #layer-control-bar{display:none;flex-direction:row;align-items:stretch;flex-shrink:0;width:100%;box-sizing:border-box;background:#f0efec;border-top:1px solid rgba(200,150,26,.22);border-bottom:2px solid rgba(200,150,26,.65);min-height:30px}
 body.dark-mode #layer-control-bar{background:#13131a;border-top-color:rgba(200,150,26,.18);border-bottom-color:rgba(200,150,26,.4)}
@@ -1317,19 +1317,20 @@ body.dark-mode .lcb-seg.seg-open{background:rgba(255,255,255,.1)}
 /* Segment replié (détail fermé) → grain atténué */
 .lcb-seg:not(.seg-open) .lcb-grain{opacity:.55}
 body.dark-mode .lcb-seg:not(.seg-open){border-left-color:rgba(255,255,255,.12)!important}
-/* Segment muted (layer OFF) → grisé + diagonal sur pastille VU */
+/* Segment muted (layer OFF) → grisé + grande barre diagonale rouge sur tout le segment */
 .lcb-seg.seg-muted{filter:grayscale(.9);opacity:.48}
+.lcb-seg.seg-muted::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 1.5px),#cc2020 calc(50% - 1.5px),#cc2020 calc(50% + 1.5px),transparent calc(50% + 1.5px));pointer-events:none;z-index:4}
 /* ⏱ et 🔊 : extrêmes fixes */
 .gcb-row .rib-metro-btn,.gcb-row .rib-son-btn{flex-shrink:0}
 /* Zone tempo : flex:1 pour remplir l'espace à gauche du ▶ */
 .gcb-row #rib-tempo-zone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
 /* Signature : flex:1 pour remplir l'espace à droite du ▶ */
-.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#2A6A50!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
-body.dark-mode .gcb-row .rib-sig-btn{color:#4AB58A!important}
-.gcb-play-btn{background:transparent;border:2px solid #C8961A;border-radius:50%;width:36px;height:36px;color:#C8961A;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
-.gcb-play-btn.playing{background:#C8961A;color:#1b1b20}
-body.dark-mode .gcb-play-btn{color:#C8961A;border-color:#C8961A}
-body.dark-mode .gcb-play-btn.playing{color:#1b1b20}
+.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+body.dark-mode .gcb-row .rib-sig-btn{color:#aaa!important}
+.gcb-play-btn{background:transparent;border:2px solid rgba(0,0,0,.35);border-radius:50%;width:36px;height:36px;color:#333;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
+.gcb-play-btn.playing{background:#3a3a3a;color:#fff}
+body.dark-mode .gcb-play-btn{color:#ccc;border-color:rgba(255,255,255,.38)}
+body.dark-mode .gcb-play-btn.playing{background:#ddd;color:#111}
 /* Splitter états A/B/C */
 body[data-split="A"] #layers-wrap{display:none!important}
 body[data-split="A"] #layers-mod-bar{display:none!important}
@@ -1351,8 +1352,7 @@ body.dark-mode .lcb-seg+.lcb-seg{border-left-color:rgba(255,255,255,.07)}
 body.playing .lcb-vu:not(.lcb-vu-hit):not(.lcb-vu-soft){transform:scale(0.55);opacity:.38}
 .lcb-vu.lcb-vu-hit{transform:scale(1.7);box-shadow:0 0 8px 3px currentColor;opacity:1}
 .lcb-vu.lcb-vu-soft{transform:scale(1.25);box-shadow:0 0 4px 1px currentColor;opacity:.65}
-.lcb-seg.seg-muted .lcb-vu::after{content:'';position:absolute;inset:-2px;background:linear-gradient(135deg,transparent 42%,rgba(40,40,40,.9) 42%,rgba(40,40,40,.9) 58%,transparent 58%);border-radius:50%;pointer-events:none}
-body.dark-mode .lcb-seg.seg-muted .lcb-vu::after{background:linear-gradient(135deg,transparent 42%,rgba(210,210,210,.85) 42%,rgba(210,210,210,.85) 58%,transparent 58%)}
+/* ancien diagonal sur pastille VU supprimé — remplacé par diagonal sur tout le segment */
 /* Grain label */
 .lcb-grain{display:flex;align-items:baseline;gap:1px;flex:1;min-width:0;justify-content:center;pointer-events:none}
 .lcb-npas{font-size:13px;font-weight:700}
@@ -1376,8 +1376,7 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:200px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
 /* container query : chaque colonne sait sa propre largeur */
 .layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999);container-type:inline-size}
-.layer-totem.totem-muted{filter:grayscale(.75);opacity:.55;pointer-events:none;position:relative}
-.layer-totem.totem-muted::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 2px),#cc2020 calc(50% - 2px),#cc2020 calc(50% + 2px),transparent calc(50% + 2px));pointer-events:none;z-index:10}
+.layer-totem.totem-muted{filter:grayscale(.85);opacity:.4;pointer-events:none}
 /* Anneau mini (seulement état C — canvas replié) */
 .totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px;flex-shrink:0}
 body[data-split="C"] .totem-ring-wrap{display:flex}
@@ -1927,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.4</span>
+    <span class="app-version">v3.27.5</span>
   </div>
 </div>
 
