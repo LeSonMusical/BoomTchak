@@ -1893,7 +1893,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.35</span>
+    <span class="app-version">v3.26.36</span>
   </div>
 </div>
 
@@ -4433,6 +4433,10 @@ let grooveDirty = false;
 let _suppressGrooveDirty = false;
 let bandDirty = false;
 let soundDirty = {low:false, high:false, noise:false, thumbL:false, thumbR:false};
+// Snapshot du groove avant la première mutation (↺ Renew revert)
+// Capturé à la première modification eager (pattern switch, band change)
+// Effacé à la sauvegarde ou au changement de groove
+let _grooveSnapshot = null;
 let _bandVolChanged = {low:false, high:false, noise:false, thumbL:false, thumbR:false};
 let encycloDir = false;
 let encEditMode = false; // true = mode édition (TX/MX uniquement)
@@ -4562,6 +4566,39 @@ function updateGrooveSaveBtn(){
   setDirtyUI('groove-preset-btn', 'save-btn-groove', _dirty);
   const _grb=document.getElementById('groove-renew-btn');if(_grb)_grb.style.display=_dirty?'':'none';
   updateGrooveNameTopBar();
+}
+
+// Snapshot du groove courant AVANT la première mutation eager (patternId, band_defaut)
+// N'écrase pas le snapshot s'il existe déjà pour ce groove (préserve l'état d'origine)
+function _ensureGrooveSnapshot(){
+  if(_grooveSnapshot&&_grooveSnapshot.grooveId===currentGrooveId)return;
+  const groove=getGroove(currentGrooveId);if(!groove)return;
+  _grooveSnapshot={
+    grooveId:currentGrooveId,
+    band_defaut:groove.band_defaut??null,
+    layers:LAYERS.map((_,li)=>({
+      patternId:groove.layers?.[li]?.patternId??null,
+      sequence:groove.layers?.[li]?.sequence??null,
+    }))
+  };
+}
+
+// Revert groove : restaure le snapshot puis appelle applyGroove
+function _revertGroove(){
+  if(_grooveSnapshot&&_grooveSnapshot.grooveId===currentGrooveId){
+    const groove=getGroove(currentGrooveId);
+    if(groove){
+      if(_grooveSnapshot.band_defaut!==null)groove.band_defaut=_grooveSnapshot.band_defaut;
+      _grooveSnapshot.layers.forEach((snap,li)=>{
+        if(!groove.layers[li])return;
+        if(snap.patternId!==null)groove.layers[li].patternId=snap.patternId;
+        if(snap.sequence!==null)groove.layers[li].sequence=snap.sequence;
+        else delete groove.layers[li].sequence;
+      });
+    }
+    _grooveSnapshot=null;
+  }
+  applyGroove(currentGrooveId);
 }
 
 function updateGrooveNameTopBar(){
@@ -4813,6 +4850,8 @@ function _applyPendingGroove(){
 // ── Appliquer un groove depuis DATA → runtime audio ───────────────────────
 function applyGroove(grooveId){
   const groove=getGroove(grooveId);if(!groove)return;
+  // Snapshot appartient à un autre groove — le jeter
+  if(_grooveSnapshot&&_grooveSnapshot.grooveId!==grooveId)_grooveSnapshot=null;
   // Si en lecture : programmer le changement au prochain cycle (enchaînement fluide)
   if(playing){
     _pendingGrooveId=grooveId;
@@ -6390,7 +6429,7 @@ function buildBandSection(){
   const _bandOnSelect=(id)=>{
     applyBand(id);
     const groove=getGroove(currentGrooveId);
-    if(groove&&id!==groove.band_defaut){groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
+    if(groove&&id!==groove.band_defaut){_ensureGrooveSnapshot();groove.band_defaut=id;grooveDirty=true;updateGrooveSaveBtn();markItemDirty(groove,'band');buildPublishSection();}
     buildBandSection();buildSoundPanel();
   };
   presetBtn.addEventListener('click',()=>{
@@ -6526,7 +6565,7 @@ function buildGrooveSection(){
   const renewBtnGroove=document.createElement('button');
   renewBtnGroove.id='groove-renew-btn';renewBtnGroove.className='btn-pat-reset';renewBtnGroove.textContent='↺';renewBtnGroove.title='Revenir au groove sauvegardé';
   renewBtnGroove.style.display=(grooveDirty||metroDirty||bandDirty)?'':'none';
-  renewBtnGroove.addEventListener('click',()=>applyGroove(currentGrooveId));
+  renewBtnGroove.addEventListener('click',()=>_revertGroove());
   gCenter.appendChild(btnDiceGroove);gCenter.appendChild(btnPrev);gCenter.appendChild(groovePresetBtn);gCenter.appendChild(btnNext);gCenter.appendChild(saveBtnGroove);gCenter.appendChild(renewBtnGroove);
 
   // Groupe droit : i seulement
@@ -7230,7 +7269,10 @@ function buildLayers(){
       state[li].stepPos=0;state[li].wrapped=false;
       if(playing) state[li].startTime=state[li].nextStepTime;
       {const groove=getGroove(currentGrooveId);
-       if(groove&&groove.layers[li]){groove.layers[li].patternId=pat.id;delete groove.layers[li].sequence;}
+       if(groove&&groove.layers[li]){
+         _ensureGrooveSnapshot(); // snapshot avant la première mutation (pour ↺ Renew)
+         groove.layers[li].patternId=pat.id;delete groove.layers[li].sequence;
+       }
        grooveDirty=true;updateGrooveSaveBtn();
        if(currentMode==='tx')saveToStorage();}
       updateBtnI();
@@ -8412,6 +8454,7 @@ let _saveSheetBtn = null, _saveSheetType = 'groove';
 
 // Sauvegarde du groove courant (sync état runtime → packCours)
 function saveGroove(){
+  _grooveSnapshot=null; // sauvegarde = l'état courant devient l'origine, snapshot obsolète
   const groove=getGroove(currentGrooveId);if(!groove)return;
   LAYERS.forEach((_,li)=>{
     if(!groove.layers[li])return;
