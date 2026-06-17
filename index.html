@@ -1376,7 +1376,8 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:200px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
 /* container query : chaque colonne sait sa propre largeur */
 .layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999);container-type:inline-size}
-.layer-totem.totem-muted{filter:grayscale(.85);opacity:.4;pointer-events:none}
+.layer-totem.totem-muted{filter:grayscale(.75);opacity:.55;pointer-events:none;position:relative}
+.layer-totem.totem-muted::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 2px),#cc2020 calc(50% - 2px),#cc2020 calc(50% + 2px),transparent calc(50% + 2px));pointer-events:none;z-index:10}
 /* Anneau mini (seulement état C — canvas replié) */
 .totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px;flex-shrink:0}
 body[data-split="C"] .totem-ring-wrap{display:flex}
@@ -1926,7 +1927,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.3</span>
+    <span class="app-version">v3.27.4</span>
   </div>
 </div>
 
@@ -7173,6 +7174,11 @@ function buildLCB(){
   // Toggle vue Édition/Totems
   bar.querySelector('#lcb-view-toggle')?.addEventListener('click',()=>{
     _lcbViewMode=(_lcbViewMode==='totems'?'edition':'totems');
+    // Si on entre en mode Totems et que tous les layers sont repliés → tout déplier
+    if(_lcbViewMode==='totems'&&_lcbFolded.every(v=>v)){
+      _lcbFolded.fill(false);
+      LAYERS.forEach((_2,li)=>{_lcbApplyFold(li);});
+    }
     buildLCB();
     const _lw2=document.getElementById('layers-wrap');
     if(_lcbViewMode==='totems'){
