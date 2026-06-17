@@ -1372,6 +1372,44 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger.open .gvb-bar{opacity:.35}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
+/* ─── VUE TOTEMS v3.27 ─── */
+#layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:260px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
+.layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999)}
+.layer-totem.totem-muted{filter:grayscale(.85);opacity:.4;pointer-events:none}
+/* En-tête totem : nom layer + preset courant */
+.totem-header{display:flex;flex-direction:column;align-items:flex-start;gap:0;flex-shrink:0;padding:0 1px 2px}
+.totem-layer-name{font-size:10px;font-weight:700;color:var(--lc,#999);letter-spacing:.04em;line-height:1.2}
+.totem-preset-name{font-size:8px;color:#999;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+body.dark-mode .totem-preset-name{color:#666}
+/* Anneau mini (seulement état C — canvas replié) */
+.totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px}
+body[data-split="C"] .totem-ring-wrap{display:flex}
+/* Wrapper horizontal d'un pad : [label Y vertical] [colonne: pad + label X] */
+.totem-pad-wrap{display:flex;flex-direction:row;flex:1;min-height:70px;gap:3px}
+.totem-axis-y{font-size:7.5px;color:#aaa;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em;flex-shrink:0;align-self:center;pointer-events:none;line-height:1;padding:2px 0}
+.totem-pad-col{display:flex;flex-direction:column;flex:1;min-width:0;gap:2px}
+/* Le pad 2D */
+.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:60px}
+body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
+/* Guides croisés (lignes centrales) */
+.totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
+.totem-pad::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
+/* Curseur crosshair */
+.totem-cursor{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--lc,#999);transform:translate(-50%,50%);pointer-events:none;z-index:2;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
+/* Preview miniature du pattern */
+.totem-preview{position:absolute;inset:3px;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:1px;pointer-events:none;opacity:.28}
+.totem-dot{width:3px;height:3px;border-radius:50%;background:#bbb}
+.totem-dot.forte{background:var(--lc,#999);opacity:1}
+.totem-dot.soft{background:var(--lc,#999);opacity:.5}
+/* Label axe X */
+.totem-axis-x{font-size:7.5px;color:#aaa;text-align:center;letter-spacing:.04em;pointer-events:none;line-height:1;padding:1px 0}
+/* Boutons action */
+.totem-actions{display:flex;justify-content:space-around;align-items:center;flex-shrink:0;padding:1px 0}
+.totem-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:3px 2px;opacity:.6;-webkit-tap-highlight-color:transparent;color:var(--lc,#999)}
+.totem-btn:hover{opacity:1}
+/* Mode totems : masquer les .layer divs (row1 inclus — les totems portent leurs propres en-têtes) */
+#layers-wrap.totems-mode .layer{display:none!important}
+
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
 /* row2 vit en permanence dans #step-rows-wrap (Groove.view, au-dessus du GCB) */
 /* En vue Pas : step-rows-wrap visible → steps affichés ; autres vues : step-rows-wrap caché */
@@ -1893,7 +1931,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.37</span>
+    <span class="app-version">v3.27.0</span>
   </div>
 </div>
 
@@ -4736,6 +4774,9 @@ let _lcbFolded=[false,false,false]; // état pliage par layer (tap ▾ de la LCB
 let _layerDetailVisible=[false,false,false]; // ✎ toggle détail (steps + iso) par layer
 let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off par défaut)
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
+let _totemPadAState=[{x:0.5,y:0},{x:0.5,y:0},{x:0.5,y:0}]; // densité ↔ / remplissage ↕
+let _totemPadBState=[{x:0,y:0.5},{x:0,y:0.5},{x:0,y:0.5}]; // calage ↔ / géométrie ↕
+let _totemOrigPat=[null,null,null]; // patterns sauvegardés à l'entrée en mode totems (pour ↺)
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
@@ -7138,8 +7179,239 @@ function buildLCB(){
   bar.querySelector('#lcb-view-toggle')?.addEventListener('click',()=>{
     _lcbViewMode=(_lcbViewMode==='totems'?'edition':'totems');
     buildLCB();
-    // Phase 4 : basculer vers vue Totems (à implémenter)
+    const _lw2=document.getElementById('layers-wrap');
+    if(_lcbViewMode==='totems'){
+      LAYERS.forEach((_2,li)=>{_totemOrigPat[li]=[...state[li].pattern];});
+      _lw2?.classList.add('totems-mode');
+      buildTotems();
+    } else {
+      _lw2?.classList.remove('totems-mode');
+      const _old=document.getElementById('layers-totems-wrap');if(_old)_old.remove();
+    }
   });
+  // En mode totems : reconstruire les colonnes après tout changement LCB (fold, hamburger…)
+  if(_lcbViewMode==='totems'){
+    const _lw=document.getElementById('layers-wrap');
+    if(_lw&&_lw.classList.contains('totems-mode'))buildTotems();
+  }
+}
+
+// ── Phase 4 : Vue Totems ──────────────────────────────────────────────────
+
+// Pad A Densité : x=densité accents, y=liant/remplissage (euclidien fixé à 0)
+function _applyTotemA(li,x,y){
+  const L=state[li].pattern.length;
+  if(!_softRandVals[li]||_softRandVals[li].length!==L)
+    _softRandVals[li]=Array.from({length:L},()=>Math.random());
+  generatePatternFromPad(li,x,0,y);
+}
+
+// Pad B Placement : x=calage intra-temps (s steps), y=géométrie (0=euclidien,1=regroupé)
+function _applyTotemB(li,x,y){
+  const pat=state[li].pattern,L=pat.length;
+  if(!L)return;
+  const nX=pat.filter(s=>s==='X').length;
+  if(!nX)return;
+  const nSil=L-nX;
+  const nSoft=pat.filter(s=>s==='x').length;
+  const density=nX/L;
+  const softDens=nSil>0?nSoft/nSil:0;
+  if(!_softRandVals[li]||_softRandVals[li].length!==L)
+    _softRandVals[li]=Array.from({length:L},()=>Math.random());
+  // Reconstruire la géométrie en conservant la densité et le remplissage courants
+  generatePatternFromPad(li,density,y,softDens);
+  // Appliquer le calage : rotation de s pas (s = offset fort intra-temps)
+  const spb=currentSig?.equivalence||2;
+  const s=Math.round(x*(spb-1));
+  if(s>0)state[li].pattern=rotate(state[li].pattern,s);
+}
+
+// Redessine les mini-anneaux dans les totems (appelé en état C)
+function _updateTotemRings(){
+  const COLS=['#378ADD','#D85A30','#1D9E75'];
+  LAYERS.forEach((_,li)=>{
+    const canvas=document.getElementById('totem-ring-'+li);
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const W=canvas.width,H=canvas.height;
+    const cx=W/2,cy=H/2,R=Math.min(W,H)/2-4;
+    ctx.clearRect(0,0,W,H);
+    ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.strokeStyle=COLS[li]+'44';ctx.lineWidth=1.5;ctx.stroke();
+    const pat=state[li].pattern,Lp=pat.length;
+    pat.forEach((s,i)=>{
+      if(s==='.')return;
+      const ang=(i/Lp)*Math.PI*2-Math.PI/2;
+      const r=s==='X'?4.5:2.5;
+      ctx.beginPath();
+      ctx.arc(cx+Math.cos(ang)*R,cy+Math.sin(ang)*R,r,0,Math.PI*2);
+      ctx.fillStyle=s==='X'?COLS[li]:COLS[li]+'88';ctx.fill();
+    });
+  });
+}
+
+// Construit (ou reconstruit) la vue Totems dans #layers-wrap
+function buildTotems(){
+  const wrap=document.getElementById('layers-wrap');if(!wrap)return;
+  const old=document.getElementById('layers-totems-wrap');if(old)old.remove();
+  const tw=document.createElement('div');tw.id='layers-totems-wrap';
+  const COLS=['#378ADD','#D85A30','#1D9E75'];
+
+  LAYERS.forEach((layer,li)=>{
+    // Layer plié → colonne totem masquée (les autres s'élargissent via flex:1)
+    if(_lcbFolded[li])return;
+    const col=COLS[li];const muted=!!state[li].muted;
+
+    // Initialiser pad A depuis le pattern courant
+    const pat=state[li].pattern,L=pat.length;
+    if(L){
+      const nX=pat.filter(s=>s==='X').length;
+      const nSil=L-nX;const nSoft=pat.filter(s=>s==='x').length;
+      _totemPadAState[li]={x:nX/L,y:nSil>0?nSoft/nSil:0};
+    }
+    // Pad B : état neutre à l'entrée (calage=0, géométrie=centre)
+    _totemPadBState[li]={x:0,y:0.5};
+
+    const totem=document.createElement('div');
+    totem.className='layer-totem'+(muted?' totem-muted':'');
+    totem.dataset.li=li;
+    totem.style.setProperty('--lc',col);
+
+    // En-tête : nom layer + preset courant
+    const hdr=document.createElement('div');hdr.className='totem-header';
+    const nameEl=document.createElement('span');nameEl.className='totem-layer-name';nameEl.textContent=layer.label;
+    const patEl=document.createElement('span');patEl.className='totem-preset-name';
+    const _curPat=state[li].patternId?getPattern(state[li].patternId):null;
+    patEl.textContent=_curPat?_curPat.nom:'—';
+    hdr.appendChild(nameEl);hdr.appendChild(patEl);totem.appendChild(hdr);
+
+    // Mini-anneau (visible en état C)
+    const ringWrap=document.createElement('div');ringWrap.className='totem-ring-wrap';
+    const ringCv=document.createElement('canvas');ringCv.className='totem-ring';
+    ringCv.id='totem-ring-'+li;ringCv.width=48;ringCv.height=48;
+    ringWrap.appendChild(ringCv);totem.appendChild(ringWrap);
+
+    // ── Fabrique un pad wrapper (label Y | [pad + label X]) ──
+    const _mkPadWrap=(padId,axisY,axisX)=>{
+      const pw=document.createElement('div');pw.className='totem-pad-wrap';
+      const axY=document.createElement('div');axY.className='totem-axis-y';axY.textContent=axisY;
+      const col2=document.createElement('div');col2.className='totem-pad-col';
+      const pd=document.createElement('div');pd.className='totem-pad';pd.id=padId;
+      const cur=document.createElement('div');cur.className='totem-cursor';
+      const prev=document.createElement('div');prev.className='totem-preview';
+      pd.appendChild(cur);pd.appendChild(prev);
+      const axX=document.createElement('div');axX.className='totem-axis-x';axX.textContent=axisX;
+      col2.appendChild(pd);col2.appendChild(axX);
+      pw.appendChild(axY);pw.appendChild(col2);
+      return{pw,pd,cur,prev};
+    };
+    const{pw:pwA,pd:padA,cur:curA,prev:prevA}=_mkPadWrap('totem-pad-a-'+li,'remplissage','densité');
+    const{pw:pwB,pd:padB,cur:curB,prev:prevB}=_mkPadWrap('totem-pad-b-'+li,'géométrie','calage');
+    totem.appendChild(pwA);totem.appendChild(pwB);
+
+    // Boutons action
+    const actWrap=document.createElement('div');actWrap.className='totem-actions';
+    const bReset=document.createElement('button');bReset.className='totem-btn';bReset.textContent='↺';bReset.title='Retour au pattern d\'origine';
+    const bRandPl=document.createElement('button');bRandPl.className='totem-btn';bRandPl.textContent='🎲';bRandPl.title='Placement aléatoire';
+    const bRandAc=document.createElement('button');bRandAc.className='totem-btn';bRandAc.textContent='✨';bRandAc.title='Accents aléatoires';
+    actWrap.appendChild(bReset);actWrap.appendChild(bRandPl);actWrap.appendChild(bRandAc);
+    totem.appendChild(actWrap);
+    tw.appendChild(totem);
+
+    // ── Helpers curseur et preview ──
+    const _updA=()=>{curA.style.left=`${_totemPadAState[li].x*100}%`;curA.style.bottom=`${_totemPadAState[li].y*100}%`;};
+    const _updB=()=>{curB.style.left=`${_totemPadBState[li].x*100}%`;curB.style.bottom=`${_totemPadBState[li].y*100}%`;};
+    const _refreshPrev=()=>{
+      [prevA,prevB].forEach(prev2=>{
+        prev2.innerHTML='';
+        state[li].pattern.forEach(s=>{
+          const d=document.createElement('div');
+          d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');
+          prev2.appendChild(d);
+        });
+      });
+    };
+    _updA();_updB();_refreshPrev();
+
+    const _rebuild=()=>{
+      buildStepsDOM(li,false);_buildIsoRow(li);
+      if(circleView)drawCircles();
+      setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+      _refreshPrev();_updateTotemRings();
+    };
+
+    // ── Drag Pad A (densité / remplissage) ──
+    {const _doA=e=>{
+      if(!padA.hasPointerCapture(e.pointerId))return;
+      const rect=padA.getBoundingClientRect();
+      const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+      const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
+      _totemPadAState[li]={x,y};_updA();
+      _applyTotemA(li,x,y);_rebuild();
+    };
+    padA.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      _softRandVals[li]=Array.from({length:state[li].pattern.length},()=>Math.random());
+      padA.setPointerCapture(e.pointerId);_doA(e);
+    });
+    padA.addEventListener('pointermove',_doA);
+    padA.addEventListener('pointerup',()=>{});}
+
+    // ── Drag Pad B (calage / géométrie) ──
+    {const _doB=e=>{
+      if(!padB.hasPointerCapture(e.pointerId))return;
+      const rect=padB.getBoundingClientRect();
+      const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+      const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
+      _totemPadBState[li]={x,y};_updB();
+      _applyTotemB(li,x,y);_rebuild();
+    };
+    padB.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      _softRandVals[li]=Array.from({length:state[li].pattern.length},()=>Math.random());
+      padB.setPointerCapture(e.pointerId);_doB(e);
+    });
+    padB.addEventListener('pointermove',_doB);
+    padB.addEventListener('pointerup',()=>{});}
+
+    // ── ↺ retour au pattern original ──
+    bReset.addEventListener('click',()=>{
+      if(!_totemOrigPat[li])return;
+      state[li].pattern=[..._totemOrigPat[li]];
+      const _p=state[li].pattern,_L=_p.length;
+      if(_L){const _nX=_p.filter(s=>s==='X').length;const _nSil=_L-_nX;const _nSoft=_p.filter(s=>s==='x').length;
+        _totemPadAState[li]={x:_nX/_L,y:_nSil>0?_nSoft/_nSil:0};}
+      _totemPadBState[li]={x:0,y:0.5};
+      _updA();_updB();_rebuild();
+    });
+
+    // ── 🎲 placement aléatoire ──
+    bRandPl.addEventListener('click',()=>{
+      const _pat=state[li].pattern,_L=_pat.length;
+      if(!_L)return;
+      const _nX=_pat.filter(s=>s==='X').length;
+      const _nSoft=_pat.filter(s=>s==='x').length;
+      if(!_nX)return;
+      const arr=Array(_L).fill('.');
+      const pos=_euclidean(_nX,_L);
+      const rot=Math.floor(Math.random()*_L);
+      pos.forEach(p=>{arr[(p+rot)%_L]='X';});
+      const sils=[];for(let i=0;i<_L;i++)if(arr[i]==='.')sils.push(i);
+      const nAdd=Math.min(_nSoft,sils.length);
+      for(let k=0;k<nAdd;k++){const idx=Math.floor(Math.random()*(sils.length-k));arr[sils[idx]]='x';sils.splice(idx,1);}
+      state[li].pattern=arr;
+      _rebuild();
+    });
+
+    // ── ✨ accents aléatoires (X↔x) ──
+    bRandAc.addEventListener('click',()=>{
+      state[li].pattern=state[li].pattern.map(s=>{if(s==='.')return '.';return Math.random()<0.5?s:(s==='X'?'x':'X');});
+      _rebuild();
+    });
+  });
+
+  wrap.appendChild(tw);
+  _updateTotemRings();
 }
 
 // ── Phase 3 : Vue Édition — iso-métrique ─────────────────────────────────
