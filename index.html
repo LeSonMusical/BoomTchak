@@ -1376,22 +1376,16 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:260px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
 .layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999)}
 .layer-totem.totem-muted{filter:grayscale(.85);opacity:.4;pointer-events:none}
-/* En-tête totem : nom layer + preset courant */
-.totem-header{display:flex;flex-direction:column;align-items:flex-start;gap:0;flex-shrink:0;padding:0 1px 2px}
+/* En-tête totem : nom layer seulement */
+.totem-header{display:flex;flex-direction:row;align-items:center;gap:0;flex-shrink:0;padding:0 1px 2px}
 .totem-layer-name{font-size:10px;font-weight:700;color:var(--lc,#999);letter-spacing:.04em;line-height:1.2}
-.totem-preset-name{font-size:8px;color:#999;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
-body.dark-mode .totem-preset-name{color:#666}
 /* Anneau mini (seulement état C — canvas replié) */
 .totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px}
 body[data-split="C"] .totem-ring-wrap{display:flex}
-/* Wrapper horizontal d'un pad : [label Y vertical] [colonne: pad + label X] */
-.totem-pad-wrap{display:flex;flex-direction:row;flex:1;min-height:70px;gap:3px}
-.totem-axis-y{font-size:7.5px;color:#aaa;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em;flex-shrink:0;align-self:center;pointer-events:none;line-height:1;padding:2px 0}
-.totem-pad-col{display:flex;flex-direction:column;flex:1;min-width:0;gap:2px}
-/* Le pad 2D */
-.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:60px}
+/* Le pad 2D — flex:1 directement dans la colonne totem */
+.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:70px}
 body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
-/* Guides croisés (lignes centrales) */
+/* Guides croisés */
 .totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
 .totem-pad::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
 /* Curseur crosshair */
@@ -1401,8 +1395,9 @@ body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 .totem-dot{width:3px;height:3px;border-radius:50%;background:#bbb}
 .totem-dot.forte{background:var(--lc,#999);opacity:1}
 .totem-dot.soft{background:var(--lc,#999);opacity:.5}
-/* Label axe X */
-.totem-axis-x{font-size:7.5px;color:#aaa;text-align:center;letter-spacing:.04em;pointer-events:none;line-height:1;padding:1px 0}
+/* Labels axes à l'intérieur du pad */
+.totem-axis-y{position:absolute;left:3px;top:50%;writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg);font-size:7.5px;color:var(--lc,#999);opacity:.55;pointer-events:none;white-space:nowrap;z-index:1;letter-spacing:.04em}
+.totem-axis-x{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:7.5px;color:var(--lc,#999);opacity:.55;pointer-events:none;white-space:nowrap;z-index:1;letter-spacing:.04em}
 /* Boutons action */
 .totem-actions{display:flex;justify-content:space-around;align-items:center;flex-shrink:0;padding:1px 0}
 .totem-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:3px 2px;opacity:.6;-webkit-tap-highlight-color:transparent;color:var(--lc,#999)}
@@ -1931,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.0</span>
+    <span class="app-version">v3.27.1</span>
   </div>
 </div>
 
@@ -7280,10 +7275,7 @@ function buildTotems(){
     // En-tête : nom layer + preset courant
     const hdr=document.createElement('div');hdr.className='totem-header';
     const nameEl=document.createElement('span');nameEl.className='totem-layer-name';nameEl.textContent=layer.label;
-    const patEl=document.createElement('span');patEl.className='totem-preset-name';
-    const _curPat=state[li].patternId?getPattern(state[li].patternId):null;
-    patEl.textContent=_curPat?_curPat.nom:'—';
-    hdr.appendChild(nameEl);hdr.appendChild(patEl);totem.appendChild(hdr);
+    hdr.appendChild(nameEl);totem.appendChild(hdr);
 
     // Mini-anneau (visible en état C)
     const ringWrap=document.createElement('div');ringWrap.className='totem-ring-wrap';
@@ -7291,23 +7283,19 @@ function buildTotems(){
     ringCv.id='totem-ring-'+li;ringCv.width=48;ringCv.height=48;
     ringWrap.appendChild(ringCv);totem.appendChild(ringWrap);
 
-    // ── Fabrique un pad wrapper (label Y | [pad + label X]) ──
-    const _mkPadWrap=(padId,axisY,axisX)=>{
-      const pw=document.createElement('div');pw.className='totem-pad-wrap';
-      const axY=document.createElement('div');axY.className='totem-axis-y';axY.textContent=axisY;
-      const col2=document.createElement('div');col2.className='totem-pad-col';
+    // ── Fabrique un pad (labels Y et X à l'intérieur) ──
+    const _mkPad=(padId,axisY,axisX)=>{
       const pd=document.createElement('div');pd.className='totem-pad';pd.id=padId;
       const cur=document.createElement('div');cur.className='totem-cursor';
       const prev=document.createElement('div');prev.className='totem-preview';
-      pd.appendChild(cur);pd.appendChild(prev);
+      const axY=document.createElement('div');axY.className='totem-axis-y';axY.textContent=axisY;
       const axX=document.createElement('div');axX.className='totem-axis-x';axX.textContent=axisX;
-      col2.appendChild(pd);col2.appendChild(axX);
-      pw.appendChild(axY);pw.appendChild(col2);
-      return{pw,pd,cur,prev};
+      pd.appendChild(cur);pd.appendChild(prev);pd.appendChild(axY);pd.appendChild(axX);
+      return{pd,cur,prev};
     };
-    const{pw:pwA,pd:padA,cur:curA,prev:prevA}=_mkPadWrap('totem-pad-a-'+li,'remplissage','densité');
-    const{pw:pwB,pd:padB,cur:curB,prev:prevB}=_mkPadWrap('totem-pad-b-'+li,'géométrie','calage');
-    totem.appendChild(pwA);totem.appendChild(pwB);
+    const{pd:padA,cur:curA,prev:prevA}=_mkPad('totem-pad-a-'+li,'remplissage','densité');
+    const{pd:padB,cur:curB,prev:prevB}=_mkPad('totem-pad-b-'+li,'géométrie','calage');
+    totem.appendChild(padA);totem.appendChild(padB);
 
     // Boutons action
     const actWrap=document.createElement('div');actWrap.className='totem-actions';
