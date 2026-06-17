@@ -1373,17 +1373,21 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
 /* ─── VUE TOTEMS v3.27 ─── */
-#layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:260px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
-.layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999)}
+#layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:200px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
+/* container query : chaque colonne sait sa propre largeur */
+.layer-totem{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;padding:4px 3px 2px;border-left:3px solid var(--lc,#999);container-type:inline-size}
 .layer-totem.totem-muted{filter:grayscale(.85);opacity:.4;pointer-events:none}
-/* En-tête totem : nom layer seulement */
-.totem-header{display:flex;flex-direction:row;align-items:center;gap:0;flex-shrink:0;padding:0 1px 2px}
-.totem-layer-name{font-size:10px;font-weight:700;color:var(--lc,#999);letter-spacing:.04em;line-height:1.2}
 /* Anneau mini (seulement état C — canvas replié) */
-.totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px}
+.totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px;flex-shrink:0}
 body[data-split="C"] .totem-ring-wrap{display:flex}
-/* Le pad 2D — flex:1 directement dans la colonne totem */
-.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:70px}
+/* Les deux pads : empilés par défaut, côte à côte si la colonne est assez large */
+.totem-pads-wrap{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
+@container (min-width:155px){
+  .totem-pads-wrap{flex-direction:row}
+  .totem-pad{min-height:60px}
+}
+/* Le pad 2D */
+.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:80px}
 body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 /* Guides croisés */
 .totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
@@ -1402,7 +1406,7 @@ body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 .totem-actions{display:flex;justify-content:space-around;align-items:center;flex-shrink:0;padding:1px 0}
 .totem-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:3px 2px;opacity:.6;-webkit-tap-highlight-color:transparent;color:var(--lc,#999)}
 .totem-btn:hover{opacity:1}
-/* Mode totems : masquer les .layer divs (row1 inclus — les totems portent leurs propres en-têtes) */
+/* Mode totems : masquer les .layer divs */
 #layers-wrap.totems-mode .layer{display:none!important}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
@@ -1926,7 +1930,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.1</span>
+    <span class="app-version">v3.27.2</span>
   </div>
 </div>
 
@@ -7272,11 +7276,6 @@ function buildTotems(){
     totem.dataset.li=li;
     totem.style.setProperty('--lc',col);
 
-    // En-tête : nom layer + preset courant
-    const hdr=document.createElement('div');hdr.className='totem-header';
-    const nameEl=document.createElement('span');nameEl.className='totem-layer-name';nameEl.textContent=layer.label;
-    hdr.appendChild(nameEl);totem.appendChild(hdr);
-
     // Mini-anneau (visible en état C)
     const ringWrap=document.createElement('div');ringWrap.className='totem-ring-wrap';
     const ringCv=document.createElement('canvas');ringCv.className='totem-ring';
@@ -7295,7 +7294,10 @@ function buildTotems(){
     };
     const{pd:padA,cur:curA,prev:prevA}=_mkPad('totem-pad-a-'+li,'remplissage','densité');
     const{pd:padB,cur:curB,prev:prevB}=_mkPad('totem-pad-b-'+li,'géométrie','calage');
-    totem.appendChild(padA);totem.appendChild(padB);
+    // Wrapper adaptatif : flex-col par défaut, flex-row via container query ≥155px
+    const padsWrap=document.createElement('div');padsWrap.className='totem-pads-wrap';
+    padsWrap.appendChild(padA);padsWrap.appendChild(padB);
+    totem.appendChild(padsWrap);
 
     // Boutons action
     const actWrap=document.createElement('div');actWrap.className='totem-actions';
