@@ -1380,14 +1380,10 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 /* Anneau mini (seulement état C — canvas replié) */
 .totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px;flex-shrink:0}
 body[data-split="C"] .totem-ring-wrap{display:flex}
-/* Les deux pads : empilés par défaut, côte à côte si la colonne est assez large */
+/* Les deux pads : toujours empilés (pad = rectangle large, axe X = longue dimension) */
 .totem-pads-wrap{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
-@container (min-width:155px){
-  .totem-pads-wrap{flex-direction:row}
-  .totem-pad{min-height:60px}
-}
 /* Le pad 2D */
-.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:80px}
+.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:55px}
 body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 /* Guides croisés */
 .totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
@@ -1930,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.2</span>
+    <span class="app-version">v3.27.3</span>
   </div>
 </div>
 
@@ -7118,7 +7114,7 @@ function buildLCB(){
       `<span class="lcb-chev" style="color:${col}88">▾</span>`+
       `</div>`;
   });
-  html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'▥'}</button>`;
+  html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'🪄'}</button>`;
   bar.innerHTML=html;
   // Hamburger — fold/unfold tous les layers via les chevrons LCB
   bar.querySelector('#lcb-hamburger')?.addEventListener('click',()=>{
