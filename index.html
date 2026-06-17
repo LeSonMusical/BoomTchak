@@ -1892,7 +1892,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.32</span>
+    <span class="app-version">v3.26.33</span>
   </div>
 </div>
 
@@ -4551,6 +4551,8 @@ function _applyEncycloDelete(key, source){
 function setLayerDirty(li, isDirty){
   dirtyLayers[li]=isDirty;
   setDirtyUI('preset-btn-'+LAYERS[li].id, 'save-btn-layer-'+li, isDirty);
+  const br=document.getElementById('btn-reset-'+li);
+  if(br) br.style.display=isDirty?'':'none';
   if(isDirty){ grooveDirty=true; updateGrooveSaveBtn(); }
 }
 
@@ -7297,7 +7299,8 @@ function buildLayers(){
     // i info
     row1.appendChild(btnI);
     // ↺ retour au pattern d'origine (après i)
-    const btnReset=document.createElement('button');btnReset.className='btn-pat-reset';btnReset.textContent='↺';btnReset.title='Revenir au pattern d\'origine';
+    const btnReset=document.createElement('button');btnReset.className='btn-pat-reset';btnReset.id='btn-reset-'+li;btnReset.textContent='↺';btnReset.title='Revenir au pattern d\'origine';
+    btnReset.style.display=dirtyLayers[li]?'':'none'; // visible seulement si pattern dirty
     btnReset.addEventListener('click',()=>{
       const orig=state[li].patternId?getPattern(state[li].patternId):null;
       if(!orig)return;
