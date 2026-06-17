@@ -1893,7 +1893,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.36</span>
+    <span class="app-version">v3.26.37</span>
   </div>
 </div>
 
@@ -6957,8 +6957,11 @@ function _lcbCurrentGrainIndex(li){
   return 1; // fallback → 8♪
 }
 // Libellé d'unité de step — source unique partagée par LCB et volet édition
+// Tient compte des états pending (changement non encore appliqué en lecture)
 function _unitLabel(s){
-  const d=s.doubleOn,h=s.halfOn,t=s.ternOn;
+  const d=s.pendingClear?false:(s.pendingDouble?true:s.doubleOn);
+  const h=s.pendingClear?false:(s.pendingHalf?true:s.halfOn);
+  const t=s.pendingTern!=null?s.pendingTern:s.ternOn;
   return d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
 }
 
