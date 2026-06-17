@@ -475,8 +475,8 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
 .preset-nav-group .pm-preset-btn{border-radius:0;flex:1;min-width:0;border-left:none!important;border-right:none!important}
 /* Masquage progressif */
 .row1-hide{display:none!important}
-.layer-row2.detail-hidden,.layer-row3-iso.detail-hidden{display:none!important}
-/* En vue step-seq, row2 est toujours affiché — régi par #step-rows-wrap .layer-row2{display:flex!important} */
+/* row2 (steps) toujours visible — detail-hidden contrôle uniquement iso-row et mod-panel */
+.layer-row3-iso.detail-hidden{display:none!important}
 /* Bouton mod tricolore et volet mod — cachés en phase 3 */
 #layer-edit-bar,#layers-mod-bar{display:none!important}
 /* Strip-2 (pad XY/sliders) caché — Phase 4 */
@@ -1372,13 +1372,9 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
 /* ─── STEP SEQUENCER VIEW (body.step-seq = ☰ + Pattern) ─── */
-/* row2 de chaque layer est déplacé physiquement dans #step-rows-wrap via _moveRow2ToStepView() */
-#step-rows-wrap{display:none;flex-direction:column;gap:6px;padding:.5rem 0;width:100%;flex-shrink:0}
-body.step-seq #step-rows-wrap{display:flex;padding-left:2px}
-/* Row2 dans step-rows-wrap : bordure couleur layer (var(--cs) via classe layer.cls sur row2) */
-#step-rows-wrap .layer-row2{display:flex!important;align-items:flex-start;border-left:3px solid var(--cs)}
-/* Layer muté : steps actifs atténués (comme vue circulaire) */
-#step-rows-wrap .layer-row2.muted .step.on,#step-rows-wrap .layer-row2.muted .step.soft{opacity:.3}
+/* row2 reste dans layer-div — step-rows-wrap ne contient que #linear-view-bar */
+#step-rows-wrap{display:none;flex-direction:column;width:100%;flex-shrink:0}
+body.step-seq #step-rows-wrap{display:flex}
 /* Strip info gauche step-seq — supprimé v3.21 */
 .step-seq-info{display:none!important}
 
@@ -1891,7 +1887,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.26.30</span>
+    <span class="app-version">v3.26.31</span>
   </div>
 </div>
 
@@ -2330,7 +2326,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="section-groove"></div>
   <!-- Barre de sous-mode (↺ Pattern/Mesure ou ↺ Pattern/Cycle) -->
   <div id="view-mode-bar" style="display:none"></div>
-  <!-- Vue Pas (step sequencer) — row2 de chaque layer déplacé ici via _moveRow2ToStepView -->
+  <!-- Vue Pas (step sequencer) — linear-view-bar uniquement ; row2 reste dans layer-div -->
   <div id="step-rows-wrap"><div id="linear-view-bar"></div></div>
   <!-- Barre info rythmique globale (sous la groove view) — remplie par buildLayers -->
   <div id="rhythm-info-wrap"></div>
@@ -4699,10 +4695,6 @@ function _doToggleLayerPanels(){
   if(lw)lw.style.display=layerPanelsOuverts?'':'none';
   const lmb=document.getElementById('layers-mod-bar');
   if(lmb)lmb.style.display=layerPanelsOuverts?'flex':'none';
-  // En vue step-seq, les lignes steps vivent dans step-rows-wrap (hors de layers-wrap)
-  const srw=document.getElementById('step-rows-wrap');
-  if(srw&&document.body.classList.contains('step-seq'))srw.style.display=layerPanelsOuverts?'':'none';
-  buildLCB();
   updateRhythmInfoBar();
 }
 let encycloOuvert = false;
@@ -7003,7 +6995,8 @@ function buildLCB(){
   if(!bar)return;
   if(!state||!state[0]||!state[0].pattern)return;
   const COLS=['#378ADD','#D85A30','#1D9E75'];
-  let html=`<button id="lcb-hamburger" class="${layerPanelsOuverts?'open':''}" title="${layerPanelsOuverts?'Masquer les volets':'Afficher les volets'}">` +
+  const _hambOpen=_lcbFolded.some(f=>!f); // "open" = au moins un layer déplié/visible
+  let html=`<button id="lcb-hamburger" class="${_hambOpen?'open':''}" title="${_hambOpen?'Replier tous les layers':'Déplier tous les layers'}">` +
     `<span class="gvb-bar" style="background:#378ADD"></span>` +
     `<span class="gvb-bar" style="background:#D85A30"></span>` +
     `<span class="gvb-bar" style="background:#1D9E75"></span>` +
@@ -7029,8 +7022,13 @@ function buildLCB(){
   });
   html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'▥'}</button>`;
   bar.innerHTML=html;
-  // Hamburger — show/hide tous les volets layers
-  bar.querySelector('#lcb-hamburger')?.addEventListener('click',()=>_doToggleLayerPanels());
+  // Hamburger — fold/unfold tous les layers via les chevrons LCB
+  bar.querySelector('#lcb-hamburger')?.addEventListener('click',()=>{
+    const anyUnfolded=_lcbFolded.some(f=>!f);
+    _lcbFolded=[anyUnfolded,anyUnfolded,anyUnfolded]; // si au moins 1 déplié → tout replier ; si tous repliés → tout déplier
+    LAYERS.forEach((_,li)=>_lcbApplyFold(li));
+    buildLCB();
+  });
   // ── Handlers par segment ──
   bar.querySelectorAll('.lcb-seg').forEach(seg=>{
     const li=parseInt(seg.dataset.li);
@@ -7162,9 +7160,8 @@ function buildLayers(){
       btnMute.classList.toggle('muted',state[li].muted);
       btnMute.title=(state[li].muted?'Activer : ':'Muet : ')+layer.label;
       layerDiv.classList.toggle('muted-layer',state[li].muted);
-      // Synchronise aussi row2 dans #step-rows-wrap (hors du layerDiv)
-      const _sd=document.getElementById('steps-'+layer.id);
-      const _r2=_sd?.closest('.layer-row2');
+      // row2 est toujours dans layerDiv — sync directe
+      const _r2=layerDiv.querySelector('.layer-row2');
       if(_r2) _r2.classList.toggle('muted',state[li].muted);
       grooveDirty=true; updateGrooveSaveBtn();
       const _sgm=getGroove(currentGrooveId); if(_sgm) saveToStorage();
@@ -7254,12 +7251,8 @@ function buildLayers(){
       const _vis=_layerDetailVisible[li];
       nameLbl.classList.toggle('open',_vis);
       nameLbl.title=(_vis?'Masquer':'Afficher')+' l\'édition';
-      // Query DOM live — row2 peut être dans layerDiv (vue normale) ou #step-rows-wrap (vue pas)
+      // row2 (steps) toujours visible — seuls mod-panel et iso-row sont togglables
       const _ld=document.getElementById('layer-div-'+li);
-      const _r2=_ld?.querySelector('.layer-row2')
-        ||document.querySelector('#step-rows-wrap .layer-row2.'+layer.cls);
-      // En step-seq, row2 est dans step-rows-wrap et doit rester visible quoi qu'il arrive
-      if(_r2){if(_vis)_r2.style.removeProperty('display');else if(!document.body.classList.contains('step-seq'))_r2.style.setProperty('display','none','important');}
       const _r3=_ld?.querySelector('.layer-row3-iso');
       if(_r3)_r3.classList.toggle('detail-hidden',!_vis||!_isoRowVisible[li]);
       const _mp=document.getElementById('mod-panel-'+li);
@@ -7327,8 +7320,7 @@ function buildLayers(){
 
     // ── Ligne 2 : info step-seq (gauche) + grille steps ──────────────────────
     const row2=document.createElement('div');row2.className='layer-row2 '+layer.cls;
-    // Respecte l'état de visibilité persistant — sauf en step-seq où row2 est toujours affiché
-    if(!_layerDetailVisible[li]&&!document.body.classList.contains('step-seq'))row2.style.setProperty('display','none','important');
+    // row2 (steps) toujours visible — _layerDetailVisible contrôle uniquement mod-panel et iso-row
     const seqInfo=document.createElement('div');seqInfo.className='step-seq-info';seqInfo.id='step-seq-info-'+li;
     seqInfo.style.cursor='pointer';seqInfo.title='Plier/Déplier le panneau mod';
     seqInfo.addEventListener('click',()=>{
@@ -7704,7 +7696,6 @@ function buildLayers(){
       showToast('Layer '+LAYERS[li].label+' — erreur: '+String(e&&e.message||e).slice(0,80),'error');
     }
   });
-  if(document.body.classList.contains('step-seq')) _moveRow2ToStepView();
   buildLayerEditBar();
   // Appliquer l'état initial des layers-wrap et layers-mod-bar
   const _lwInit=document.getElementById('layers-wrap');
@@ -10741,16 +10732,7 @@ function setViewCycle(cycle){
   _applyView();
 }
 
-// ── _moveRow2ToStepView() : déplace les layer-row2 dans #step-rows-wrap ──
-function _moveRow2ToStepView(){
-  const wrap=document.getElementById('step-rows-wrap'); if(!wrap) return;
-  LAYERS.forEach((_,li)=>{
-    const d=document.getElementById('steps-'+LAYERS[li].id); if(!d) return;
-    const r2=d.closest('.layer-row2'); if(!r2) return;
-    r2.style.removeProperty('display'); // libère l'éventuel inline display:none pour que CSS step-seq prenne le contrôle
-    wrap.appendChild(r2);
-  });
-}
+// _moveRow2ToStepView supprimé v3.26.31 — row2 reste dans layer-div dans toutes les vues
 
 // ── _updateMeasurePageIndicator(globalPage) ────────────────────────────────
 function _updateMeasurePageIndicator(globalPage){
@@ -10988,7 +10970,6 @@ function _applyView(){
   } else {
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
-    if(isStepSeq) _moveRow2ToStepView();
     setTimeout(()=>{ updateRhythmInfoBar(); updateCycleInfoBar(0); },0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
