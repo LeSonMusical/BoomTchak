@@ -1926,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.5</span>
+    <span class="app-version">v3.27.6</span>
   </div>
 </div>
 
@@ -7218,12 +7218,19 @@ function _applyTotemB(li,x,y){
   const softDens=nSil>0?nSoft/nSil:0;
   if(!_softRandVals[li]||_softRandVals[li].length!==L)
     _softRandVals[li]=Array.from({length:L},()=>Math.random());
-  // Reconstruire la géométrie en conservant la densité et le remplissage courants
+  // Géométrie (Y) : 0=euclidien (équi-espacé) · 1=regroupé (côte à côte)
   generatePatternFromPad(li,density,y,softDens);
-  // Appliquer le calage : rotation de s pas (s = offset fort intra-temps)
-  const spb=currentSig?.equivalence||2;
-  const s=Math.round(x*(spb-1));
-  if(s>0)state[li].pattern=rotate(state[li].pattern,s);
+  // Calage (X) : formule r = calB × spb + calS (session 2026-06-12)
+  // idx = calS × BEATS + calB → mapping interleaved :
+  //   - premiers BEATS pas : s=0 (poids métrique préservé, décalage faible uniquement)
+  //   - BEATS suivants : s=1 (1 cran fort = contretemps + sweep faible), etc.
+  const spb=Math.max(1,currentSig?.equivalence||2);
+  const BEATS=Math.max(1,Math.round(L/spb));
+  const idx=Math.round(x*(L-1));
+  const calS=Math.floor(idx/BEATS);   // offset fort (0..spb-1)
+  const calB=idx%BEATS;               // offset faible (0..BEATS-1)
+  const r=calB*spb+calS;              // rotation totale (0..L-1)
+  if(r>0)state[li].pattern=rotate(state[li].pattern,r);
 }
 
 // Redessine les mini-anneaux dans les totems (appelé en état C)
