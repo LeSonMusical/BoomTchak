@@ -1926,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.6</span>
+    <span class="app-version">v3.27.7</span>
   </div>
 </div>
 
@@ -6836,54 +6836,15 @@ function generatePatternFromPad(li,x,y,s){
 
   if(nFortes>0){
     const eucPos=_euclidean(nFortes,L);
-    const nToMove=Math.round(y*nFortes);
-
-    // ── Zones de Voronoi : chaque step appartient au beat euclidien le plus proche ──
-    // Garantit que les beats ne se croisent pas → espacement toujours proche d'euclidien
-    const zones=Array.from({length:nFortes},()=>[]);
-    for(let si=0;si<L;si++){
-      let minD=Infinity,bestBi=0;
-      eucPos.forEach((ep,bi)=>{
-        const d=Math.min(Math.abs(si-ep),L-Math.abs(si-ep));
-        if(d<minD){minD=d;bestBi=bi;}
-      });
-      zones[bestBi].push(si);
+    // Interpolation directe : y=0 → euclidien (équi-espacé) / y=1 → bloc [0..k-1] (côte à côte)
+    // step raw ≥ 1 toujours (monotonie garantie) → résolution triviale des collisions par push
+    let prev=-1;
+    for(let i=0;i<nFortes;i++){
+      let p=Math.max(Math.round(eucPos[i]*(1-y)+i*y),prev+1);
+      if(p>=L)p=L-1;
+      arr[p]='X';
+      prev=p;
     }
-
-    // ── Ordre de déplacement : beats les plus lourds en premier ──
-    const ordered=eucPos.map((pos,bi)=>({pos,w:weights[pos],bi})).sort((a,b)=>b.w-a.w);
-    const placed=new Set();
-
-    ordered.forEach(({pos:base,bi},rank)=>{
-      let target=base;
-
-      if(rank<nToMove){
-        // 1. Trouver le poids minimum disponible dans la zone
-        let lightestW=weights[base];
-        for(const si of zones[bi])if(!placed.has(si)&&weights[si]<lightestW)lightestW=weights[si];
-
-        // 2. Parmi les steps de poids minimum, choisir le plus éloigné des autres positions euclidiennes
-        //    → évite de coller au bord de la zone, maintient l'espacement global
-        if(lightestW<weights[base]){
-          let bestDist=-1;
-          for(const si of zones[bi]){
-            if(placed.has(si)||weights[si]!==lightestW)continue;
-            let minD=Infinity;
-            eucPos.forEach((ep,bi2)=>{
-              if(bi2!==bi){const d=Math.min(Math.abs(si-ep),L-Math.abs(si-ep));minD=Math.min(minD,d);}
-            });
-            if(minD>bestDist){bestDist=minD;target=si;}
-          }
-        }
-      }
-
-      // Sécurité anti-collision (ne devrait pas arriver avec zones Voronoi disjointes)
-      if(placed.has(target)){
-        for(const si of zones[bi])if(!placed.has(si)){target=si;break;}
-        if(placed.has(target)){for(let d=1;d<L;d++){const p=(base+d+L)%L;if(!placed.has(p)){target=p;break;}}}
-      }
-      placed.add(target);arr[target]='X';
-    });
   }
 
   // Notes douces : poids + aléatoire croissant (bruit augmente dans la 2e moitié)
