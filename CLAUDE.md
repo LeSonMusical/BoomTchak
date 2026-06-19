@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.27.10** (session 2026-06-19)
+**v3.27.14** (session 2026-06-19)
 
 ---
 
@@ -284,6 +284,62 @@ _softRandVals    [[r]×3]    // vecteur aléatoire fixe pour le remplissage
 
 ---
 
+## Architecture Métronome — Signature (v3.27)
+
+### Colonne gauche (`.metro-col-metric`)
+
+Structure HTML de la fraction verte :
+
+```
+<span class="metro-metric-lbl">Divisions</span>
+<div class="metro-frac-num-row">                     ← numérateur
+  <button class="mpv-beats-btn" id="mpv-beats-down">
+  <span class="mpv-beats-val metro-frac-n" id="mpv-beats-val">4</span>
+  <button class="mpv-beats-btn" id="mpv-beats-up">
+</div>
+<div class="metro-frac-bar">                         ← trait vert
+<div class="metro-frac-num-row">                     ← dénominateur
+  <button class="mpv-beats-btn" id="mpv-den-down">
+  <button class="metro-frac-d metro-frac-n" id="metro-frac-den">4</button>  ← tap → picker
+  <button class="mpv-beats-btn" id="mpv-den-up">
+</div>
+<span class="metro-metric-lbl">Unité</span>
+```
+
+**Piège CSS** : `button.metro-frac-d` a une spécificité 0,1,1 qui écrase `.metro-frac-d` (0,1,0). Ne JAMAIS utiliser `font:inherit` dans cette règle — cela réinitialise `font-size:26px`. Toujours spécifier `font-size:26px;font-weight:900;font-family:inherit` explicitement.
+
+**Centrage** : `.metro-col-metric` utilise `justify-content:center` (ne pas revenir à `flex-end`).
+
+### Picker unité (`#sig-den-picker`)
+
+Popup fixe (z-index:9999) ouvert au tap sur `#metro-frac-den`. 4 options : ♩♩/2, ♩/4, ♪/8, ♬/16.
+
+### `_applyDenUnit(newBu)` — règle importante
+
+Cette fonction est définie dans un bloc local (`if(denEl&&sdPick){...}`). Elle **ne peut pas** appeler `_naturalBeatTimeUnit` qui est elle aussi locale (définie dans le bloc chips à la ligne ~11709). Utiliser **`_applyDefaultsFromUnit()`** (globale, hoistée) à la place :
+
+```js
+const _applyDenUnit=newBu=>{
+  const mpvU=document.getElementById('mpv-unit-sel');
+  if(mpvU) mpvU.value=newBu;
+  if(typeof _applyDefaultsFromUnit==='function') _applyDefaultsFromUnit(); // ← calcule la battue
+  const batSel=document.getElementById('battue-sel');
+  if(batSel) batSel.dispatchEvent(new Event('change')); // ← propage au handler SPM
+  if(typeof buildSigFromControls==='function') buildSigFromControls();
+  if(typeof _syncUnitChips==='function') _syncUnitChips();
+};
+```
+
+### Double ID `mpv-unit-sel`
+
+Il existe deux éléments avec cet ID dans le DOM :
+1. `<select id="mpv-unit-sel" style="display:none">` — dans `.metro-col-metric` (caché, utilisé comme référence par `buildSigFromControls`)
+2. `<select class="mpv-sel mpv-sel-sm" id="mpv-unit-sel">` — dans la colonne 3-cols Unité (visible, interaction directe utilisateur)
+
+`getElementById` retourne toujours le **premier**. Toutes les lectures/écritures programmatiques ciblent le premier. Cette dualité est un vestige à nettoyer à terme.
+
+---
+
 ## TODO — Migration items hard-codés vers DB
 
 Les éléments suivants sont encore hard-codés dans le JS et doivent être migrés en DB (sauf sons) :
@@ -347,6 +403,13 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.27.14 | Fix métro : `_applyDenUnit` utilisait `_naturalBeatTimeUnit` (hors portée → `natFbs=2` toujours) → remplacé par `_applyDefaultsFromUnit()` globale ; la battue par défaut est maintenant correctement recalculée au changement de dénominateur |
+| v3.27.13 | Métro : fix taille dénominateur (`font-size:26px` explicite dans `button.metro-frac-d`, `font:inherit` écrasait la classe) + centrage vertical signature (`justify-content:center` sur `.metro-col-metric`) |
+| v3.27.12 | Métro : dénominateur avec flèches `< >` + label « Unité » en dessous + même taille que numérateur ; tap sur le chiffre → picker toujours actif ; `mpv-den-down/up` cyclent 2/4/8/16 |
+| v3.27.11 | Métro : dénominateur de signature cliquable → popup `#sig-den-picker` avec 4 figures de notes + chiffre correspondant (suppression doublon chiffre + figure séparée) ; CLAUDE.md : section architecture Vue Totems complète |
+| v3.27.10 | Totems : preview constellation circulaire (dots absolus positionnés en cercle, forte = halo double couleur layer) ; CLAUDE.md section totems |
+| v3.27.9 | Totems : mini-preview visible dans les pads + verrou 🔒 calage pur (pad B gelé, seul le calage évolue en delta) |
+| v3.27.8 | Totems : pads A+B couplés via `_applyTotemAB(li)` (génération squelette + calage en une passe, snapshot pré-rotation dans `_totemPreRotPat`) |
 | v3.26.29 | LCB : bordure haute = visible/caché layer (`:not(.seg-folded)`) |
 | v3.26.28 | LCB : bordure haute colorée quand layer ON (`not.seg-muted`) → corrigé v3.26.29 ; pastilles VU transport : `body.playing` → scale(.55)/opac:.38 repos, `.lcb-vu-soft` scale(1.25), `.lcb-vu-hit` scale(1.7) ; `refreshTransportBtn` toggle `body.playing` |
 | v3.26.27 | GCB : early-return `button` dans `pointerdown` → fix double togglePlay (stop=reset+play) + fix click métronome bloqué ; LCB : `.lcb-vu-zone` zone mute = taille chevron ; bordure gauche `.seg-open:not(.seg-folded)` ; suppression border-top sur pliage |
