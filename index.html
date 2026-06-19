@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.13</span>
+    <span class="app-version">v3.27.14</span>
   </div>
 </div>
 
@@ -16145,12 +16145,15 @@ function attachEvents(){
     const sdPick=document.getElementById('sig-den-picker');
     if(denEl&&sdPick){
       const _applyDenUnit=newBu=>{
+        // 1. Mettre à jour l'unité sur le select caché (référence pour buildSigFromControls)
         const mpvU=document.getElementById('mpv-unit-sel');
-        if(mpvU){mpvU.value=newBu;mpvU.dispatchEvent(new Event('change'));}
-        const nbDiv=currentSig?.nbDivisions||4;
-        const natFbs=typeof _naturalBeatTimeUnit==='function'?_naturalBeatTimeUnit(newBu,nbDiv):2;
+        if(mpvU) mpvU.value=newBu;
+        // 2. Recalcul battue par défaut (_applyDefaultsFromUnit est globale et lit mpv-unit-sel)
+        if(typeof _applyDefaultsFromUnit==='function') _applyDefaultsFromUnit();
+        // 3. Propager le changement de battue → met à jour currentSig.equivalence + slider SPM
         const batSel=document.getElementById('battue-sel');
-        if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
+        if(batSel) batSel.dispatchEvent(new Event('change'));
+        // 4. Rebuilder la signature complète + affichages
         if(typeof buildSigFromControls==='function')buildSigFromControls();
         if(typeof _syncUnitChips==='function')_syncUnitChips();
       };
