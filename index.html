@@ -1926,7 +1926,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.7</span>
+    <span class="app-version">v3.27.8</span>
   </div>
 </div>
 
@@ -7159,38 +7159,25 @@ function buildLCB(){
 
 // ── Phase 4 : Vue Totems ──────────────────────────────────────────────────
 
-// Pad A Densité : x=densité accents, y=liant/remplissage (euclidien fixé à 0)
-function _applyTotemA(li,x,y){
-  const L=state[li].pattern.length;
+// Fonction unifiée : génère le pattern comme fonction pure des 4 paramètres (A+B couplés)
+// Pad A : {x=densité, y=remplissage}  |  Pad B : {x=calage, y=géométrie}
+function _applyTotemAB(li){
+  const L=state[li].pattern.length;if(!L)return;
+  const xA=_totemPadAState[li].x;  // densité (0..1)
+  const yA=_totemPadAState[li].y;  // remplissage (0..1)
+  const xB=_totemPadBState[li].x;  // calage (0..1)
+  const yB=_totemPadBState[li].y;  // géométrie (0=euclidien … 1=bloc)
   if(!_softRandVals[li]||_softRandVals[li].length!==L)
     _softRandVals[li]=Array.from({length:L},()=>Math.random());
-  generatePatternFromPad(li,x,0,y);
-}
-
-// Pad B Placement : x=calage intra-temps (s steps), y=géométrie (0=euclidien,1=regroupé)
-function _applyTotemB(li,x,y){
-  const pat=state[li].pattern,L=pat.length;
-  if(!L)return;
-  const nX=pat.filter(s=>s==='X').length;
-  if(!nX)return;
-  const nSil=L-nX;
-  const nSoft=pat.filter(s=>s==='x').length;
-  const density=nX/L;
-  const softDens=nSil>0?nSoft/nSil:0;
-  if(!_softRandVals[li]||_softRandVals[li].length!==L)
-    _softRandVals[li]=Array.from({length:L},()=>Math.random());
-  // Géométrie (Y) : 0=euclidien (équi-espacé) · 1=regroupé (côte à côte)
-  generatePatternFromPad(li,density,y,softDens);
-  // Calage (X) : formule r = calB × spb + calS (session 2026-06-12)
-  // idx = calS × BEATS + calB → mapping interleaved :
-  //   - premiers BEATS pas : s=0 (poids métrique préservé, décalage faible uniquement)
-  //   - BEATS suivants : s=1 (1 cran fort = contretemps + sweep faible), etc.
+  // 1. Densité (xA) + Géométrie (yB) + Remplissage (yA) — les trois font partie du même appel
+  generatePatternFromPad(li,xA,yB,yA);
+  // 2. Calage (xB) — rotation appliquée après la forme géométrique
   const spb=Math.max(1,currentSig?.equivalence||2);
   const BEATS=Math.max(1,Math.round(L/spb));
-  const idx=Math.round(x*(L-1));
-  const calS=Math.floor(idx/BEATS);   // offset fort (0..spb-1)
-  const calB=idx%BEATS;               // offset faible (0..BEATS-1)
-  const r=calB*spb+calS;              // rotation totale (0..L-1)
+  const idx=Math.round(xB*(L-1));
+  const calS=Math.floor(idx/BEATS);   // offset fort (0..spb-1) — change le poids métrique
+  const calB=idx%BEATS;               // offset faible (0..BEATS-1) — re-phrase sans changer le poids
+  const r=calB*spb+calS;
   if(r>0)state[li].pattern=rotate(state[li].pattern,r);
 }
 
@@ -7306,7 +7293,7 @@ function buildTotems(){
       const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
       const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
       _totemPadAState[li]={x,y};_updA();
-      _applyTotemA(li,x,y);_rebuild();
+      _applyTotemAB(li);_rebuild();
     };
     padA.addEventListener('pointerdown',e=>{
       e.preventDefault();
@@ -7323,11 +7310,11 @@ function buildTotems(){
       const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
       const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
       _totemPadBState[li]={x,y};_updB();
-      _applyTotemB(li,x,y);_rebuild();
+      _applyTotemAB(li);_rebuild();  // couplé : relit xA/yA depuis _totemPadAState
     };
     padB.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      _softRandVals[li]=Array.from({length:state[li].pattern.length},()=>Math.random());
+      // Pad B ne re-seede pas _softRandVals : le remplissage reste stable
       padB.setPointerCapture(e.pointerId);_doB(e);
     });
     padB.addEventListener('pointermove',_doB);
