@@ -1391,10 +1391,15 @@ body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 /* Curseur crosshair */
 .totem-cursor{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--lc,#999);transform:translate(-50%,50%);pointer-events:none;z-index:2;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
 /* Preview miniature du pattern */
-.totem-preview{position:absolute;inset:3px;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:1px;pointer-events:none;opacity:.28}
-.totem-dot{width:3px;height:3px;border-radius:50%;background:#bbb}
-.totem-dot.forte{background:var(--lc,#999);opacity:1}
-.totem-dot.soft{background:var(--lc,#999);opacity:.5}
+.totem-preview{position:absolute;inset:3px;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:1.5px;pointer-events:none}
+.totem-dot{width:4px;height:4px;border-radius:1px;background:rgba(128,128,128,.12);flex-shrink:0}
+.totem-dot.forte{background:var(--lc,#999);opacity:.6}
+.totem-dot.soft{background:var(--lc,#999);opacity:.28}
+/* Verrou calage pur (pad B) */
+.totem-lock-btn{position:absolute;top:2px;right:3px;background:none;border:none;font-size:9px;cursor:pointer;opacity:.38;z-index:3;padding:2px;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:none}
+.totem-lock-btn.locked{opacity:1;filter:drop-shadow(0 0 4px #22c55e)}
+.totem-pad.pad-locked{border-color:#22c55e!important;background:rgba(34,197,94,.04)!important}
+.totem-pad.pad-a-locked{cursor:not-allowed;opacity:.55}
 /* Labels axes à l'intérieur du pad */
 .totem-axis-y{position:absolute;left:3px;top:50%;writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg);font-size:7.5px;color:var(--lc,#999);opacity:.55;pointer-events:none;white-space:nowrap;z-index:1;letter-spacing:.04em}
 .totem-axis-x{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:7.5px;color:var(--lc,#999);opacity:.55;pointer-events:none;white-space:nowrap;z-index:1;letter-spacing:.04em}
@@ -1926,7 +1931,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.8</span>
+    <span class="app-version">v3.27.9</span>
   </div>
 </div>
 
@@ -4771,6 +4776,10 @@ let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off p
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
 let _totemPadAState=[{x:0.5,y:0},{x:0.5,y:0},{x:0.5,y:0}]; // densité ↔ / remplissage ↕
 let _totemPadBState=[{x:0,y:0.5},{x:0,y:0.5},{x:0,y:0.5}]; // calage ↔ / géométrie ↕
+let _totemPadBLocked=[false,false,false]; // calage pur : squelette verrouillé
+let _totemLockedPat=[null,null,null];    // pattern au moment du verrou (référence drag)
+let _totemLockedXB=[0,0,0];              // xB au début du geste de drag (delta calage)
+let _totemPreRotPat=[null,null,null];    // snapshot avant calage (preview pad A)
 let _totemOrigPat=[null,null,null]; // patterns sauvegardés à l'entrée en mode totems (pour ↺)
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
@@ -7171,6 +7180,7 @@ function _applyTotemAB(li){
     _softRandVals[li]=Array.from({length:L},()=>Math.random());
   // 1. Densité (xA) + Géométrie (yB) + Remplissage (yA) — les trois font partie du même appel
   generatePatternFromPad(li,xA,yB,yA);
+  _totemPreRotPat[li]=[...state[li].pattern]; // snapshot avant calage (pour preview pad A)
   // 2. Calage (xB) — rotation appliquée après la forme géométrique
   const spb=Math.max(1,currentSig?.equivalence||2);
   const BEATS=Math.max(1,Math.round(L/spb));
@@ -7250,6 +7260,11 @@ function buildTotems(){
     };
     const{pd:padA,cur:curA,prev:prevA}=_mkPad('totem-pad-a-'+li,'remplissage','densité');
     const{pd:padB,cur:curB,prev:prevB}=_mkPad('totem-pad-b-'+li,'géométrie','calage');
+    // Bouton verrou calage pur (top-right de pad B)
+    const bLock=document.createElement('button');
+    bLock.className='totem-lock-btn';bLock.title='Calage pur — verrouille le squelette';
+    bLock.textContent='🔒';padB.appendChild(bLock);
+    if(_totemPadBLocked[li]){bLock.classList.add('locked');padB.classList.add('pad-locked');padA.classList.add('pad-a-locked');}
     // Wrapper adaptatif : flex-col par défaut, flex-row via container query ≥155px
     const padsWrap=document.createElement('div');padsWrap.className='totem-pads-wrap';
     padsWrap.appendChild(padA);padsWrap.appendChild(padB);
@@ -7267,15 +7282,12 @@ function buildTotems(){
     // ── Helpers curseur et preview ──
     const _updA=()=>{curA.style.left=`${_totemPadAState[li].x*100}%`;curA.style.bottom=`${_totemPadAState[li].y*100}%`;};
     const _updB=()=>{curB.style.left=`${_totemPadBState[li].x*100}%`;curB.style.bottom=`${_totemPadBState[li].y*100}%`;};
+    const _showPat=(el,pat)=>{el.innerHTML='';(pat||[]).forEach(s=>{const d=document.createElement('div');d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');el.appendChild(d);});};
     const _refreshPrev=()=>{
-      [prevA,prevB].forEach(prev2=>{
-        prev2.innerHTML='';
-        state[li].pattern.forEach(s=>{
-          const d=document.createElement('div');
-          d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');
-          prev2.appendChild(d);
-        });
-      });
+      // Pad A : squelette avant calage (montrer la forme sans rotation)
+      _showPat(prevA,_totemPadBLocked[li]?_totemLockedPat[li]:(_totemPreRotPat[li]||state[li].pattern));
+      // Pad B : résultat final après calage
+      _showPat(prevB,state[li].pattern);
     };
     _updA();_updB();_refreshPrev();
 
@@ -7289,6 +7301,7 @@ function buildTotems(){
     // ── Drag Pad A (densité / remplissage) ──
     {const _doA=e=>{
       if(!padA.hasPointerCapture(e.pointerId))return;
+      if(_totemPadBLocked[li])return; // squelette verrouillé → pad A inactif
       const rect=padA.getBoundingClientRect();
       const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
       const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
@@ -7297,6 +7310,7 @@ function buildTotems(){
     };
     padA.addEventListener('pointerdown',e=>{
       e.preventDefault();
+      if(_totemPadBLocked[li])return; // squelette verrouillé
       _softRandVals[li]=Array.from({length:state[li].pattern.length},()=>Math.random());
       padA.setPointerCapture(e.pointerId);_doA(e);
     });
@@ -7309,16 +7323,49 @@ function buildTotems(){
       const rect=padB.getBoundingClientRect();
       const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
       const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
+      if(_totemPadBLocked[li]){
+        // Calage pur : rotation delta depuis le début du geste, axe Y ignoré
+        const L=state[li].pattern.length;if(!L)return;
+        const spb=Math.max(1,currentSig?.equivalence||2);
+        const BEATS=Math.max(1,Math.round(L/spb));
+        const _r=idx=>{const s=Math.floor(idx/BEATS),b=idx%BEATS;return b*spb+s;};
+        const rCur=_r(Math.round(x*(L-1)));
+        const rStart=_r(Math.round(_totemLockedXB[li]*(L-1)));
+        const delta=(rCur-rStart+L)%L;
+        state[li].pattern=rotate([...(_totemLockedPat[li]||state[li].pattern)],delta);
+        _totemPadBState[li]={x,y:_totemPadBState[li].y};_updB();_rebuild();
+        return;
+      }
       _totemPadBState[li]={x,y};_updB();
       _applyTotemAB(li);_rebuild();  // couplé : relit xA/yA depuis _totemPadAState
     };
     padB.addEventListener('pointerdown',e=>{
       e.preventDefault();
-      // Pad B ne re-seede pas _softRandVals : le remplissage reste stable
-      padB.setPointerCapture(e.pointerId);_doB(e);
+      padB.setPointerCapture(e.pointerId);
+      if(_totemPadBLocked[li]){
+        // Calage pur : mémoriser référence au début du geste
+        _totemLockedPat[li]=[...state[li].pattern];
+        _totemLockedXB[li]=_totemPadBState[li].x;
+      }
+      _doB(e);
     });
     padB.addEventListener('pointermove',_doB);
     padB.addEventListener('pointerup',()=>{});}
+
+    // ── 🔒 verrou calage pur ──
+    bLock.addEventListener('pointerdown',e=>e.stopPropagation()); // ne pas déclencher drag pad B
+    bLock.addEventListener('click',e=>{
+      e.stopPropagation();
+      _totemPadBLocked[li]=!_totemPadBLocked[li];
+      if(_totemPadBLocked[li]){
+        _totemLockedPat[li]=[...state[li].pattern];
+        _totemLockedXB[li]=_totemPadBState[li].x;
+        bLock.classList.add('locked');padB.classList.add('pad-locked');padA.classList.add('pad-a-locked');
+      }else{
+        _totemLockedPat[li]=null;
+        bLock.classList.remove('locked');padB.classList.remove('pad-locked');padA.classList.remove('pad-a-locked');
+      }
+    });
 
     // ── ↺ retour au pattern original ──
     bReset.addEventListener('click',()=>{
