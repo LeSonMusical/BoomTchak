@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.15</span>
+    <span class="app-version">v3.27.16</span>
   </div>
 </div>
 
@@ -4485,6 +4485,19 @@ function togglePlay(){
 // ── État UI (runtime, non persisté) ──────────────────────────────────────
 let _pmRefresh = null; // callback pour rafraîchir le modal preset ouvert
 let _pmFamFilter = {}; // mémorisation filtre famille par type (groove, pattern…)
+// ── Catégories de pattern (Grave/Aigu/Noise) — overlay localStorage ──────
+let _patCatMap = JSON.parse(localStorage.getItem('btk_patcat')||'{}');
+const PAT_CAT_COLORS = {low:'#378ADD',high:'#D85A30',noise:'#1D9E75'};
+const PAT_CAT_LABELS = {low:'Grave',high:'Aigu',noise:'Noise'};
+const _getPatCats = id => _patCatMap[id]||[];
+const _savePatCats = () => localStorage.setItem('btk_patcat',JSON.stringify(_patCatMap));
+const _togglePatCat = (patId,cat) => {
+  const cats=[..._getPatCats(patId)];
+  const i=cats.indexOf(cat);
+  if(i>=0)cats.splice(i,1);else cats.push(cat);
+  if(cats.length)_patCatMap[patId]=cats;else delete _patCatMap[patId];
+  _savePatCats();
+};
 let currentGrooveId = null;
 let currentMode = 'sx'; // SX par défaut ; passe en TX après connexion Google
 let dirtyLayers = [false, false, false];
@@ -5156,6 +5169,7 @@ function openPresetModal(cfg){
     if(saved)return saved;
     return'all';
   })();
+  let catFilter=cfg.catFilter||null; // filtre catégorie pattern : 'low'|'high'|'noise'|null
   // États modes gérer/réordonner (groove et pattern uniquement)
   let manageMode=false, reorderMode=false, paletteTarget=null;
   let _reorderDragSrcId=null, _famDragSrcId=null;
@@ -5438,6 +5452,7 @@ function openPresetModal(cfg){
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(i=>i.nom.toLowerCase().includes(q));}
       result=famFilter==='__user__'?all.filter(p=>p.source!=='school'):famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
+      if(catFilter){const cf=result.filter(p=>_getPatCats(p.id).includes(catFilter));if(cf.length)result=cf;}
     }
     return result;
   }
@@ -5688,6 +5703,23 @@ function openPresetModal(cfg){
     };
     mkFilterBtn('all','Tout');
     mkFilterBtn('__user__','👤 User');
+
+    // Catégories layer (pattern uniquement, hors modes gérer/réordonner)
+    if(cfg.type==='pattern'&&!manageMode&&!reorderMode&&!paletteTarget){
+      const catSep=document.createElement('div');catSep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:4px 0 2px';
+      famCol.appendChild(catSep);
+      LAYERS.forEach(l=>{
+        const b=document.createElement('button');
+        b.className='pm-fam-btn'+(catFilter===l.id?' active':'');
+        b.style.cssText='display:flex;align-items:center;gap:5px';
+        const dot=document.createElement('span');
+        dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;background:${PAT_CAT_COLORS[l.id]};flex-shrink:0`;
+        const lbl=document.createElement('span');lbl.textContent=l.label;
+        b.appendChild(dot);b.appendChild(lbl);
+        b.addEventListener('click',()=>{catFilter=catFilter===l.id?null:l.id;buildFamCol();buildItems();});
+        famCol.appendChild(b);
+      });
+    }
 
     // Son : colonne gauche avec section Familles (soundFamilles)
     if(cfg.type==='sound'){
@@ -6428,7 +6460,24 @@ function openPresetModal(cfg){
           else if(cfg.type==='band')libDeleteBand(item.id);
           else libDeletePattern(item.id);
         });
-        row1.appendChild(nameEl);row1.appendChild(delBtn);div.appendChild(row1);
+        row1.appendChild(nameEl);row1.appendChild(delBtn);
+        if(cfg.type==='pattern'){
+          const catWrap=document.createElement('span');catWrap.style.cssText='display:inline-flex;gap:3px;margin-left:6px;align-items:center';
+          LAYERS.forEach(l=>{
+            const isOn=_getPatCats(item.id).includes(l.id);
+            const d=document.createElement('button');
+            d.style.cssText=`width:12px;height:12px;border-radius:50%;border:1.5px solid ${PAT_CAT_COLORS[l.id]};background:${isOn?PAT_CAT_COLORS[l.id]:'transparent'};cursor:pointer;padding:0;flex-shrink:0`;
+            d.title=PAT_CAT_LABELS[l.id];
+            d.addEventListener('click',e=>{
+              e.stopPropagation();
+              _togglePatCat(item.id,l.id);
+              d.style.background=_getPatCats(item.id).includes(l.id)?PAT_CAT_COLORS[l.id]:'transparent';
+            });
+            catWrap.appendChild(d);
+          });
+          row1.appendChild(catWrap);
+        }
+        div.appendChild(row1);
         const tagsDiv=document.createElement('div');tagsDiv.className='pm-item-tags';
         pmBuildTags(tagsDiv,item);div.appendChild(tagsDiv);
         itemsWrap.appendChild(div);
@@ -6438,6 +6487,22 @@ function openPresetModal(cfg){
         row.className='pm-item'+(item.id===cfg.currentId?' pm-cur':'');
         row.dataset.pmId=item.id;
         if(cfg.type==='sig'){row.textContent=displayNom;}
+        else if(cfg.type==='pattern'){
+          const ns=document.createElement('span');
+          ns.textContent=displayNom+(item.source==='teacher'?' 👤':'')+(item.source==='pending'?' 👁':'');
+          row.appendChild(ns);
+          const cats=_getPatCats(item.id);
+          if(cats.length){
+            const dw=document.createElement('span');
+            dw.style.cssText='display:inline-flex;gap:2px;vertical-align:middle;margin-left:5px';
+            cats.forEach(cat=>{
+              const d=document.createElement('span');
+              d.style.cssText=`display:inline-block;width:7px;height:7px;border-radius:50%;background:${PAT_CAT_COLORS[cat]}`;
+              dw.appendChild(d);
+            });
+            row.appendChild(dw);
+          }
+        }
         else{row.textContent=displayNom+(item.source==='teacher'?' 👤':'')+(item.source==='pending'?' 👁':'');}
         row.addEventListener('click',()=>{cfg.onSelect(item.id);_closeOverlay();});
         if(sheet._addLongPress)sheet._addLongPress(row,item.id);
@@ -7600,7 +7665,8 @@ function buildLayers(){
         type:'pattern',currentId:state[li].patternId,
         label:'Pattern '+LAYERS[li].label,
         accent:_la.accent,bg:_la.bg,
-        onSelect:_patOnSelect
+        onSelect:_patOnSelect,
+        catFilter:LAYERS[li].id
       });
     });
     attachSwipe(patPresetBtn,
@@ -7667,7 +7733,9 @@ function buildLayers(){
     const btnDicePat=document.createElement('button');btnDicePat.className='btn-dice-rng';btnDicePat.title='Pattern aléatoire';btnDicePat.textContent='🎲';
     btnDicePat.addEventListener('click',e=>{
       e.stopPropagation();
-      const list=(packCours.patterns||[]).filter(p=>!p.localDeletePending);
+      let list=(packCours.patterns||[]).filter(p=>!p.localDeletePending);
+      const catList=list.filter(p=>_getPatCats(p.id).includes(LAYERS[li].id));
+      if(catList.length)list=catList;
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
     });
