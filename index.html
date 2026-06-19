@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.14</span>
+    <span class="app-version">v3.27.15</span>
   </div>
 </div>
 
@@ -6714,6 +6714,7 @@ function buildGrooveSection(){
   const _grooveOnSelect=(id)=>{
     applyGroove(id);refreshGrooveClass();
     updateGrooveNameTopBar();
+    _initInfoBtn();
   };
 
   // Nom groove → modal sélection
@@ -6784,6 +6785,7 @@ function buildGrooveSection(){
     if(!g||!hasEncycloContent(_ref))return;
     if(encycloOuvert&&currentEncycloId===_ref){toggleEncyclo(false);}
     else{showEncycloEntry(_ref);if(!encycloOuvert)toggleEncyclo(true);}
+    _initInfoBtn();
   });
 
   // Init nom + famille + vue
@@ -7105,7 +7107,7 @@ function buildLCB(){
       `<span class="lcb-chev" style="color:${col}88">▾</span>`+
       `</div>`;
   });
-  html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'🪄'}</button>`;
+  html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'🌌'}</button>`;
   bar.innerHTML=html;
   // Hamburger — fold/unfold tous les layers via les chevrons LCB
   bar.querySelector('#lcb-hamburger')?.addEventListener('click',()=>{
