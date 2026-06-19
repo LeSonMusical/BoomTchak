@@ -1385,16 +1385,17 @@ body[data-split="C"] .totem-ring-wrap{display:flex}
 /* Le pad 2D */
 .totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:55px}
 body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
-/* Guides croisés */
-.totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
-.totem-pad::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--lc,#999);opacity:.12;pointer-events:none}
+/* Guides croisés (très discrets — la constellation prime) */
+.totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.06;pointer-events:none}
+.totem-pad::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--lc,#999);opacity:.06;pointer-events:none}
 /* Curseur crosshair */
 .totem-cursor{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--lc,#999);transform:translate(-50%,50%);pointer-events:none;z-index:2;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
-/* Preview miniature du pattern */
-.totem-preview{position:absolute;inset:3px;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:1.5px;pointer-events:none}
-.totem-dot{width:4px;height:4px;border-radius:1px;background:rgba(128,128,128,.12);flex-shrink:0}
-.totem-dot.forte{background:var(--lc,#999);opacity:.6}
-.totem-dot.soft{background:var(--lc,#999);opacity:.28}
+/* Preview constellation — points positionnés en cercle (JS calcule l'angle) */
+.totem-preview{position:absolute;inset:0;pointer-events:none}
+.totem-dot{position:absolute;border-radius:50%;transform:translate(-50%,-50%);width:3px;height:3px;background:rgba(180,180,180,.18)}
+body.dark-mode .totem-dot{background:rgba(220,220,220,.12)}
+.totem-dot.forte{background:var(--lc,#fff);box-shadow:0 0 5px 2px var(--lc,#999),0 0 10px 3px var(--lc,#999);opacity:.88;width:5px;height:5px}
+.totem-dot.soft{background:var(--lc,#fff);box-shadow:0 0 3px 1.5px var(--lc,#999);opacity:.45;width:4px;height:4px}
 /* Verrou calage pur (pad B) */
 .totem-lock-btn{position:absolute;top:2px;right:3px;background:none;border:none;font-size:9px;cursor:pointer;opacity:.38;z-index:3;padding:2px;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:none}
 .totem-lock-btn.locked{opacity:1;filter:drop-shadow(0 0 4px #22c55e)}
@@ -1931,7 +1932,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.9</span>
+    <span class="app-version">v3.27.10</span>
   </div>
 </div>
 
@@ -7282,7 +7283,20 @@ function buildTotems(){
     // ── Helpers curseur et preview ──
     const _updA=()=>{curA.style.left=`${_totemPadAState[li].x*100}%`;curA.style.bottom=`${_totemPadAState[li].y*100}%`;};
     const _updB=()=>{curB.style.left=`${_totemPadBState[li].x*100}%`;curB.style.bottom=`${_totemPadBState[li].y*100}%`;};
-    const _showPat=(el,pat)=>{el.innerHTML='';(pat||[]).forEach(s=>{const d=document.createElement('div');d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');el.appendChild(d);});};
+    // Affiche le pattern en constellation circulaire (angle ∝ position dans le cycle)
+    const _showPat=(el,pat)=>{
+      el.innerHTML='';
+      if(!pat||!pat.length)return;
+      const L=pat.length;
+      pat.forEach((s,i)=>{
+        const a=(i/L)*2*Math.PI-Math.PI/2; // départ en haut (−π/2)
+        const d=document.createElement('div');
+        d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');
+        d.style.left=(50+36*Math.cos(a))+'%';
+        d.style.top =(50+36*Math.sin(a))+'%';
+        el.appendChild(d);
+      });
+    };
     const _refreshPrev=()=>{
       // Pad A : squelette avant calage (montrer la forme sans rotation)
       _showPat(prevA,_totemPadBLocked[li]?_totemLockedPat[li]:(_totemPreRotPat[li]||state[li].pattern));
