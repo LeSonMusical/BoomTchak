@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.16</span>
+    <span class="app-version">v3.28.0</span>
   </div>
 </div>
 
@@ -5452,7 +5452,7 @@ function openPresetModal(cfg){
       const all=packCours.patterns.filter(p=>!p.localDeletePending);
       if(searchQuery){const q=searchQuery.toLowerCase();return all.filter(i=>i.nom.toLowerCase().includes(q));}
       result=famFilter==='__user__'?all.filter(p=>p.source!=='school'):famFilter==='__teacher__'?all.filter(p=>p.source==='teacher'):famFilter&&famFilter!=='all'?all.filter(p=>(p.familles||[]).includes(famFilter)):all;
-      if(catFilter){const cf=result.filter(p=>_getPatCats(p.id).includes(catFilter));if(cf.length)result=cf;}
+      if(catFilter){const cf=result.filter(p=>{const c=_getPatCats(p.id);return!c.length||c.includes(catFilter);});if(cf.length)result=cf;}
     }
     return result;
   }
@@ -5704,21 +5704,24 @@ function openPresetModal(cfg){
     mkFilterBtn('all','Tout');
     mkFilterBtn('__user__','👤 User');
 
-    // Catégories layer (pattern uniquement, hors modes gérer/réordonner)
+    // Catégories layer (pattern uniquement, hors modes gérer/réordonner) — 1 ligne compacte
     if(cfg.type==='pattern'&&!manageMode&&!reorderMode&&!paletteTarget){
       const catSep=document.createElement('div');catSep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:4px 0 2px';
       famCol.appendChild(catSep);
+      const catRow=document.createElement('div');
+      catRow.style.cssText='display:flex;align-items:center;gap:5px;padding:3px 4px';
+      const catLbl=document.createElement('span');
+      catLbl.style.cssText='font-size:9px;color:#888;flex-shrink:0';
+      catLbl.textContent='Cat.';
+      catRow.appendChild(catLbl);
       LAYERS.forEach(l=>{
-        const b=document.createElement('button');
-        b.className='pm-fam-btn'+(catFilter===l.id?' active':'');
-        b.style.cssText='display:flex;align-items:center;gap:5px';
-        const dot=document.createElement('span');
-        dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;background:${PAT_CAT_COLORS[l.id]};flex-shrink:0`;
-        const lbl=document.createElement('span');lbl.textContent=l.label;
-        b.appendChild(dot);b.appendChild(lbl);
-        b.addEventListener('click',()=>{catFilter=catFilter===l.id?null:l.id;buildFamCol();buildItems();});
-        famCol.appendChild(b);
+        const d=document.createElement('button');
+        d.style.cssText=`width:16px;height:16px;border-radius:50%;border:2px solid ${PAT_CAT_COLORS[l.id]};background:${catFilter===l.id?PAT_CAT_COLORS[l.id]:'transparent'};cursor:pointer;padding:0;flex-shrink:0`;
+        d.title=PAT_CAT_LABELS[l.id];
+        d.addEventListener('click',()=>{catFilter=catFilter===l.id?null:l.id;buildFamCol();buildItems();});
+        catRow.appendChild(d);
       });
+      famCol.appendChild(catRow);
     }
 
     // Son : colonne gauche avec section Familles (soundFamilles)
@@ -7734,7 +7737,7 @@ function buildLayers(){
     btnDicePat.addEventListener('click',e=>{
       e.stopPropagation();
       let list=(packCours.patterns||[]).filter(p=>!p.localDeletePending);
-      const catList=list.filter(p=>_getPatCats(p.id).includes(LAYERS[li].id));
+      const catList=list.filter(p=>{const c=_getPatCats(p.id);return!c.length||c.includes(LAYERS[li].id);});
       if(catList.length)list=catList;
       if(!list.length)return;
       _patOnSelect(list[Math.floor(Math.random()*list.length)].id);
@@ -8227,6 +8230,8 @@ let _pspSoundKey = null, _pspSoundSs = null, _pspBandId = null;
 let _pspNewFamIds = [];
 // sauvegarde des familles "écraser" quand on ouvre le formulaire "nouveau" (évite la perte de tags)
 let _pspOverwriteFamIds = [];
+// catégories sélectionnées dans le popover de sauvegarde pattern
+let _pspPatCats = [];
 
 function saveLayerPattern(li, btn){
   const groove = getGroove(currentGrooveId);
@@ -8260,6 +8265,19 @@ function openPatSavePop(li, btn, srcPat){
   _pspNewFamIds = srcPat && srcPat.familles ? [...srcPat.familles] : [];
   buildPspFamTags();
   buildPspFamSel();
+
+  // Pastilles catégorie : reprise des tags existants, ou tag du layer par défaut (nouveau)
+  const _existCats = _getPatCats(srcPat?.id||'');
+  _pspPatCats = _existCats.length ? [..._existCats] : [LAYERS[li].id];
+  let _catRow = box.querySelector('#psp-cat-row');
+  if(!_catRow){
+    _catRow = document.createElement('div');
+    _catRow.id = 'psp-cat-row';
+    _catRow.style.cssText = 'display:flex;align-items:center;gap:5px;padding:2px 0';
+    const _ovBtn2 = document.getElementById('psp-btn-overwrite');
+    box.insertBefore(_catRow, _ovBtn2);
+  }
+  _buildPspCatRow(_catRow);
 
   if(!srcPat){
     // Pattern non référencé («—») → proposer directement «sauvegarder comme nouveau»
@@ -8303,6 +8321,27 @@ function _getPspFamById(fid){
   if(_pspContext==='band') return getBandFamille(fid);
   if(_pspContext==='metro') return getMetroFamille(fid);
   return getFamille(fid);
+}
+
+// Construit la ligne de pastilles catégorie dans le popover de sauvegarde
+function _buildPspCatRow(el){
+  el.innerHTML='';
+  const lbl=document.createElement('span');
+  lbl.style.cssText='font-size:10px;color:#888;margin-right:4px;flex-shrink:0';
+  lbl.textContent='Catégorie :';
+  el.appendChild(lbl);
+  LAYERS.forEach(l=>{
+    const isOn=_pspPatCats.includes(l.id);
+    const d=document.createElement('button');
+    d.style.cssText=`width:14px;height:14px;border-radius:50%;border:2px solid ${PAT_CAT_COLORS[l.id]};background:${isOn?PAT_CAT_COLORS[l.id]:'transparent'};cursor:pointer;padding:0;flex-shrink:0`;
+    d.title=PAT_CAT_LABELS[l.id];
+    d.addEventListener('click',()=>{
+      const i=_pspPatCats.indexOf(l.id);
+      if(i>=0)_pspPatCats.splice(i,1);else _pspPatCats.push(l.id);
+      _buildPspCatRow(el);
+    });
+    el.appendChild(d);
+  });
 }
 
 // Construit les tag chips dans le popover
@@ -8368,6 +8407,8 @@ function pspDoOverwritePattern(){
     state[li].patternId = fork.id;
     const groove = getGroove(currentGrooveId);
     if(groove && groove.layers[li]){ groove.layers[li].patternId = fork.id; delete groove.layers[li].sequence; }
+    if(_pspPatCats.length) _patCatMap[fork.id]=[..._pspPatCats]; else delete _patCatMap[fork.id];
+    _savePatCats();
     saveToStorage(); setLayerDirty(li, false);
     buildLayers();
     refreshMenuBtnStates(); buildPublishSection();
@@ -8378,12 +8419,15 @@ function pspDoOverwritePattern(){
 
   const usedIn = packCours.grooves.filter(g=>g.layers.some(l=>l.patternId===srcPat.id));
 
+  const savedPatCats = [..._pspPatCats];
   const persist = ()=>{
     srcPat.sequence = currentSeq;
     srcPat.familles = [...savedFamIds];
     markItemDirty(srcPat, 'sequence');
     const _gp = getGroove(currentGrooveId);
     if(_gp && _gp.layers[li]) delete _gp.layers[li].sequence;
+    if(savedPatCats.length) _patCatMap[srcPat.id]=[...savedPatCats]; else delete _patCatMap[srcPat.id];
+    _savePatCats();
     saveToStorage(); setLayerDirty(li, false);
     buildLayers();
     if(btn)flashSave(btn); closePatSavePop();
@@ -8429,6 +8473,8 @@ function pspDoSaveNewPattern(){
   if(groove && groove.layers[li]){ groove.layers[li].patternId = newPat.id; delete groove.layers[li].sequence; }
   state[li].patternId = newPat.id;
 
+  if(_pspPatCats.length) _patCatMap[newPat.id]=[..._pspPatCats]; else delete _patCatMap[newPat.id];
+  _savePatCats();
   saveToStorage(); setLayerDirty(li,false);
   buildLayers();
   refreshMenuBtnStates();
