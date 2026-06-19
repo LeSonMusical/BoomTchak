@@ -203,7 +203,84 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.26.29** (session 2026-06-16)
+**v3.27.10** (session 2026-06-19)
+
+---
+
+## Architecture Vue Totems — Génération de patterns (v3.27)
+
+### Principe général
+La Vue Totems (toggle 🪄/☰ dans la LCB) propose un mode de création gestuel : 2 pads XY par layer, qui génèrent le pattern en temps réel. Chaque paramètre correspond à un phénomène musical distinct et nommable.
+
+### Les 4 axes
+
+| Axe | Pad | Direction | Formule | Phénomène musical |
+|-----|-----|-----------|---------|------------------|
+| **Densité** | A | ↔ (X) | `k = round(x·L)` accents X | Nombre de frappes fortes |
+| **Remplissage** | A | ↕ (Y) | `nSoft = round(s·(L−k))`, priorité poids métrique | Ghostings/fills entre les frappes |
+| **Géométrie** | B | ↕ (Y) | Lerp euclidien→bloc | Forme : répartition régulière ↔ bloc compact |
+| **Calage** | B | ↔ (X) | `r = calB·spb + calS` rotation interleaved | Décalage dans le temps : sur-le-temps ↔ contretemps |
+
+### Formule `generatePatternFromPad(li, x, y, s)`
+
+```js
+// 1. Placement euclidien des k accents (Bresenham)
+eucPos[i] = floor(i·L/k)   pour i = 0..k-1
+
+// 2. Géométrie : lerp euclidien (y=0) → bloc consécutif (y=1)
+raw[i] = round(eucPos[i]·(1-y) + i·y)   avec raw[i] ≥ raw[i-1]+1
+
+// 3. Remplissage : score de priorité des silences restants
+score[i] = weight[i]·(1-noise) + rv[i]·noise
+// weight issu du metroPattern : A=1.0 P=0.5 subdiv=0.1
+// noise = 0.12 + max(0, 2s-1)^1.3 · 0.62  (croît dans la 2e moitié)
+// Les positions métriquement légères sont remplies en premier
+```
+
+### Formule calage — `_applyTotemAB(li)`
+
+```js
+// Mapping interleaved : premiers crans = offset faible (poids préservé)
+//                       crans suivants = offset fort (bascule poids métrique)
+const idx  = round(xB·(L−1))
+const calS = floor(idx / BEATS)   // 0..spb-1 = offset intra-temps (fort)
+const calB = idx % BEATS           // 0..BEATS-1 = offset inter-temps (faible)
+const r    = calB·spb + calS      // rotation totale appliquée au pattern
+```
+
+### Verrou calage pur (`_totemPadBLocked[li]`)
+
+Bouton 🔒 top-right du pad B. Quand actif :
+- Le squelette est gelé (`_totemLockedPat[li]` = snapshot à l'activation)
+- Pad B X → rotation delta depuis le début de chaque geste (`_totemLockedXB[li]`)
+- Pad B Y → ignoré
+- Pad A → désactivé (`pad-a-locked` : cursor not-allowed)
+
+### Preview constellation circulaire
+
+Les dots du pattern sont positionnés en cercle dans chaque pad :
+```js
+a = (i/L)·2π − π/2   // départ en haut
+left = (50 + 36·cos(a)) + '%'
+top  = (50 + 36·sin(a)) + '%'
+```
+- Pad A : montre le pattern **avant calage** (`_totemPreRotPat[li]`) — la forme géométrique pure
+- Pad B : montre le pattern **après calage** — on voit la constellation tourner quand on glisse
+- Forte (X) = glow double (box-shadow 5+10px couleur layer) ; soft (x) = halo léger ; silence = étoile grise
+
+### État — variables module-level
+
+```js
+_totemPadAState  [{x,y}×3]  // densité(x) / remplissage(y)
+_totemPadBState  [{x,y}×3]  // calage(x) / géométrie(y)
+_totemPadBLocked [bool×3]   // mode calage pur
+_totemLockedPat  [pat×3]    // pattern gelé à l'activation du verrou
+_totemLockedXB   [0..1×3]   // xB au début du geste (référence delta)
+_totemPreRotPat  [pat×3]    // snapshot entre generatePatternFromPad et rotate
+_totemOrigPat    [pat×3]    // pattern au moment de l'entrée en mode Totem (↺)
+_softRandVals    [[r]×3]    // vecteur aléatoire fixe pour le remplissage
+                             // re-seedé uniquement au pointerdown du pad A
+```
 
 ---
 

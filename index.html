@@ -1806,6 +1806,21 @@ body.dark-mode .tap-n-sel{background:#2e2e2b;border-color:#444;color:#aaa}
 .metro-frac-n{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;min-width:24px;text-align:center}
 .metro-frac-bar{width:90%;height:2px;background:#3A8C6E;margin:3px 0 2px;border-radius:1px}
 .metro-frac-d{font-size:26px;font-weight:900;color:#3A8C6E;line-height:1;text-align:center;min-width:24px}
+/* Dénominateur = bouton cliquable ouvrant le picker unité */
+button.metro-frac-d{appearance:none;background:none;border:none;font:inherit;cursor:pointer;padding:1px 6px;border-radius:4px;transition:background .15s}
+button.metro-frac-d:hover,button.metro-frac-d:active{background:rgba(58,140,110,.15)}
+button.metro-frac-d::after{content:'▾';font-size:9px;vertical-align:middle;margin-left:2px;opacity:.5}
+/* Popup picker unité dénominateur (#sig-den-picker) */
+#sig-den-picker{position:fixed;background:#fff;border:1.5px solid #3A8C6E;border-radius:10px;padding:5px 4px;display:none;flex-direction:column;gap:2px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.22);min-width:80px}
+#sig-den-picker.open{display:flex}
+.sdp-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:none;cursor:pointer;padding:5px 10px;border-radius:6px;font-size:17px;width:100%;color:#333;-webkit-tap-highlight-color:transparent}
+.sdp-opt:hover,.sdp-opt.active{background:rgba(58,140,110,.12);color:#3A8C6E}
+.sdp-opt-num{font-size:11px;color:#888;font-weight:700;font-variant-numeric:tabular-nums}
+.sdp-opt.active .sdp-opt-num{color:#3A8C6E}
+body.dark-mode #sig-den-picker{background:#252522;border-color:#3A8C6E}
+body.dark-mode .sdp-opt{color:#ccc}
+body.dark-mode .sdp-opt:hover,body.dark-mode .sdp-opt.active{background:rgba(78,184,153,.15);color:#4DB899}
+body.dark-mode .sdp-opt.active .sdp-opt-num{color:#4DB899}
 .metro-unit-chips{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%;margin-top:2px}
 .metro-battue-pattern{flex:3;min-height:0;display:flex;flex-direction:column}
 .metro-battue-pattern .metro-pat-viz{flex:1;min-height:50px}
@@ -1932,7 +1947,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.10</span>
+    <span class="app-version">v3.27.11</span>
   </div>
 </div>
 
@@ -1982,16 +1997,10 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
             </div>
             <!-- Barre verte -->
             <div class="metro-frac-bar"></div>
-            <!-- Dénominateur avec flèches (cycle 2→4→8→16) -->
-            <div class="metro-frac-num-row">
-              <button class="mpv-beats-btn" id="mpv-den-down">&lt;</button>
-              <span class="metro-frac-d" id="metro-frac-den">4</span>
-              <button class="mpv-beats-btn" id="mpv-den-up">&gt;</button>
-            </div>
-            <!-- "Unité" entre dénominateur et chips -->
-            <span class="metro-metric-lbl" style="margin-top:4px">Unité</span>
-            <!-- Chips Unité 2×2 (♩ ♪ / ♩♩ ♬) -->
-            <div class="metro-unit-chips" id="metro-unit-chips">
+            <!-- Dénominateur cliquable → picker unité (remplace flèches + chips) -->
+            <button class="metro-frac-d" id="metro-frac-den" title="Changer l'unité de temps">4</button>
+            <!-- Chips masqués pour compat JS _syncUnitChips -->
+            <div id="metro-unit-chips" style="display:none">
               <button class="metro-unit-chip active" data-unit="4">♩</button>
               <button class="metro-unit-chip" data-unit="8">♪</button>
               <button class="metro-unit-chip" data-unit="2">♩♩</button>
@@ -2199,6 +2208,13 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
     <button class="bup-opt active" data-fbs="2">♩</button>
     <button class="bup-opt" data-fbs="3">♩.</button>
     <button class="bup-opt" data-fbs="4">♩♩</button>
+  </div>
+  <!-- Picker unité dénominateur — ouvert au tap sur metro-frac-den -->
+  <div id="sig-den-picker" role="listbox" aria-label="Unité de temps">
+    <button class="sdp-opt" data-unit="2">♩♩ <span class="sdp-opt-num">2</span></button>
+    <button class="sdp-opt active" data-unit="4">♩ <span class="sdp-opt-num">4</span></button>
+    <button class="sdp-opt" data-unit="8">♪ <span class="sdp-opt-num">8</span></button>
+    <button class="sdp-opt" data-unit="16">♬ <span class="sdp-opt-num">16</span></button>
   </div>
   <!-- Compat ancien volet : éléments fantômes pour JS qui cherche encore ces IDs -->
   <div id="temps-wrap" style="display:none">
@@ -16119,15 +16135,12 @@ function attachEvents(){
       if(gSlider)gSlider.addEventListener('input',()=>{if(gFill)gFill.style.width=gSlider.value+'%';});
     }
   }
-  // ── Flèches dénominateur (cycle 2→4→8→16) ──
+  // ── Dénominateur cliquable → picker unité ──
   {
-    const DEN_VALS=[2,4,8,16];
-    ['mpv-den-down','mpv-den-up'].forEach(btnId=>{
-      document.getElementById(btnId)?.addEventListener('click',()=>{
-        const bu=currentSig?.beatUnit||4;
-        const idx=DEN_VALS.indexOf(bu);
-        const newIdx=btnId==='mpv-den-down'?(idx<=0?DEN_VALS.length-1:idx-1):(idx>=DEN_VALS.length-1?0:idx+1);
-        const newBu=DEN_VALS[newIdx];
+    const denEl=document.getElementById('metro-frac-den');
+    const sdPick=document.getElementById('sig-den-picker');
+    if(denEl&&sdPick){
+      const _applyDenUnit=newBu=>{
         const mpvU=document.getElementById('mpv-unit-sel');
         if(mpvU){mpvU.value=newBu;mpvU.dispatchEvent(new Event('change'));}
         const nbDiv=currentSig?.nbDivisions||4;
@@ -16136,8 +16149,29 @@ function attachEvents(){
         if(batSel){batSel.value=natFbs;batSel.dispatchEvent(new Event('change'));}
         if(typeof buildSigFromControls==='function')buildSigFromControls();
         if(typeof _syncUnitChips==='function')_syncUnitChips();
+      };
+      denEl.addEventListener('click',e=>{
+        e.stopPropagation();
+        const rect=denEl.getBoundingClientRect();
+        const pickW=84;
+        const lft=Math.min(rect.left,window.innerWidth-pickW-8);
+        sdPick.style.left=lft+'px';
+        sdPick.style.top=(rect.bottom+6)+'px';
+        const bu=currentSig?.beatUnit||4;
+        sdPick.querySelectorAll('.sdp-opt').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.unit)===bu));
+        sdPick.classList.toggle('open');
       });
-    });
+      sdPick.querySelectorAll('.sdp-opt').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          _applyDenUnit(parseInt(btn.dataset.unit)||4);
+          sdPick.classList.remove('open');
+        });
+      });
+      document.addEventListener('pointerdown',e=>{
+        if(sdPick.classList.contains('open')&&!sdPick.contains(e.target)&&e.target!==denEl)
+          sdPick.classList.remove('open');
+      },{capture:true,passive:true});
+    }
   }
   // ── Beat-unit picker (popup flottant depuis canvas sym=) ──
   {
