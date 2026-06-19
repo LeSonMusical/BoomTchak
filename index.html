@@ -1809,7 +1809,6 @@ body.dark-mode .tap-n-sel{background:#2e2e2b;border-color:#444;color:#aaa}
 /* Dénominateur = bouton cliquable ouvrant le picker unité */
 button.metro-frac-d{appearance:none;background:none;border:none;font:inherit;cursor:pointer;padding:1px 6px;border-radius:4px;transition:background .15s}
 button.metro-frac-d:hover,button.metro-frac-d:active{background:rgba(58,140,110,.15)}
-button.metro-frac-d::after{content:'▾';font-size:9px;vertical-align:middle;margin-left:2px;opacity:.5}
 /* Popup picker unité dénominateur (#sig-den-picker) */
 #sig-den-picker{position:fixed;background:#fff;border:1.5px solid #3A8C6E;border-radius:10px;padding:5px 4px;display:none;flex-direction:column;gap:2px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.22);min-width:80px}
 #sig-den-picker.open{display:flex}
@@ -1947,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.11</span>
+    <span class="app-version">v3.27.12</span>
   </div>
 </div>
 
@@ -1997,8 +1996,13 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
             </div>
             <!-- Barre verte -->
             <div class="metro-frac-bar"></div>
-            <!-- Dénominateur cliquable → picker unité (remplace flèches + chips) -->
-            <button class="metro-frac-d" id="metro-frac-den" title="Changer l'unité de temps">4</button>
+            <!-- Dénominateur + flèches (tap chiffre → picker unité) -->
+            <div class="metro-frac-num-row">
+              <button class="mpv-beats-btn" id="mpv-den-down">&lt;</button>
+              <button class="metro-frac-d metro-frac-n" id="metro-frac-den" title="Changer l'unité de temps">4</button>
+              <button class="mpv-beats-btn" id="mpv-den-up">&gt;</button>
+            </div>
+            <span class="metro-metric-lbl">Unité</span>
             <!-- Chips masqués pour compat JS _syncUnitChips -->
             <div id="metro-unit-chips" style="display:none">
               <button class="metro-unit-chip active" data-unit="4">♩</button>
@@ -16171,6 +16175,16 @@ function attachEvents(){
         if(sdPick.classList.contains('open')&&!sdPick.contains(e.target)&&e.target!==denEl)
           sdPick.classList.remove('open');
       },{capture:true,passive:true});
+      // Flèches < > dénominateur — cycle 2/4/8/16
+      const DEN_UNITS=[2,4,8,16];
+      const _stepDenUnit=dir=>{
+        const cu=currentSig?.beatUnit||4;
+        const idx=DEN_UNITS.indexOf(cu);
+        const ni=((idx+dir)%DEN_UNITS.length+DEN_UNITS.length)%DEN_UNITS.length;
+        _applyDenUnit(DEN_UNITS[ni]);
+      };
+      document.getElementById('mpv-den-down')?.addEventListener('click',()=>_stepDenUnit(-1));
+      document.getElementById('mpv-den-up')?.addEventListener('click',()=>_stepDenUnit(1));
     }
   }
   // ── Beat-unit picker (popup flottant depuis canvas sym=) ──
