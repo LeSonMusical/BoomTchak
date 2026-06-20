@@ -1380,8 +1380,11 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #layer-cycle-info{display:none;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1px solid rgba(200,150,26,.2);flex-shrink:0;min-height:14px}
 body.show-rib #layer-cycle-info{display:flex}
 body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.12)}
-#lci-spacer-l{flex-shrink:0} /* largeur calée sur #lcb-hamburger par JS */
-.lci-cell{flex:1;text-align:center;font-size:10px;font-weight:400;padding:2px 2px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:.5}
+#lci-cycle{flex-shrink:0;display:flex;align-items:baseline;font-size:10px;font-weight:700;padding:2px 7px 3px;color:#8B5CF6;white-space:nowrap;pointer-events:none;opacity:.65;border-right:1px solid rgba(139,92,246,.15)}
+body.dark-mode #lci-cycle{color:#A78BFA}
+.lci-cell{flex:1;display:flex;align-items:baseline;justify-content:center;font-size:10px;font-weight:400;padding:2px 1px 3px;min-width:0;overflow:hidden;pointer-events:none;opacity:.5}
+.lci-val{flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lci-unit{text-align:left;white-space:nowrap;flex-shrink:0;padding-left:2px;font-size:9px;opacity:.8}
 #lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.07);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#bbb;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 
@@ -1959,7 +1962,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.11</span>
+    <span class="app-version">v3.28.12</span>
   </div>
 </div>
 
@@ -7223,14 +7226,15 @@ function buildLCB(){
       const dx=e.clientX-_x0,dy=e.clientY-_y0;
       if(!_mode&&(Math.abs(dx)>DRAG_THRESH||Math.abs(dy)>DRAG_THRESH)){
         _didDrag=true;
-        _mode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
+        // horizontal requis 2.5× > vertical pour éviter changements accidentels de longueur
+        _mode=Math.abs(dx)>Math.abs(dy)*2.5?'dens':'grain';
       }
       if(_mode==='grain'){
         const newGi=Math.max(0,Math.min(_LCB_LADDER.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
         const curGi=_lcbCurrentGrainIndex(li);
         if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`,{below:bar});
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">divisions même durée ↕</span>`,{above:bar});
       } else if(_mode==='dens'){
         const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
         const cur=state[li].pattern.length;
@@ -7250,7 +7254,7 @@ function buildLCB(){
           updateGrooveSaveBtn();
         }
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas</span><br><span style="font-size:10px;opacity:.6">Nb de pas ↔</span>`,{below:bar});
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas</span><br><span style="font-size:10px;opacity:.6">longueur / durée ↔</span>`,{above:bar});
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7299,34 +7303,43 @@ function buildLayerCycleInfo(){
   const bar=document.getElementById('layer-cycle-info');
   if(!bar)return;
   if(!state||!state[0]||!state[0].pattern)return;
-  bar.style.display='flex'; // forcer visibilité (indépendant de body.show-rib en vues canvas)
+  bar.style.display='flex';
   const COLS=['#378ADD','#D85A30','#1D9E75'];
   const nbDiv=(currentSig&&(currentSig.nbDivisions||currentSig.beatsPerMeasure))||4;
-  let html='<div id="lci-spacer-l"></div>';
-  LAYERS.forEach((layer,li)=>{
-    const {num,den}=_layerDurFrac(li);
-    const col=COLS[li];
-    let txt;
+  // Fractions de duree par layer (en temps/beats)
+  const fracs=LAYERS.map((_,li)=>_layerDurFrac(li));
+  // Cycle global = PPCM des fractions  LCM(a/b,c/d) = lcm(a,c)/gcd(b,d)
+  let cycN=fracs[0].num,cycD=fracs[0].den;
+  for(let i=1;i<fracs.length;i++){
+    cycN=lcm(cycN,fracs[i].num);
+    cycD=gcd(cycD,fracs[i].den);
+  }
+  const cg2=gcd(cycN,cycD);cycN/=cg2;cycD/=cg2;
+  // Formate une fraction (num beats / den) -> {val, unit} selon le mode
+  function _fmtSplit(num,den){
     if(_lciMode==='tps'){
       const whole=Math.floor(num/den),rem=num%den;
-      txt=(rem===0?whole:whole===0?_fracStr(rem,den):whole+'+'+_fracStr(rem,den))+' tps';
+      return {val:rem===0?String(whole):whole===0?_fracStr(rem,den):whole+'+'+_fracStr(rem,den),unit:'tps'};
     } else {
-      const mG=gcd(num,den*nbDiv);
-      const mN=num/mG,mD=(den*nbDiv)/mG;
+      const mG=gcd(num,den*nbDiv),mN=num/mG,mD=(den*nbDiv)/mG;
       const whole=Math.floor(mN/mD),rem=mN%mD;
-      txt=(rem===0?whole:whole===0?_fracStr(rem,mD):whole+'+'+_fracStr(rem,mD))+' mes.';
+      return {val:rem===0?String(whole):whole===0?_fracStr(rem,mD):whole+'+'+_fracStr(rem,mD),unit:'mes.'};
     }
-    html+=`<div class="lci-cell" style="color:${col}">${txt}</div>`;
+  }
+  // Cycle global en violet (extreme gauche)
+  const {val:cv,unit:cu}=_fmtSplit(cycN,cycD);
+  let html=`<div id="lci-cycle"><span class="lci-val">${cv}</span><span class="lci-unit">&thinsp;${cu}</span></div>`;
+  // Duree de chaque layer : valeur droite + unite gauche
+  LAYERS.forEach((_,li)=>{
+    const {num,den}=fracs[li];
+    const {val,unit}=_fmtSplit(num,den);
+    html+=`<div class="lci-cell" style="color:${COLS[li]}"><span class="lci-val">${val}</span><span class="lci-unit">&thinsp;${unit}</span></div>`;
   });
   html+=`<button id="lci-toggle" title="${_lciMode==='mes'?'Afficher en temps':'Afficher en mesures'}">${_lciMode==='mes'?'♩':'▣'}</button>`;
   bar.innerHTML=html;
-  // Aligner le spacer gauche sur le hamburger LCB, le toggle sur le bouton vue
   requestAnimationFrame(()=>{
-    const hambW=document.getElementById('lcb-hamburger')?.offsetWidth;
     const togW=document.getElementById('lcb-view-toggle')?.offsetWidth;
-    const sp=document.getElementById('lci-spacer-l');
     const tg=document.getElementById('lci-toggle');
-    if(sp&&hambW)sp.style.width=hambW+'px';
     if(tg&&togW)tg.style.minWidth=togW+'px';
   });
   bar.querySelector('#lci-toggle')?.addEventListener('click',()=>{
