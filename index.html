@@ -1966,7 +1966,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.21</span>
+    <span class="app-version">v3.28.22</span>
   </div>
 </div>
 
@@ -4874,7 +4874,7 @@ function _applyPendingGroove(){
     try{
       const gl=groove.layers[li];if(!gl)return;
       if(gl.sequence){
-        state[li].pattern=gl.sequence.split('');state[li].patternId=gl.patternId||null;state[li].shiftN=0;
+        state[li].pattern=gl.sequence.split('');state[li].patternId=null;state[li].shiftN=0; // embarquée = détachée
       } else {
         const pat=getPattern(gl.patternId);
         if(!pat||!pat.sequence){state[li].patternId=gl.patternId||null;return;}
@@ -4980,7 +4980,7 @@ function applyGroove(grooveId){
     const gl=groove.layers[li];if(!gl)return;
     if(gl.sequence){
       state[li].pattern=gl.sequence.split('');
-      state[li].patternId=gl.patternId||null;
+      state[li].patternId=null; // séquence embarquée = détachée de tout preset
       state[li].shiftN=0;
     } else {
       const pat=getPattern(gl.patternId);
@@ -7092,15 +7092,15 @@ function _lcbUpdateSeg(li){
   if(unitEl)unitEl.textContent=_unitLabel(state[li]);
 }
 
-// "= n tps = p mes. de X/Y" — ligne info utilisée dans les overlays drag LCB
-function _lciTpsMes(li){
+// Calcule tps / mes / sig séparément — utilisé dans les overlays drag LCB
+function _lciDurParts(li){
   const {num:dN,den:dD}=_layerDurFrac(li);
   const nbD=(currentSig&&(currentSig.nbDivisions||currentSig.beatsPerMeasure))||4;
   const bu=currentSig?.beatUnit||4;
-  const tpStr=dD===1?String(dN):_fracStr(dN,dD);
+  const tpsStr=dD===1?String(dN):_fracStr(dN,dD);
   const mG=gcd(dN,dD*nbD),mN=dN/mG,mD=dD*nbD/mG;
-  const mStr=mD===1?String(mN):_fracStr(mN,mD);
-  return `= ${tpStr} tps = ${mStr} mes. de ${nbD}/${bu}`;
+  const mesStr=mD===1?String(mN):_fracStr(mN,mD);
+  return {tpsStr,mesStr,sig:`${nbD}/${bu}`};
 }
 
 // Change de grain iso-durée : rééchantillonne le pattern + applique les modificateurs
@@ -7257,7 +7257,7 @@ function buildLCB(){
         if(newOrigIdx!==curOrigIdx){_lcbSetGrain(li,newOrigIdx);_gi0=newSGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
         const isTern=state[li].ternOn;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span><br><span style="font-size:10px;opacity:.55">${_lciTpsMes(li)}</span>`,{grooveOrLayers:true});
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
         const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
         const cur=state[li].pattern.length;
@@ -7277,7 +7277,8 @@ function buildLCB(){
           updateGrooveSaveBtn();
         }
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${_lciTpsMes(li)}</span>`,{grooveOrLayers:true});
+        {const {tpsStr,mesStr,sig}=_lciDurParts(li);
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.7">de ${sig}</span></span>`,{grooveOrLayers:true});}
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7366,7 +7367,7 @@ function buildLayerCycleInfo(){
   }
   // Cycle global en violet (extreme gauche, largeur = hamburger LCB)
   const {val:cv,unit:cu}=_fmtSplit(cycN,cycD);
-  let html=`<div id="lci-cycle"><span class="lci-cycle-lbl">cycle :</span><span class="lci-cycle-val">${cv}&thinsp;${cu}</span></div>`;
+  let html=`<div id="lci-cycle"><span class="lci-cycle-lbl">cycle:</span><span class="lci-cycle-val">${cv}&thinsp;${cu}</span></div>`;
   // Duree de chaque layer
   LAYERS.forEach((_,li)=>{
     const {num,den}=fracs[li];
