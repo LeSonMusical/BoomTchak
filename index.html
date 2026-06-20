@@ -1966,7 +1966,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.22</span>
+    <span class="app-version">v3.28.23</span>
   </div>
 </div>
 
@@ -7092,6 +7092,46 @@ function _lcbUpdateSeg(li){
   if(unitEl)unitEl.textContent=_unitLabel(state[li]);
 }
 
+// ── Snap magnétique drag densité LCB ─────────────────────────────────────
+// Pas par mesure pour ce layer selon signature + grain courant
+function _lcbSpm(li){
+  const s=state[li];
+  const nbDiv=(currentSig?.nbDivisions||currentSig?.beatsPerMeasure)||4;
+  const fbs=currentSig?.equivalence||currentSig?.felBeatSteps||2;
+  const dbl=s.pendingClear?false:(s.pendingDouble?true:s.doubleOn);
+  const hlf=s.pendingClear?false:(s.pendingHalf?true:s.halfOn);
+  const trn=s.pendingTern!=null?s.pendingTern:s.ternOn;
+  const mult=dbl?2:hlf?0.5:1;
+  const tf=trn?2/3:1;
+  return nbDiv*fbs*mult/tf;
+}
+// Poids d'aimantation d'une longueur n : mesures entières = fort, subdivisions = moyen, autres = faible
+function _lcbSnapW(n,spm){
+  if(spm<=0||!isFinite(spm))return 1;
+  const r=n/spm, tol=0.02;
+  if(Math.abs(r-Math.round(r))<tol&&Math.round(r)>=1) return Math.round(r)<=4?5:3;  // 1–4 mes. très fort, 5+ fort
+  if(Math.abs(r*2-Math.round(r*2))<tol) return 2.5;  // demi-mesure
+  if(Math.abs(r*4-Math.round(r*4))<tol) return 1.5;  // quart de mesure
+  if(Math.abs(r*8-Math.round(r*8))<tol) return 1.1;  // huitième
+  return 0.55;  // valeur non musicale : zone minime
+}
+// Carte cumulative pixels→n (indices 0..64 ; cumPx[n] = bord droit du slot n)
+function _lcbBuildSnapMap(li){
+  const spm=_lcbSpm(li),B=6; // 6px de base par slot
+  const c=[0];
+  for(let n=1;n<=64;n++) c.push(c[n-1]+B*_lcbSnapW(n,spm));
+  return c;
+}
+// Convertit un offset dx depuis n0 en longueur cible via la carte non-linéaire
+function _lcbDensN(dx,n0,map){
+  const mid0=(map[n0-1]+map[n0])/2; // centre du slot de départ
+  const t=mid0+dx;
+  // Recherche binaire du slot contenant t
+  let lo=1,hi=64;
+  while(lo<hi){const m=(lo+hi)>>1;if(map[m]<t)lo=m+1;else hi=m;}
+  return Math.max(1,Math.min(64,lo));
+}
+
 // Calcule tps / mes / sig séparément — utilisé dans les overlays drag LCB
 function _lciDurParts(li){
   const {num:dN,den:dD}=_layerDurFrac(li);
@@ -7222,8 +7262,8 @@ function buildLCB(){
     const li=parseInt(seg.dataset.li);
     const vuEl=seg.querySelector('#lcb-vu-'+li);
     const vuZone=seg.querySelector('.lcb-vu-zone');
-    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null;
-    const DRAG_THRESH=8,GRAIN_PX=28,N_PX=12;
+    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null,_snapMap=null;
+    const DRAG_THRESH=8,GRAIN_PX=28;
     // Zone mute (même taille que le chevron) → mute
     vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
     vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
@@ -7234,6 +7274,7 @@ function buildLCB(){
       if(e.target===chevEl)return; // chevron gère son propre tap
       _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;
       const _origGi=_lcbCurrentGrainIndex(li);_n0=state[li].pattern.length;
+      _snapMap=_lcbBuildSnapMap(li); // carte snap calculée au debut du drag
       // Ladder trié : famille courante en premier (binaire ou ternaire)
       const _curTern=_LCB_LADDER[_origGi].ternOn;
       const _binItems=_LCB_LADDER.map((g,i)=>({...g,_i:i})).filter(g=>!g.ternOn);
@@ -7259,7 +7300,7 @@ function buildLCB(){
         const isTern=state[li].ternOn;
         _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
-        const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
+        const newLen=_lcbDensN(dx,_n0,_snapMap);
         const cur=state[li].pattern.length;
         if(newLen!==cur){
           if(newLen>cur){
