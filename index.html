@@ -1948,7 +1948,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.7</span>
+    <span class="app-version">v3.28.8</span>
   </div>
 </div>
 
@@ -12377,6 +12377,14 @@ function _setupGCBSplitter(gcbEl){
     const canvasEl=document.getElementById('rhythm-canvas');
     _sH0=c?c.offsetHeight:200;
     _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:(_sH0||200);
+    // Normaliser le transform canvas dès le début : si resizeCanvas() a tourné entre deux drags,
+    // canvas.transform peut être '' (0 scale) alors que circle-view a une hauteur ≠ physH.
+    // On recalcule le scale cohérent avec la hauteur réelle de circle-view.
+    if(canvasEl&&_physH>0&&c&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+      const sNorm=_sH0/_physH;
+      canvasEl.style.transform=Math.abs(sNorm-1)>0.005?`scale(${sNorm.toFixed(3)})`:'';
+      canvasEl.style.transformOrigin='top center';
+    }
     delete document.body.dataset.split;
     if(c){c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
@@ -12393,12 +12401,16 @@ function _setupGCBSplitter(gcbEl){
       const h=Math.max(0,_sH0+(e.clientY-_sY0)); // libre, sans cap supérieur
       c.style.height=h+'px';
       const canvasEl=document.getElementById('rhythm-canvas');
-      if(canvasEl&&_physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
-        const s=h/_physH; // zoom libre, s peut être > 1
+      // Utiliser offsetHeight en temps réel plutôt que _physH capturé au pointerdown :
+      // resizeCanvas() peut avoir tourné pendant le drag (resize iOS au changement URL bar)
+      // et modifié canvas.height → _physH serait périmé → scale incorrect.
+      const physHNow=canvasEl&&canvasEl.offsetHeight>0?canvasEl.offsetHeight:_physH;
+      if(canvasEl&&physHNow>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+        const s=h/physHNow; // zoom libre, s peut être > 1
         canvasEl.style.transform=Math.abs(s-1)>0.005?`scale(${s.toFixed(3)})`:'';
         canvasEl.style.transformOrigin='top center';
       }
-      const pct=_physH>0?Math.round(100*h/_physH):0;
+      const pct=physHNow>0?Math.round(100*h/physHNow):0;
       _dragOverlay.show(`<span style="font-size:13px;opacity:.65">${pct}%</span>`);
     }
   },{passive:false});
