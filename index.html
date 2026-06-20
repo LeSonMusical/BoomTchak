@@ -1382,9 +1382,10 @@ body.show-rib #layer-cycle-info{display:flex}
 body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.12)}
 #lci-cycle{flex-shrink:0;display:flex;align-items:baseline;font-size:10px;font-weight:700;padding:2px 7px 3px;color:#8B5CF6;white-space:nowrap;pointer-events:none;opacity:.65;border-right:1px solid rgba(139,92,246,.15)}
 body.dark-mode #lci-cycle{color:#A78BFA}
-.lci-cell{flex:1;display:flex;align-items:baseline;justify-content:center;font-size:10px;font-weight:400;padding:2px 1px 3px;min-width:0;overflow:hidden;pointer-events:none;opacity:.5}
-.lci-val{flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lci-unit{text-align:left;white-space:nowrap;flex-shrink:0;padding-left:2px;font-size:9px;opacity:.8}
+.lci-cell{flex:1;display:flex;align-items:baseline;font-size:10px;font-weight:400;padding:2px 1px 3px;min-width:0;overflow:hidden;pointer-events:none;opacity:.5}
+.lci-grave{min-width:0;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lci-aigu{flex:0 0 auto;text-align:center;white-space:nowrap;padding:0 1px}
+.lci-noise{min-width:0;flex:1;text-align:left;white-space:nowrap;overflow:hidden;font-size:9px;opacity:.8;padding-left:1px}
 #lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.07);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#bbb;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 
@@ -1962,7 +1963,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.12</span>
+    <span class="app-version">v3.28.13</span>
   </div>
 </div>
 
@@ -7234,7 +7235,7 @@ function buildLCB(){
         const curGi=_lcbCurrentGrainIndex(li);
         if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">divisions même durée ↕</span>`,{above:bar});
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">divisions du cycle ↕</span>`,{above:bar});
       } else if(_mode==='dens'){
         const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
         const cur=state[li].pattern.length;
@@ -7306,16 +7307,13 @@ function buildLayerCycleInfo(){
   bar.style.display='flex';
   const COLS=['#378ADD','#D85A30','#1D9E75'];
   const nbDiv=(currentSig&&(currentSig.nbDivisions||currentSig.beatsPerMeasure))||4;
-  // Fractions de duree par layer (en temps/beats)
+  // Fractions de duree par layer
   const fracs=LAYERS.map((_,li)=>_layerDurFrac(li));
   // Cycle global = PPCM des fractions  LCM(a/b,c/d) = lcm(a,c)/gcd(b,d)
   let cycN=fracs[0].num,cycD=fracs[0].den;
-  for(let i=1;i<fracs.length;i++){
-    cycN=lcm(cycN,fracs[i].num);
-    cycD=gcd(cycD,fracs[i].den);
-  }
+  for(let i=1;i<fracs.length;i++){cycN=lcm(cycN,fracs[i].num);cycD=gcd(cycD,fracs[i].den);}
   const cg2=gcd(cycN,cycD);cycN/=cg2;cycD/=cg2;
-  // Formate une fraction (num beats / den) -> {val, unit} selon le mode
+  // Formate une fraction -> {val, unit}
   function _fmtSplit(num,den){
     if(_lciMode==='tps'){
       const whole=Math.floor(num/den),rem=num%den;
@@ -7326,20 +7324,39 @@ function buildLayerCycleInfo(){
       return {val:rem===0?String(whole):whole===0?_fracStr(rem,mD):whole+'+'+_fracStr(rem,mD),unit:'mes.'};
     }
   }
-  // Cycle global en violet (extreme gauche)
+  // Separe val en grave (entier) + aigu (fraction)
+  function _splitGraveAigu(val){
+    const pi=val.indexOf('+');
+    if(pi>=0) return {grave:val.slice(0,pi),aigu:val.slice(pi)};
+    if(/^\d+$/.test(val)) return {grave:val,aigu:''};
+    return {grave:'',aigu:val};
+  }
+  // Cellule HTML avec 3 spans grave/aigu/noise
+  function _cell(val,unit,col,id){
+    const {grave,aigu}=_splitGraveAigu(val);
+    const idAttr=id?` id="${id}"`:'';
+    const colAttr=col?` style="color:${col}"`:'';
+    return `<div class="lci-cell"${idAttr}${colAttr}><span class="lci-grave">${grave}</span><span class="lci-aigu">${aigu}</span><span class="lci-noise">&thinsp;${unit}</span></div>`;
+  }
+  // Cycle global en violet (extreme gauche, largeur = hamburger LCB)
   const {val:cv,unit:cu}=_fmtSplit(cycN,cycD);
-  let html=`<div id="lci-cycle"><span class="lci-val">${cv}</span><span class="lci-unit">&thinsp;${cu}</span></div>`;
-  // Duree de chaque layer : valeur droite + unite gauche
+  const {grave:cg,aigu:ca}=_splitGraveAigu(cv);
+  let html=`<div id="lci-cycle"><span class="lci-grave">${cg}</span><span class="lci-aigu">${ca}</span><span class="lci-noise">&thinsp;${cu}</span></div>`;
+  // Duree de chaque layer
   LAYERS.forEach((_,li)=>{
     const {num,den}=fracs[li];
     const {val,unit}=_fmtSplit(num,den);
-    html+=`<div class="lci-cell" style="color:${COLS[li]}"><span class="lci-val">${val}</span><span class="lci-unit">&thinsp;${unit}</span></div>`;
+    html+=_cell(val,unit,COLS[li]);
   });
   html+=`<button id="lci-toggle" title="${_lciMode==='mes'?'Afficher en temps':'Afficher en mesures'}">${_lciMode==='mes'?'♩':'▣'}</button>`;
   bar.innerHTML=html;
+  // Aligner lci-cycle sur le hamburger LCB, toggle sur le bouton vue
   requestAnimationFrame(()=>{
+    const hambW=document.getElementById('lcb-hamburger')?.offsetWidth;
     const togW=document.getElementById('lcb-view-toggle')?.offsetWidth;
+    const cyc=document.getElementById('lci-cycle');
     const tg=document.getElementById('lci-toggle');
+    if(cyc&&hambW!=null){cyc.style.width=hambW+'px';cyc.style.flexShrink='0';}
     if(tg&&togW)tg.style.minWidth=togW+'px';
   });
   bar.querySelector('#lci-toggle')?.addEventListener('click',()=>{
@@ -17160,7 +17177,9 @@ const _dragOverlay=(()=>{
       const r=opt.below.getBoundingClientRect();
       el.style.top=(r.bottom+6)+'px';el.style.bottom='';el.style.left='50%';el.style.transform='translateX(-50%)';
     } else if(opt&&opt.above){
-      const r=opt.above.getBoundingClientRect();
+      // Toujours ancrer au-dessus de la GCB pour ne pas masquer les contrôles
+      const gcb=document.getElementById('rhythm-info-wrap');
+      const r=(gcb||opt.above).getBoundingClientRect();
       el.style.top='';el.style.bottom=(window.innerHeight-r.top+6)+'px';el.style.left='50%';el.style.transform='translateX(-50%)';
     } else {
       el.style.top='50%';el.style.bottom='';el.style.left='50%';el.style.transform='translate(-50%,-50%)';
