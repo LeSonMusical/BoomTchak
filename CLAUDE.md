@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.16** (session 2026-06-20)
+**v3.28.17** (session 2026-06-20)
 
 ---
 
@@ -403,6 +403,9 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.17 | CycleInfoLine : surbrillance au press via `_lciFlashLi`/`_lciStartFlash`/`_lciStopFlash` (infrastructure indépendante de `_mesureRightFlash`) — fonctionne dans toutes les vues canvas (cercle mesure, cercle motif, linéaire cycle) ; arc coloré sur l'orbite du layer (vues cercle) + bande colorée sur le 1er cycle (vue linéaire) |
+| v3.28.16 | Bordure jaune déplacée sous la CycleInfoLine (pas sous la LCB) ; espace LCB↔CycleInfoLine réduit ; `.lci-cell` cliquable (`pointer-events` + `cursor:pointer` + `data-li`) ; surbrillance maintenu en vue linéaire via `_mesureRightFlash` dans `drawLinear()` |
+| v3.28.15 | Fix durée `buildLayerCycleInfo._fmtSplit` mode 'mes' : formule `rawN=num×fbs×2` / `rawD=den×nbDiv×(16/beatUnit)` (base = dénominateur de signature, pas la battue) — 14 pas sur 7/4 ♩. affiche correctement « 1 mes. » |
 | v3.27.14 | Fix métro : `_applyDenUnit` utilisait `_naturalBeatTimeUnit` (hors portée → `natFbs=2` toujours) → remplacé par `_applyDefaultsFromUnit()` globale ; la battue par défaut est maintenant correctement recalculée au changement de dénominateur |
 | v3.27.13 | Métro : fix taille dénominateur (`font-size:26px` explicite dans `button.metro-frac-d`, `font:inherit` écrasait la classe) + centrage vertical signature (`justify-content:center` sur `.metro-col-metric`) |
 | v3.27.12 | Métro : dénominateur avec flèches `< >` + label « Unité » en dessous + même taille que numérateur ; tap sur le chiffre → picker toujours actif ; `mpv-den-down/up` cyclent 2/4/8/16 |

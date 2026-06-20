@@ -1384,6 +1384,7 @@ body.dark-mode #layer-cycle-info{background:#13131a;border-top-color:rgba(200,15
 body.dark-mode #lci-cycle{color:#A78BFA}
 .lci-cycle-ico{font-size:9px;opacity:.7;flex-shrink:0}
 .lci-cell{flex:1;display:flex;align-items:baseline;font-size:10px;font-weight:400;padding:1px 1px 2px;min-width:0;overflow:hidden;cursor:pointer;opacity:.5;-webkit-tap-highlight-color:transparent}
+.lci-cell[data-li]:active{opacity:.75;background:rgba(0,0,0,.06)}
 .lci-grave{min-width:0;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lci-aigu{flex:0 0 auto;text-align:center;white-space:nowrap;padding:0 1px}
 .lci-noise{min-width:0;flex:1;text-align:left;white-space:nowrap;overflow:hidden;font-size:9px;opacity:.8;padding-left:1px}
@@ -1964,7 +1965,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.16</span>
+    <span class="app-version">v3.28.17</span>
   </div>
 </div>
 
@@ -7365,20 +7366,14 @@ function buildLayerCycleInfo(){
     _lciMode=_lciMode==='mes'?'tps':'mes';
     buildLayerCycleInfo();
   });
-  // Appui maintenu sur cellule layer → surbrillance du 1er cycle (vues mesure et cycle)
+  // Appui maintenu sur cellule layer → surbrillance du 1er cycle (toutes vues canvas)
   bar.querySelectorAll('.lci-cell[data-li]').forEach(cell=>{
     const li=parseInt(cell.dataset.li);
     cell.addEventListener('pointerdown',e=>{
       cell.setPointerCapture(e.pointerId);
-      if(typeof _triggerRightFlash==='function') _triggerRightFlash(li,true);
+      if(typeof _lciStartFlash==='function') _lciStartFlash(li);
     });
-    const _stopFlash=()=>{
-      if(_mesureRightFlash?.hold){
-        _mesureRightFlash=null;
-        if(_mirrorFlashRaf){cancelAnimationFrame(_mirrorFlashRaf);_mirrorFlashRaf=null;}
-        if(typeof drawCircles==='function') drawCircles();
-      }
-    };
+    const _stopFlash=()=>{ if(typeof _lciStopFlash==='function') _lciStopFlash(); };
     cell.addEventListener('pointerup',_stopFlash);
     cell.addEventListener('pointercancel',_stopFlash);
   });
@@ -10418,6 +10413,8 @@ let _measureTapFlash = null;   // {li, si, startTime, endTime} — flash miroir 
 let _linearTapFlash  = null;   // idem pour vue Cycle linéaire
 let _mirrorFlashRaf = null;
 let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
+let _lciFlashLi = null;        // layer surbrillé via CycleInfoLine (0/1/2 ou null)
+let _lciFlashRaf = null;
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
 let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
@@ -10505,6 +10502,23 @@ function _triggerRightFlash(li, hold=false){
     drawCircles();_mirrorFlashRaf=requestAnimationFrame(_goF);
   };
   _mirrorFlashRaf=requestAnimationFrame(_goF);
+}
+
+// Flash dédié CycleInfoLine — fonctionne dans toutes les vues canvas
+function _lciStartFlash(li){
+  _lciFlashLi=li;
+  if(_lciFlashRaf) cancelAnimationFrame(_lciFlashRaf);
+  const _go=()=>{
+    if(_lciFlashLi===null){ _lciFlashRaf=null; return; }
+    if(typeof drawCircles==='function') drawCircles();
+    _lciFlashRaf=requestAnimationFrame(_go);
+  };
+  _lciFlashRaf=requestAnimationFrame(_go);
+}
+function _lciStopFlash(){
+  _lciFlashLi=null;
+  if(_lciFlashRaf){ cancelAnimationFrame(_lciFlashRaf); _lciFlashRaf=null; }
+  if(typeof drawCircles==='function') drawCircles();
 }
 
 function _startMirrorFlash(li,si){
@@ -10866,6 +10880,15 @@ function drawCircles(){
 
   // (aiguilles dessinées en interleaved dans le loop [2,1,0] ci-dessus pour l'effet de profondeur)
 
+  // LCI flash : surbrillance orbite au press CycleInfoLine (toutes vues canvas)
+  if(_lciFlashLi!==null){
+    const _lciR=radii[_lciFlashLi], _lciCol=CIRCLE_COLORS[_lciFlashLi];
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,_lciR,0,2*Math.PI);
+    ctx.strokeStyle=_lciCol.fill; ctx.lineWidth=dotR*3; ctx.globalAlpha=0.40;
+    ctx.stroke(); ctx.restore(); ctx.globalAlpha=1;
+  }
+
   // Pivot central
   ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 2*Math.PI);
   ctx.fillStyle='#1a1a18'; ctx.fill();
@@ -10983,17 +11006,16 @@ function drawLinear(){
     }
   });
   // Highlight premier cycle (appui maintenu sur CycleInfoLine)
-  if(_mesureRightFlash&&(_mesureRightFlash.hold||performance.now()<_mesureRightFlash.endMs)){
-    const fli=_mesureRightFlash.li;
-    const fcu=cycU[fli];
+  if(_lciFlashLi!==null){
+    const fcu=cycU[_lciFlashLi];
     if(fcu>0){
       const hx0=marginX+uW*(0+half-startU);
       const hx1=marginX+uW*(fcu+half-startU);
       const cx0=Math.max(marginX,hx0),cx1=Math.min(W-marginX,hx1);
       if(cx1>cx0){
-        const hcol=CIRCLE_COLORS[fli];
+        const hcol=CIRCLE_COLORS[_lciFlashLi];
         ctx.save();ctx.globalAlpha=0.28;ctx.fillStyle=hcol.fill;
-        ctx.fillRect(cx0,marginY+rowH*fli,cx1-cx0,rowH);
+        ctx.fillRect(cx0,marginY+rowH*_lciFlashLi,cx1-cx0,rowH);
         ctx.restore();ctx.globalAlpha=1;
       }
     }
