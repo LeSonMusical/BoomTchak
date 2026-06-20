@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.23** (session 2026-06-20)
+**v3.28.24** (session 2026-06-20)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.24 | CycleInfoLine : suppression du label « cycle: » à gauche ; `_defaultSubdiv` : subdivision par défaut = 1 pour /8 et /16, = 2 pour /4 et /2 ; ligne 3441 : détection mesure composée découplée de `_defaultSubdiv` (6/8, 9/8 conservent `equiv=3`) |
 | v3.28.23 | LCB drag densité ↔ : aimantation non-linéaire sur valeurs musicales — `_lcbSpm`, `_lcbSnapW`, `_lcbBuildSnapMap`, `_lcbDensN` (mesures entières 1-4 = poids 5, mesures ≥5 = 3, demi-mesure = 2.5, quart = 1.5, huitième = 1.1, non-musical = 0.55 ; carte cumulée construite au pointerdown) |
 | v3.28.22 | Fix bug groove embarqué : `applyGroove`/`_applyPendingGroove` → `state[li].patternId=null` quand `gl.sequence` présent (plus de faux `i` encyclopédie vers pattern A) ; overlay densité ↔ : valeurs `n tps` / `p mes` colorées sans `=`, via `_lciDurParts(li)` ; overlay grain ↕ : suppression 3e ligne tps/mes ; CycleInfoLine : `cycle:` sans espace |
 | v3.28.21 | Overlays drag LCB : format `"n pas [♪]"` + `"= n tps = p mes. de X/Y"` ; grain overlay : `"division ternaire/binaire ↕"` ; helper `_lciTpsMes(li)` ; totem : suppression `border-left` entre layers ; `setLayerDirty(li,true)` ajouté dans `_lcbSetGrain`, `unitSel.change`, `bTern.click` + `buildLayerCycleInfo()` propagé depuis `unitSel.change` et `bTern.click` |
