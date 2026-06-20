@@ -1374,6 +1374,15 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger.open .gvb-bar{opacity:.35}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
+/* ─── LAYER CYCLE INFO BAR (mini ligne sous LCB) ─── */
+#layer-cycle-info{display:none;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1px solid rgba(200,150,26,.4);min-height:0}
+body.show-rib #layer-cycle-info{display:flex}
+body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.2)}
+#lci-spacer-l{flex-shrink:0} /* largeur calée sur #lcb-hamburger par JS */
+.lci-cell{flex:1;text-align:center;font-size:10px;font-weight:600;padding:2px 2px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.1);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#888;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+body.dark-mode #lci-toggle{color:#555;border-left-color:rgba(255,255,255,.08)}
+
 /* ─── VUE TOTEMS v3.27 ─── */
 #layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:200px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
 /* container query : chaque colonne sait sa propre largeur */
@@ -1948,7 +1957,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.8</span>
+    <span class="app-version">v3.28.9</span>
   </div>
 </div>
 
@@ -2399,6 +2408,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
   <div id="rhythm-info-wrap"></div>
   <!-- Layer Control Bar (LCB) — 3 segments colorés par layer, toujours visible sous GCB -->
   <div id="layer-control-bar"></div>
+  <!-- Layer Cycle Info — durée de chaque cycle layer en mes. ou tps (sous LCB) -->
+  <div id="layer-cycle-info"></div>
   <!-- Layers (3 couches rythmiques) -->
   <div id="layers-wrap"><div id="layer-edit-bar"></div><div id="layers"></div></div>
   <!-- Vue circulaire / linéaire (canvas) -->
@@ -4811,6 +4822,7 @@ let _lcbFolded=[true,true,true]; // état pliage par layer (tap ▾ de la LCB)
 let _layerDetailVisible=[false,false,false]; // ✎ toggle détail (steps + iso) par layer
 let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off par défaut)
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
+let _lciMode='mes'; // 'mes' | 'tps' — mode d'affichage Layer Cycle Info
 let _totemPadAState=[{x:0.5,y:0},{x:0.5,y:0},{x:0.5,y:0}]; // densité ↔ / remplissage ↕
 let _totemPadBState=[{x:0,y:0.5},{x:0,y:0.5},{x:0,y:0.5}]; // calage ↔ / géométrie ↕
 let _totemPadBLocked=[false,false,false]; // calage pur : squelette verrouillé
@@ -7256,6 +7268,47 @@ function buildLCB(){
     const _lw=document.getElementById('layers-wrap');
     if(_lw&&_lw.classList.contains('totems-mode'))buildTotems();
   }
+  buildLayerCycleInfo();
+}
+
+// ── Layer Cycle Info Bar ─────────────────────────────────────────────────
+function buildLayerCycleInfo(){
+  const bar=document.getElementById('layer-cycle-info');
+  if(!bar)return;
+  if(!state||!state[0]||!state[0].pattern)return;
+  const COLS=['#378ADD','#D85A30','#1D9E75'];
+  const nbDiv=(currentSig&&(currentSig.nbDivisions||currentSig.beatsPerMeasure))||4;
+  let html='<div id="lci-spacer-l"></div>';
+  LAYERS.forEach((layer,li)=>{
+    const {num,den}=_layerDurFrac(li);
+    const col=COLS[li];
+    let txt;
+    if(_lciMode==='tps'){
+      const whole=Math.floor(num/den),rem=num%den;
+      txt=(rem===0?whole:whole===0?_fracStr(rem,den):whole+'+'+_fracStr(rem,den))+' tps';
+    } else {
+      const mG=gcd(num,den*nbDiv);
+      const mN=num/mG,mD=(den*nbDiv)/mG;
+      const whole=Math.floor(mN/mD),rem=mN%mD;
+      txt=(rem===0?whole:whole===0?_fracStr(rem,mD):whole+'+'+_fracStr(rem,mD))+' mes.';
+    }
+    html+=`<div class="lci-cell" style="color:${col}">${txt}</div>`;
+  });
+  html+=`<button id="lci-toggle" title="${_lciMode==='mes'?'Afficher en temps':'Afficher en mesures'}">${_lciMode==='mes'?'♩':'▣'}</button>`;
+  bar.innerHTML=html;
+  // Aligner le spacer gauche sur le hamburger LCB, le toggle sur le bouton vue
+  requestAnimationFrame(()=>{
+    const hambW=document.getElementById('lcb-hamburger')?.offsetWidth;
+    const togW=document.getElementById('lcb-view-toggle')?.offsetWidth;
+    const sp=document.getElementById('lci-spacer-l');
+    const tg=document.getElementById('lci-toggle');
+    if(sp&&hambW)sp.style.width=hambW+'px';
+    if(tg&&togW)tg.style.minWidth=togW+'px';
+  });
+  bar.querySelector('#lci-toggle')?.addEventListener('click',()=>{
+    _lciMode=_lciMode==='mes'?'tps':'mes';
+    buildLayerCycleInfo();
+  });
 }
 
 // ── Phase 4 : Vue Totems ──────────────────────────────────────────────────
@@ -12342,6 +12395,7 @@ function updateRhythmInfoBar(){
   }
   if(!el._gcbSplitterSetup){el._gcbSplitterSetup=true;_setupGCBSplitter(el);}
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
+  buildLayerCycleInfo();
 }
 
 /* ── Splitter GCB — setup une seule fois sur #rhythm-info-bar ── */
