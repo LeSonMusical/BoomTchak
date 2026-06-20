@@ -955,7 +955,7 @@ body.dark-mode .pm-preset-btn{background:#2a2a28;color:#e0ddd8;border-color:#444
 .btn-mod-sm{padding:3px 6px!important;font-size:12px!important}
 .btn-mod-icon{font-size:15px!important;padding:1px 4px!important;line-height:1.3!important;border:none!important;background:transparent!important;box-shadow:none!important;opacity:.75}
 .mod-sel-unit{font-size:11px;padding:2px 4px;border:1px solid var(--cs);border-radius:4px;background:#fff;color:var(--cb);cursor:pointer}
-.mod-pas-num{min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--cb);flex-shrink:0}
+.mod-pas-num{min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--cb);flex-shrink:0;cursor:ns-resize;user-select:none;touch-action:none}
 /* Shift rotatif fluide (horizontal) */
 .mod-shift-wrap{flex:0.9;display:flex;align-items:center;gap:5px;min-width:0}
 .mod-shift-label{font-size:9px;color:var(--cb);opacity:.55;flex-shrink:0}
@@ -1354,14 +1354,15 @@ body.playing .lcb-vu:not(.lcb-vu-hit):not(.lcb-vu-soft){transform:scale(0.55);op
 .lcb-vu.lcb-vu-soft{transform:scale(1.25);box-shadow:0 0 4px 1px currentColor;opacity:.65}
 /* ancien diagonal sur pastille VU supprimé — remplacé par diagonal sur tout le segment */
 /* Grain label */
-.lcb-grain{display:flex;align-items:baseline;gap:1px;flex:1;min-width:0;justify-content:center;pointer-events:none}
+.lcb-grain{display:flex;align-items:center;gap:2px;flex:1;min-width:0;justify-content:center;pointer-events:none}
 .lcb-npas{font-size:13px;font-weight:700}
 .lcb-unit{font-size:11px;opacity:.8}
+.lcb-drag-hint{display:flex;flex-direction:column;align-items:center;gap:0;font-size:7px;opacity:.45;line-height:1;flex-shrink:0}
 /* seg-muted opacity/filter applied at parent level — no per-child override needed */
 /* Chevron fold */
-.lcb-chev{font-size:16px;font-weight:700;flex-shrink:0;color:#999;padding:2px 6px;transition:transform .15s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lcb-chev{font-size:16px;font-weight:700;flex-shrink:0;padding:2px 6px;transition:transform .15s;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lcb-seg.seg-folded .lcb-chev{transform:rotate(-90deg)}
-body.dark-mode .lcb-chev{color:#555}
+/* couleur chevron = inline couleur layer */
 /* Bouton toggle vue Édition/Totems */
 #lcb-view-toggle{flex-shrink:0;border:none;background:none;font-size:14px;padding:4px 10px;cursor:pointer;color:#888;-webkit-tap-highlight-color:transparent;border-left:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center}
 body.dark-mode #lcb-view-toggle{color:#555;border-left-color:rgba(255,255,255,.07)}
@@ -1946,7 +1947,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.4</span>
+    <span class="app-version">v3.28.5</span>
   </div>
 </div>
 
@@ -7166,10 +7167,11 @@ function buildLCB(){
         `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
       `</div>`+
       `<div class="lcb-grain">`+
+        `<span class="lcb-drag-hint"><span>▴</span><span>▾</span></span>`+
         `<span class="lcb-npas" style="color:${col}">${n}</span>`+
         `<span class="lcb-unit" style="color:${col}">${_unitLabel(state[li])}</span>`+
       `</div>`+
-      `<span class="lcb-chev" style="color:${col}88">▾</span>`+
+      `<span class="lcb-chev" style="color:${col}">▾</span>`+
       `</div>`;
   });
   html+=`<button id="lcb-view-toggle" title="${_lcbViewMode==='totems'?'Vue Édition':'Vue Totems'}">${_lcbViewMode==='totems'?'☰':'✨'}</button>`;
@@ -7803,6 +7805,25 @@ function buildLayers(){
       if(last!=='.')miniConfirm('Le pas que vous retirez contient un son — le supprimer ?','noWarnLastStep',doRemove);
       else doRemove();
     });
+    // Drag vertical sur nPas : glisser ↑ ajoute des pas, ↓ en retire
+    {let _npY0=0,_npLen0=0,_npMoved=false;
+    const NP_PX=7; // pixels par pas
+    nPas.addEventListener('pointerdown',e=>{_npY0=e.clientY;_npLen0=state[li].pattern.length;_npMoved=false;nPas.setPointerCapture(e.pointerId);e.preventDefault();},{passive:false});
+    nPas.addEventListener('pointermove',e=>{
+      if(!nPas.hasPointerCapture(e.pointerId))return;
+      const delta=Math.round((_npY0-e.clientY)/NP_PX);
+      if(delta!==0)_npMoved=true;
+      const newLen=Math.max(1,Math.min(64,_npLen0+delta));
+      if(newLen===state[li].pattern.length)return;
+      if(newLen>state[li].pattern.length){
+        state[li].pattern=[...state[li].pattern,...Array(newLen-state[li].pattern.length).fill('.')];
+      }else{
+        state[li].pattern=state[li].pattern.slice(0,newLen);
+        if((state[li].shiftN||0)>=newLen)state[li].shiftN=0;
+      }
+      _reszMark();
+    });
+    nPas.addEventListener('pointerup',()=>{_npMoved=false;});}
 
     // ── Popup ×÷ ────────────────────────────────────────────────────────────────
     const mulWrap=document.createElement('div');mulWrap.className='mod-mul-wrap';
