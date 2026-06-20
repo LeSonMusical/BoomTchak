@@ -1965,7 +1965,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.18</span>
+    <span class="app-version">v3.28.19</span>
   </div>
 </div>
 
@@ -7210,7 +7210,7 @@ function buildLCB(){
     const li=parseInt(seg.dataset.li);
     const vuEl=seg.querySelector('#lcb-vu-'+li);
     const vuZone=seg.querySelector('.lcb-vu-zone');
-    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0;
+    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null;
     const DRAG_THRESH=8,GRAIN_PX=28,N_PX=12;
     // Zone mute (même taille que le chevron) → mute
     vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
@@ -7221,7 +7221,13 @@ function buildLCB(){
       if(e.target===vuEl||vuZone?.contains(e.target))return;
       if(e.target===chevEl)return; // chevron gère son propre tap
       _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;
-      _gi0=_lcbCurrentGrainIndex(li);_n0=state[li].pattern.length;
+      const _origGi=_lcbCurrentGrainIndex(li);_n0=state[li].pattern.length;
+      // Ladder trié : famille courante en premier (binaire ou ternaire)
+      const _curTern=_LCB_LADDER[_origGi].ternOn;
+      const _binItems=_LCB_LADDER.map((g,i)=>({...g,_i:i})).filter(g=>!g.ternOn);
+      const _terItems=_LCB_LADDER.map((g,i)=>({...g,_i:i})).filter(g=>g.ternOn);
+      _sortedLadder=_curTern?[..._terItems,..._binItems]:[..._binItems,..._terItems];
+      _gi0=_sortedLadder.findIndex(g=>g._i===_origGi);
       seg.setPointerCapture(e.pointerId);
     },{passive:true});
     seg.addEventListener('pointermove',e=>{
@@ -7233,11 +7239,13 @@ function buildLCB(){
         _mode=Math.abs(dx)>Math.abs(dy)*2.5?'dens':'grain';
       }
       if(_mode==='grain'){
-        const newGi=Math.max(0,Math.min(_LCB_LADDER.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
-        const curGi=_lcbCurrentGrainIndex(li);
-        if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
+        const newSGi=Math.max(0,Math.min(_sortedLadder.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
+        const newOrigIdx=_sortedLadder[newSGi]._i;
+        const curOrigIdx=_lcbCurrentGrainIndex(li);
+        if(newOrigIdx!==curOrigIdx){_lcbSetGrain(li,newOrigIdx);_gi0=newSGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">divisions du cycle ↕</span>`,{above:bar});
+        const isTern=state[li].ternOn;
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">${isTern?'ternaire':'binaire'} ↕</span>`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
         const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
         const cur=state[li].pattern.length;
@@ -7257,7 +7265,7 @@ function buildLCB(){
           updateGrooveSaveBtn();
         }
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas</span><br><span style="font-size:10px;opacity:.6">longueur / durée ↔</span>`,{above:bar});
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas</span><br><span style="font-size:10px;opacity:.6">longueur / durée ↔</span>`,{grooveOrLayers:true});
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -17272,7 +17280,21 @@ function start(){
 const _dragOverlay=(()=>{
   const el=document.createElement('div');el.className='drag-value-overlay';document.body.appendChild(el);
   function _pos(opt){
-    if(opt&&opt.below){
+    if(opt&&opt.grooveOrLayers){
+      // Centre dans la Groove view si assez grande, sinon dans la Layer view
+      const cvEl=document.getElementById('circle-view');
+      const lwEl=document.getElementById('layers-wrap');
+      const cvR=cvEl?.getBoundingClientRect();
+      const tgt=(cvR&&cvR.height>100&&cvR.width>100)?cvR:lwEl?.getBoundingClientRect();
+      if(tgt){
+        el.style.top=(tgt.top+tgt.height/2)+'px';
+        el.style.left=(tgt.left+tgt.width/2)+'px';
+        el.style.bottom='';
+        el.style.transform='translate(-50%,-50%)';
+      } else {
+        el.style.top='50%';el.style.bottom='';el.style.left='50%';el.style.transform='translate(-50%,-50%)';
+      }
+    } else if(opt&&opt.below){
       const r=opt.below.getBoundingClientRect();
       el.style.top=(r.bottom+6)+'px';el.style.bottom='';el.style.left='50%';el.style.transform='translateX(-50%)';
     } else if(opt&&opt.above){
