@@ -1965,7 +1965,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.17</span>
+    <span class="app-version">v3.28.18</span>
   </div>
 </div>
 
@@ -10415,6 +10415,7 @@ let _mirrorFlashRaf = null;
 let _mesureRightFlash = null;  // {li, endMs} — illumination arc sur clic zone droite (STOP)
 let _lciFlashLi = null;        // layer surbrillé via CycleInfoLine (0/1/2 ou null)
 let _lciFlashRaf = null;
+let _lciFlashStart = 0;        // performance.now() au démarrage du flash (animation arc)
 // ── Variables de vue (2 boutons indépendants) ─────────────────────────────
 let viewShape = 'circle';        // 'circle' | 'linear'
 let viewCycleCircle = 'measure'; // 'pattern' | 'measure'  (état mémorisé en mode ◎)
@@ -10507,6 +10508,7 @@ function _triggerRightFlash(li, hold=false){
 // Flash dédié CycleInfoLine — fonctionne dans toutes les vues canvas
 function _lciStartFlash(li){
   _lciFlashLi=li;
+  _lciFlashStart=performance.now();
   if(_lciFlashRaf) cancelAnimationFrame(_lciFlashRaf);
   const _go=()=>{
     if(_lciFlashLi===null){ _lciFlashRaf=null; return; }
@@ -10880,12 +10882,34 @@ function drawCircles(){
 
   // (aiguilles dessinées en interleaved dans le loop [2,1,0] ci-dessus pour l'effet de profondeur)
 
-  // LCI flash : surbrillance orbite au press CycleInfoLine (toutes vues canvas)
+  // LCI flash : arc animé sur l'orbite (arc ∝ longueur pattern / mesure)
   if(_lciFlashLi!==null){
-    const _lciR=radii[_lciFlashLi], _lciCol=CIRCLE_COLORS[_lciFlashLi];
+    const li=_lciFlashLi, L=state[li].pattern.length;
+    const _lciR=radii[li], _lciCol=CIRCLE_COLORS[li];
     ctx.save();
-    ctx.beginPath(); ctx.arc(cx,cy,_lciR,0,2*Math.PI);
-    ctx.strokeStyle=_lciCol.fill; ctx.lineWidth=dotR*3; ctx.globalAlpha=0.40;
+    ctx.strokeStyle=_lciCol.fill; ctx.lineWidth=dotR*3; ctx.lineCap='round'; ctx.globalAlpha=0.45;
+    if(circleModeView==='measure'&&L>0){
+      // Arc proportionnel : nb de pas / nb de pas par mesure
+      const spm=(currentSig?.nbDivisions||4)*(8/(currentSig?.beatUnit||4));
+      const totalFrac=L/spm;          // ex: 0.5 | 1.0 | 2.5 (mesures)
+      const PER_TURN_MS=380;
+      const elapsed=performance.now()-_lciFlashStart;
+      const animDone=elapsed>=totalFrac*PER_TURN_MS;
+      ctx.beginPath();
+      if(animDone){
+        // État final : arc = fraction résiduelle (ou cercle entier si entier de mesures)
+        const rem=totalFrac%1;
+        if(rem<0.002){ctx.arc(cx,cy,_lciR,0,2*Math.PI);}
+        else{ctx.arc(cx,cy,_lciR,-Math.PI/2,-Math.PI/2+rem*2*Math.PI);}
+      } else {
+        // Animation : l'arc pousse dans le tour courant, repart à 0 au tour suivant
+        const frac=(elapsed/PER_TURN_MS)%1;
+        if(frac>0.002) ctx.arc(cx,cy,_lciR,-Math.PI/2,-Math.PI/2+frac*2*Math.PI);
+      }
+    } else {
+      // Vue motif ou fallback : orbite entière
+      ctx.beginPath(); ctx.arc(cx,cy,_lciR,0,2*Math.PI);
+    }
     ctx.stroke(); ctx.restore(); ctx.globalAlpha=1;
   }
 
