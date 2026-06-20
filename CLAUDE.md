@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.20** (session 2026-06-20)
+**v3.28.21** (session 2026-06-20)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.21 | Overlays drag LCB : format `"n pas [♪]"` + `"= n tps = p mes. de X/Y"` ; grain overlay : `"division ternaire/binaire ↕"` ; helper `_lciTpsMes(li)` ; totem : suppression `border-left` entre layers ; `setLayerDirty(li,true)` ajouté dans `_lcbSetGrain`, `unitSel.change`, `bTern.click` + `buildLayerCycleInfo()` propagé depuis `unitSel.change` et `bTern.click` |
 | v3.28.20 | CycleInfoLine : label explicite `cycle : [val] [unit]` à l'extrême gauche (remplace `⦿`) ; CSS `.lci-grave/.lci-noise` passent de `flex:1/overflow:hidden` à `flex:0 0 auto` (plus de coupure de texte) ; `_lcbSetGrain` : ajout `buildLayerCycleInfo()` (durées LCI désormais rafraîchies après changement de grain) ; suppression du `buildLayerEditBar()` redondant (déjà appelé via `buildStepsDOM→updateStepSeqInfo`) |
 | v3.28.19 | LCB drag overlay : option `{grooveOrLayers:true}` centre l'overlay dans `#circle-view` (si h>100px) ou `#layers-wrap` ; grain drag : ordre binaire-d'abord si pattern binaire, ternaire-d'abord si ternaire (ladder dynamique calculé au pointerdown) |
 | v3.28.18 | CycleInfoLine vue mesure : arc de cercle proportionnel à la longueur du pattern (`L/stepsPerMeasure`) avec animation par tour (380ms/tour), reste affiché sur le remainder au maintien |
