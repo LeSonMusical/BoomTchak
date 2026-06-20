@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.17** (session 2026-06-20)
+**v3.28.20** (session 2026-06-20)
 
 ---
 
@@ -403,6 +403,9 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.20 | CycleInfoLine : label explicite `cycle : [val] [unit]` à l'extrême gauche (remplace `⦿`) ; CSS `.lci-grave/.lci-noise` passent de `flex:1/overflow:hidden` à `flex:0 0 auto` (plus de coupure de texte) ; `_lcbSetGrain` : ajout `buildLayerCycleInfo()` (durées LCI désormais rafraîchies après changement de grain) ; suppression du `buildLayerEditBar()` redondant (déjà appelé via `buildStepsDOM→updateStepSeqInfo`) |
+| v3.28.19 | LCB drag overlay : option `{grooveOrLayers:true}` centre l'overlay dans `#circle-view` (si h>100px) ou `#layers-wrap` ; grain drag : ordre binaire-d'abord si pattern binaire, ternaire-d'abord si ternaire (ladder dynamique calculé au pointerdown) |
+| v3.28.18 | CycleInfoLine vue mesure : arc de cercle proportionnel à la longueur du pattern (`L/stepsPerMeasure`) avec animation par tour (380ms/tour), reste affiché sur le remainder au maintien |
 | v3.28.17 | CycleInfoLine : surbrillance au press via `_lciFlashLi`/`_lciStartFlash`/`_lciStopFlash` (infrastructure indépendante de `_mesureRightFlash`) — fonctionne dans toutes les vues canvas (cercle mesure, cercle motif, linéaire cycle) ; arc coloré sur l'orbite du layer (vues cercle) + bande colorée sur le 1er cycle (vue linéaire) |
 | v3.28.16 | Bordure jaune déplacée sous la CycleInfoLine (pas sous la LCB) ; espace LCB↔CycleInfoLine réduit ; `.lci-cell` cliquable (`pointer-events` + `cursor:pointer` + `data-li`) ; surbrillance maintenu en vue linéaire via `_mesureRightFlash` dans `drawLinear()` |
 | v3.28.15 | Fix durée `buildLayerCycleInfo._fmtSplit` mode 'mes' : formule `rawN=num×fbs×2` / `rawD=den×nbDiv×(16/beatUnit)` (base = dénominateur de signature, pas la battue) — 14 pas sur 7/4 ♩. affiche correctement « 1 mes. » |
