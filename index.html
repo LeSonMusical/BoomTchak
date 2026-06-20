@@ -463,7 +463,7 @@ body.view-circle .layer-row2{display:none!important} /* steps cachés en vue cir
   border-radius:0!important;justify-content:flex-start}
 .layer-name-btn.open{opacity:1}
 .layer-name-btn:hover{opacity:.9}
-.layer-name-chev{font-size:8px;display:inline-block;transition:transform .12s}
+.layer-name-chev{font-size:12px;font-weight:700;display:inline-block;transition:transform .12s}
 .layer-name-btn.open .layer-name-chev{transform:rotate(90deg)}
 /* Boutons nav preset et reset */
 .btn-pat-nav,.btn-pat-reset{background:none!important;border:none!important;box-shadow:none!important;cursor:pointer;padding:2px 3px;flex-shrink:0}
@@ -1366,7 +1366,7 @@ body.dark-mode .lcb-chev{color:#555}
 #lcb-view-toggle{flex-shrink:0;border:none;background:none;font-size:14px;padding:4px 10px;cursor:pointer;color:#888;-webkit-tap-highlight-color:transparent;border-left:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center}
 body.dark-mode #lcb-view-toggle{color:#555;border-left-color:rgba(255,255,255,.07)}
 /* Hamburger tricolore — gauche de la LCB — show/hide tous les volets layers d'un coup */
-#lcb-hamburger{flex-shrink:0;background:none;border:none;border-right:1px solid rgba(0,0,0,.1);cursor:pointer;padding:4px 8px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;align-self:stretch;-webkit-tap-highlight-color:transparent}
+#lcb-hamburger{flex-shrink:0;background:none;border:none;border-right:1px solid rgba(0,0,0,.1);cursor:pointer;padding:4px 10px;display:flex;flex-direction:column;gap:2.5px;align-items:center;justify-content:center;align-self:stretch;-webkit-tap-highlight-color:transparent}
 body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger .gvb-bar{width:14px;height:2.5px;border-radius:1.5px;display:block;transition:opacity .15s}
 #lcb-hamburger.open .gvb-bar{opacity:.35}
@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.3</span>
+    <span class="app-version">v3.28.4</span>
   </div>
 </div>
 
@@ -4805,7 +4805,7 @@ function updateSettingsBadge(){
 }
 let layersOuverts = true;
 let layerPanelsOuverts = true;
-let _lcbFolded=[false,false,false]; // état pliage par layer (tap ▾ de la LCB)
+let _lcbFolded=[true,true,true]; // état pliage par layer (tap ▾ de la LCB)
 let _layerDetailVisible=[false,false,false]; // ✎ toggle détail (steps + iso) par layer
 let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off par défaut)
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
@@ -7056,7 +7056,7 @@ function _unitLabel(s){
   const d=s.pendingClear?false:(s.pendingDouble?true:s.doubleOn);
   const h=s.pendingClear?false:(s.pendingHalf?true:s.halfOn);
   const t=s.pendingTern!=null?s.pendingTern:s.ternOn;
-  return d&&t?'1/16T':d?'1/16':h&&t?'1/4T':h?'1/4':t?'1/8T':'1/8';
+  return d&&t?'♬T':d?'♬':h&&t?'♩T':h?'♩':t?'♪T':'♪';
 }
 
 // Met à jour le texte d'un segment LCB sans reconstruire toute la barre (évite de casser le drag)
