@@ -1377,13 +1377,13 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #lcb-hamburger:not(.open) .gvb-bar{opacity:1}
 
 /* ─── LAYER CYCLE INFO BAR (mini ligne sous LCB) ─── */
-#layer-cycle-info{display:none;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1px solid rgba(200,150,26,.4);min-height:0}
+#layer-cycle-info{display:none;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1px solid rgba(200,150,26,.2);flex-shrink:0;min-height:14px}
 body.show-rib #layer-cycle-info{display:flex}
-body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.2)}
+body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.12)}
 #lci-spacer-l{flex-shrink:0} /* largeur calée sur #lcb-hamburger par JS */
-.lci-cell{flex:1;text-align:center;font-size:10px;font-weight:600;padding:2px 2px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-#lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.1);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#888;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-body.dark-mode #lci-toggle{color:#555;border-left-color:rgba(255,255,255,.08)}
+.lci-cell{flex:1;text-align:center;font-size:10px;font-weight:400;padding:2px 2px 3px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:.5}
+#lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.07);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#bbb;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 
 /* ─── VUE TOTEMS v3.27 ─── */
 #layers-totems-wrap{display:flex;flex-direction:row;align-items:stretch;width:100%;min-height:200px;box-sizing:border-box;padding:6px 4px 4px;gap:4px}
@@ -1959,7 +1959,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.10</span>
+    <span class="app-version">v3.28.11</span>
   </div>
 </div>
 
@@ -7204,8 +7204,8 @@ function buildLCB(){
     const li=parseInt(seg.dataset.li);
     const vuEl=seg.querySelector('#lcb-vu-'+li);
     const vuZone=seg.querySelector('.lcb-vu-zone');
-    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0;
-    const DRAG_THRESH=8,GRAIN_PX=28;
+    let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0;
+    const DRAG_THRESH=8,GRAIN_PX=28,N_PX=12;
     // Zone mute (même taille que le chevron) → mute
     vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
     vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
@@ -7214,7 +7214,8 @@ function buildLCB(){
     seg.addEventListener('pointerdown',e=>{
       if(e.target===vuEl||vuZone?.contains(e.target))return;
       if(e.target===chevEl)return; // chevron gère son propre tap
-      _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;_gi0=_lcbCurrentGrainIndex(li);
+      _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;
+      _gi0=_lcbCurrentGrainIndex(li);_n0=state[li].pattern.length;
       seg.setPointerCapture(e.pointerId);
     },{passive:true});
     seg.addEventListener('pointermove',e=>{
@@ -7229,7 +7230,27 @@ function buildLCB(){
         const curGi=_lcbCurrentGrainIndex(li);
         if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`);
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`,{below:bar});
+      } else if(_mode==='dens'){
+        const newLen=Math.max(1,Math.min(64,_n0+Math.round(dx/N_PX)));
+        const cur=state[li].pattern.length;
+        if(newLen!==cur){
+          if(newLen>cur){
+            state[li].pattern=[...state[li].pattern,...Array(newLen-cur).fill('.')];
+          } else {
+            state[li].pattern=state[li].pattern.slice(0,newLen);
+            if((state[li].shiftN||0)>=newLen)state[li].shiftN=0;
+          }
+          buildStepsDOM(li,true);
+          if(typeof circleView!=='undefined'&&circleView)drawCircles();
+          _lcbUpdateSeg(li);
+          buildLayerCycleInfo();
+          if(typeof setLayerDirty==='function')setLayerDirty(li,true);
+          grooveDirty=true;
+          updateGrooveSaveBtn();
+        }
+        const col=COLS[li],n=state[li].pattern.length;
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas</span><br><span style="font-size:10px;opacity:.6">Nb de pas ↔</span>`,{below:bar});
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7278,6 +7299,7 @@ function buildLayerCycleInfo(){
   const bar=document.getElementById('layer-cycle-info');
   if(!bar)return;
   if(!state||!state[0]||!state[0].pattern)return;
+  bar.style.display='flex'; // forcer visibilité (indépendant de body.show-rib en vues canvas)
   const COLS=['#378ADD','#D85A30','#1D9E75'];
   const nbDiv=(currentSig&&(currentSig.nbDivisions||currentSig.beatsPerMeasure))||4;
   let html='<div id="lci-spacer-l"></div>';
@@ -11512,12 +11534,12 @@ function _applyView(){
 
   if(circleView){
     flashStep[0]=flashStep[1]=flashStep[2]=-1;
-    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); updateCycleInfoBar(_measureViewPage); LAYERS.forEach((_,li)=>_buildIsoRow(li)); }, 30);
+    setTimeout(()=>{ resizeCanvas(); setupCanvasInteraction(); updateRhythmInfoBar(); updateCycleInfoBar(_measureViewPage); buildLayerCycleInfo(); LAYERS.forEach((_,li)=>_buildIsoRow(li)); }, 30);
     if(playing) visualRafID = requestAnimationFrame(visualLoopCircle);
   } else {
     // Linéaire (step-seq ou fallback)
     LAYERS.forEach((_,li)=>{ buildStepsDOM(li,false); setTimeout(()=>{ checkWrap(li); updateStepSeqInfo(li); },0); });
-    setTimeout(()=>{ updateRhythmInfoBar(); updateCycleInfoBar(0); },0);
+    setTimeout(()=>{ updateRhythmInfoBar(); updateCycleInfoBar(0); buildLayerCycleInfo(); },0);
     if(playing) visualRafID = requestAnimationFrame(visualLoop);
   }
 }
@@ -17120,7 +17142,18 @@ function start(){
 // Overlay glisser (tempo / volume)
 const _dragOverlay=(()=>{
   const el=document.createElement('div');el.className='drag-value-overlay';document.body.appendChild(el);
-  return{show(txt){el.innerHTML=txt;el.style.display='block';},hide(){el.style.display='none';}};
+  function _pos(opt){
+    if(opt&&opt.below){
+      const r=opt.below.getBoundingClientRect();
+      el.style.top=(r.bottom+6)+'px';el.style.bottom='';el.style.left='50%';el.style.transform='translateX(-50%)';
+    } else if(opt&&opt.above){
+      const r=opt.above.getBoundingClientRect();
+      el.style.top='';el.style.bottom=(window.innerHeight-r.top+6)+'px';el.style.left='50%';el.style.transform='translateX(-50%)';
+    } else {
+      el.style.top='50%';el.style.bottom='';el.style.left='50%';el.style.transform='translate(-50%,-50%)';
+    }
+  }
+  return{show(txt,opt){el.innerHTML=txt;el.style.display='block';_pos(opt);},hide(){el.style.display='none';}};
 })();
 
 // Lancer l'application
