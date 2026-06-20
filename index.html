@@ -1239,8 +1239,8 @@ body.dark-mode .cib-left,body.dark-mode .cib-right{color:#666}
 body.dark-mode .cib-right-interactive{color:#A090D0}
 body.dark-mode .cib-right-interactive:hover{color:#C0B0F0}
 /* InfoLayer — bloc stylisé 2 lignes */
-#rhythm-info-bar{display:none;flex-direction:column;flex-shrink:0;background:#f0efec;border-top:2px solid #C8961A;border-bottom:2px solid #C8961A;touch-action:none;cursor:grab;width:100%;box-sizing:border-box;position:relative}
-body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150,26,.75);border-bottom-color:rgba(200,150,26,.75)}
+#rhythm-info-bar{display:none;flex-direction:column;flex-shrink:0;background:#f0efec;border-top:2px solid rgba(200,150,26,.55);border-bottom:2px solid rgba(200,150,26,.55);touch-action:none;cursor:grab;width:100%;box-sizing:border-box;position:relative}
+body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150,26,.38);border-bottom-color:rgba(200,150,26,.38)}
 .rib-grid{display:grid;grid-template-columns:1fr auto 1fr;width:100%;column-gap:3px;align-items:stretch}
 /* Col 1 : metro btn (full height) + col droite (sig+tempo / slider) */
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
@@ -1354,13 +1354,14 @@ body.playing .lcb-vu:not(.lcb-vu-hit):not(.lcb-vu-soft){transform:scale(0.55);op
 .lcb-vu.lcb-vu-soft{transform:scale(1.25);box-shadow:0 0 4px 1px currentColor;opacity:.65}
 /* ancien diagonal sur pastille VU supprimé — remplacé par diagonal sur tout le segment */
 /* Grain label */
-.lcb-grain{display:flex;align-items:center;gap:2px;flex:1;min-width:0;justify-content:center;pointer-events:none}
+.lcb-grain{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;flex:1;min-width:0;pointer-events:none}
+.lcb-grain-vals{display:flex;align-items:baseline;gap:2px}
 .lcb-npas{font-size:13px;font-weight:700}
 .lcb-unit{font-size:11px;opacity:.8}
-.lcb-drag-hint{display:flex;flex-direction:column;align-items:center;gap:0;font-size:7px;opacity:.45;line-height:1;flex-shrink:0}
+.lcb-drag-hint{font-size:6px;opacity:.4;line-height:1;display:block;text-align:center}
 /* seg-muted opacity/filter applied at parent level — no per-child override needed */
 /* Chevron fold */
-.lcb-chev{font-size:16px;font-weight:700;flex-shrink:0;padding:2px 6px;transition:transform .15s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lcb-chev{font-size:20px;font-weight:700;flex-shrink:0;padding:2px 6px;transition:transform .15s;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lcb-seg.seg-folded .lcb-chev{transform:rotate(-90deg)}
 /* couleur chevron = inline couleur layer */
 /* Bouton toggle vue Édition/Totems */
@@ -1947,7 +1948,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.5</span>
+    <span class="app-version">v3.28.6</span>
   </div>
 </div>
 
@@ -7167,9 +7168,12 @@ function buildLCB(){
         `<div class="lcb-vu${muted?' muted':''}" id="lcb-vu-${li}" data-li="${li}" style="background:${col};color:${col}"></div>`+
       `</div>`+
       `<div class="lcb-grain">`+
-        `<span class="lcb-drag-hint"><span>▴</span><span>▾</span></span>`+
-        `<span class="lcb-npas" style="color:${col}">${n}</span>`+
-        `<span class="lcb-unit" style="color:${col}">${_unitLabel(state[li])}</span>`+
+        `<span class="lcb-drag-hint">▴</span>`+
+        `<div class="lcb-grain-vals">`+
+          `<span class="lcb-npas" style="color:${col}">${n}</span>`+
+          `<span class="lcb-unit" style="color:${col}">${_unitLabel(state[li])}</span>`+
+        `</div>`+
+        `<span class="lcb-drag-hint">▾</span>`+
       `</div>`+
       `<span class="lcb-chev" style="color:${col}">▾</span>`+
       `</div>`;
