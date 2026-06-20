@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.0</span>
+    <span class="app-version">v3.28.1</span>
   </div>
 </div>
 
@@ -2466,6 +2466,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
     <div class="psp-fam-row">
       <select class="psp-fam-sel" id="psp-fam-sel"></select>
       <button class="psp-fam-create" id="psp-fam-create">＋ Créer</button>
+      <span id="psp-cat-dots" style="display:inline-flex;gap:3px;align-items:center;flex-shrink:0"></span>
     </div>
     <button class="psp-confirm" id="psp-confirm">Sauvegarder</button>
   </div>
@@ -5709,11 +5710,7 @@ function openPresetModal(cfg){
       const catSep=document.createElement('div');catSep.style.cssText='border-top:1px solid rgba(0,0,0,.1);margin:4px 0 2px';
       famCol.appendChild(catSep);
       const catRow=document.createElement('div');
-      catRow.style.cssText='display:flex;align-items:center;gap:5px;padding:3px 4px';
-      const catLbl=document.createElement('span');
-      catLbl.style.cssText='font-size:9px;color:#888;flex-shrink:0';
-      catLbl.textContent='Cat.';
-      catRow.appendChild(catLbl);
+      catRow.style.cssText='display:flex;align-items:center;gap:5px;padding:4px 6px';
       LAYERS.forEach(l=>{
         const d=document.createElement('button');
         d.style.cssText=`width:16px;height:16px;border-radius:50%;border:2px solid ${PAT_CAT_COLORS[l.id]};background:${catFilter===l.id?PAT_CAT_COLORS[l.id]:'transparent'};cursor:pointer;padding:0;flex-shrink:0`;
@@ -8269,15 +8266,8 @@ function openPatSavePop(li, btn, srcPat){
   // Pastilles catégorie : reprise des tags existants, ou tag du layer par défaut (nouveau)
   const _existCats = _getPatCats(srcPat?.id||'');
   _pspPatCats = _existCats.length ? [..._existCats] : [LAYERS[li].id];
-  let _catRow = box.querySelector('#psp-cat-row');
-  if(!_catRow){
-    _catRow = document.createElement('div');
-    _catRow.id = 'psp-cat-row';
-    _catRow.style.cssText = 'display:flex;align-items:center;gap:5px;padding:2px 0';
-    const _ovBtn2 = document.getElementById('psp-btn-overwrite');
-    box.insertBefore(_catRow, _ovBtn2);
-  }
-  _buildPspCatRow(_catRow);
+  const _catDots = document.getElementById('psp-cat-dots');
+  if(_catDots) _buildPspCatRow(_catDots);
 
   if(!srcPat){
     // Pattern non référencé («—») → proposer directement «sauvegarder comme nouveau»
@@ -8326,10 +8316,6 @@ function _getPspFamById(fid){
 // Construit la ligne de pastilles catégorie dans le popover de sauvegarde
 function _buildPspCatRow(el){
   el.innerHTML='';
-  const lbl=document.createElement('span');
-  lbl.style.cssText='font-size:10px;color:#888;margin-right:4px;flex-shrink:0';
-  lbl.textContent='Catégorie :';
-  el.appendChild(lbl);
   LAYERS.forEach(l=>{
     const isOn=_pspPatCats.includes(l.id);
     const d=document.createElement('button');
