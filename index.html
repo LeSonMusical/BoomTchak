@@ -1223,7 +1223,7 @@ body.show-rib.view-circle:not(.circle-linear) #rhythm-info-wrap{margin-top:4px}
 body.show-rib.view-circle.circle-linear #rhythm-info-wrap{margin-top:4px;margin-bottom:2px}
 @media(min-width:600px){body.show-rib.view-circle #rhythm-info-wrap{order:5;flex:0 0 100%;flex-shrink:0}}
 /* CycleInfo bar (entre section-groove et canvas) — même design que les indicateurs de page */
-#cycle-info-bar{display:flex;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
+#cycle-info-bar{display:none;align-items:center;justify-content:space-between;height:28px;padding:0 8px;background:rgba(200,150,26,0.06);border-bottom:1px solid rgba(200,150,26,0.22);pointer-events:auto;flex-shrink:0;align-self:stretch}
 .cib-left{flex:1;font-size:10px;color:#888;white-space:nowrap}
 .cib-center{display:flex;align-items:center;gap:0;justify-content:center}
 .cib-right{flex:1;text-align:right;font-size:10px;color:#888;white-space:nowrap}
@@ -1380,8 +1380,9 @@ body.dark-mode #lcb-hamburger{border-right-color:rgba(255,255,255,.07)}
 #layer-cycle-info{display:none;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;background:#f0efec;border-bottom:1px solid rgba(200,150,26,.2);flex-shrink:0;min-height:14px}
 body.show-rib #layer-cycle-info{display:flex}
 body.dark-mode #layer-cycle-info{background:#13131a;border-bottom-color:rgba(200,150,26,.12)}
-#lci-cycle{flex-shrink:0;display:flex;align-items:baseline;font-size:10px;font-weight:700;padding:2px 7px 3px;color:#8B5CF6;white-space:nowrap;pointer-events:none;opacity:.65;border-right:1px solid rgba(139,92,246,.15)}
+#lci-cycle{flex-shrink:0;display:flex;align-items:baseline;gap:3px;font-size:10px;font-weight:700;padding:2px 7px 3px;color:#8B5CF6;white-space:nowrap;pointer-events:none;opacity:.65;border-right:1px solid rgba(139,92,246,.15);overflow:visible;z-index:1;position:relative}
 body.dark-mode #lci-cycle{color:#A78BFA}
+.lci-cycle-ico{font-size:9px;opacity:.7;flex-shrink:0}
 .lci-cell{flex:1;display:flex;align-items:baseline;font-size:10px;font-weight:400;padding:2px 1px 3px;min-width:0;overflow:hidden;pointer-events:none;opacity:.5}
 .lci-grave{min-width:0;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lci-aigu{flex:0 0 auto;text-align:center;white-space:nowrap;padding:0 1px}
@@ -1963,7 +1964,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.13</span>
+    <span class="app-version">v3.28.14</span>
   </div>
 </div>
 
@@ -7341,7 +7342,7 @@ function buildLayerCycleInfo(){
   // Cycle global en violet (extreme gauche, largeur = hamburger LCB)
   const {val:cv,unit:cu}=_fmtSplit(cycN,cycD);
   const {grave:cg,aigu:ca}=_splitGraveAigu(cv);
-  let html=`<div id="lci-cycle"><span class="lci-grave">${cg}</span><span class="lci-aigu">${ca}</span><span class="lci-noise">&thinsp;${cu}</span></div>`;
+  let html=`<div id="lci-cycle"><span class="lci-cycle-ico">⦿</span><span class="lci-grave">${cg}</span><span class="lci-aigu">${ca}</span><span class="lci-noise">&thinsp;${cu}</span></div>`;
   // Duree de chaque layer
   LAYERS.forEach((_,li)=>{
     const {num,den}=fracs[li];
@@ -7350,13 +7351,10 @@ function buildLayerCycleInfo(){
   });
   html+=`<button id="lci-toggle" title="${_lciMode==='mes'?'Afficher en temps':'Afficher en mesures'}">${_lciMode==='mes'?'♩':'▣'}</button>`;
   bar.innerHTML=html;
-  // Aligner lci-cycle sur le hamburger LCB, toggle sur le bouton vue
+  // Aligner le toggle sur le bouton vue LCB (lci-cycle deborde librement)
   requestAnimationFrame(()=>{
-    const hambW=document.getElementById('lcb-hamburger')?.offsetWidth;
     const togW=document.getElementById('lcb-view-toggle')?.offsetWidth;
-    const cyc=document.getElementById('lci-cycle');
     const tg=document.getElementById('lci-toggle');
-    if(cyc&&hambW!=null){cyc.style.width=hambW+'px';cyc.style.flexShrink='0';}
     if(tg&&togW)tg.style.minWidth=togW+'px';
   });
   bar.querySelector('#lci-toggle')?.addEventListener('click',()=>{
@@ -7837,6 +7835,8 @@ function buildLayers(){
       if(!orig)return;
       state[li].pattern=orig.sequence.split('');
       setLayerDirty(li,false);buildStepsDOM(li,state[li].wrapped);_buildIsoRow(li);
+      buildLCB(); // sync segments LCB après reload preset
+      buildLayerCycleInfo();
       if(circleView)drawCircles();
     });
     row1.appendChild(btnReset);
@@ -11396,6 +11396,22 @@ function updateCycleInfoBar(globalPage){
   const isMeasureView=viewShape==='circle'&&viewCycleCircle==='measure';
   const isStepView=viewShape==='linear'&&viewCycleLinear==='pattern';
   const isCycleView=viewShape==='linear'&&viewCycleLinear==='cycle';
+
+  // ── Visibilité : seulement vue Mesure/Cycle quand le cycle dépasse 1 mesure ──
+  {
+    let _show=false;
+    if(isMeasureView){
+      const _sg=posToSPM(parseInt(document.getElementById('bpm')?.value||'500'))*(globalSpeedMult||1);
+      const _mp0=(60/(_sg||1))*(currentSig?.nbDivisions||currentSig?.beatsPerMeasure||4)*(8/(currentSig?.beatUnit||4));
+      let _mx=1;
+      LAYERS.forEach((_,li)=>{const n=state[li].pattern.length;if(!n)return;const _s=_sg>0?Math.max(1,Math.round(_mp0/getBeatSec(li))):n;_mx=lcm(_mx,n/gcd(n,Math.max(1,_s)));});
+      _show=Math.max(1,Math.min(Math.round(_mx),96))>1;
+    } else if(isCycleView){
+      _show=_getLinearCycleInfo().numPages>1;
+    }
+    bar.style.display=_show?'flex':'none';
+    if(!_show)return;
+  }
 
   // ── Cycle en mesures / temps ──
   const cf=LAYERS.map((_,li)=>_cycleInCrochesFrac(li));
