@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.25** (session 2026-06-20)
+**v3.28.26** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.26 | Assistance métrique : `≈` discret dans GCB + bouton « ≈ adapter la signature » dans volet métro (colonne gauche) ; modal avec top-8 signatures scorées par alignement des patterns (mesure entière = point coloré, fraction = orange, hors-cadre = gris) ; `_advisorLayerDetail`, `_advisorScore`, `_buildSigAdvisorList`, `_openSigAdvisorModal` ; indicateur `has-suggestion` déclenché si une signature dépasse le score courant de +0.4 |
 | v3.28.25 | Fix canvas touch/click double-enregistrement : `setupCanvasInteraction` s'enregistrait à chaque changement de vue via `_applyView` → step toggleé deux fois (revient à l'état initial) ; guard `cv._interactionBound` ajouté (listeners attachés une seule fois) |
 | v3.28.24 | CycleInfoLine : suppression du label « cycle: » à gauche ; `_defaultSubdiv` : subdivision par défaut = 1 pour /8 et /16, = 2 pour /4 et /2 ; ligne 3441 : détection mesure composée découplée de `_defaultSubdiv` (6/8, 9/8 conservent `equiv=3`) |
 | v3.28.23 | LCB drag densité ↔ : aimantation non-linéaire sur valeurs musicales — `_lcbSpm`, `_lcbSnapW`, `_lcbBuildSnapMap`, `_lcbDensN` (mesures entières 1-4 = poids 5, mesures ≥5 = 3, demi-mesure = 2.5, quart = 1.5, huitième = 1.1, non-musical = 0.55 ; carte cumulée construite au pointerdown) |

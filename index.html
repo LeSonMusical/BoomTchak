@@ -1329,6 +1329,45 @@ body.dark-mode .lcb-seg:not(.seg-open){border-left-color:rgba(255,255,255,.12)!i
 /* Signature : flex:1 pour remplir l'espace à droite du ▶ */
 .gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
 body.dark-mode .gcb-row .rib-sig-btn{color:#aaa!important}
+#gcb-sig-advisor-btn{width:18px;height:18px;padding:0;border:none;background:none;cursor:pointer;font-size:12px;font-weight:900;color:#3A8C6E;opacity:0;pointer-events:none;transition:opacity .25s;border-radius:50%;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#gcb-sig-advisor-btn.has-suggestion{opacity:.85;pointer-events:all}
+#gcb-sig-advisor-btn:active{background:rgba(58,140,110,.15)}
+body.dark-mode #gcb-sig-advisor-btn{color:#6ECAAA}
+.metro-sig-advisor-btn{display:none;width:calc(100% - 4px);padding:3px 5px;border:1.5px solid rgba(58,140,110,.4);border-radius:7px;background:rgba(58,140,110,.07);cursor:pointer;font-size:9px;color:#3A8C6E;font-weight:700;text-align:center;letter-spacing:.03em;margin-bottom:4px;white-space:nowrap;transition:background .15s}
+.metro-sig-advisor-btn.has-suggestion{display:block}
+.metro-sig-advisor-btn:active{background:rgba(58,140,110,.18)}
+body.dark-mode .metro-sig-advisor-btn{color:#6ECAAA;border-color:rgba(110,202,170,.35);background:rgba(110,202,170,.07)}
+#sig-advisor-modal{position:fixed;inset:0;z-index:4100;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .18s}
+#sig-advisor-modal.open{pointer-events:all;opacity:1}
+.sig-adv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.42)}
+.sig-adv-box{position:relative;background:#fff;border-radius:14px;width:min(340px,94vw);max-height:72vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 36px rgba(0,0,0,.22)}
+body.dark-mode .sig-adv-box{background:#1e1e2e;color:#e0e0f0}
+.sig-adv-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
+body.dark-mode .sig-adv-header{border-bottom-color:rgba(255,255,255,.08)}
+.sig-adv-title{font-size:13px;font-weight:700;color:#3A8C6E}
+body.dark-mode .sig-adv-title{color:#6ECAAA}
+.sig-adv-close{border:none;background:none;font-size:17px;cursor:pointer;color:#888;padding:1px 5px;line-height:1}
+.sig-adv-intro{font-size:10.5px;color:#666;padding:7px 14px 3px;margin:0;line-height:1.45;flex-shrink:0}
+body.dark-mode .sig-adv-intro{color:#999}
+#sig-advisor-list{overflow-y:auto;padding:4px 10px 12px;display:flex;flex-direction:column;gap:4px}
+.sig-adv-row{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:8px;padding:7px 8px 7px 10px;border-radius:9px;border:1.5px solid rgba(0,0,0,.07);cursor:pointer;transition:background .13s,border-color .13s;-webkit-tap-highlight-color:transparent}
+.sig-adv-row:not(.is-current):hover,.sig-adv-row:not(.is-current):active{background:rgba(58,140,110,.07);border-color:rgba(58,140,110,.3)}
+.sig-adv-row.is-current{border-color:rgba(58,140,110,.45);background:rgba(58,140,110,.05);cursor:default}
+body.dark-mode .sig-adv-row{border-color:rgba(255,255,255,.1)}
+body.dark-mode .sig-adv-row.is-current{border-color:rgba(110,202,170,.45);background:rgba(110,202,170,.07)}
+.sig-adv-lbl{font-size:17px;font-weight:900;color:#3A8C6E;line-height:1}
+body.dark-mode .sig-adv-lbl{color:#6ECAAA}
+.sig-adv-layers{display:flex;flex-direction:column;gap:2px}
+.sig-adv-layer{font-size:10px;color:#666;display:flex;align-items:center;gap:4px;line-height:1.3}
+body.dark-mode .sig-adv-layer{color:#aaa}
+.sig-adv-layer .sadv-dot{width:7px;height:7px;border-radius:50%;background:#d0d0d0;flex-shrink:0;transition:background .15s}
+.sig-adv-layer.ok .sadv-dot{background:var(--lc,#3A8C6E)}
+.sig-adv-layer.half .sadv-dot{background:#e6a23c}
+.sig-adv-apply{font-size:10px;padding:4px 8px;border-radius:6px;border:1.5px solid #3A8C6E;background:none;color:#3A8C6E;cursor:pointer;font-weight:700;white-space:nowrap;flex-shrink:0;transition:background .13s}
+.sig-adv-row.is-current .sig-adv-apply{opacity:.38;cursor:default;pointer-events:none}
+.sig-adv-apply:active{background:rgba(58,140,110,.12)}
+body.dark-mode .sig-adv-apply{border-color:#6ECAAA;color:#6ECAAA}
+.sig-adv-poly{font-size:11px;color:#999;text-align:center;padding:16px 12px;font-style:italic;line-height:1.5}
 .gcb-play-btn{background:transparent;border:2px solid rgba(0,0,0,.35);border-radius:50%;width:36px;height:36px;color:#333;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent}
 .gcb-play-btn.playing{background:#3a3a3a;color:#fff}
 body.dark-mode .gcb-play-btn{color:#ccc;border-color:rgba(255,255,255,.38)}
@@ -1966,7 +2005,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.25</span>
+    <span class="app-version">v3.28.26</span>
   </div>
 </div>
 
@@ -2006,6 +2045,8 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         <div class="metro-pane-layout">
           <!-- Col gauche : Signature (fraction verte) + Division + Unité -->
           <div class="metro-col-metric">
+            <!-- Assistance métrique -->
+            <button class="metro-sig-advisor-btn" id="metro-sig-advisor-btn" title="Assistance métrique">≈ adapter la signature</button>
             <!-- "Divisions" au-dessus du numérateur -->
             <span class="metro-metric-lbl">Divisions</span>
             <!-- Numérateur + flèches -->
@@ -7439,6 +7480,90 @@ function buildLayerCycleInfo(){
     cell.addEventListener('pointerup',_stopFlash);
     cell.addEventListener('pointercancel',_stopFlash);
   });
+  _scheduleAdvisorUpdate();
+}
+
+// ── Metric Advisor ────────────────────────────────────────────────────────
+const COLS_ADV=['#378ADD','#D85A30','#1D9E75'];
+function _advisorLayerDetail(li, preset){
+  const s=state[li];
+  const dbl=s.doubleOn,hlf=s.halfOn,trn=s.ternOn;
+  const mult=dbl?2:hlf?0.5:1, tf=trn?2/3:1;
+  const spm=(preset.nbDivisions||4)*(preset.equivalence||2)*mult/tf;
+  const n=s.pattern.length;
+  if(spm<=0)return{score:0,label:'?',ok:false,half:false};
+  const measures=n/spm, r=Math.round(measures);
+  if(r>=1&&Math.abs(measures-r)<0.045)
+    return{score:r<=4?2:1.5,label:r+' mes.',ok:true,half:false};
+  const inv=spm/n, ir=Math.round(inv);
+  if(ir>=2&&Math.abs(inv-ir)<0.045)
+    return{score:0.4,label:'¹⁄'+ir+' mes.',ok:false,half:true};
+  return{score:0,label:measures.toFixed(1)+' mes.',ok:false,half:false};
+}
+function _advisorScore(preset){
+  const details=LAYERS.map((_,li)=>_advisorLayerDetail(li,preset));
+  return{score:details.reduce((a,d)=>a+d.score,0),details};
+}
+let _sigAdvisorDeb=null;
+function _scheduleAdvisorUpdate(){
+  clearTimeout(_sigAdvisorDeb);
+  _sigAdvisorDeb=setTimeout(_updateSigAdvisor,300);
+}
+function _updateSigAdvisor(){
+  const all=metroPresets.map(p=>({p,s:_advisorScore(p).score}));
+  const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
+  const cur=_advisorScore(currentSig).score;
+  const hasBetter=best>cur+0.39;
+  document.getElementById('gcb-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
+  document.getElementById('metro-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
+  const modal=document.getElementById('sig-advisor-modal');
+  if(modal?.classList.contains('open'))_buildSigAdvisorList();
+}
+function _buildSigAdvisorList(){
+  const list=document.getElementById('sig-advisor-list');if(!list)return;
+  const scored=metroPresets
+    .map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};})
+    .sort((a,b)=>b.score-a.score).slice(0,8);
+  const best=scored[0]?.score||0;
+  if(best<0.4){list.innerHTML=`<div class="sig-adv-poly">Motifs polymètriques&nbsp;— aucune signature ne les aligne tous parfaitement.</div>`;return;}
+  list.innerHTML=scored.map(({p,score,details})=>{
+    const isCur=p.id===currentSig?.id;
+    const layersHtml=LAYERS.map((_,li)=>{
+      const d=details[li];
+      const col=COLS_ADV[li];
+      const cls=d.ok?'ok':d.half?'half':'';
+      return `<span class="sig-adv-layer ${cls}" style="--lc:${col}"><span class="sadv-dot"></span>${d.label}</span>`;
+    }).join('');
+    return `<div class="sig-adv-row${isCur?' is-current':''}" data-id="${p.id}">
+      <div class="sig-adv-lbl">${p.label||p.id}</div>
+      <div class="sig-adv-layers">${layersHtml}</div>
+      <button class="sig-adv-apply">${isCur?'En cours':'Appliquer'}</button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.sig-adv-row:not(.is-current)').forEach(row=>{
+    row.addEventListener('click',()=>{changeSig(row.dataset.id);_closeSigAdvisorModal();});
+  });
+}
+function _openSigAdvisorModal(){
+  let modal=document.getElementById('sig-advisor-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='sig-advisor-modal';
+    modal.innerHTML=`<div class="sig-adv-backdrop"></div><div class="sig-adv-box">
+      <div class="sig-adv-header"><span class="sig-adv-title">≈ Assistance métrique</span><button class="sig-adv-close" id="sig-advisor-close">✕</button></div>
+      <p class="sig-adv-intro">Signatures les mieux alignées avec vos patterns actuels. Point coloré&nbsp;= mesure entière, orange&nbsp;= fraction.</p>
+      <div id="sig-advisor-list"></div></div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('.sig-adv-backdrop').addEventListener('click',_closeSigAdvisorModal);
+    modal.querySelector('#sig-advisor-close').addEventListener('click',_closeSigAdvisorModal);
+  }
+  // Wirer le bouton métro advisor s'il vient d'être créé
+  document.getElementById('metro-sig-advisor-btn')?.addEventListener('click',()=>_openSigAdvisorModal());
+  _buildSigAdvisorList();
+  requestAnimationFrame(()=>modal.classList.add('open'));
+}
+function _closeSigAdvisorModal(){
+  document.getElementById('sig-advisor-modal')?.classList.remove('open');
 }
 
 // ── Phase 4 : Vue Totems ──────────────────────────────────────────────────
@@ -12564,12 +12689,14 @@ function updateRhythmInfoBar(){
     `<div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div>`+
     `<button class="gcb-play-btn${playing?' playing':''}" id="gcb-play-btn" title="Play / Stop">${playing?'■':'▶'}</button>`+
     `<button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>`+
+    `<button id="gcb-sig-advisor-btn" title="Assistance métrique">≈</button>`+
     `<button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>`+
     `</div>`;
   // ── Handlers ──
   el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
     openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
   });
+  el.querySelector('#gcb-sig-advisor-btn')?.addEventListener('click',()=>_openSigAdvisorModal());
   el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{
     setMetroGlobal(metro.muted);
   });
@@ -16719,6 +16846,7 @@ function attachEvents(){
     if (bv) bv.textContent = val;
     if (br) br.value = val;
   }
+  document.getElementById('metro-sig-advisor-btn')?.addEventListener('click',()=>{if(typeof _openSigAdvisorModal==='function')_openSigAdvisorModal();});
   document.getElementById('mpv-beats-up').addEventListener('click', () => {
     const bv = document.getElementById('mpv-beats-val');
     const next = Math.min(33, (parseInt(bv.textContent) || 4) + 1);
