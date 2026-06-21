@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.39</span>
+    <span class="app-version">v3.28.40</span>
   </div>
 </div>
 
@@ -12942,7 +12942,10 @@ function _setupGCBSplitter(gcbEl){
       _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
     }
   },{passive:false});
-  gcbEl.addEventListener('pointerup',()=>{
+  gcbEl.addEventListener('pointerup',e=>{
+    // preventDefault ici annule le click natif que le navigateur générerait après pointerup
+    // → empêche le double-déclenchement (click natif + btn.click() = 2 toggles)
+    e.preventDefault();
     _dragOverlay.hide();
     if(_sMode==='split'){
       // Si circle-view était caché au pointerdown (_sH0===0), on ne touche à rien
@@ -12952,14 +12955,14 @@ function _setupGCBSplitter(gcbEl){
       // Drag tempo terminé — aucun état canvas à restaurer (jamais modifié)
       document.body.dataset.split=_splitBefore;
     } else {
-      // Tap — simuler l'action sur l'élément touché
+      // Tap — simuler l'action sur l'élément touché (click natif annulé ci-dessus)
       document.body.dataset.split=_splitBefore;
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
         if(btn){
-          setTimeout(()=>btn.click(),0);
+          btn.click();
         } else if(_tapTarget.closest('#rib-tempo-zone')){
-          setTimeout(()=>setNavSection('metro'),0);
+          setNavSection('metro');
         }
       }
     }

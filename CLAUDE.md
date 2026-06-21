@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.39** (session 2026-06-21)
+**v3.28.40** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.40 | Fix double-toggle GCB : `e.preventDefault()` sur `pointerup` annule le click natif du navigateur → plus de double-déclenchement sur play/métro/son ; suppression des `setTimeout` sur `btn.click()` (click natif annulé, simulation synchrone) |
 | v3.28.39 | GCB splitter : 3 modes — drag ↕ = split (canvas setup différé à la détection), drag ↔ sur zone tempo = tempo (restaure BPM), tap = action simulée (bouton=click, zone tempo=metro) ; pointercancel restaure canvas uniquement si mode split ; suppression click-handler redondant zone tempo |
 | v3.28.38 | Gestes LCB : tap 50/50 gauche=mute / droite=fold (suppression zones VU+chevron séparées) ; drag depuis n'importe où sur le segment ; GCB : suppression early-return boutons+tempo-zone → tout drag = splitter, tout tap = action simulée ; tap zone tempo → `setNavSection('metro')` |
 | v3.28.37 | `_drawTotemCircle` : copie exacte de `drawCircles()` mode Pattern — aiguille dégradé couleur layer (`createLinearGradient`, midF/midA par layer index), contour blanc `rgba(255,255,255,0.82)` sur step courant, `frac` toujours calculé même à l'arrêt |
