@@ -1334,7 +1334,7 @@ body.dark-mode .gcb-row .rib-sig-btn{color:#aaa!important}
 body.dark-mode .gcb-adv-sup{color:#6ECAAA}
 .metro-col-title{font-size:8px;font-weight:700;letter-spacing:.08em;color:#3A8C6E;opacity:.65;text-transform:uppercase;margin-bottom:2px;line-height:1.2}
 body.dark-mode .metro-col-title{color:#6ECAAA}
-.metro-sig-advisor-btn{width:calc(100% - 2px);padding:4px 3px;border:1.5px solid rgba(58,140,110,.38);border-radius:7px;background:rgba(58,140,110,.06);cursor:pointer;font-size:9px;line-height:1.35;color:#3A8C6E;font-weight:700;text-align:center;letter-spacing:.02em;margin-bottom:5px;transition:background .13s,opacity .15s;opacity:.5}
+.metro-sig-advisor-btn{width:calc(100% - 2px);padding:4px 3px;border:1.5px solid rgba(58,140,110,.38);border-radius:7px;background:rgba(58,140,110,.06);cursor:pointer;font-size:9px;line-height:1.35;color:#3A8C6E;font-weight:700;text-align:center;letter-spacing:.02em;margin-bottom:3px;transition:background .13s,opacity .15s;opacity:.5}
 .metro-sig-advisor-btn.has-suggestion{opacity:1;border-color:rgba(58,140,110,.6);background:rgba(58,140,110,.1)}
 .metro-sig-advisor-btn:active{background:rgba(58,140,110,.18)}
 body.dark-mode .metro-sig-advisor-btn{color:#6ECAAA;border-color:rgba(110,202,170,.35);background:rgba(110,202,170,.06)}
@@ -1813,7 +1813,8 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
-.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;padding-left:4px}
+.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start;padding-left:4px}
+.metro-sig-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%}
 .metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
 .metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
@@ -2007,7 +2008,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.28</span>
+    <span class="app-version">v3.28.29</span>
   </div>
 </div>
 
@@ -2047,27 +2048,29 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         <div class="metro-pane-layout">
           <!-- Col gauche : Signature (fraction verte) + Division + Unité -->
           <div class="metro-col-metric">
-            <!-- Titre de section -->
-            <span class="metro-col-title">Signature</span>
-            <!-- Assistance métrique -->
+            <!-- Titre de section (même style que Swing) -->
+            <span class="metro-metric-lbl">Signature</span>
+            <!-- Fraction verte centrée verticalement -->
+            <div class="metro-sig-mid">
+              <span class="metro-metric-lbl">Divisions</span>
+              <!-- Numérateur + flèches -->
+              <div class="metro-frac-num-row">
+                <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
+                <span class="mpv-beats-val metro-frac-n" id="mpv-beats-val">4</span>
+                <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
+              </div>
+              <!-- Barre verte -->
+              <div class="metro-frac-bar"></div>
+              <!-- Dénominateur + flèches (tap chiffre → picker unité) -->
+              <div class="metro-frac-num-row">
+                <button class="mpv-beats-btn" id="mpv-den-down">&lt;</button>
+                <button class="metro-frac-d metro-frac-n" id="metro-frac-den" title="Changer l'unité de temps">4</button>
+                <button class="mpv-beats-btn" id="mpv-den-up">&gt;</button>
+              </div>
+              <span class="metro-metric-lbl">Unité</span>
+            </div>
+            <!-- Assistance métrique (sous la signature) -->
             <button class="metro-sig-advisor-btn" id="metro-sig-advisor-btn" title="Assistance métrique">Assistance<br>métrique</button>
-            <!-- "Divisions" au-dessus du numérateur -->
-            <span class="metro-metric-lbl">Divisions</span>
-            <!-- Numérateur + flèches -->
-            <div class="metro-frac-num-row">
-              <button class="mpv-beats-btn" id="mpv-beats-down">&lt;</button>
-              <span class="mpv-beats-val metro-frac-n" id="mpv-beats-val">4</span>
-              <button class="mpv-beats-btn" id="mpv-beats-up">&gt;</button>
-            </div>
-            <!-- Barre verte -->
-            <div class="metro-frac-bar"></div>
-            <!-- Dénominateur + flèches (tap chiffre → picker unité) -->
-            <div class="metro-frac-num-row">
-              <button class="mpv-beats-btn" id="mpv-den-down">&lt;</button>
-              <button class="metro-frac-d metro-frac-n" id="metro-frac-den" title="Changer l'unité de temps">4</button>
-              <button class="mpv-beats-btn" id="mpv-den-up">&gt;</button>
-            </div>
-            <span class="metro-metric-lbl">Unité</span>
             <!-- Chips masqués pour compat JS _syncUnitChips -->
             <div id="metro-unit-chips" style="display:none">
               <button class="metro-unit-chip active" data-unit="4">♩</button>
@@ -7488,6 +7491,23 @@ function buildLayerCycleInfo(){
 }
 
 // ── Metric Advisor ────────────────────────────────────────────────────────
+// Signatures canoniques utilisées pour le scoring (indépendant des presets DB)
+const _SIG_CANDIDATES=[
+  {id:'2/4',  label:'2/4',  nbDivisions:2,  equivalence:2},
+  {id:'3/4',  label:'3/4',  nbDivisions:3,  equivalence:2},
+  {id:'4/4',  label:'4/4',  nbDivisions:4,  equivalence:2},
+  {id:'5/4',  label:'5/4',  nbDivisions:5,  equivalence:2},
+  {id:'6/4',  label:'6/4',  nbDivisions:6,  equivalence:2},
+  {id:'7/4',  label:'7/4',  nbDivisions:7,  equivalence:2},
+  {id:'2/2',  label:'2/2',  nbDivisions:2,  equivalence:4},
+  {id:'3/2',  label:'3/2',  nbDivisions:3,  equivalence:4},
+  {id:'3/8',  label:'3/8',  nbDivisions:3,  equivalence:1},
+  {id:'5/8',  label:'5/8',  nbDivisions:5,  equivalence:1},
+  {id:'6/8',  label:'6/8',  nbDivisions:6,  equivalence:1},
+  {id:'7/8',  label:'7/8',  nbDivisions:7,  equivalence:1},
+  {id:'9/8',  label:'9/8',  nbDivisions:9,  equivalence:1},
+  {id:'12/8', label:'12/8', nbDivisions:12, equivalence:1},
+];
 const COLS_ADV=['#378ADD','#D85A30','#1D9E75'];
 function _advisorLayerDetail(li, preset){
   const s=state[li];
@@ -7514,8 +7534,7 @@ function _scheduleAdvisorUpdate(){
   _sigAdvisorDeb=setTimeout(_updateSigAdvisor,80);
 }
 function _updateSigAdvisor(){
-  const _seen2=new Set();
-  const all=metroPresets.filter(p=>{if(_seen2.has(p.id))return false;_seen2.add(p.id);return true;}).map(p=>({p,s:_advisorScore(p).score}));
+  const all=_SIG_CANDIDATES.map(p=>({p,s:_advisorScore(p).score}));
   const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
   const cur=_advisorScore(currentSig).score;
   const hasBetter=best>cur+0.39;
@@ -7526,10 +7545,7 @@ function _updateSigAdvisor(){
 }
 function _buildSigAdvisorList(){
   const list=document.getElementById('sig-advisor-list');if(!list)return;
-  // Dédupliquer par id (N/M) pour n'afficher qu'une signature par ratio
-  const _seen=new Set();
-  const _uniq=metroPresets.filter(p=>{if(_seen.has(p.id))return false;_seen.add(p.id);return true;});
-  const scored=_uniq
+  const scored=_SIG_CANDIDATES
     .map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};})
     .sort((a,b)=>b.score-a.score).slice(0,8);
   const best=scored[0]?.score||0;

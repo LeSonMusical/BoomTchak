@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.28** (session 2026-06-21)
+**v3.28.29** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.29 | Advisor métrique : `_SIG_CANDIDATES` canonique 14 signatures (2/4→12/8) remplace `metroPresets` — scoring correct pour aksak (equiv=1) et composé ; metro col-metric : titre "Signature" en gris (`.metro-metric-lbl`), fraction dans `.metro-sig-mid` (flex:1, centrage vertical), bouton Assistance sous la fraction |
 | v3.28.28 | Advisor métrique : déduplique par `id` (plus un seul N/M par combinaison, supprime doublons preset) ; overlays LCB : 1re ligne discrète "Densité" (vertical) / "Longueur du pattern" (horizontal) ; geste LCB : `DRAG_THRESH` 8→6px, ratio vert/horiz 2.5→1.5 (horizontal plus facile, vertical toujours prioritaire) |
 | v3.28.27 | Assistance métrique — refonte UX : bouton signature GCB ouvre directement le modal advisor ; `≈` devient un exposant passif (`.gcb-adv-sup`) dans le texte du bouton ; volet métro : titre "SIGNATURE" + bouton "Assistance / métrique" toujours visible (opacity .5 → 1 si suggestion) ; debounce réduit 300→80 ms |
 | v3.28.26 | Assistance métrique : `≈` discret dans GCB + bouton « ≈ adapter la signature » dans volet métro (colonne gauche) ; modal avec top-8 signatures scorées par alignement des patterns (mesure entière = point coloré, fraction = orange, hors-cadre = gris) ; `_advisorLayerDetail`, `_advisorScore`, `_buildSigAdvisorList`, `_openSigAdvisorModal` ; indicateur `has-suggestion` déclenché si une signature dépasse le score courant de +0.4 |
