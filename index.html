@@ -2007,7 +2007,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.27</span>
+    <span class="app-version">v3.28.28</span>
   </div>
 </div>
 
@@ -7309,7 +7309,7 @@ function buildLCB(){
     const vuEl=seg.querySelector('#lcb-vu-'+li);
     const vuZone=seg.querySelector('.lcb-vu-zone');
     let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null,_snapMap=null;
-    const DRAG_THRESH=8,GRAIN_PX=28;
+    const DRAG_THRESH=6,GRAIN_PX=28;
     // Zone mute (même taille que le chevron) → mute
     vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
     vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
@@ -7334,8 +7334,8 @@ function buildLCB(){
       const dx=e.clientX-_x0,dy=e.clientY-_y0;
       if(!_mode&&(Math.abs(dx)>DRAG_THRESH||Math.abs(dy)>DRAG_THRESH)){
         _didDrag=true;
-        // horizontal requis 2.5× > vertical pour éviter changements accidentels de longueur
-        _mode=Math.abs(dx)>Math.abs(dy)*2.5?'dens':'grain';
+        // vertical légèrement prioritaire (ratio 1.5 : horizontal capté dès 56° d'inclinaison)
+        _mode=Math.abs(dx)>Math.abs(dy)*1.5?'dens':'grain';
       }
       if(_mode==='grain'){
         const newSGi=Math.max(0,Math.min(_sortedLadder.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
@@ -7344,7 +7344,7 @@ function buildLCB(){
         if(newOrigIdx!==curOrigIdx){_lcbSetGrain(li,newOrigIdx);_gi0=newSGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
         const isTern=state[li].ternOn;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
+        _dragOverlay.show(`<span style="font-size:9px;opacity:.42;font-weight:400;display:block;margin-bottom:1px">Densité</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
         const newLen=_lcbDensN(dx,_n0,_snapMap);
         const cur=state[li].pattern.length;
@@ -7365,7 +7365,7 @@ function buildLCB(){
         }
         const col=COLS[li],n=state[li].pattern.length;
         {const {tpsStr,mesStr,sig}=_lciDurParts(li);
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.7">de ${sig}</span></span>`,{grooveOrLayers:true});}
+        _dragOverlay.show(`<span style="font-size:9px;opacity:.42;font-weight:400;display:block;margin-bottom:1px">Longueur du pattern</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.7">de ${sig}</span></span>`,{grooveOrLayers:true});}
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7514,7 +7514,8 @@ function _scheduleAdvisorUpdate(){
   _sigAdvisorDeb=setTimeout(_updateSigAdvisor,80);
 }
 function _updateSigAdvisor(){
-  const all=metroPresets.map(p=>({p,s:_advisorScore(p).score}));
+  const _seen2=new Set();
+  const all=metroPresets.filter(p=>{if(_seen2.has(p.id))return false;_seen2.add(p.id);return true;}).map(p=>({p,s:_advisorScore(p).score}));
   const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
   const cur=_advisorScore(currentSig).score;
   const hasBetter=best>cur+0.39;
@@ -7525,7 +7526,10 @@ function _updateSigAdvisor(){
 }
 function _buildSigAdvisorList(){
   const list=document.getElementById('sig-advisor-list');if(!list)return;
-  const scored=metroPresets
+  // Dédupliquer par id (N/M) pour n'afficher qu'une signature par ratio
+  const _seen=new Set();
+  const _uniq=metroPresets.filter(p=>{if(_seen.has(p.id))return false;_seen.add(p.id);return true;});
+  const scored=_uniq
     .map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};})
     .sort((a,b)=>b.score-a.score).slice(0,8);
   const best=scored[0]?.score||0;
