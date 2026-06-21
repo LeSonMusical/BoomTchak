@@ -1246,15 +1246,16 @@ body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
 .rib-left-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;cursor:ew-resize;touch-action:none;user-select:none;padding:2px 0}
 .rib-left-top{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;pointer-events:none}
-.rib-tempo-val{font-size:12px;color:#6B5FA5;font-weight:700;white-space:nowrap;text-align:center}
+.rib-tempo-val{font-size:13px;color:#6B5FA5;font-weight:700;white-space:nowrap;text-align:center}
+.rib-bpm-lbl{font-size:9px;font-weight:600;color:#6B5FA5;opacity:.55;letter-spacing:.04em;pointer-events:none;padding-left:2px;align-self:flex-end;padding-bottom:1px}
 .rib-tempo-slider{width:100%;cursor:ew-resize;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
 .rib-tempo-slider::-moz-range-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 body.dark-mode .rib-tempo-val{color:#9B8FD5}
-.rib-tempo-gauge{width:75%;height:2px;background:rgba(107,95,165,.18);border-radius:2px;pointer-events:none;flex-shrink:0}
-.rib-tempo-gauge-fill{height:100%;background:rgba(107,95,165,.55);border-radius:2px;min-width:4px;transition:width .12s}
+.rib-tempo-gauge{width:80%;height:4px;background:rgba(107,95,165,.22);border-radius:3px;pointer-events:none;flex-shrink:0}
+.rib-tempo-gauge-fill{height:100%;background:rgba(107,95,165,.72);border-radius:3px;min-width:5px;transition:width .12s}
 body.dark-mode .rib-tempo-gauge{background:rgba(155,143,213,.12)}
 body.dark-mode .rib-tempo-gauge-fill{background:rgba(155,143,213,.5)}
 body.dark-mode .rib-tempo-slider::-webkit-slider-runnable-track{background:rgba(155,143,213,.2)}
@@ -1447,6 +1448,10 @@ body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 /* Anneau mini (seulement état C — canvas replié) */
 .totem-ring-wrap{display:none;justify-content:center;padding-bottom:2px;flex-shrink:0}
 body[data-split="C"] .totem-ring-wrap{display:flex}
+/* Cercle pattern (visible quand le totem est assez large = 1 ou 2 layers visibles) */
+.totem-circle-wrap{display:none;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
+.totem-circle-cv{display:block;width:90%;max-width:110px;aspect-ratio:1/1}
+@container (min-width:140px){.totem-circle-wrap{display:flex}}
 /* Les deux pads : toujours empilés (pad = rectangle large, axe X = longue dimension) */
 .totem-pads-wrap{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
 /* Le pad 2D */
@@ -2017,7 +2022,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.32</span>
+    <span class="app-version">v3.28.33</span>
   </div>
 </div>
 
@@ -2635,7 +2640,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
       <span class="nav-tab-off-badge metro-badge">off</span>
     </button>
     <button class="nav-tab" id="nav-tab-sons">
-      <span class="nav-tab-ico">🔊</span>
+      <span class="nav-tab-ico">🥁</span>
       <span class="nav-tab-lbl">Sons</span>
       <span class="nav-tab-off-badge sons-badge">off</span>
     </button>
@@ -7659,6 +7664,27 @@ function _updateTotemRings(){
   });
 }
 
+// Dessine un mini-cercle pattern dans un canvas (vue pattern mono-layer pour totems)
+function _drawTotemCircle(cv,pat,col){
+  if(!cv||!pat||!pat.length)return;
+  const W=cv.width,H=cv.height,ctx=cv.getContext('2d');if(!ctx)return;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,r=Math.min(W,H)*0.38,L=pat.length;
+  pat.forEach((s,i)=>{
+    const a=(i/L)*2*Math.PI-Math.PI/2;
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    const isF=s==='X',isSoft=s==='x';
+    const dr=isF?4.5:isSoft?3:1.5;
+    ctx.beginPath();ctx.arc(x,y,dr,0,2*Math.PI);
+    if(isF){ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=6;ctx.fill();ctx.shadowBlur=0;}
+    else if(isSoft){ctx.fillStyle=col;ctx.globalAlpha=0.38;ctx.fill();ctx.globalAlpha=1;}
+    else{ctx.fillStyle='rgba(128,128,128,0.18)';ctx.fill();}
+  });
+  // Cercle guide discret
+  ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
+  ctx.strokeStyle=col+'33';ctx.lineWidth=1;ctx.stroke();
+}
+
 // Construit (ou reconstruit) la vue Totems dans #layers-wrap
 function buildTotems(){
   const wrap=document.getElementById('layers-wrap');if(!wrap)return;
@@ -7691,6 +7717,13 @@ function buildTotems(){
     const ringCv=document.createElement('canvas');ringCv.className='totem-ring';
     ringCv.id='totem-ring-'+li;ringCv.width=48;ringCv.height=48;
     ringWrap.appendChild(ringCv);totem.appendChild(ringWrap);
+
+    // Cercle pattern (visible quand totem assez large via @container min-width:140px)
+    const circWrap=document.createElement('div');circWrap.className='totem-circle-wrap';
+    const circCv=document.createElement('canvas');circCv.className='totem-circle-cv';
+    circCv.id='totem-circ-'+li;circCv.width=100;circCv.height=100;
+    circWrap.appendChild(circCv);totem.appendChild(circWrap);
+    _drawTotemCircle(circCv,state[li].pattern,col);
 
     // ── Fabrique un pad (labels Y et X à l'intérieur) ──
     const _mkPad=(padId,axisY,axisX)=>{
@@ -7745,6 +7778,8 @@ function buildTotems(){
       _showPat(prevA,_totemPadBLocked[li]?_totemLockedPat[li]:(_totemPreRotPat[li]||state[li].pattern));
       // Pad B : résultat final après calage
       _showPat(prevB,state[li].pattern);
+      // Cercle pattern (vue globale)
+      _drawTotemCircle(circCv,state[li].pattern,col);
     };
     _updA();_updB();_refreshPrev();
 
@@ -10536,7 +10571,7 @@ function _applyBandMute(muted){
   const icon=document.getElementById('sons-icon');
   if(icon)icon.textContent=muted?'🔇':'🔊';
   const navIco=document.querySelector('#nav-tab-sons .nav-tab-ico');
-  if(navIco)navIco.textContent=muted?'🔇':'🔊';
+  if(navIco)navIco.textContent=muted?'🔇':'🥁';
   const btnV=document.getElementById('btn-vol');
   if(btnV)btnV.classList.toggle('muted',muted);
   const leftIco=document.querySelector('.band-bar .sbar-left .section-bar-lbl');
@@ -12734,7 +12769,7 @@ function updateRhythmInfoBar(){
   el.style.display='flex';
   el.innerHTML=`<div id="gcb-handle"></div><div class="gcb-row">`+
     `<button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button>`+
-    `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div>`+
+    `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span><span class="rib-bpm-lbl">BPM</span></div>`+
     `<div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div>`+
     `<button class="gcb-play-btn${playing?' playing':''}" id="gcb-play-btn" title="Play / Stop">${playing?'■':'▶'}</button>`+
     `<button class="rib-sig-btn" id="rib-sig-btn" title="Assistance métrique">${sigLabelSimple}<sup class="gcb-adv-sup" id="gcb-adv-sup">≈</sup></button>`+
@@ -17595,7 +17630,7 @@ _syncUnitChips();
 // Sync état initial métro (sans overlay)
 (function(){const on=!metro.muted;document.getElementById('btn-metro-main')?.classList.toggle('on',on);const bT=document.getElementById('btn-tempo');if(bT)bT.classList.toggle('metro-on',on);document.getElementById('btn-sig-top')?.classList.toggle('metro-on',on);document.getElementById('temps-content')?.classList.toggle('metro-off',!on);document.body.classList.toggle('metro-muted',!on);const mb=document.querySelector('.temps-bar .sbar-off-badge');if(mb){mb.textContent=on?'on':'off';mb.style.color=on?'#3A8C6E':'#d94040';}const mpb=document.getElementById('metro-onoff-badge');if(mpb){mpb.textContent=on?'on':'off';mpb.style.color=on?'#3A8C6E':'#d94040';}document.getElementById('btn-metro-onoff-p2')?.classList.toggle('on',on);})();
 // Sync état initial band mute
-(function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🔊';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
+(function(){document.body.classList.toggle('band-muted',bandMuted);const ni=document.querySelector('#nav-tab-sons .nav-tab-ico');if(ni)ni.textContent=bandMuted?'🔇':'🥁';const sb=document.querySelector('.band-bar .sbar-off-badge');if(sb){sb.textContent=bandMuted?'off':'on';sb.style.color=bandMuted?'#d94040':'#2d5f80';}})();
 _syncNavTabs(); // Sync onglets de nav
 setView('circle');                                             // Vue circulaire par défaut
 // ── Init navigation pages vue Mesure ──────────────────────────────────────
