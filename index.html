@@ -1327,16 +1327,18 @@ body.dark-mode .lcb-seg:not(.seg-open){border-left-color:rgba(255,255,255,.12)!i
 /* Zone tempo : flex:1 pour remplir l'espace à gauche du ▶ */
 .gcb-row #rib-tempo-zone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
 /* Signature : flex:1 pour remplir l'espace à droite du ▶ */
-.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0;position:relative}
 body.dark-mode .gcb-row .rib-sig-btn{color:#aaa!important}
-#gcb-sig-advisor-btn{width:18px;height:18px;padding:0;border:none;background:none;cursor:pointer;font-size:12px;font-weight:900;color:#3A8C6E;opacity:0;pointer-events:none;transition:opacity .25s;border-radius:50%;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-#gcb-sig-advisor-btn.has-suggestion{opacity:.85;pointer-events:all}
-#gcb-sig-advisor-btn:active{background:rgba(58,140,110,.15)}
-body.dark-mode #gcb-sig-advisor-btn{color:#6ECAAA}
-.metro-sig-advisor-btn{display:none;width:calc(100% - 4px);padding:3px 5px;border:1.5px solid rgba(58,140,110,.4);border-radius:7px;background:rgba(58,140,110,.07);cursor:pointer;font-size:9px;color:#3A8C6E;font-weight:700;text-align:center;letter-spacing:.03em;margin-bottom:4px;white-space:nowrap;transition:background .15s}
-.metro-sig-advisor-btn.has-suggestion{display:block}
+.gcb-adv-sup{font-size:9px;font-weight:900;color:#3A8C6E;vertical-align:super;margin-left:1px;opacity:0;transition:opacity .15s;pointer-events:none;line-height:0}
+.gcb-adv-sup.has-suggestion{opacity:.9}
+body.dark-mode .gcb-adv-sup{color:#6ECAAA}
+.metro-col-title{font-size:8px;font-weight:700;letter-spacing:.08em;color:#3A8C6E;opacity:.65;text-transform:uppercase;margin-bottom:2px;line-height:1.2}
+body.dark-mode .metro-col-title{color:#6ECAAA}
+.metro-sig-advisor-btn{width:calc(100% - 2px);padding:4px 3px;border:1.5px solid rgba(58,140,110,.38);border-radius:7px;background:rgba(58,140,110,.06);cursor:pointer;font-size:9px;line-height:1.35;color:#3A8C6E;font-weight:700;text-align:center;letter-spacing:.02em;margin-bottom:5px;transition:background .13s,opacity .15s;opacity:.5}
+.metro-sig-advisor-btn.has-suggestion{opacity:1;border-color:rgba(58,140,110,.6);background:rgba(58,140,110,.1)}
 .metro-sig-advisor-btn:active{background:rgba(58,140,110,.18)}
-body.dark-mode .metro-sig-advisor-btn{color:#6ECAAA;border-color:rgba(110,202,170,.35);background:rgba(110,202,170,.07)}
+body.dark-mode .metro-sig-advisor-btn{color:#6ECAAA;border-color:rgba(110,202,170,.35);background:rgba(110,202,170,.06)}
+body.dark-mode .metro-sig-advisor-btn.has-suggestion{border-color:rgba(110,202,170,.6);background:rgba(110,202,170,.1)}
 #sig-advisor-modal{position:fixed;inset:0;z-index:4100;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .18s}
 #sig-advisor-modal.open{pointer-events:all;opacity:1}
 .sig-adv-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.42)}
@@ -2005,7 +2007,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.26</span>
+    <span class="app-version">v3.28.27</span>
   </div>
 </div>
 
@@ -2045,8 +2047,10 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
         <div class="metro-pane-layout">
           <!-- Col gauche : Signature (fraction verte) + Division + Unité -->
           <div class="metro-col-metric">
+            <!-- Titre de section -->
+            <span class="metro-col-title">Signature</span>
             <!-- Assistance métrique -->
-            <button class="metro-sig-advisor-btn" id="metro-sig-advisor-btn" title="Assistance métrique">≈ adapter la signature</button>
+            <button class="metro-sig-advisor-btn" id="metro-sig-advisor-btn" title="Assistance métrique">Assistance<br>métrique</button>
             <!-- "Divisions" au-dessus du numérateur -->
             <span class="metro-metric-lbl">Divisions</span>
             <!-- Numérateur + flèches -->
@@ -7507,14 +7511,14 @@ function _advisorScore(preset){
 let _sigAdvisorDeb=null;
 function _scheduleAdvisorUpdate(){
   clearTimeout(_sigAdvisorDeb);
-  _sigAdvisorDeb=setTimeout(_updateSigAdvisor,300);
+  _sigAdvisorDeb=setTimeout(_updateSigAdvisor,80);
 }
 function _updateSigAdvisor(){
   const all=metroPresets.map(p=>({p,s:_advisorScore(p).score}));
   const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
   const cur=_advisorScore(currentSig).score;
   const hasBetter=best>cur+0.39;
-  document.getElementById('gcb-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
+  document.getElementById('gcb-adv-sup')?.classList.toggle('has-suggestion',hasBetter);
   document.getElementById('metro-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
   const modal=document.getElementById('sig-advisor-modal');
   if(modal?.classList.contains('open'))_buildSigAdvisorList();
@@ -12688,15 +12692,11 @@ function updateRhythmInfoBar(){
     `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span></div>`+
     `<div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div>`+
     `<button class="gcb-play-btn${playing?' playing':''}" id="gcb-play-btn" title="Play / Stop">${playing?'■':'▶'}</button>`+
-    `<button class="rib-sig-btn" id="rib-sig-btn" title="Métrique">${sigLabelSimple}</button>`+
-    `<button id="gcb-sig-advisor-btn" title="Assistance métrique">≈</button>`+
+    `<button class="rib-sig-btn" id="rib-sig-btn" title="Assistance métrique">${sigLabelSimple}<sup class="gcb-adv-sup" id="gcb-adv-sup">≈</sup></button>`+
     `<button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>`+
     `</div>`;
   // ── Handlers ──
-  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{
-    openPresetModal({type:'sig',currentId:currentSig?.id||'4/4',label:'Métrique',accent:'#2A6A50',bg:'#EDF7F4',compact:true,famFilter:'all',onSelect:(id)=>changeSig(id)});
-  });
-  el.querySelector('#gcb-sig-advisor-btn')?.addEventListener('click',()=>_openSigAdvisorModal());
+  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>_openSigAdvisorModal());
   el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{
     setMetroGlobal(metro.muted);
   });
