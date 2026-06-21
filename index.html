@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.41</span>
+    <span class="app-version">v3.28.42</span>
   </div>
 </div>
 
@@ -4900,6 +4900,7 @@ let _layerDetailVisible=[false,false,false]; // ✎ toggle détail (steps + iso)
 let _isoRowVisible=[false,false,false]; // toggle bouton ▦ dans strip-1 (off par défaut)
 let _lcbViewMode='edition'; // 'edition' | 'totems' — toggle ☰/▥
 let _lciMode='mes'; // 'mes' | 'tps' — mode d'affichage Layer Cycle Info
+let _gcbPointerHandled=false; // verrou anti-double-trigger GCB (pointerup + click iOS)
 let _totemPadAState=[{x:0.5,y:0},{x:0.5,y:0},{x:0.5,y:0}]; // densité ↔ / remplissage ↕
 let _totemPadBState=[{x:0,y:0.5},{x:0,y:0.5},{x:0,y:0.5}]; // calage ↔ / géométrie ↕
 let _totemPadBLocked=[false,false,false]; // calage pur : squelette verrouillé
@@ -12831,19 +12832,18 @@ function updateRhythmInfoBar(){
       `<button class="rib-son-btn${_sonMuted?' muted':''}" id="rib-son-btn" title="Sons on/off">${_sonMuted?'🔇':'🔊'}</button>`+
     `</div>`+
     `</div>`;
-  // ── Handlers ──
-  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>_openSigAdvisorModal());
-  el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{
-    setMetroGlobal(metro.muted);
-  });
+  // ── Handlers click (desktop/clavier) — ignorés si déjà traités par pointerup ──
+  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;_openSigAdvisorModal();});
+  el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;setMetroGlobal(metro.muted);});
   el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
+    if(_gcbPointerHandled)return;
     const willMute=!bandMuted;
     _applyBandMute(willMute);
     _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(willMute?'#aaa':'#4AC9A0')+'">'+(willMute?'off':'on')+'</span>');
     clearTimeout(_dragOverlay._sonTimer);
     _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
   });
-  el.querySelector('#gcb-play-btn')?.addEventListener('click',togglePlay);
+  el.querySelector('#gcb-play-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;togglePlay();});
   // Note : gestes sur la zone tempo gérés par _setupGCBSplitter (tap=métro, drag↔=tempo)
   if(!el._gcbSplitterSetup){el._gcbSplitterSetup=true;_setupGCBSplitter(el);}
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
@@ -12955,14 +12955,17 @@ function _setupGCBSplitter(gcbEl){
       // Drag tempo terminé — aucun état canvas à restaurer (jamais modifié)
       document.body.dataset.split=_splitBefore;
     } else {
-      // Tap — appel direct (btn.click() ne transmet pas le user-activation sur iOS)
+      // Tap — appel direct + verrou _gcbPointerHandled pour bloquer le click natif iOS
+      // (iOS Safari génère un click depuis touchend même après e.preventDefault() sur pointerup)
       document.body.dataset.split=_splitBefore;
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
         const id=btn?btn.id:'';
+        const handled=(id==='gcb-play-btn'||id==='rib-metro-btn'||id==='rib-son-btn'||id==='rib-sig-btn'||!!_tapTarget.closest('#rib-tempo-zone'));
+        if(handled){_gcbPointerHandled=true;setTimeout(()=>{_gcbPointerHandled=false;},300);}
         if(id==='gcb-play-btn'){
           togglePlay();
-        } else if(id==='rib-metro-btn'||_tapTarget.closest('#rib-metro-btn')){
+        } else if(id==='rib-metro-btn'){
           setMetroGlobal(metro.muted);
         } else if(id==='rib-son-btn'){
           const wm=!bandMuted;

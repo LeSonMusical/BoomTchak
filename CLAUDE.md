@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.41** (session 2026-06-21)
+**v3.28.42** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.42 | Fix double-toggle GCB définitif : `_gcbPointerHandled` (flag module-level) posé dans `pointerup` tap-branch avec reset `setTimeout(300)` — les click handlers vérifient ce flag et court-circuitent si déjà traités (iOS Safari génère un `click` depuis `touchend` indépendamment de `e.preventDefault()` sur pointer events) |
 | v3.28.41 | Fix tap GCB play/metro : appel direct des fonctions (`togglePlay`, `setMetroGlobal`, `_openSigAdvisorModal`) depuis `pointerup` — `btn.click()` synthétique ne transmet pas le user-activation iOS → `ac.resume()` échouait silencieusement ; `rib-metro-btn` : `min-width` 30→44px (zone de tap fiable) |
 | v3.28.40 | Fix double-toggle GCB : `e.preventDefault()` sur `pointerup` annule le click natif du navigateur → plus de double-déclenchement sur play/métro/son ; suppression des `setTimeout` sur `btn.click()` (click natif annulé, simulation synchrone) |
 | v3.28.39 | GCB splitter : 3 modes — drag ↕ = split (canvas setup différé à la détection), drag ↔ sur zone tempo = tempo (restaure BPM), tap = action simulée (bouton=click, zone tempo=metro) ; pointercancel restaure canvas uniquement si mode split ; suppression click-handler redondant zone tempo |
