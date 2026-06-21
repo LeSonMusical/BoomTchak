@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.34** (session 2026-06-21)
+**v3.28.35** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.35 | Vue Totems : 3 cercles toujours visibles (suppression @container) ; `_drawTotemCircle(cv,li)` rendu identique à `drawCircles()` mode Pattern (CIRCLE_COLORS, track ring, dotR proportionnel, isMuted) ; GCB : layout grid `1fr auto 1fr` (`.gcb-left-group`/`.gcb-right-group`) → play centré exact ; `.gcb-play-btn` rectangle arrondi `border-radius:12px` pleine hauteur `align-self:stretch` |
 | v3.28.34 | Vue Totems : cercle pattern déplacé sous les pads et boutons ; GCB tempo : `♩=` discret (opacity .5, 10px, weight 400) + valeur `105` en gras (16px, weight 800) via `rib-tempo-sym`/`rib-tempo-num` ; GCB : sig-btn `flex:0 0 auto` (zone de tap réduite à gauche), rib-son-btn `min-width:44px` (zone élargie) |
 | v3.28.33 | 3 améliorations UI : icône 🥁 dans nav-tab Sons (était 🔊) ; GCB tempo : label « BPM » + jauge tempo plus haute (4px) + texte 13px ; Vue Totems : cercle pattern par layer (`_drawTotemCircle`, canvas `totem-circ-{li}`) visible via `@container (min-width:140px)` quand 1 ou 2 totems affichés |
 | v3.28.32 | Fix splitter GCB en vue Pas et Cycle : `_sH0===0` (circle-view caché) → pas de `height:0` corrompu, pointermove no-op sans overlay trompeur, pointerup restaure `data-split` sans `_applySplit` ; CSS `flex:0 0 100%→auto` sur circle-view en cycle-linéaire desktop (flex-basis % ignorait la hauteur inline) |
