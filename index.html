@@ -1208,7 +1208,7 @@ body.view-circle #section-encyclo{order:5}
   body.view-circle:not(.circle-linear) #layers-wrap{align-self:center}
   body.view-circle #section-encyclo{order:5;width:100%;flex-shrink:0}
   /* Vue Cycle (linéaire) : layers sous le canvas même sur desktop */
-  body.view-circle.circle-linear #circle-view{flex:0 0 100%;width:100%}
+  body.view-circle.circle-linear #circle-view{flex:0 0 auto;width:100%}
   body.view-circle.circle-linear #layers-wrap{order:5;flex:0 0 100%;padding-left:0}
   /* view-mode-bar suit section-groove dans le flex-wrap */
   body.view-circle #view-mode-bar{order:3;width:100%;flex-shrink:0}
@@ -2017,7 +2017,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.31</span>
+    <span class="app-version">v3.28.32</span>
   </div>
 </div>
 
@@ -12820,16 +12820,20 @@ function _setupGCBSplitter(gcbEl){
     const canvasEl=document.getElementById('rhythm-canvas');
     _sH0=c?c.offsetHeight:200;
     _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:(_sH0||200);
-    // Normaliser le transform canvas dès le début : si resizeCanvas() a tourné entre deux drags,
-    // canvas.transform peut être '' (0 scale) alors que circle-view a une hauteur ≠ physH.
-    // On recalcule le scale cohérent avec la hauteur réelle de circle-view.
-    if(canvasEl&&_physH>0&&c&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
-      const sNorm=_sH0/_physH;
-      canvasEl.style.transform=Math.abs(sNorm-1)>0.005?`scale(${sNorm.toFixed(3)})`:'';
-      canvasEl.style.transformOrigin='top center';
+    // _sH0===0 → circle-view caché (vue Pas / layersOuverts=false) : pas de split visuel possible.
+    // On ne touche pas à c.style.height pour ne pas laisser un height:0 corrompu qui bloquerait
+    // le canvas si l'utilisateur revient ensuite en vue circulaire.
+    if(_sH0>0){
+      // Normaliser le transform canvas dès le début : si resizeCanvas() a tourné entre deux drags,
+      // canvas.transform peut être '' (0 scale) alors que circle-view a une hauteur ≠ physH.
+      if(canvasEl&&_physH>0&&c&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+        const sNorm=_sH0/_physH;
+        canvasEl.style.transform=Math.abs(sNorm-1)>0.005?`scale(${sNorm.toFixed(3)})`:'';
+        canvasEl.style.transformOrigin='top center';
+      }
+      delete document.body.dataset.split;
+      c.style.height=_sH0+'px';c.style.overflow='hidden';
     }
-    delete document.body.dataset.split;
-    if(c){c.style.height=_sH0+'px';c.style.overflow='hidden';}
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
   },{passive:false});
   gcbEl.addEventListener('pointermove',e=>{
@@ -12840,6 +12844,8 @@ function _setupGCBSplitter(gcbEl){
       _sY0=e.clientY; // reset référence au moment de la détection → zéro saut
     }
     if(_sMode==='split'){
+      // Vue sans canvas (vue Pas, groove replié) : circle-view caché → split inopérant
+      if(_sH0===0)return;
       const c=_cv();if(!c)return;
       const h=Math.max(0,_sH0+(e.clientY-_sY0)); // libre, sans cap supérieur
       c.style.height=h+'px';
@@ -12860,7 +12866,9 @@ function _setupGCBSplitter(gcbEl){
   gcbEl.addEventListener('pointerup',()=>{
     _dragOverlay.hide();
     if(_sMode==='split'){
-      _applySplit('B',undefined,true);
+      // Si circle-view était caché au pointerdown (_sH0===0), on ne touche à rien
+      if(_sH0>0) _applySplit('B',undefined,true);
+      else document.body.dataset.split=_splitBefore;
     } else {
       document.body.dataset.split=_splitBefore;
       const c=_cv();
