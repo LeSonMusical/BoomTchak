@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.30** (session 2026-06-21)
+**v3.28.31** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.31 | CycleInfoLine : lci-cycle aligne sa largeur sur lcb-hamburger (rAF) → colonnes LCI/LCB alignées ; cellules [data-li=0] à droite, [1] centrée, [2] à gauche ; volet Tic-Tac : bouton On/Off synced à l'ouverture (fix premier open), rouge texte+bord quand Off ; Signature + Swing labels vert léger ; advisor modal : « a priori » dans intro, avertissement polymétrie si aucune signature n'aligne tous les layers sur mesure entière |
 | v3.28.30 | Advisor : signal GCB `≈` activé uniquement si score actuel < 2/3 du max (< 4.0 pour 3 layers) ET meilleure option existe (+1.0 min) — supprime les faux positifs sur signatures équivalentes ; modal filtré à `score >= max(0.3, best-2.0)` + max 6 propositions (resserrement de plage) |
 | v3.28.29 | Advisor métrique : `_SIG_CANDIDATES` canonique 14 signatures (2/4→12/8) remplace `metroPresets` — scoring correct pour aksak (equiv=1) et composé ; metro col-metric : titre "Signature" en gris (`.metro-metric-lbl`), fraction dans `.metro-sig-mid` (flex:1, centrage vertical), bouton Assistance sous la fraction |
 | v3.28.28 | Advisor métrique : déduplique par `id` (plus un seul N/M par combinaison, supprime doublons preset) ; overlays LCB : 1re ligne discrète "Densité" (vertical) / "Longueur du pattern" (horizontal) ; geste LCB : `DRAG_THRESH` 8→6px, ratio vert/horiz 2.5→1.5 (horizontal plus facile, vertical toujours prioritaire) |

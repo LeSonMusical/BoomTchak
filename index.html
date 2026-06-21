@@ -1346,7 +1346,9 @@ body.dark-mode .metro-sig-advisor-btn.has-suggestion{border-color:rgba(110,202,1
 body.dark-mode .sig-adv-box{background:#1e1e2e;color:#e0e0f0}
 .sig-adv-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0}
 body.dark-mode .sig-adv-header{border-bottom-color:rgba(255,255,255,.08)}
-.sig-adv-title{font-size:13px;font-weight:700;color:#3A8C6E}
+.sig-adv-title{font-size:13px;font-weight:700;color:#3A8C6E;flex:1;text-align:center}
+.sig-adv-poly-warn{font-size:10px;color:#C8961A;background:rgba(200,150,26,.06);border-radius:7px;margin:4px 10px 0;padding:6px 10px;text-align:center;line-height:1.55;border:1px solid rgba(200,150,26,.18);font-style:normal}
+body.dark-mode .sig-adv-poly-warn{color:#E8CC60;background:rgba(200,150,26,.1);border-color:rgba(200,150,26,.22)}
 body.dark-mode .sig-adv-title{color:#6ECAAA}
 .sig-adv-close{border:none;background:none;font-size:17px;cursor:pointer;color:#888;padding:1px 5px;line-height:1}
 .sig-adv-intro{font-size:10.5px;color:#666;padding:7px 14px 3px;margin:0;line-height:1.45;flex-shrink:0}
@@ -1430,6 +1432,10 @@ body.dark-mode #lci-cycle{color:#A78BFA}
 .lci-grave{flex:0 0 auto;white-space:nowrap;text-align:right}
 .lci-aigu{flex:0 0 auto;text-align:center;white-space:nowrap;padding:0 1px}
 .lci-noise{flex:0 0 auto;white-space:nowrap;font-size:9px;opacity:.8;padding-left:1px}
+/* Alignement par colonne : Grave→droite, Aigu=centre, Noise→gauche */
+.lci-cell[data-li="0"]{justify-content:flex-end}
+.lci-cell[data-li="1"]{justify-content:center}
+.lci-cell[data-li="2"]{justify-content:flex-start}
 #lci-toggle{flex-shrink:0;background:none;border:none;border-left:1px solid rgba(0,0,0,.07);font-size:9px;padding:2px 8px 3px;cursor:pointer;color:#bbb;align-self:stretch;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 
@@ -1807,14 +1813,17 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
 .metro-panel-tabs{display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,.07)}
 .metro-tab{flex:1;padding:5px 0;border:1px solid #ccc;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;background:#f5f4f0;color:#888;transition:background .15s,color .15s,border-color .15s}
 .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
-.metro-onoff-tab-btn{padding:5px 14px;border:2px solid #bbb;border-radius:50px;font-size:11px;font-weight:800;cursor:pointer;background:#f5f4f0;color:#999;transition:all .15s;flex-shrink:0;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.metro-onoff-tab-btn{padding:5px 14px;border:2px solid rgba(217,64,64,.45);border-radius:50px;font-size:11px;font-weight:800;cursor:pointer;background:#f5f4f0;color:#d94040;transition:all .15s;flex-shrink:0;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .metro-onoff-tab-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 .metro-panel-content{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .metro-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:6px 8px 4px}
 /* Layout 3 colonnes panel 1 */
 .metro-pane-layout{display:grid;grid-template-columns:78px 1fr 52px;gap:6px;height:100%;align-items:stretch}
-.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start;padding-left:4px}
-.metro-sig-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%}
+.metro-col-metric{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:space-between;padding:4px 0 4px 4px}
+.metro-sig-mid{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%}
+/* Titres "Signature" et "Swing" en vert léger */
+.metro-col-metric>.metro-metric-lbl,.metro-col-swing>.metro-metric-lbl:first-child{color:rgba(58,140,110,.72)}
+body.dark-mode .metro-col-metric>.metro-metric-lbl,body.dark-mode .metro-col-swing>.metro-metric-lbl:first-child{color:rgba(110,202,170,.8)}
 .metro-col-wheel{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
 .metro-col-swing{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding-top:6px}
 #metro-wheel{cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;border-radius:50%;display:block}
@@ -1904,7 +1913,7 @@ body.dark-mode .metro-bandeau{border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .metro-panel-tabs{border-bottom-color:rgba(255,255,255,.07)}
 body.dark-mode .metro-tab{background:#2e2e2b;color:#777;border-color:#444}
 body.dark-mode .metro-tab.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
-body.dark-mode .metro-onoff-tab-btn{background:#2e2e2b;border-color:#555;color:#666}
+body.dark-mode .metro-onoff-tab-btn{background:#2e2e2b;border-color:rgba(255,100,100,.38);color:#ff7070}
 body.dark-mode .metro-onoff-tab-btn.on{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
 body.dark-mode .metro-unit-chip{background:#2e2e2b;color:#aaa;border-color:#444}
 body.dark-mode .metro-unit-chip.active{background:#3A8C6E;color:#fff;border-color:#3A8C6E}
@@ -2008,7 +2017,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.30</span>
+    <span class="app-version">v3.28.31</span>
   </div>
 </div>
 
@@ -7468,6 +7477,9 @@ function buildLayerCycleInfo(){
   bar.innerHTML=html;
   // Aligner le toggle sur le bouton vue LCB (lci-cycle deborde librement)
   requestAnimationFrame(()=>{
+    const hambW=document.getElementById('lcb-hamburger')?.offsetWidth;
+    const cy=document.getElementById('lci-cycle');
+    if(cy&&hambW)cy.style.minWidth=hambW+'px';
     const togW=document.getElementById('lcb-view-toggle')?.offsetWidth;
     const tg=document.getElementById('lci-toggle');
     if(tg&&togW)tg.style.minWidth=togW+'px';
@@ -7555,7 +7567,10 @@ function _buildSigAdvisorList(){
   if(best<0.4){list.innerHTML=`<div class="sig-adv-poly">Motifs polymètriques&nbsp;— aucune signature ne les aligne tous parfaitement.</div>`;return;}
   // Resserrer la sélection : ne montrer que les signatures proches du meilleur score
   const scored=all.filter(x=>x.score>=Math.max(0.3,best-2.0)).slice(0,6);
-  list.innerHTML=scored.map(({p,score,details})=>{
+  // Détecter la polymétrie flagrante : aucune signature n'aligne tous les layers sur mesure entière
+  const hasFullAlign=scored.some(x=>x.details.every(d=>d.score>=1.5));
+  const polyWarn=!hasFullAlign?`<div class="sig-adv-poly-warn">⚠ Polymétrie détectée&nbsp;— les layers ont des durées incompatibles entre elles. A priori, aucune signature ne peut les aligner tous simultanément sur des mesures entières.</div>`:'';
+  list.innerHTML=polyWarn+scored.map(({p,score,details})=>{
     const isCur=p.id===currentSig?.id;
     const layersHtml=LAYERS.map((_,li)=>{
       const d=details[li];
@@ -7580,7 +7595,7 @@ function _openSigAdvisorModal(){
     modal.id='sig-advisor-modal';
     modal.innerHTML=`<div class="sig-adv-backdrop"></div><div class="sig-adv-box">
       <div class="sig-adv-header"><span class="sig-adv-title">≈ Assistance métrique</span><button class="sig-adv-close" id="sig-advisor-close">✕</button></div>
-      <p class="sig-adv-intro">Signatures les mieux alignées avec vos patterns actuels. Point coloré&nbsp;= mesure entière, orange&nbsp;= fraction.</p>
+      <p class="sig-adv-intro">Signatures a priori les mieux alignées avec vos patterns actuels. Point coloré&nbsp;= mesure entière, orange&nbsp;= fraction.</p>
       <div id="sig-advisor-list"></div></div>`;
     document.body.appendChild(modal);
     modal.querySelector('.sig-adv-backdrop').addEventListener('click',_closeSigAdvisorModal);
@@ -11975,7 +11990,12 @@ function toggleMetroPanel(open){
     requestAnimationFrame(()=>{
       panel.style.transition='height .28s cubic-bezier(.4,0,.2,1)';
       panel.style.height=METRO_PANEL_H+'vh';
-      setTimeout(()=>{panel.style.transition='';initMetroWheel();},300);
+      setTimeout(()=>{
+        panel.style.transition='';initMetroWheel();
+        const on=!metro.muted;
+        const p2btn=document.getElementById('btn-metro-onoff-p2');
+        if(p2btn){p2btn.classList.toggle('on',on);p2btn.textContent=on?'On':'Off';}
+      },300);
     });
   }
   const btnT=document.getElementById('btn-tempo');
