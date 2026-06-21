@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.36</span>
+    <span class="app-version">v3.28.37</span>
   </div>
 </div>
 
@@ -7681,14 +7681,22 @@ function _drawTotemCircle(cv,li){
   const dotR=r*0.195; // même rapport que drawCircles (dotR/r0 ≈ 0.196)
   const isDark=document.body.classList.contains('dark-mode');
   const isMuted=!!state[li].muted;
+  // Fraction de lecture (identique à drawCircles)
+  let frac=0,curSi=-1;
+  if(playing&&typeof getAC==='function'){
+    const now=getAC().currentTime-(prefs?.audioOffset||0);
+    const bs=getBeatSec(li);
+    if(bs>0){const el=now-state[li].startTime;if(el>=0){const cyc=bs*L;frac=((el%cyc)+cyc)%cyc/cyc;curSi=Math.floor(el/bs)%L;}}
+  }
   // Anneau de piste
   ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);
   ctx.strokeStyle=col.track;ctx.lineWidth=1.5;ctx.stroke();
-  // Points — même rendu que drawCircles() mode Pattern (hors aiguille/flash)
+  // Points — mode Pattern exact (identique à drawCircles, sans isRepeat)
   for(let si=0;si<L;si++){
     const a=-Math.PI/2+(2*Math.PI*si/L);
     const dx=cx+r*Math.cos(a),dy=cy+r*Math.sin(a);
     const isOn=pat[si]==='X',isSoft=pat[si]==='x';
+    const isPlaying=si===curSi;
     if(isOn){
       ctx.beginPath();ctx.arc(dx,dy,dotR,0,2*Math.PI);
       ctx.fillStyle=isMuted?col.fill+'55':col.fill;ctx.fill();
@@ -7702,28 +7710,27 @@ function _drawTotemCircle(cv,li){
       ctx.fillStyle=isDark?'#2c2a28':'#f0ede8';ctx.fill();
       ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0';ctx.lineWidth=isDark?1:0.75;ctx.stroke();
     }
-  }
-  // Aiguille de lecture (tête de lecture tournante)
-  if(playing&&typeof getAC==='function'){
-    const now=getAC().currentTime-(prefs?.audioOffset||0);
-    const bs=getBeatSec(li);
-    if(bs>0){
-      const el=now-state[li].startTime;
-      if(el>=0){
-        const cyc=bs*L;
-        const frac=((el%cyc)+cyc)%cyc/cyc;
-        const aAig=-Math.PI/2+2*Math.PI*frac;
-        ctx.beginPath();
-        ctx.moveTo(cx,cy);
-        ctx.lineTo(cx+r*Math.cos(aAig),cy+r*Math.sin(aAig));
-        ctx.strokeStyle=isDark?'rgba(255,255,255,0.88)':'rgba(80,60,180,0.80)';
-        ctx.lineWidth=1.5;ctx.lineCap='round';ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(cx+r*Math.cos(aAig),cy+r*Math.sin(aAig),2.5,0,2*Math.PI);
-        ctx.fillStyle=isDark?'rgba(255,255,255,0.95)':'rgba(80,60,180,0.90)';
-        ctx.fill();
-      }
+    // Contour blanc sur le step en cours (identique à drawCircles)
+    if(isPlaying&&(isOn||isSoft)&&!isMuted){
+      const dotSz=isOn?dotR:dotR*0.72;
+      ctx.beginPath();ctx.arc(dx,dy,dotSz,0,2*Math.PI);
+      ctx.strokeStyle='rgba(255,255,255,0.82)';ctx.lineWidth=2;ctx.stroke();
     }
+  }
+  // Aiguille — dégradé couleur layer, rendu identique à drawCircles
+  {
+    const angN=-Math.PI/2+frac*2*Math.PI;
+    const exN=cx+r*Math.cos(angN),eyN=cy+r*Math.sin(angN);
+    const midF=[0.35,0.55,0.65][li],midA=['88','66','55'][li];
+    const grad=ctx.createLinearGradient(cx,cy,exN,eyN);
+    grad.addColorStop(0,col.fill+'00');
+    grad.addColorStop(midF,col.fill+midA);
+    grad.addColorStop(1.00,col.fill+'ff');
+    ctx.save();
+    if(isMuted)ctx.globalAlpha=0.12;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(exN,eyN);
+    ctx.strokeStyle=grad;ctx.lineWidth=3;ctx.lineCap='round';ctx.stroke();
+    ctx.restore();
   }
 }
 
