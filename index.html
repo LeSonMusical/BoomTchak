@@ -2008,7 +2008,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.29</span>
+    <span class="app-version">v3.28.30</span>
   </div>
 </div>
 
@@ -7537,7 +7537,10 @@ function _updateSigAdvisor(){
   const all=_SIG_CANDIDATES.map(p=>({p,s:_advisorScore(p).score}));
   const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
   const cur=_advisorScore(currentSig).score;
-  const hasBetter=best>cur+0.39;
+  // Afficher le signal seulement si la signature actuelle est réellement mauvaise
+  // (< 2/3 du score max) ET qu'une option nettement meilleure existe (+1.0 min)
+  const decent=LAYERS.length*2*(2/3); // ex: 4.0 pour 3 layers
+  const hasBetter=cur<decent&&best>cur+1.0;
   document.getElementById('gcb-adv-sup')?.classList.toggle('has-suggestion',hasBetter);
   document.getElementById('metro-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
   const modal=document.getElementById('sig-advisor-modal');
@@ -7545,11 +7548,13 @@ function _updateSigAdvisor(){
 }
 function _buildSigAdvisorList(){
   const list=document.getElementById('sig-advisor-list');if(!list)return;
-  const scored=_SIG_CANDIDATES
+  const all=_SIG_CANDIDATES
     .map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};})
-    .sort((a,b)=>b.score-a.score).slice(0,8);
-  const best=scored[0]?.score||0;
+    .sort((a,b)=>b.score-a.score);
+  const best=all[0]?.score||0;
   if(best<0.4){list.innerHTML=`<div class="sig-adv-poly">Motifs polymètriques&nbsp;— aucune signature ne les aligne tous parfaitement.</div>`;return;}
+  // Resserrer la sélection : ne montrer que les signatures proches du meilleur score
+  const scored=all.filter(x=>x.score>=Math.max(0.3,best-2.0)).slice(0,6);
   list.innerHTML=scored.map(({p,score,details})=>{
     const isCur=p.id===currentSig?.id;
     const layersHtml=LAYERS.map((_,li)=>{
