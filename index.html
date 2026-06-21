@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.37</span>
+    <span class="app-version">v3.28.38</span>
   </div>
 </div>
 
@@ -7328,18 +7328,11 @@ function buildLCB(){
   // ── Handlers par segment ──
   bar.querySelectorAll('.lcb-seg').forEach(seg=>{
     const li=parseInt(seg.dataset.li);
-    const vuEl=seg.querySelector('#lcb-vu-'+li);
-    const vuZone=seg.querySelector('.lcb-vu-zone');
     let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null,_snapMap=null;
     const DRAG_THRESH=6,GRAIN_PX=28;
-    // Zone mute (même taille que le chevron) → mute
-    vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
-    vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
-    const chevEl=seg.querySelector('.lcb-chev');
-    // Drag grain/densité sur le segment (hors zone VU et hors chevron)
+    // Tap : moitié gauche = mute/unmute, moitié droite = plier/déplier
+    // Drag (vertical/horizontal) : depuis n'importe où sur le segment
     seg.addEventListener('pointerdown',e=>{
-      if(e.target===vuEl||vuZone?.contains(e.target))return;
-      if(e.target===chevEl)return; // chevron gère son propre tap
       _didDrag=false;_mode=null;_x0=e.clientX;_y0=e.clientY;
       const _origGi=_lcbCurrentGrainIndex(li);_n0=state[li].pattern.length;
       _snapMap=_lcbBuildSnapMap(li); // carte snap calculée au debut du drag
@@ -7390,17 +7383,24 @@ function buildLCB(){
         _dragOverlay.show(`<span style="font-size:10px;opacity:.9;font-weight:700;display:block;margin-bottom:1px">Longueur du pattern</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.6">de ${sig}</span></span>`,{grooveOrLayers:true});}
       }
     },{passive:true});
-    ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
+    seg.addEventListener('pointerup',e=>{
       _dragOverlay.hide();
       const _wasDragging=_didDrag;
       _mode=null;_didDrag=false;
-      if(_wasDragging)buildLCB(); // rebuild propre LCB après fin de drag
-    }));
-    // Chevron tap → plier/déplier layer (zone action explicite)
-    chevEl?.addEventListener('click',e=>{
-      e.stopPropagation();
-      _lcbFolded[li]=!_lcbFolded[li];
-      _lcbApplyFold(li);
+      if(_wasDragging){buildLCB();return;}
+      // Tap : moitié gauche = mute/unmute, moitié droite = plier/déplier
+      const rect=seg.getBoundingClientRect();
+      if(_x0<rect.left+rect.width/2){
+        _lcbToggleMute(li);
+      } else {
+        _lcbFolded[li]=!_lcbFolded[li];
+        _lcbApplyFold(li);
+        buildLCB();
+      }
+    });
+    seg.addEventListener('pointercancel',()=>{
+      _dragOverlay.hide();
+      _mode=null;_didDrag=false;
       buildLCB();
     });
   });
@@ -12844,35 +12844,8 @@ function updateRhythmInfoBar(){
     _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
   });
   el.querySelector('#gcb-play-btn')?.addEventListener('click',togglePlay);
-  {
-    const zone=el.querySelector('#rib-tempo-zone');
-    const bpmMaster=document.getElementById('bpm');
-    const DRAG_PX=6,POS_PER_PX=2;
-    let _ribDrag=false,_ribStartX=0,_ribStartVal=0;
-    zone?.addEventListener('pointerdown',e=>{
-      _ribDrag=false;_ribStartX=e.clientX;_ribStartVal=parseInt(bpmMaster?.value||500);
-      zone.setPointerCapture(e.pointerId);e.preventDefault();
-    },{passive:false});
-    zone?.addEventListener('pointermove',e=>{
-      if(!zone.hasPointerCapture(e.pointerId))return;
-      e.preventDefault();
-      const dx=e.clientX-_ribStartX;
-      if(!_ribDrag&&Math.abs(dx)<DRAG_PX)return;
-      _ribDrag=true;
-      const newVal=Math.max(0,Math.min(1000,Math.round(_ribStartVal+dx*POS_PER_PX)));
-      if(bpmMaster){bpmMaster.value=newVal;bpmMaster.dispatchEvent(new Event('input'));}
-      const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
-      const _bpm=Math.round(posToSPM(newVal)*(globalSpeedMult||1)/_eq);
-      const _sym=symFromFelBeatSteps(_eq);
-      _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
-    },{passive:false});
-    zone?.addEventListener('pointerup',()=>{
-      _dragOverlay.hide();
-      if(!_ribDrag)setNavSection('metro');
-      _ribDrag=false;
-    });
-    zone?.addEventListener('pointercancel',()=>{_dragOverlay.hide();_ribDrag=false;});
-  }
+  // Tap zone tempo → ouvre le volet métro (le drag est géré par le splitter GCB)
+  el.querySelector('#rib-tempo-zone')?.addEventListener('click',()=>setNavSection('metro'));
   if(!el._gcbSplitterSetup){el._gcbSplitterSetup=true;_setupGCBSplitter(el);}
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
   buildLayerCycleInfo();
@@ -12903,8 +12876,7 @@ function _setupGCBSplitter(gcbEl){
   }
   let _sMode=null,_sY0=0,_sH0=0,_physH=0,_splitBefore='B',_tapTarget=null;
   gcbEl.addEventListener('pointerdown',e=>{
-    if(e.target.closest('#rib-tempo-zone'))return;
-    if(e.target.closest('button'))return; // boutons gèrent leurs propres clicks
+    // Tout drag sur la GCB = splitter ; tap = action sur l'élément touché
     _sMode=null;_sY0=e.clientY;_tapTarget=e.target;
     _splitBefore=document.body.dataset.split||'B';
     const c=_cv();
@@ -12966,7 +12938,11 @@ function _setupGCBSplitter(gcbEl){
       if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
-        if(btn)setTimeout(()=>btn.click(),0);
+        if(btn){
+          setTimeout(()=>btn.click(),0);
+        } else if(_tapTarget.closest('#rib-tempo-zone')){
+          setTimeout(()=>setNavSection('metro'),0);
+        }
       }
     }
     _sMode=null;_tapTarget=null;

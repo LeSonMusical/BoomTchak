@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.37** (session 2026-06-21)
+**v3.28.38** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.38 | Gestes LCB : tap 50/50 gauche=mute / droite=fold (suppression zones VU+chevron séparées) ; drag depuis n'importe où sur le segment ; GCB : suppression early-return boutons+tempo-zone → tout drag = splitter, tout tap = action simulée ; tap zone tempo → `setNavSection('metro')` |
 | v3.28.37 | `_drawTotemCircle` : copie exacte de `drawCircles()` mode Pattern — aiguille dégradé couleur layer (`createLinearGradient`, midF/midA par layer index), contour blanc `rgba(255,255,255,0.82)` sur step courant, `frac` toujours calculé même à l'arrêt |
 | v3.28.36 | Totem circles : aiguille de lecture (`playing` → frac → angle) dans `_drawTotemCircle`, `_updateTotemCircles()` appelé dans `visualLoop` et `visualLoopCircle` ; GCB BPM label : opacity .5→.85, weight 600→700 ; LCB overlay : "Densité"/"Longueur du pattern" en gras opacity .9, "division …" opacity .35 (plus discret) |
 | v3.28.35 | Vue Totems : 3 cercles toujours visibles (suppression @container) ; `_drawTotemCircle(cv,li)` rendu identique à `drawCircles()` mode Pattern (CIRCLE_COLORS, track ring, dotR proportionnel, isMuted) ; GCB : layout grid `1fr auto 1fr` (`.gcb-left-group`/`.gcb-right-group`) → play centré exact ; `.gcb-play-btn` rectangle arrondi `border-radius:12px` pleine hauteur `align-self:stretch` |
