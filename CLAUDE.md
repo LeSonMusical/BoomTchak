@@ -203,7 +203,7 @@ Merger vers : `main` après chaque session
 - `supabase/seed_school_pool.sql` — données initiales école
 
 ## Version courante
-**v3.28.33** (session 2026-06-21)
+**v3.28.34** (session 2026-06-21)
 
 ---
 
@@ -403,6 +403,7 @@ Liste complète dans la section "Encyclopédie — Cahier des charges" ci-dessou
 ## Historique récent
 | Version | Changements |
 |---------|-------------|
+| v3.28.34 | Vue Totems : cercle pattern déplacé sous les pads et boutons ; GCB tempo : `♩=` discret (opacity .5, 10px, weight 400) + valeur `105` en gras (16px, weight 800) via `rib-tempo-sym`/`rib-tempo-num` ; GCB : sig-btn `flex:0 0 auto` (zone de tap réduite à gauche), rib-son-btn `min-width:44px` (zone élargie) |
 | v3.28.33 | 3 améliorations UI : icône 🥁 dans nav-tab Sons (était 🔊) ; GCB tempo : label « BPM » + jauge tempo plus haute (4px) + texte 13px ; Vue Totems : cercle pattern par layer (`_drawTotemCircle`, canvas `totem-circ-{li}`) visible via `@container (min-width:140px)` quand 1 ou 2 totems affichés |
 | v3.28.32 | Fix splitter GCB en vue Pas et Cycle : `_sH0===0` (circle-view caché) → pas de `height:0` corrompu, pointermove no-op sans overlay trompeur, pointerup restaure `data-split` sans `_applySplit` ; CSS `flex:0 0 100%→auto` sur circle-view en cycle-linéaire desktop (flex-basis % ignorait la hauteur inline) |
 | v3.28.31 | CycleInfoLine : lci-cycle aligne sa largeur sur lcb-hamburger (rAF) → colonnes LCI/LCB alignées ; cellules [data-li=0] à droite, [1] centrée, [2] à gauche ; volet Tic-Tac : bouton On/Off synced à l'ouverture (fix premier open), rouge texte+bord quand Off ; Signature + Swing labels vert léger ; advisor modal : « a priori » dans intro, avertissement polymétrie si aucune signature n'aligne tous les layers sur mesure entière |

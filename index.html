@@ -1246,14 +1246,17 @@ body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150
 .rib-left{grid-column:1;display:flex;align-items:stretch;gap:2px;min-width:0}
 .rib-left-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;cursor:ew-resize;touch-action:none;user-select:none;padding:2px 0}
 .rib-left-top{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;pointer-events:none}
-.rib-tempo-val{font-size:13px;color:#6B5FA5;font-weight:700;white-space:nowrap;text-align:center}
-.rib-bpm-lbl{font-size:9px;font-weight:600;color:#6B5FA5;opacity:.55;letter-spacing:.04em;pointer-events:none;padding-left:2px;align-self:flex-end;padding-bottom:1px}
+.rib-tempo-val{display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap}
+.rib-tempo-sym{font-size:10px;color:#6B5FA5;font-weight:400;opacity:.5}
+.rib-tempo-num{font-size:16px;color:#6B5FA5;font-weight:800;line-height:1}
+.rib-bpm-lbl{font-size:9px;font-weight:600;color:#6B5FA5;opacity:.5;letter-spacing:.04em;pointer-events:none;padding-left:2px;align-self:flex-end;padding-bottom:1px}
 .rib-tempo-slider{width:100%;cursor:ew-resize;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
 .rib-tempo-slider::-moz-range-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-body.dark-mode .rib-tempo-val{color:#9B8FD5}
+body.dark-mode .rib-tempo-sym{color:#9B8FD5}
+body.dark-mode .rib-tempo-num{color:#9B8FD5}
 .rib-tempo-gauge{width:80%;height:4px;background:rgba(107,95,165,.22);border-radius:3px;pointer-events:none;flex-shrink:0}
 .rib-tempo-gauge-fill{height:100%;background:rgba(107,95,165,.72);border-radius:3px;min-width:5px;transition:width .12s}
 body.dark-mode .rib-tempo-gauge{background:rgba(155,143,213,.12)}
@@ -1327,8 +1330,10 @@ body.dark-mode .lcb-seg:not(.seg-open){border-left-color:rgba(255,255,255,.12)!i
 .gcb-row .rib-metro-btn,.gcb-row .rib-son-btn{flex-shrink:0}
 /* Zone tempo : flex:1 pour remplir l'espace à gauche du ▶ */
 .gcb-row #rib-tempo-zone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
-/* Signature : flex:1 pour remplir l'espace à droite du ▶ */
-.gcb-row .rib-sig-btn{flex:1;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0;position:relative}
+/* Signature : taille au contenu (évite zone de détection trop large à gauche) */
+.gcb-row .rib-sig-btn{flex:0 0 auto;text-align:center;font-size:14px!important;font-weight:700;color:#555!important;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0 6px 0 2px;position:relative}
+/* Son : zone de détection élargie */
+.gcb-row .rib-son-btn{min-width:44px;padding:0 8px}
 body.dark-mode .gcb-row .rib-sig-btn{color:#aaa!important}
 .gcb-adv-sup{font-size:9px;font-weight:900;color:#3A8C6E;vertical-align:super;margin-left:1px;opacity:0;transition:opacity .15s;pointer-events:none;line-height:0}
 .gcb-adv-sup.has-suggestion{opacity:.9}
@@ -2022,7 +2027,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.33</span>
+    <span class="app-version">v3.28.34</span>
   </div>
 </div>
 
@@ -7718,12 +7723,10 @@ function buildTotems(){
     ringCv.id='totem-ring-'+li;ringCv.width=48;ringCv.height=48;
     ringWrap.appendChild(ringCv);totem.appendChild(ringWrap);
 
-    // Cercle pattern (visible quand totem assez large via @container min-width:140px)
+    // Cercle pattern — déclaré ici pour être en scope des closures, inséré après les boutons
     const circWrap=document.createElement('div');circWrap.className='totem-circle-wrap';
     const circCv=document.createElement('canvas');circCv.className='totem-circle-cv';
     circCv.id='totem-circ-'+li;circCv.width=100;circCv.height=100;
-    circWrap.appendChild(circCv);totem.appendChild(circWrap);
-    _drawTotemCircle(circCv,state[li].pattern,col);
 
     // ── Fabrique un pad (labels Y et X à l'intérieur) ──
     const _mkPad=(padId,axisY,axisX)=>{
@@ -7754,6 +7757,9 @@ function buildTotems(){
     const bRandAc=document.createElement('button');bRandAc.className='totem-btn';bRandAc.textContent='⇄';bRandAc.title='Accents aléatoires';
     actWrap.appendChild(bReset);actWrap.appendChild(bRandPl);actWrap.appendChild(bRandAc);
     totem.appendChild(actWrap);
+    // Cercle pattern en bas (après pads + boutons)
+    circWrap.appendChild(circCv);totem.appendChild(circWrap);
+    _drawTotemCircle(circCv,state[li].pattern,col);
     tw.appendChild(totem);
 
     // ── Helpers curseur et preview ──
@@ -10541,8 +10547,10 @@ function updateBeatDisplay(){
   const spmValEl=document.getElementById('metro-spm-val');
   if(spmValEl) spmValEl.textContent=Math.round(spm)+' ♪/min';
   // Sync InfoLayer : tempo val + slider
-  const ribTV=document.getElementById('rib-tempo-val');
-  if(ribTV) ribTV.textContent=sym+'='+bpm;
+  const ribTS=document.getElementById('rib-tempo-sym');
+  const ribTN=document.getElementById('rib-tempo-num');
+  if(ribTS)ribTS.textContent=sym+'=';
+  if(ribTN)ribTN.textContent=bpm;
   const ribBS=document.getElementById('rib-bpm-slider');
   if(ribBS&&document.activeElement!==ribBS) ribBS.value=pos;
   const ribFill=document.getElementById('rib-tempo-fill');
@@ -12769,7 +12777,7 @@ function updateRhythmInfoBar(){
   el.style.display='flex';
   el.innerHTML=`<div id="gcb-handle"></div><div class="gcb-row">`+
     `<button class="rib-metro-btn${_metroOn?' on':''}" id="rib-metro-btn" title="Métronome on/off">⏱</button>`+
-    `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val" id="rib-tempo-val">${_rbSym}=${_rbBpm}</span><span class="rib-bpm-lbl">BPM</span></div>`+
+    `<div class="rib-left-right" id="rib-tempo-zone"><div class="rib-left-top"><span class="rib-tempo-val"><span class="rib-tempo-sym" id="rib-tempo-sym">${_rbSym}=</span><span class="rib-tempo-num" id="rib-tempo-num">${_rbBpm}</span></span><span class="rib-bpm-lbl">BPM</span></div>`+
     `<div class="rib-tempo-gauge"><div class="rib-tempo-gauge-fill" id="rib-tempo-fill" style="width:${Math.round(_rbPos/10)}%"></div></div></div>`+
     `<button class="gcb-play-btn${playing?' playing':''}" id="gcb-play-btn" title="Play / Stop">${playing?'■':'▶'}</button>`+
     `<button class="rib-sig-btn" id="rib-sig-btn" title="Assistance métrique">${sigLabelSimple}<sup class="gcb-adv-sup" id="gcb-adv-sup">≈</sup></button>`+
