@@ -1266,7 +1266,7 @@ body.dark-mode .rib-tempo-slider::-webkit-slider-thumb{background:#9B8FD5;border
 body.dark-mode .rib-tempo-slider::-moz-range-track{background:rgba(155,143,213,.2)}
 body.dark-mode .rib-tempo-slider::-moz-range-thumb{background:#9B8FD5;border-color:#1a1a1a}
 /* Metro btn : pleine hauteur, sibling de .rib-left-right */
-.rib-metro-btn{flex-shrink:0;align-self:stretch;display:flex;align-items:center;justify-content:center;position:relative;font-size:19px;background:none;border:none;cursor:pointer;min-width:30px;padding:0 2px;-webkit-tap-highlight-color:transparent}
+.rib-metro-btn{flex-shrink:0;align-self:stretch;display:flex;align-items:center;justify-content:center;position:relative;font-size:19px;background:none;border:none;cursor:pointer;min-width:44px;padding:0 4px;-webkit-tap-highlight-color:transparent}
 .rib-metro-btn:not(.on)::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:80%;background:#d94040;transform:translate(-50%,-50%) rotate(-40deg);border-radius:1px;opacity:.85;pointer-events:none}
 /* Col 2 : 3 layers centré absolu — colonnes par layer */
 .rib-center{grid-column:2;display:flex;align-items:center;gap:5px}
@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.40</span>
+    <span class="app-version">v3.28.41</span>
   </div>
 </div>
 
@@ -12955,14 +12955,27 @@ function _setupGCBSplitter(gcbEl){
       // Drag tempo terminé — aucun état canvas à restaurer (jamais modifié)
       document.body.dataset.split=_splitBefore;
     } else {
-      // Tap — simuler l'action sur l'élément touché (click natif annulé ci-dessus)
+      // Tap — appel direct (btn.click() ne transmet pas le user-activation sur iOS)
       document.body.dataset.split=_splitBefore;
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
-        if(btn){
-          btn.click();
+        const id=btn?btn.id:'';
+        if(id==='gcb-play-btn'){
+          togglePlay();
+        } else if(id==='rib-metro-btn'||_tapTarget.closest('#rib-metro-btn')){
+          setMetroGlobal(metro.muted);
+        } else if(id==='rib-son-btn'){
+          const wm=!bandMuted;
+          _applyBandMute(wm);
+          _dragOverlay.show('<span style="font-size:18px;font-weight:700">Sons</span><br><span style="font-size:14px;font-weight:600;color:'+(wm?'#aaa':'#4AC9A0')+'">'+(wm?'off':'on')+'</span>');
+          clearTimeout(_dragOverlay._sonTimer);
+          _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
+        } else if(id==='rib-sig-btn'){
+          _openSigAdvisorModal();
         } else if(_tapTarget.closest('#rib-tempo-zone')){
           setNavSection('metro');
+        } else if(btn){
+          btn.click();
         }
       }
     }
