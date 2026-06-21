@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.38</span>
+    <span class="app-version">v3.28.39</span>
   </div>
 </div>
 
@@ -12844,8 +12844,7 @@ function updateRhythmInfoBar(){
     _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
   });
   el.querySelector('#gcb-play-btn')?.addEventListener('click',togglePlay);
-  // Tap zone tempo → ouvre le volet métro (le drag est géré par le splitter GCB)
-  el.querySelector('#rib-tempo-zone')?.addEventListener('click',()=>setNavSection('metro'));
+  // Note : gestes sur la zone tempo gérés par _setupGCBSplitter (tap=métro, drag↔=tempo)
   if(!el._gcbSplitterSetup){el._gcbSplitterSetup=true;_setupGCBSplitter(el);}
   updateCycleInfoBar(playing?_mGlobalPageLast:_measureViewPage);
   buildLayerCycleInfo();
@@ -12875,36 +12874,47 @@ function _setupGCBSplitter(gcbEl){
     }
   }
   let _sMode=null,_sY0=0,_sH0=0,_physH=0,_splitBefore='B',_tapTarget=null;
+  let _ribStartX=0,_ribStartVal=0;
+  const TEMPO_DRAG_PX=6,TEMPO_POS_PER_PX=2;
   gcbEl.addEventListener('pointerdown',e=>{
-    // Tout drag sur la GCB = splitter ; tap = action sur l'élément touché
+    // Tout drag sur la GCB est capturé — pas de scroll possible.
+    // La direction (vertical=split, horizontal sur tempo=tempo) est détectée au pointermove.
     _sMode=null;_sY0=e.clientY;_tapTarget=e.target;
+    _ribStartX=e.clientX;
+    _ribStartVal=parseInt(document.getElementById('bpm')?.value||500);
     _splitBefore=document.body.dataset.split||'B';
     const c=_cv();
     const canvasEl=document.getElementById('rhythm-canvas');
     _sH0=c?c.offsetHeight:200;
     _physH=(canvasEl&&canvasEl.offsetHeight>0)?canvasEl.offsetHeight:(_sH0||200);
-    // _sH0===0 → circle-view caché (vue Pas / layersOuverts=false) : pas de split visuel possible.
-    // On ne touche pas à c.style.height pour ne pas laisser un height:0 corrompu qui bloquerait
-    // le canvas si l'utilisateur revient ensuite en vue circulaire.
-    if(_sH0>0){
-      // Normaliser le transform canvas dès le début : si resizeCanvas() a tourné entre deux drags,
-      // canvas.transform peut être '' (0 scale) alors que circle-view a une hauteur ≠ physH.
-      if(canvasEl&&_physH>0&&c&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
-        const sNorm=_sH0/_physH;
-        canvasEl.style.transform=Math.abs(sNorm-1)>0.005?`scale(${sNorm.toFixed(3)})`:'';
-        canvasEl.style.transformOrigin='top center';
-      }
-      delete document.body.dataset.split;
-      c.style.height=_sH0+'px';c.style.overflow='hidden';
-    }
+    // NB: canvas et data-split ne sont pas modifiés ici — uniquement quand le drag vertical est détecté
     gcbEl.setPointerCapture(e.pointerId);e.preventDefault();
   },{passive:false});
   gcbEl.addEventListener('pointermove',e=>{
     if(!gcbEl.hasPointerCapture(e.pointerId))return;
     e.preventDefault();
-    if(!_sMode&&Math.abs(e.clientY-_sY0)>8){
-      _sMode='split';
-      _sY0=e.clientY; // reset référence au moment de la détection → zéro saut
+    const dy=e.clientY-_sY0;
+    const dx=e.clientX-_ribStartX;
+    if(!_sMode){
+      if(Math.abs(dy)>8){
+        _sMode='split';
+        _sY0=e.clientY; // reset référence → zéro saut
+        // Démarrer le drag split : normaliser canvas et verrouiller hauteur
+        if(_sH0>0){
+          const c=_cv(),canvasEl=document.getElementById('rhythm-canvas');
+          if(c){
+            if(canvasEl&&_physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+              const sNorm=_sH0/_physH;
+              canvasEl.style.transform=Math.abs(sNorm-1)>0.005?`scale(${sNorm.toFixed(3)})`:'';
+              canvasEl.style.transformOrigin='top center';
+            }
+            delete document.body.dataset.split;
+            c.style.height=_sH0+'px';c.style.overflow='hidden';
+          }
+        }
+      } else if(Math.abs(dx)>TEMPO_DRAG_PX&&_tapTarget?.closest('#rib-tempo-zone')){
+        _sMode='tempo';
+      }
     }
     if(_sMode==='split'){
       // Vue sans canvas (vue Pas, groove replié) : circle-view caché → split inopérant
@@ -12913,9 +12923,7 @@ function _setupGCBSplitter(gcbEl){
       const h=Math.max(0,_sH0+(e.clientY-_sY0)); // libre, sans cap supérieur
       c.style.height=h+'px';
       const canvasEl=document.getElementById('rhythm-canvas');
-      // Utiliser offsetHeight en temps réel plutôt que _physH capturé au pointerdown :
-      // resizeCanvas() peut avoir tourné pendant le drag (resize iOS au changement URL bar)
-      // et modifié canvas.height → _physH serait périmé → scale incorrect.
+      // Utiliser offsetHeight en temps réel plutôt que _physH capturé au pointerdown
       const physHNow=canvasEl&&canvasEl.offsetHeight>0?canvasEl.offsetHeight:_physH;
       if(canvasEl&&physHNow>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
         const s=h/physHNow; // zoom libre, s peut être > 1
@@ -12924,6 +12932,14 @@ function _setupGCBSplitter(gcbEl){
       }
       const pct=physHNow>0?Math.round(100*h/physHNow):0;
       _dragOverlay.show(`<span style="font-size:13px;opacity:.65">${pct}%</span>`);
+    } else if(_sMode==='tempo'){
+      const newVal=Math.max(0,Math.min(1000,Math.round(_ribStartVal+dx*TEMPO_POS_PER_PX)));
+      const bpmMaster=document.getElementById('bpm');
+      if(bpmMaster){bpmMaster.value=newVal;bpmMaster.dispatchEvent(new Event('input'));}
+      const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
+      const _bpm=Math.round(posToSPM(newVal)*(globalSpeedMult||1)/_eq);
+      const _sym=symFromFelBeatSteps(_eq);
+      _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
     }
   },{passive:false});
   gcbEl.addEventListener('pointerup',()=>{
@@ -12932,10 +12948,12 @@ function _setupGCBSplitter(gcbEl){
       // Si circle-view était caché au pointerdown (_sH0===0), on ne touche à rien
       if(_sH0>0) _applySplit('B',undefined,true);
       else document.body.dataset.split=_splitBefore;
-    } else {
+    } else if(_sMode==='tempo'){
+      // Drag tempo terminé — aucun état canvas à restaurer (jamais modifié)
       document.body.dataset.split=_splitBefore;
-      const c=_cv();
-      if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
+    } else {
+      // Tap — simuler l'action sur l'élément touché
+      document.body.dataset.split=_splitBefore;
       if(_tapTarget&&_tapTarget!==gcbEl){
         const btn=_tapTarget.closest('button')||(_tapTarget.tagName==='BUTTON'?_tapTarget:null);
         if(btn){
@@ -12949,10 +12967,13 @@ function _setupGCBSplitter(gcbEl){
   });
   gcbEl.addEventListener('pointercancel',()=>{
     _dragOverlay.hide();
-    _clearCanvasTransform();
+    if(_sMode==='split'){
+      // Restaurer l'état canvas uniquement si le drag split avait démarré
+      _clearCanvasTransform();
+      const c=_cv();
+      if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
+    }
     document.body.dataset.split=_splitBefore;
-    const c=_cv();
-    if(c){c.style.height=_sH0>0?_sH0+'px':'';c.style.overflow='';}
     _sMode=null;_tapTarget=null;
   });
   setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
