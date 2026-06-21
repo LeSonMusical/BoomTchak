@@ -1249,7 +1249,7 @@ body.dark-mode #rhythm-info-bar{background:#13131a;border-top-color:rgba(200,150
 .rib-tempo-val{display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap}
 .rib-tempo-sym{font-size:10px;color:#6B5FA5;font-weight:400;opacity:.5}
 .rib-tempo-num{font-size:16px;color:#6B5FA5;font-weight:800;line-height:1}
-.rib-bpm-lbl{font-size:9px;font-weight:600;color:#6B5FA5;opacity:.5;letter-spacing:.04em;pointer-events:none;padding-left:2px;align-self:flex-end;padding-bottom:1px}
+.rib-bpm-lbl{font-size:9px;font-weight:700;color:#6B5FA5;opacity:.85;letter-spacing:.06em;pointer-events:none;padding-left:3px;align-self:flex-end;padding-bottom:1px}
 .rib-tempo-slider{width:100%;cursor:ew-resize;accent-color:#6B5FA5;padding:0;height:14px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
 .rib-tempo-slider::-webkit-slider-runnable-track{height:2px;background:rgba(107,95,165,.3);border-radius:2px}
 .rib-tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#6B5FA5;cursor:pointer;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-top:-5px}
@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.35</span>
+    <span class="app-version">v3.28.36</span>
   </div>
 </div>
 
@@ -4171,6 +4171,7 @@ function visualLoop(){
     if(r3&&_layerDetailVisible[li]&&_isoRowVisible[li]){r3.querySelectorAll('.iso-cell').forEach((c,i)=>c.classList.toggle('iso-cur',i===si));}
   });
   highlightMetroStep();
+  _updateTotemCircles();
   visualRafID=requestAnimationFrame(visualLoop);
 }
 
@@ -7365,7 +7366,7 @@ function buildLCB(){
         if(newOrigIdx!==curOrigIdx){_lcbSetGrain(li,newOrigIdx);_gi0=newSGi;_y0=e.clientY;}
         const col=COLS[li],n=state[li].pattern.length;
         const isTern=state[li].ternOn;
-        _dragOverlay.show(`<span style="font-size:9px;opacity:.42;font-weight:400;display:block;margin-bottom:1px">Densité</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
+        _dragOverlay.show(`<span style="font-size:10px;opacity:.9;font-weight:700;display:block;margin-bottom:1px">Densité</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:9px;opacity:.35">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
         const newLen=_lcbDensN(dx,_n0,_snapMap);
         const cur=state[li].pattern.length;
@@ -7386,7 +7387,7 @@ function buildLCB(){
         }
         const col=COLS[li],n=state[li].pattern.length;
         {const {tpsStr,mesStr,sig}=_lciDurParts(li);
-        _dragOverlay.show(`<span style="font-size:9px;opacity:.42;font-weight:400;display:block;margin-bottom:1px">Longueur du pattern</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.7">de ${sig}</span></span>`,{grooveOrLayers:true});}
+        _dragOverlay.show(`<span style="font-size:10px;opacity:.9;font-weight:700;display:block;margin-bottom:1px">Longueur du pattern</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.55"><span style="color:${col};font-weight:700">${tpsStr} tps</span> · <span style="color:${col};font-weight:700">${mesStr} mes.</span> <span style="opacity:.6">de ${sig}</span></span>`,{grooveOrLayers:true});}
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
@@ -7700,6 +7701,28 @@ function _drawTotemCircle(cv,li){
       ctx.beginPath();ctx.arc(dx,dy,dotR*0.6,0,2*Math.PI);
       ctx.fillStyle=isDark?'#2c2a28':'#f0ede8';ctx.fill();
       ctx.strokeStyle=isDark?col.stroke+'90':'#c8c5c0';ctx.lineWidth=isDark?1:0.75;ctx.stroke();
+    }
+  }
+  // Aiguille de lecture (tête de lecture tournante)
+  if(playing&&typeof getAC==='function'){
+    const now=getAC().currentTime-(prefs?.audioOffset||0);
+    const bs=getBeatSec(li);
+    if(bs>0){
+      const el=now-state[li].startTime;
+      if(el>=0){
+        const cyc=bs*L;
+        const frac=((el%cyc)+cyc)%cyc/cyc;
+        const aAig=-Math.PI/2+2*Math.PI*frac;
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.lineTo(cx+r*Math.cos(aAig),cy+r*Math.sin(aAig));
+        ctx.strokeStyle=isDark?'rgba(255,255,255,0.88)':'rgba(80,60,180,0.80)';
+        ctx.lineWidth=1.5;ctx.lineCap='round';ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx+r*Math.cos(aAig),cy+r*Math.sin(aAig),2.5,0,2*Math.PI);
+        ctx.fillStyle=isDark?'rgba(255,255,255,0.95)':'rgba(80,60,180,0.90)';
+        ctx.fill();
+      }
     }
   }
 }
@@ -12952,10 +12975,16 @@ function _setupGCBSplitter(gcbEl){
   setTimeout(()=>{if(!document.body.dataset.split)_applySplit('B',false);},300);
 }
 
+function _updateTotemCircles(){
+  if(_lcbViewMode!=='totems')return;
+  LAYERS.forEach((_,li)=>{const cv=document.getElementById('totem-circ-'+li);if(cv)_drawTotemCircle(cv,li);});
+}
+
 function visualLoopCircle(){
   if(!playing) return;
   drawCircles();
   highlightMetroStep();
+  _updateTotemCircles();
   // Tête de lecture iso-métrique (row3) — mise à jour ici car le LAYERS.forEach de visualLoop est court-circuité en vue circulaire
   const _now=getAC().currentTime-prefs.audioOffset;
   LAYERS.forEach((layer,li)=>{
