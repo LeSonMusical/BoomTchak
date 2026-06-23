@@ -1946,7 +1946,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.27.15</span>
+    <span class="app-version">v3.27.16</span>
   </div>
 </div>
 
@@ -7122,7 +7122,7 @@ function buildLCB(){
     const vuEl=seg.querySelector('#lcb-vu-'+li);
     const vuZone=seg.querySelector('.lcb-vu-zone');
     let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0;
-    const DRAG_THRESH=8,GRAIN_PX=28;
+    const DRAG_THRESH=8,FIRST_PX=44,STEP_PX=32;
     // Zone mute (même taille que le chevron) → mute
     vuZone?.addEventListener('pointerdown',e=>e.stopPropagation(),{capture:true});
     vuZone?.addEventListener('click',e=>{e.stopPropagation();_lcbToggleMute(li);});
@@ -7142,11 +7142,20 @@ function buildLCB(){
         _mode=Math.abs(dy)>Math.abs(dx)?'grain':'dens';
       }
       if(_mode==='grain'){
-        const newGi=Math.max(0,Math.min(_LCB_LADDER.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
+        const ady=Math.abs(dy),dir=dy<0?1:-1;
+        let newGi=_gi0;
+        if(ady>=FIRST_PX){
+          const steps=1+Math.floor((ady-FIRST_PX)/STEP_PX);
+          newGi=Math.max(0,Math.min(_LCB_LADDER.length-1,_gi0+dir*steps));
+        }
         const curGi=_lcbCurrentGrainIndex(li);
-        if(newGi!==curGi){_lcbSetGrain(li,newGi);_gi0=newGi;_y0=e.clientY;}
+        if(newGi!==curGi)_lcbSetGrain(li,newGi);
         const col=COLS[li],n=state[li].pattern.length;
-        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée ↕</span>`);
+        const changed=newGi!==_gi0;
+        const isTern=_LCB_LADDER[newGi]?.ternOn;
+        const modeLine=changed?(isTern?`<span style="opacity:.75">✦ ternaire</span>`:`<span style="opacity:.75">◆ binaire</span>`):
+          `<span style="opacity:.4">↕ glissez pour changer</span>`;
+        _dragOverlay.show(`<span style="font-size:20px;font-weight:900;color:${col}">${n}·${_unitLabel(state[li])}</span><br><span style="font-size:10px;opacity:.6">Grain iso-durée</span><br>${modeLine}`);
       }
     },{passive:true});
     ['pointerup','pointercancel'].forEach(ev=>seg.addEventListener(ev,()=>{
