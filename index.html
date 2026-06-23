@@ -1455,11 +1455,11 @@ body.dark-mode #lci-toggle{color:#444;border-left-color:rgba(255,255,255,.05)}
 body[data-split="C"] .totem-ring-wrap{display:flex}
 /* Cercle pattern — toujours visible (1 cercle par layer, rendu identique à la vue Pattern) */
 .totem-circle-wrap{display:flex;justify-content:center;align-items:center;flex-shrink:0;padding:2px 0}
-.totem-circle-cv{display:block;width:92%;aspect-ratio:1/1}
-/* Les deux pads : toujours empilés (pad = rectangle large, axe X = longue dimension) */
+.totem-circle-cv{display:block;width:85%;max-width:130px;aspect-ratio:1/1}
+/* Les deux pads : empilés par défaut ; basculement en ligne dans les @container larges */
 .totem-pads-wrap{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
-/* Le pad 2D */
-.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:55px}
+/* Le pad 2D — min 72px pour amplitude Y utilisable, max adaptatif */
+.totem-pad{flex:1;position:relative;border:1.5px solid var(--lc,#999);border-radius:5px;overflow:hidden;touch-action:none;cursor:crosshair;background:rgba(0,0,0,.03);min-height:72px;max-height:115px}
 body.dark-mode .totem-pad{background:rgba(255,255,255,.04)}
 /* Guides croisés (très discrets — la constellation prime) */
 .totem-pad::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--lc,#999);opacity:.06;pointer-events:none}
@@ -1484,6 +1484,25 @@ body.dark-mode .totem-dot{background:rgba(220,220,220,.12)}
 .totem-actions{display:flex;justify-content:space-around;align-items:center;flex-shrink:0;padding:1px 0}
 .totem-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:3px 2px;opacity:.6;-webkit-tap-highlight-color:transparent;color:var(--lc,#999)}
 .totem-btn:hover{opacity:1}
+/* ── Adaptation par container query (largeur du totem = 1/N de l'écran) ──
+   Étroit  < 150px : 3 totems sur téléphone portrait (~360px → 114px/totem)
+   Moyen 150-240px : 2 totems ou 3 totems tablette
+   Large   > 240px : 1 totem ou paysage → pads côte-à-côte              */
+@container(max-width:149px){
+  .totem-pad{min-height:75px;max-height:108px}
+  .totem-circle-cv{max-width:100px}
+}
+@container(min-width:150px) and (max-width:240px){
+  .totem-pad{min-height:90px;max-height:145px}
+  .totem-circle-cv{max-width:120px}
+}
+@container(min-width:241px){
+  /* Pads côte-à-côte : meilleure amplitude X et Y avec 1 totem */
+  .totem-pads-wrap{flex:0 0 auto;flex-direction:row;height:145px}
+  .totem-pad{min-height:135px;max-height:145px;flex:1}
+  /* Cercle plus petit pour ne pas dominer le layout */
+  .totem-circle-cv{max-width:110px;width:70%}
+}
 /* Mode totems : masquer les .layer divs */
 #layers-wrap.totems-mode .layer{display:none!important}
 
@@ -2026,7 +2045,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.46</span>
+    <span class="app-version">v3.28.47</span>
   </div>
 </div>
 
@@ -7784,7 +7803,7 @@ function buildTotems(){
     // Cercle pattern — déclaré ici pour être en scope des closures, inséré après les boutons
     const circWrap=document.createElement('div');circWrap.className='totem-circle-wrap';
     const circCv=document.createElement('canvas');circCv.className='totem-circle-cv';
-    circCv.id='totem-circ-'+li;circCv.width=100;circCv.height=100;
+    circCv.id='totem-circ-'+li;circCv.width=200;circCv.height=200; // résolution initiale ; _updateTotemCircles corrige à la taille réelle
 
     // ── Fabrique un pad (labels Y et X à l'intérieur) ──
     const _mkPad=(padId,axisY,axisX)=>{
@@ -13031,7 +13050,17 @@ function _setupGCBSplitter(gcbEl){
 
 function _updateTotemCircles(){
   if(_lcbViewMode!=='totems')return;
-  LAYERS.forEach((_,li)=>{const cv=document.getElementById('totem-circ-'+li);if(cv)_drawTotemCircle(cv,li);});
+  const dpr=window.devicePixelRatio||1;
+  LAYERS.forEach((_,li)=>{
+    const cv=document.getElementById('totem-circ-'+li);if(!cv)return;
+    // Aligner la résolution du canvas sur la taille CSS affichée × DPR (netteté)
+    const rect=cv.getBoundingClientRect();
+    if(rect.width>0){
+      const w=Math.round(rect.width*dpr),h=Math.round(rect.height*dpr);
+      if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+    }
+    _drawTotemCircle(cv,li);
+  });
 }
 
 function visualLoopCircle(){
