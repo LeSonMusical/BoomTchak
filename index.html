@@ -2045,7 +2045,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.47</span>
+    <span class="app-version">v3.28.48</span>
   </div>
 </div>
 
@@ -11716,7 +11716,20 @@ function setupCanvasInteraction(){
   // Touch
   let _cvTouchOnDot = false, _cvTouchIsRight = false;
   let _cvSwipeStartX = null, _cvSwipeMode = null; // 'measure' | 'linear'
+  let _pinchDist0 = 0, _pinchH0 = 0; // pinch zoom 2 doigts
   cv.addEventListener('touchstart', e=>{
+    // Pinch 2 doigts : zoom canvas / déplace le split
+    if(e.touches.length===2){
+      e.preventDefault();
+      const circ=document.getElementById('circle-view');
+      if(!circ||circ.offsetHeight===0)return;
+      const t0=e.touches[0],t1=e.touches[1];
+      const ddx=t1.clientX-t0.clientX,ddy=t1.clientY-t0.clientY;
+      _pinchDist0=Math.sqrt(ddx*ddx+ddy*ddy);
+      _pinchH0=circ.offsetHeight;
+      _cvSwipeStartX=null;_cvSwipeMode=null;
+      return;
+    }
     const t=e.touches[0],rect=cv.getBoundingClientRect();
     const sx=cv.width/rect.width,sy=cv.height/rect.height;
     const canvasX=(t.clientX-rect.left)*sx, canvasY=(t.clientY-rect.top)*sy;
@@ -11735,9 +11748,37 @@ function setupCanvasInteraction(){
     if(_cvTouchIsRight)_triggerRightFlash(hit.rightLi, true);
   },{passive:false});
   cv.addEventListener('touchmove', e=>{
+    // Pinch en cours
+    if(e.touches.length===2&&_pinchDist0>0){
+      e.preventDefault();
+      const t0=e.touches[0],t1=e.touches[1];
+      const ddx=t1.clientX-t0.clientX,ddy=t1.clientY-t0.clientY;
+      const newDist=Math.sqrt(ddx*ddx+ddy*ddy);
+      const circ=document.getElementById('circle-view');
+      if(!circ)return;
+      const h=Math.max(60,Math.round(_pinchH0*(newDist/_pinchDist0)));
+      circ.style.height=h+'px';circ.style.overflow='hidden';
+      delete document.body.dataset.split;
+      const canvasEl=document.getElementById('rhythm-canvas');
+      const physH=canvasEl&&canvasEl.offsetHeight>0?canvasEl.offsetHeight:_pinchH0;
+      if(canvasEl&&physH>0&&typeof circleView!=='undefined'&&circleView&&typeof circleModeView!=='undefined'&&circleModeView!=='linear'){
+        const s=h/physH;
+        canvasEl.style.transform=Math.abs(s-1)>0.005?`scale(${s.toFixed(3)})`:'';
+        canvasEl.style.transformOrigin='top center';
+      }
+      return;
+    }
     if(_cvSwipeStartX!==null) e.preventDefault();
   },{passive:false});
   cv.addEventListener('touchend', e=>{
+    // Fin du pinch
+    if(_pinchDist0>0&&e.touches.length<2){
+      _pinchDist0=0;
+      document.body.dataset.split='B';
+      const circ=document.getElementById('circle-view');
+      if(circ)circ.style.overflow='hidden';
+      return;
+    }
     if(_cvSwipeStartX!==null){
       const dx=e.changedTouches[0].clientX-_cvSwipeStartX;
       const mode=_cvSwipeMode;
@@ -12883,7 +12924,7 @@ function updateRhythmInfoBar(){
     `</div>`+
     `</div>`;
   // ── Handlers click (desktop/clavier) — ignorés si déjà traités par pointerup ──
-  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;_openSigAdvisorModal();});
+  el.querySelector('#rib-sig-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;const _hs=document.getElementById('gcb-adv-sup')?.classList.contains('has-suggestion');_hs?_openSigAdvisorModal():setNavSection('metro');});
   el.querySelector('#rib-metro-btn')?.addEventListener('click',()=>{if(_gcbPointerHandled)return;setMetroGlobal(metro.muted);});
   el.querySelector('#rib-son-btn')?.addEventListener('click',()=>{
     if(_gcbPointerHandled)return;
@@ -12989,7 +13030,7 @@ function _setupGCBSplitter(gcbEl){
       const _eq=currentSig?.equivalence||currentSig?.felBeatSteps||2;
       const _bpm=Math.round(posToSPM(newVal)*(globalSpeedMult||1)/_eq);
       const _sym=symFromFelBeatSteps(_eq);
-      _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>');
+      _dragOverlay.show('<span style="font-size:22px;font-weight:900">'+_sym+'= '+_bpm+'</span><br><span style="font-size:10px;font-weight:400;opacity:.6">Tempo</span>',{grooveOrLayers:true});
     }
   },{passive:false});
   gcbEl.addEventListener('pointerup',e=>{
@@ -13024,7 +13065,8 @@ function _setupGCBSplitter(gcbEl){
           clearTimeout(_dragOverlay._sonTimer);
           _dragOverlay._sonTimer=setTimeout(()=>_dragOverlay.hide(),700);
         } else if(id==='rib-sig-btn'){
-          setTimeout(()=>_openSigAdvisorModal(),50);
+          const _hs=document.getElementById('gcb-adv-sup')?.classList.contains('has-suggestion');
+          if(_hs){setTimeout(()=>_openSigAdvisorModal(),50);}else{setNavSection('metro');}
         } else if(_tapTarget.closest('#rib-tempo-zone')){
           setNavSection('metro');
         } else if(btn){
