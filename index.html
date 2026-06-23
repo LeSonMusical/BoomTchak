@@ -2026,7 +2026,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.43</span>
+    <span class="app-version">v3.28.44</span>
   </div>
 </div>
 
@@ -7330,7 +7330,7 @@ function buildLCB(){
   bar.querySelectorAll('.lcb-seg').forEach(seg=>{
     const li=parseInt(seg.dataset.li);
     let _didDrag=false,_mode=null,_x0=0,_y0=0,_gi0=0,_n0=0,_sortedLadder=null,_snapMap=null;
-    const DRAG_THRESH=6,GRAIN_PX=28;
+    const DRAG_THRESH=6,FIRST_PX=44,STEP_PX=32;
     // Tap : moitié gauche = mute/unmute, moitié droite = plier/déplier
     // Drag (vertical/horizontal) : depuis n'importe où sur le segment
     seg.addEventListener('pointerdown',e=>{
@@ -7354,13 +7354,26 @@ function buildLCB(){
         _mode=Math.abs(dx)>Math.abs(dy)*1.5?'dens':'grain';
       }
       if(_mode==='grain'){
-        const newSGi=Math.max(0,Math.min(_sortedLadder.length-1,_gi0+Math.round(-dy/GRAIN_PX)));
+        // Ancre fixe depuis pointerdown — grand seuil initial puis pas réguliers
+        const ady=Math.abs(dy),dir=dy<0?1:-1;
+        let newSGi=_gi0;
+        if(ady>=FIRST_PX){
+          const steps=1+Math.floor((ady-FIRST_PX)/STEP_PX);
+          newSGi=Math.max(0,Math.min(_sortedLadder.length-1,_gi0+dir*steps));
+        }
         const newOrigIdx=_sortedLadder[newSGi]._i;
         const curOrigIdx=_lcbCurrentGrainIndex(li);
-        if(newOrigIdx!==curOrigIdx){_lcbSetGrain(li,newOrigIdx);_gi0=newSGi;_y0=e.clientY;}
+        if(newOrigIdx!==curOrigIdx)_lcbSetGrain(li,newOrigIdx);
         const col=COLS[li],n=state[li].pattern.length;
-        const isTern=state[li].ternOn;
-        _dragOverlay.show(`<span style="font-size:10px;opacity:.9;font-weight:700;display:block;margin-bottom:1px">Densité</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br><span style="font-size:9px;opacity:.35">${isTern?'division ternaire':'division binaire'} ↕</span>`,{grooveOrLayers:true});
+        const isTern=_sortedLadder[newSGi].ternOn;
+        const startTern=_sortedLadder[_gi0].ternOn;
+        const changed=newSGi!==_gi0;
+        const crossedBoundary=changed&&(isTern!==startTern);
+        let hint;
+        if(!changed){hint=`<span style="opacity:.35;font-size:9px">↕ glissez pour changer</span>`;}
+        else if(crossedBoundary){hint=isTern?`<span style="color:#c8961a;font-weight:700">✦ passage en ternaire</span>`:`<span style="color:#c8961a;font-weight:700">◆ retour en binaire</span>`;}
+        else{hint=isTern?`<span style="opacity:.6;font-size:9px">division ternaire</span>`:`<span style="opacity:.6;font-size:9px">division binaire</span>`;}
+        _dragOverlay.show(`<span style="font-size:10px;opacity:.9;font-weight:700;display:block;margin-bottom:1px">Densité</span><span style="font-size:20px;font-weight:900;color:${col}">${n} pas ${_unitLabel(state[li])}</span><br>${hint}`,{grooveOrLayers:true});
       } else if(_mode==='dens'){
         const newLen=_lcbDensN(dx,_n0,_snapMap);
         const cur=state[li].pattern.length;
