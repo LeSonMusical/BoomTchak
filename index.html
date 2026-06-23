@@ -1377,6 +1377,7 @@ body.dark-mode .sig-adv-layer{color:#aaa}
 .sig-adv-row.is-current .sig-adv-apply{opacity:.38;cursor:default;pointer-events:none}
 .sig-adv-apply:active{background:rgba(58,140,110,.12)}
 body.dark-mode .sig-adv-apply{border-color:#6ECAAA;color:#6ECAAA}
+.sig-adv-row.is-common .sig-adv-lbl{font-size:19px}
 .sig-adv-poly{font-size:11px;color:#999;text-align:center;padding:16px 12px;font-style:italic;line-height:1.5}
 .gcb-play-btn{align-self:stretch;background:transparent;border:2.5px solid rgba(0,0,0,.35);border-radius:12px;min-width:48px;color:#333;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent;padding:0 6px}
 .gcb-play-btn.playing{background:#3a3a3a;color:#fff}
@@ -2045,7 +2046,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.48</span>
+    <span class="app-version">v3.28.49</span>
   </div>
 </div>
 
@@ -7564,6 +7565,14 @@ const _SIG_CANDIDATES=[
   {id:'12/8', label:'12/8', nbDivisions:12, equivalence:1},
 ];
 const COLS_ADV=['#378ADD','#D85A30','#1D9E75'];
+// Groupes quasi-équivalents (même spm = même alignement de pattern)
+const _SIG_EQUIV_GROUPS=[
+  ['4/4','2/2'],         // spm=8 : indiscernables à l'oreille
+  ['12/8','6/4','3/2'],  // spm=12 : indiscernables à l'oreille
+];
+// Métriques courantes — ordre de priorité d'affichage en cas d'ex-æquo
+const _COMMON_METER_ORDER=['4/4','3/4','6/8','12/8','2/2','5/4','2/4','7/4','9/8','7/8','5/8','3/8','6/4','3/2'];
+const _COMMON_METERS_SET=new Set(['4/4','3/4','6/8','12/8','2/2']);
 function _advisorLayerDetail(li, preset){
   const s=state[li];
   const dbl=s.doubleOn,hlf=s.halfOn,trn=s.ternOn;
@@ -7589,13 +7598,15 @@ function _scheduleAdvisorUpdate(){
   _sigAdvisorDeb=setTimeout(_updateSigAdvisor,80);
 }
 function _updateSigAdvisor(){
+  const curId=currentSig?.id;
+  const curEquivGroup=_SIG_EQUIV_GROUPS.find(g=>g.includes(curId));
   const all=_SIG_CANDIDATES.map(p=>({p,s:_advisorScore(p).score}));
-  const best=all.reduce((b,x)=>x.s>b?x.s:b,0);
   const cur=_advisorScore(currentSig).score;
-  // Afficher le signal seulement si la signature actuelle est réellement mauvaise
-  // (< 2/3 du score max) ET qu'une option nettement meilleure existe (+1.0 min)
+  // Signal seulement si une signature GENUINEMENT différente (hors groupe équivalent) est nettement meilleure
+  const bestDiff=all.filter(x=>!curEquivGroup||!curEquivGroup.includes(x.p.id))
+                     .reduce((b,x)=>x.s>b?x.s:b,0);
   const decent=LAYERS.length*2*(2/3); // ex: 4.0 pour 3 layers
-  const hasBetter=cur<decent&&best>cur+1.0;
+  const hasBetter=cur<decent&&bestDiff>cur+1.0;
   document.getElementById('gcb-adv-sup')?.classList.toggle('has-suggestion',hasBetter);
   document.getElementById('metro-sig-advisor-btn')?.classList.toggle('has-suggestion',hasBetter);
   const modal=document.getElementById('sig-advisor-modal');
@@ -7603,25 +7614,51 @@ function _updateSigAdvisor(){
 }
 function _buildSigAdvisorList(){
   const list=document.getElementById('sig-advisor-list');if(!list)return;
-  const all=_SIG_CANDIDATES
-    .map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};})
-    .sort((a,b)=>b.score-a.score);
+  const curId=currentSig?.id;
+  // Calcul des scores
+  let all=_SIG_CANDIDATES.map(p=>{const{score,details}=_advisorScore(p);return{p,score,details};});
+  // Dédupliquer les groupes quasi-équivalents :
+  // Au sein de chaque groupe, garder le sig courant OU le plus courant selon _COMMON_METER_ORDER
+  const removed=new Set();
+  for(const grp of _SIG_EQUIV_GROUPS){
+    const inGrp=all.filter(x=>grp.includes(x.p.id));
+    if(inGrp.length<=1)continue;
+    const keepId=grp.includes(curId)?curId:(grp.find(id=>_COMMON_METER_ORDER.includes(id))||grp[0]);
+    inGrp.forEach(x=>{if(x.p.id!==keepId)removed.add(x.p.id);});
+  }
+  all=all.filter(x=>!removed.has(x.p.id));
+  // Tri : score décroissant, ex-æquo → métriques courantes en premier
+  all.sort((a,b)=>{
+    if(Math.abs(a.score-b.score)<0.01){
+      const ai=_COMMON_METER_ORDER.indexOf(a.p.id);
+      const bi=_COMMON_METER_ORDER.indexOf(b.p.id);
+      return (ai>=0?ai:999)-(bi>=0?bi:999);
+    }
+    return b.score-a.score;
+  });
   const best=all[0]?.score||0;
   if(best<0.4){list.innerHTML=`<div class="sig-adv-poly">Motifs polymètriques&nbsp;— aucune signature ne les aligne tous parfaitement.</div>`;return;}
-  // Resserrer la sélection : ne montrer que les signatures proches du meilleur score
-  const scored=all.filter(x=>x.score>=Math.max(0.3,best-2.0)).slice(0,6);
-  // Détecter la polymétrie flagrante : aucune signature n'aligne tous les layers sur mesure entière
+  // Sélection resserrée (top 6)
+  let scored=all.filter(x=>x.score>=Math.max(0.3,best-2.0)).slice(0,6);
+  // Toujours inclure la signature courante même si filtrée
+  const curEntry=all.find(x=>x.p.id===curId);
+  if(curEntry&&!scored.find(x=>x.p.id===curId)){
+    scored=[curEntry,...scored];
+    scored.sort((a,b)=>b.score-a.score);
+    scored=scored.slice(0,7);
+  }
   const hasFullAlign=scored.some(x=>x.details.every(d=>d.score>=1.5));
   const polyWarn=!hasFullAlign?`<div class="sig-adv-poly-warn">⚠ Polymétrie détectée&nbsp;— les layers ont des durées incompatibles entre elles. A priori, aucune signature ne peut les aligner tous simultanément sur des mesures entières.</div>`:'';
   list.innerHTML=polyWarn+scored.map(({p,score,details})=>{
-    const isCur=p.id===currentSig?.id;
+    const isCur=p.id===curId;
+    const isCommon=_COMMON_METERS_SET.has(p.id);
     const layersHtml=LAYERS.map((_,li)=>{
       const d=details[li];
       const col=COLS_ADV[li];
       const cls=d.ok?'ok':d.half?'half':'';
       return `<span class="sig-adv-layer ${cls}" style="--lc:${col}"><span class="sadv-dot"></span>${d.label}</span>`;
     }).join('');
-    return `<div class="sig-adv-row${isCur?' is-current':''}" data-id="${p.id}">
+    return `<div class="sig-adv-row${isCur?' is-current':''}${isCommon?' is-common':''}" data-id="${p.id}">
       <div class="sig-adv-lbl">${p.label||p.id}</div>
       <div class="sig-adv-layers">${layersHtml}</div>
       <button class="sig-adv-apply">${isCur?'En cours':'Appliquer'}</button>
