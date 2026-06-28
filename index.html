@@ -2046,7 +2046,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.50</span>
+    <span class="app-version">v3.28.51</span>
   </div>
 </div>
 
@@ -4928,7 +4928,8 @@ let _totemLockedPat=[null,null,null];    // pattern au moment du verrou (référ
 let _totemLockedXB=[0,0,0];              // yB au début du geste de drag (delta décalage)
 let _totemPreRotPat=[null,null,null];    // snapshot avant décalage (preview pad A)
 let _totemOrigPat=[null,null,null]; // patterns sauvegardés à l'entrée en mode totems (pour ↺)
-let _totemSyncLock=[false,false,false]; // empêche la sync récursive depuis _rebuild (drag pad)
+let _totemSyncLock=[false,false,false];   // empêche la sync récursive depuis _rebuild (drag pad)
+let _totemSyncTimers=[null,null,null];   // timers debounce pour _scheduleSyncTotemPads
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
@@ -7030,6 +7031,12 @@ function _syncTotemPadsFromPat(li){
   const pB=document.getElementById('totem-preview-b-'+li);if(pB)_showTotemDots(pB,pat);
   const cv=document.getElementById('totem-circ-'+li);if(cv)_drawTotemCircle(cv,li);
 }
+// ── Sync différée (debounce 80 ms) — priorité au geste ──────────────────
+function _scheduleSyncTotemPads(li){
+  if(_lcbViewMode!=='totems'||_totemSyncLock[li])return;
+  clearTimeout(_totemSyncTimers[li]);
+  _totemSyncTimers[li]=setTimeout(()=>_syncTotemPadsFromPat(li),80);
+}
 // ── Rétro-inférence XY+S depuis le pattern courant ───────────────────────
 function _inferPadStateFromPattern(li){
   const pat=state[li].pattern;
@@ -7937,7 +7944,7 @@ function buildTotems(){
       _buildIsoRow(li);
       if(circleView)drawCircles();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
-      if(!fromPad)_syncTotemPadsFromPat(li); // recalibrer les curseurs si modif externe
+      if(!fromPad)_scheduleSyncTotemPads(li); // recalibrer les curseurs si modif externe (différé)
       _refreshPrev();_updateTotemRings();
     };
 
@@ -8733,7 +8740,7 @@ function findPatternBySeq(arr){
 function buildStepsDOM(li,wrap){
   const div=document.getElementById('steps-'+LAYERS[li].id);if(!div)return;
   // Sync curseurs pads totem si modif externe (non verrouillée par _rebuild pad)
-  if(_lcbViewMode==='totems'&&!_totemSyncLock[li])_syncTotemPadsFromPat(li);
+  if(_lcbViewMode==='totems'&&!_totemSyncLock[li])_scheduleSyncTotemPads(li);
   div.innerHTML='';
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
@@ -11770,6 +11777,7 @@ function setupCanvasInteraction(){
     const isDirty = srcPat ? state[li].pattern.join('')!==srcPat.sequence : false;
     setLayerDirty(li, isDirty);
     _syncPadToPattern(li);
+    _scheduleSyncTotemPads(li);
     drawCircles();
     // Sync cellule iso-métrique (même logique que onStepClick)
     const _ic=document.querySelector(`#layer-div-${li} .iso-cell[data-iso-idx="${si}"]`);
