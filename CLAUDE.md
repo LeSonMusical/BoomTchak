@@ -13,6 +13,16 @@ Lire `BoomTchak_v3_bible.md` et `BoomTchak_Explain.md` avant toute modification.
 - La vue Cycle affiche le PPCM de tous les layers (ce qu'on entend sur un cycle complet).
 - Toute modification qui casserait ce principe doit être soumise à Lamberio avant d'être implémentée.
 
+## Principe WYDoIWYEarIWYSee (What You Do Is What You Ear Is What You See) — règle absolue
+
+**Le geste prime sur la vue. La vue suit le geste, jamais l'inverse.**
+
+- Quand l'utilisateur interagit (drag, tap, pinch…), la réponse audio et haptique est immédiate et prioritaire.
+- La mise à jour visuelle peut être différée (debounce, rAF) pour ne pas bloquer le geste.
+- Un recalcul coûteux (inférence de paramètres, sync curseurs, rebuild DOM) ne doit jamais ralentir le geste en cours. Il s'exécute après le relâchement ou avec un délai assurant la fluidité.
+- Toute implémentation qui introduit une latence perceptible sur un geste doit utiliser le pattern debounce/scheduler (ex : `_scheduleSyncTotemPads`) plutôt qu'un appel synchrone bloquant.
+- Ce principe s'applique en particulier aux pads XY (totems), aux drags de la LCB/GCB, aux interactions canvas, et à tout contrôle gestuel futur.
+
 ## Règles de collaboration
 - Lamberio = product owner. Questions archi importantes → soumettre AVANT de coder.
 - Langue : français. Variables/fonctions : camelCase anglais.

@@ -2046,7 +2046,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.51</span>
+    <span class="app-version">v3.28.52</span>
   </div>
 </div>
 
@@ -6660,7 +6660,7 @@ function buildBandSection(){
 
   // Gauche : 🥁 Kit
   const bLeft=document.createElement('div');bLeft.className='band-bandeau-left';
-  const bLbl=document.createElement('span');bLbl.className='band-bandeau-lbl';bLbl.textContent='🥁 Kit';
+  const bLbl=document.createElement('span');bLbl.className='band-bandeau-lbl';bLbl.textContent='🥁 Kit Sons';
   bLeft.appendChild(bLbl);
   bandeau.appendChild(bLeft);
 
@@ -9923,7 +9923,16 @@ function buildSoundRow(key,label,cls,ss){
     setSoundDirtySlot(key,true);setBandDirty(true);buildSoundPanel();
   });
 
-  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(iInfoBtn);r1.appendChild(rndBtn);r1.appendChild(magicBtn);r1.appendChild(arrow);
+  // Bouton ↺ retour à la version d'origine (reload preset)
+  const refreshBtn=document.createElement('button');refreshBtn.className='btn-sec-magic';refreshBtn.textContent='↺';refreshBtn.title='Retour à la version d\'origine';
+  refreshBtn.style.cssText='opacity:'+(soundDirty[key]?'0.85':'0.3');
+  refreshBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(!soundDirty[key])return;
+    _soundOnSelect(ss.soundPresetId);
+  });
+
+  r1.appendChild(lbl);r1.appendChild(soundPresetBtn);r1.appendChild(saveIcoHdr);r1.appendChild(iInfoBtn);r1.appendChild(rndBtn);r1.appendChild(magicBtn);r1.appendChild(refreshBtn);r1.appendChild(arrow);
 
   // Rangée 2 : volume (pleine largeur)
   const r2=document.createElement('div');r2.className='sound-h-r2';
