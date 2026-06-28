@@ -2046,7 +2046,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.49</span>
+    <span class="app-version">v3.28.50</span>
   </div>
 </div>
 
@@ -4928,6 +4928,7 @@ let _totemLockedPat=[null,null,null];    // pattern au moment du verrou (référ
 let _totemLockedXB=[0,0,0];              // yB au début du geste de drag (delta décalage)
 let _totemPreRotPat=[null,null,null];    // snapshot avant décalage (preview pad A)
 let _totemOrigPat=[null,null,null]; // patterns sauvegardés à l'entrée en mode totems (pour ↺)
+let _totemSyncLock=[false,false,false]; // empêche la sync récursive depuis _rebuild (drag pad)
 function _doToggleLayerPanels(){
   layerPanelsOuverts=!layerPanelsOuverts;
   const lw=document.getElementById('layers-wrap');
@@ -6992,6 +6993,43 @@ function _euclidean(k,L){
   for(let i=0;i<k;i++)pos.push(Math.floor(i*L/k));
   return pos;
 }
+// ── Dots constellation circulaire des previews totem ─────────────────────
+function _showTotemDots(el,pat){
+  el.innerHTML='';if(!pat||!pat.length)return;const L=pat.length;
+  pat.forEach((s,i)=>{
+    const a=(i/L)*2*Math.PI-Math.PI/2;
+    const d=document.createElement('div');
+    d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');
+    d.style.left=(50+36*Math.cos(a))+'%';
+    d.style.top=(50+36*Math.sin(a))+'%';
+    el.appendChild(d);
+  });
+}
+// ── Sync curseurs pads XY ← pattern courant (édition externe) ────────────
+function _syncTotemPadsFromPat(li){
+  if(_lcbViewMode!=='totems')return;
+  const pat=state[li].pattern;const L=pat.length;if(!L)return;
+  const nX=pat.filter(s=>s==='X').length;
+  const nx=pat.filter(s=>s==='x').length;
+  // Pad A : inversement direct densité(x) + liant(y)
+  _totemPadAState[li]={x:nX/L,y:(L-nX)>0?nx/(L-nX):0};
+  const cA=document.getElementById('totem-cursor-a-'+li);
+  if(cA){cA.style.left=`${_totemPadAState[li].x*100}%`;cA.style.bottom=`${_totemPadAState[li].y*100}%`;}
+  // Pad B — répartition(x) approximée via score euclidien ; décalage(y) conservé
+  if(nX>0){
+    const eucSet=new Set(_euclidean(nX,L));
+    const atEuclid=pat.reduce((a,s,i)=>s==='X'&&eucSet.has(i)?a+1:a,0);
+    _totemPadBState[li]={x:1-atEuclid/nX,y:_totemPadBState[li].y};
+    const cB=document.getElementById('totem-cursor-b-'+li);
+    if(cB){cB.style.left=`${_totemPadBState[li].x*100}%`;cB.style.bottom=`${_totemPadBState[li].y*100}%`;}
+  }
+  // Snapshot pré-rotation = pattern actuel (base preview pad A)
+  _totemPreRotPat[li]=[...pat];
+  // Rafraîchir dots et cercle
+  const pA=document.getElementById('totem-preview-a-'+li);if(pA)_showTotemDots(pA,_totemPreRotPat[li]);
+  const pB=document.getElementById('totem-preview-b-'+li);if(pB)_showTotemDots(pB,pat);
+  const cv=document.getElementById('totem-circ-'+li);if(cv)_drawTotemCircle(cv,li);
+}
 // ── Rétro-inférence XY+S depuis le pattern courant ───────────────────────
 function _inferPadStateFromPattern(li){
   const pat=state[li].pattern;
@@ -7845,8 +7883,9 @@ function buildTotems(){
     // ── Fabrique un pad (labels Y et X à l'intérieur) ──
     const _mkPad=(padId,axisY,axisX)=>{
       const pd=document.createElement('div');pd.className='totem-pad';pd.id=padId;
-      const cur=document.createElement('div');cur.className='totem-cursor';
-      const prev=document.createElement('div');prev.className='totem-preview';
+      const sfx=padId.slice('totem-pad-'.length); // 'a-0', 'b-1', etc.
+      const cur=document.createElement('div');cur.className='totem-cursor';cur.id='totem-cursor-'+sfx;
+      const prev=document.createElement('div');prev.className='totem-preview';prev.id='totem-preview-'+sfx;
       const axY=document.createElement('div');axY.className='totem-axis-y';axY.textContent=axisY;
       const axX=document.createElement('div');axX.className='totem-axis-x';axX.textContent=axisX;
       pd.appendChild(cur);pd.appendChild(prev);pd.appendChild(axY);pd.appendChild(axX);
@@ -7879,20 +7918,8 @@ function buildTotems(){
     // ── Helpers curseur et preview ──
     const _updA=()=>{curA.style.left=`${_totemPadAState[li].x*100}%`;curA.style.bottom=`${_totemPadAState[li].y*100}%`;};
     const _updB=()=>{curB.style.left=`${_totemPadBState[li].x*100}%`;curB.style.bottom=`${_totemPadBState[li].y*100}%`;};
-    // Affiche le pattern en constellation circulaire (angle ∝ position dans le cycle)
-    const _showPat=(el,pat)=>{
-      el.innerHTML='';
-      if(!pat||!pat.length)return;
-      const L=pat.length;
-      pat.forEach((s,i)=>{
-        const a=(i/L)*2*Math.PI-Math.PI/2; // départ en haut (−π/2)
-        const d=document.createElement('div');
-        d.className='totem-dot'+(s==='X'?' forte':s==='x'?' soft':'');
-        d.style.left=(50+36*Math.cos(a))+'%';
-        d.style.top =(50+36*Math.sin(a))+'%';
-        el.appendChild(d);
-      });
-    };
+    // Alias local vers la fonction module-level (pas de duplication de code)
+    const _showPat=_showTotemDots;
     const _refreshPrev=()=>{
       // Pad A : squelette avant décalage (montrer la forme sans rotation)
       _showPat(prevA,_totemPadBLocked[li]?_totemLockedPat[li]:(_totemPreRotPat[li]||state[li].pattern));
@@ -7903,10 +7930,14 @@ function buildTotems(){
     };
     _updA();_updB();_refreshPrev();
 
-    const _rebuild=()=>{
-      buildStepsDOM(li,false);_buildIsoRow(li);
+    const _rebuild=(fromPad=false)=>{
+      _totemSyncLock[li]=true;
+      buildStepsDOM(li,false);
+      _totemSyncLock[li]=false;
+      _buildIsoRow(li);
       if(circleView)drawCircles();
       setLayerDirty(li,true);grooveDirty=true;updateGrooveSaveBtn();
+      if(!fromPad)_syncTotemPadsFromPat(li); // recalibrer les curseurs si modif externe
       _refreshPrev();_updateTotemRings();
     };
 
@@ -7918,7 +7949,7 @@ function buildTotems(){
       const x=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
       const y=Math.max(0,Math.min(1,1-(e.clientY-rect.top)/rect.height));
       _totemPadAState[li]={x,y};_updA();
-      _applyTotemAB(li);_rebuild();
+      _applyTotemAB(li);_rebuild(true);
     };
     padA.addEventListener('pointerdown',e=>{
       e.preventDefault();
@@ -7945,11 +7976,11 @@ function buildTotems(){
         const rStart=_r(Math.round(_totemLockedXB[li]*(L-1)));
         const delta=(rCur-rStart+L)%L;
         state[li].pattern=rotate([...(_totemLockedPat[li]||state[li].pattern)],delta);
-        _totemPadBState[li]={x:_totemPadBState[li].x,y};_updB();_rebuild();
+        _totemPadBState[li]={x:_totemPadBState[li].x,y};_updB();_rebuild(true);
         return;
       }
       _totemPadBState[li]={x,y};_updB();
-      _applyTotemAB(li);_rebuild();  // couplé : relit xA/yA depuis _totemPadAState
+      _applyTotemAB(li);_rebuild(true);  // fromPad=true : pas de sync inverse
     };
     padB.addEventListener('pointerdown',e=>{
       e.preventDefault();
@@ -8701,6 +8732,8 @@ function findPatternBySeq(arr){
 
 function buildStepsDOM(li,wrap){
   const div=document.getElementById('steps-'+LAYERS[li].id);if(!div)return;
+  // Sync curseurs pads totem si modif externe (non verrouillée par _rebuild pad)
+  if(_lcbViewMode==='totems'&&!_totemSyncLock[li])_syncTotemPadsFromPat(li);
   div.innerHTML='';
   const pat=state[li].pattern;
   const ha=wrap?halfAt(pat.length):null;
