@@ -1196,8 +1196,8 @@ body.view-circle #section-groove{order:2}
 body.view-circle #view-mode-bar{order:3;width:100%}
 body.view-circle #layers-wrap{order:5;display:block;width:100%}
 body.view-circle #section-encyclo{order:5}
-/* Desktop ≥600px : Pattern/Mesure = canvas gauche + layers droite */
-@media(min-width:600px){
+/* Desktop ≥900px : Pattern/Mesure = canvas gauche + layers droite (tablette portrait reste en colonne) */
+@media(min-width:900px){
   body.view-circle .frame{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:0}
   body.view-circle #temps-wrap{order:0;width:100%;flex-shrink:0}
   body.view-circle #section-band{order:1;width:100%;flex-shrink:0}
@@ -1827,7 +1827,7 @@ body.dark-mode .lib-batch-bar{background:#1e1e1c}
   .layer-menu{width:88px}
   .step{width:20px;height:20px}
 }
-@media(min-width:600px){
+@media(min-width:900px){
   #layers-wrap{flex-direction:row}
 }
 
@@ -2046,7 +2046,7 @@ body.dark-mode .bup-opt:hover{background:#1E2C28}
 <div class="top-bar">
   <div class="app-title-block" id="btn-app-title" title="Présentation de BoomTchak">
     <span class="app-name"><span class="an-b">B</span><span class="an-o">o</span><span class="an-o2">o</span><span class="an-m">m</span><span class="an-t">T</span><span class="an-c">c</span><span class="an-h">h</span><span class="an-a">a</span><span class="an-k">k</span></span>
-    <span class="app-version">v3.28.52</span>
+    <span class="app-version">v3.28.53</span>
   </div>
 </div>
 
@@ -10893,7 +10893,7 @@ function resizeCanvas(){
   const wrap = document.getElementById('circle-view');
   const frame = wrap.closest('.frame');
   const frameW2 = frame ? frame.clientWidth : window.innerWidth;
-  const isDesktop2 = window.innerWidth >= 600;
+  const isDesktop2 = window.innerWidth >= 900;
   if(circleModeView==='linear'){
     const canvW=Math.max(160, Math.min(isDesktop2?480:frameW2-16, frameW2-8));
     const canvH=110;
@@ -10912,7 +10912,7 @@ function resizeCanvas(){
 
   // Desktop ≥600px : canvas partage la ligne avec les layers
   const frameW = frame ? frame.clientWidth : window.innerWidth;
-  const isDesktop = window.innerWidth >= 600;
+  const isDesktop = window.innerWidth >= 900;
   const maxW = isDesktop ? Math.min(szW, Math.floor(frameW*0.46)) : frameW - 16;
   const scale = Math.min(1, maxW / szW);
 
